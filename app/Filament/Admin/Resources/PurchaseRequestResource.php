@@ -198,7 +198,13 @@ class PurchaseRequestResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('status'),
-                Tables\Columns\TextColumn::make('total'),
+                Tables\Columns\TextColumn::make('total')->state(function ($record){
+                    $total=0;
+                    foreach ($record->items as $item){
+                        $total+=$item->quantity *$item->estimated_unit_cost;
+                    }
+                    return $total;
+                })->numeric(),
                 Tables\Columns\TextColumn::make('warehouse_decision')
                     ->date()
                     ->sortable()

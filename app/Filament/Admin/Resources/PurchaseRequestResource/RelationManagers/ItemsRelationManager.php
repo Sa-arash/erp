@@ -12,6 +12,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\DB;
 
 class ItemsRelationManager extends RelationManager
 {
@@ -97,10 +98,13 @@ class ItemsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('unit.title'),
                 Tables\Columns\TextColumn::make('quantity'),
                 Tables\Columns\TextColumn::make('estimated_unit_cost')->numeric(),
-                Tables\Columns\TextColumn::make('total')->numeric(),
+                Tables\Columns\TextColumn::make('total')
+                    ->state(fn ($record) => $record->estimated_unit_cost * $record->quantity)
+                   ->numeric(),
                 Tables\Columns\TextColumn::make('project.name'),
                 Tables\Columns\TextColumn::make('status')->badge(),
             ])
+
             ->filters([
                 //
             ])

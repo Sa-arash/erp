@@ -104,8 +104,8 @@
             <tr>
                 <td>{{++$i}}</td>
                 <td>{{$item->description}}</td>
-                <td></td>
-                <td></td>
+                <td>{{$item->unit->title}}</td>
+                <td>{{$item->quantity}}</td>
                 <td></td>
                 <td></td>
             </tr>

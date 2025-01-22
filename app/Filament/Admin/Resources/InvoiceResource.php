@@ -64,7 +64,7 @@ class InvoiceResource extends Resource
                     Forms\Components\DateTimePicker::make('date')
                     ->columnSpan(2)
                     ->required()->default(now()),
-                    Forms\Components\FileUpload::make('document')->placeholder('Browse')->extraAttributes(['style'=>'min-height:'])
+                    Forms\Components\FileUpload::make('document')->placeholder('Browse')->extraInputAttributes(['style' => 'height:30px!important;'])
                     ->nullable(),
                ])->columns(8),
 
