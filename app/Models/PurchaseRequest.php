@@ -11,21 +11,12 @@ class PurchaseRequest extends Model
 
     protected $fillable = [
         'request_date',
-        'employee_id',
         'purchase_number',
         'description',
         'status',
-        'warehouse_comment',
-        'department_manager_comment',
-        'ceo_comment',
-        'general_comment',
-        'warehouse_status_date',
-        'department_manager_status_date',
-        'ceo_status_date',
-        'purchase_date',
+        'comment',
         'company_id',
-        'department_id',
-        'structure_id',
+        'employee_id',
     ];
 
 

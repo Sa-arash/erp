@@ -10,6 +10,7 @@ use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -44,14 +45,14 @@ class PurchaseRequestResource extends Resource
                         ->preload()
                         ->label('Requested By')
                         ->required()
-                        ->options(getCompany()->employees->pluck('fullName', 'id')),
+                        ->options(getCompany()->employees->pluck('fullName', 'id'))
+                        ->default(fn()=>auth()->user()->employee->id),
 
                     Forms\Components\TextInput::make('purchase_number')
                         ->label('PR Number')
                         ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
                             return $rule->where('company_id', getCompany()->id);
                         })
-                        ->unique('purchase_requests', 'purchase_number')
                         ->required()
                         ->numeric(),
 
@@ -64,42 +65,14 @@ class PurchaseRequestResource extends Resource
 
                     Forms\Components\Hidden::make('status')
                         ->label('Status')
-                        // ->options([
-                        //     'requested' => 'Requested',
-                        //     'warehouse_checked' => 'Warehouse Checked',
-                        //     'department_manager_approved' => 'Department Manager Approved',
-                        //     'department_manager_rejected' => 'Department Manager Rejected',
-                        //     'ceo_approved' => 'CEO Approved',
-                        //     'ceo_rejected' => 'CEO Rejected',
-                        //     'purchased' => 'Purchased',
-                        //     'not_purchased' => 'Not Purchased',
-                        // ])
-                        ->default('requested')
+                        ->default('Requested')
                         ->required(),
 
 
 
-                    Forms\Components\Select::make('department_id')
-                        ->searchable()
-                        ->preload()
-                        ->label('Department')
-                        ->options(getCompany()->departments->pluck('title', 'id'))
-                        ->required(),
+            
 
-
-                    Select::make('structure_id')->searchable()->label('Location')
-
-                        ->options(function (Get $get) {
-                            return Structure::where('id', getCompany()->employees?->find($get('employee_id'))?->structure_id)->pluck('title', 'id');
-                        })->required()->live(),
-
-
-                    // SelectTree::make('structure_id')
-                    // ->searchable()
-                    // ->preload()
-                    //     ->label('Location')
-                    //     ->options(getCompany()->structures->pluck('title', 'id'))
-                    //     ->required(),
+   
 
                     Forms\Components\TextInput::make('description')
                         ->label('Description'),
@@ -111,7 +84,8 @@ class PurchaseRequestResource extends Resource
                     Repeater::make('Requested Items')
                         ->relationship('items')
                         ->schema([
-                            Forms\Components\Select::make('product_id')->label('Product')->options(function () {
+                            Forms\Components\Select::make('product_id')
+                            ->label('Product')->options(function () {
                                 $products = getCompany()->products;
                                 $data = [];
                                 foreach ($products as $product) {
@@ -148,33 +122,25 @@ class PurchaseRequestResource extends Resource
                                 ->options(getCompany()->projects->pluck('name', 'id')),
 
 
-                            // Forms\Components\Select::make('warehouse_decision')
-                            //     ->label('Warehouse Decision')
-                            //     ->options([
-                            //         'available_in_stock' => 'Available in Stock',
-                            //         'needs_purchase' => 'Needs Purchase',
-                            //     ])
-                            //     ->default('needs_purchase')
-                            //     ->required(),
-
-                            // Forms\Components\Select::make('status')
-                            //     ->label('Status')
-                            //     ->options([
-                            //         'purchased' => 'Purchased',
-                            //         'assigned' => 'Assigned',
-                            //         'not_purchased' => 'Not Purchased',
-                            //         'rejected' => 'Rejected',
-                            //     ])
-                            //     ->default('not_purchased')
-                            //     ->required(),
-
-
                             Forms\Components\Hidden::make('company_id')
                                 ->default(Filament::getTenant()->id)
                                 ->required(),
                         ])
                         ->columns(6)
+
+                        
                         ->columnSpanFull(),
+                        // Section::make('estimated_unit_cost')->schema([
+                        //     Placeholder::make('Total')->live()
+                        //     ->content(function (Get $get) {
+                        //         $sum = 0;
+                        //         foreach($get('Requested Items') as $item)
+                        //         {
+                        //             $sum += (int)$item['quantity']*(int)$item['estimated_unit_cost'];
+                        //         }
+                        //         return $sum;
+                        //     } )
+                        // ])
                 ])->columns(2)
 
 
