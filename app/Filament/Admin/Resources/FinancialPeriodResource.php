@@ -52,8 +52,8 @@ class FinancialPeriodResource extends Resource
 //                })
 //                ->label('Status')->inline()->grouped()->boolean('Active','UnActive')->required(),
                 //  Forms\Components\ToggleButtons::make('status')->options(['Before'=>'Before','During'=>'During','End'=>'End'])->inline()->grouped(),
-                Forms\Components\DatePicker::make('start_date')->required(),
-                Forms\Components\DatePicker::make('end_date')->required(),
+                Forms\Components\DatePicker::make('start_date')->default(now()->startOfYear())->required(),
+                Forms\Components\DatePicker::make('end_date')->default(now()->startOfYear()->addYear())->required(),
             ]);
     }
 
