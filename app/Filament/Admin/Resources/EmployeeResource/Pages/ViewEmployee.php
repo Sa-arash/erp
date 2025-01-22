@@ -89,7 +89,7 @@ class ViewEmployee extends ViewRecord
 
 
 
-            Section::make('profile')->schema([
+            Section::make('Profile')->schema([
                 Split::make([
                     Section::make('Information')->icon('heroicon-c-identification')->iconColor('success')->schema([
                         TextEntry::make('fullName')->copyable(),
@@ -106,7 +106,7 @@ class ViewEmployee extends ViewRecord
                         textEntry::make('covid_vaccine_certificate')->state(fn($record) => $record->covid_vaccine_certificate ?  "Yes" : "No"),
 
                     ])->columns(2),
-                    Section::make('Salary information')->icon('cash')->iconColor('success')->schema([
+                    Section::make('Contract and Employment Status Details')->icon('cash')->iconColor('success')->schema([
                         textEntry::make('contract.title'),
                         textEntry::make('department.title'),
                         textEntry::make('duty.title'),
@@ -133,18 +133,18 @@ class ViewEmployee extends ViewRecord
                 Split::make([
 
 
-                    Section::make('bank information')->icon('cart')->iconColor('success')->schema([
+                    Section::make('Salary and Bank Information')->icon('cart')->iconColor('success')->schema([
                         textEntry::make('base_salary')->numeric()->badge(),
                         textEntry::make('benefits.title')->badge()->label('Allowances/Deductions'),
 
-                        textEntry::make('cart'),
+                        textEntry::make('cart')->label('Bank Account'),
                         textEntry::make('bank'),
                         textEntry::make('branch'),
-                        textEntry::make('tin'),
+                        textEntry::make('tin')->label('TIN'),
                     ])->columns(2),
 
                 ])->from('md'),
-                RepeatableEntry::make('emergency_contact')
+                RepeatableEntry::make('Relatives Emergency Contact')
                     ->schema([
                         textEntry::make('name')->badge()->copyable()->inlineLabel(),
                         textEntry::make('relation')->badge()->copyable()->inlineLabel(),

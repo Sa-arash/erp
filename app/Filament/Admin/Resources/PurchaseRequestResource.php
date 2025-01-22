@@ -32,7 +32,7 @@ use Illuminate\Validation\Rules\Unique;
 class PurchaseRequestResource extends Resource
 {
     protected static ?string $model = PurchaseRequest::class;
-
+    protected static ?string $modelLabel = 'Request';
     protected static ?string $navigationGroup = 'Stock Management';
 
     protected static ?string $navigationIcon = 'heroicon-c-document-arrow-down';

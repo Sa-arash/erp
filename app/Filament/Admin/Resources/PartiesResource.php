@@ -20,7 +20,7 @@ use Filament\Tables\Table;
 class PartiesResource extends Resource
 {
     protected static ?string $model = Parties::class;
-    protected static ?string $label='Customers/Vendors';
+    protected static ?string $label='Customer/Vendor';
     protected static ?string $navigationIcon = 'heroicon-s-user-group';
 
     protected static ?int $navigationSort = 1;
