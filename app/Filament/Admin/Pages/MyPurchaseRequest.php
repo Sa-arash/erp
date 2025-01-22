@@ -9,8 +9,7 @@ class MyPurchaseRequest extends Page
 {
 
     protected static string $view = 'filament.admin.pages.my-purchase-request';
-
-    protected static ?string $navigationLabel = "My Purchase Request";
+    protected static ?string $navigationLabel = "My Purchase Requests";
     protected static ?string $navigationIcon = 'heroicon-s-credit-card';
 
 

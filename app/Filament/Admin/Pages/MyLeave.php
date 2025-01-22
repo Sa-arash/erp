@@ -8,7 +8,7 @@ use Filament\Pages\Page;
 class MyLeave extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-arrow-right-on-rectangle';
-
+    protected static ?string $navigationLabel = "My Leaves";
     protected static string $view = 'filament.admin.pages.my-leave';
     protected function getHeaderWidgets(): array
     {

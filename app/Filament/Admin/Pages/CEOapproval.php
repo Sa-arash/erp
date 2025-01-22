@@ -8,6 +8,7 @@ use Filament\Pages\Page;
 class CEOapproval extends Page
 {
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
+    protected static ?string $navigationLabel = "Ceo Approval request";
 
     protected static string $view = 'filament.admin.pages.c-e-oapproval';
 
