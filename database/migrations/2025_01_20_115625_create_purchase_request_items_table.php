@@ -14,28 +14,33 @@ return new class extends Migration
         Schema::create('purchase_request_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->text('description'); 
-            $table->string('quantity'); 
-            $table->float('estimated_unit_cost')->nullable(); 
-            
-            $table->enum('warehouse_decision', ['available_in_stock', 'needs_purchase'])->default('needs_purchase'); 
-            
-            
-            $table->enum('status', [
-                'purchased', 
-                'assigned', 
-                'not_purchased',
-                'rejected' 
-            ])->default('not_purchased'); 
+            $table->text('description')->nullable();
+            $table->string('quantity');
+            $table->float('estimated_unit_cost')->nullable();
+            $table->text('ceo_comment')->nullable();
+            $table->enum('ceo_decision', [
+                'pending',
+                'purchase',
+                'approve',
+                'reject',
+                'assigne',
+            ])->default('pending');
 
-            
+
+            $table->enum('status', [
+                'purchased',
+                'assigned',
+                'pending',
+            ])->default('pending');
+
+
             $table->foreignId('unit_id')->constrained('units')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('purchase_request_id')->constrained('purchase_requests')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('project_id')->nullable()->constrained('projects')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();
-            
-            
-            $table->timestamps(); 
+
+
+            $table->timestamps();
         });
     }
 
