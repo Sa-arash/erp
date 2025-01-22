@@ -20,7 +20,7 @@ return new class extends Migration
             'Requested',
             'FinishedCeo',
             'Finished',
-            'Rejected'
+            'Rejected',
         ])->default('Requested');
         $table->text('comment')->nullable();
         $table->timestamps();
