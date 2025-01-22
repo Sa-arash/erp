@@ -105,12 +105,12 @@ class PurchaseRequestResource extends Resource
                                 ->options(getCompany()->units->pluck('title', 'id'))
                                 ->required(),
                             Forms\Components\TextInput::make('quantity')
-                                ->required()
+                                ->required()->live()
                                 ->mask(RawJs::make('$money($input)'))
                                 ->stripCharacters(','),
 
                             Forms\Components\TextInput::make('estimated_unit_cost')
-                                ->label('Estimated Unit Cost')
+                                ->label('Estimated Unit Cost')->live()
                                 ->numeric()
                                 ->mask(RawJs::make('$money($input)'))
                                 ->stripCharacters(','),
@@ -121,12 +121,14 @@ class PurchaseRequestResource extends Resource
                                 ->label('Project')
                                 ->options(getCompany()->projects->pluck('name', 'id')),
 
-
+                                Placeholder::make('total')
+                                ->content(fn($state , Get $get)=>(((int)str_replace(',','',$get('quantity')))*((int)str_replace(',','',$get('estimated_unit_cost'))))),
+                                
                             Forms\Components\Hidden::make('company_id')
                                 ->default(Filament::getTenant()->id)
                                 ->required(),
                         ])
-                        ->columns(6)
+                        ->columns(7)
 
                         
                         ->columnSpanFull(),

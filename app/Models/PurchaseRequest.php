@@ -40,6 +40,7 @@ class PurchaseRequest extends Model
     {
         return $this->hasMany(PurchaseRequestItem::class, 'purchase_request_id');
     }
+    
 
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
