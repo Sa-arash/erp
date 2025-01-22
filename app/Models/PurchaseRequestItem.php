@@ -49,4 +49,8 @@ class PurchaseRequestItem extends Model
     {
         return $this->belongsTo(Company::class);
     }
+    public function quotationItems(): \Illuminate\Database\Eloquent\Relations\hasMany
+    {
+        return $this->hasMany(QuotationItem::class);
+    }
 }

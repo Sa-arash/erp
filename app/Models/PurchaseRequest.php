@@ -40,7 +40,7 @@ class PurchaseRequest extends Model
     {
         return $this->hasMany(PurchaseRequestItem::class, 'purchase_request_id');
     }
-    
+
 
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
@@ -49,5 +49,9 @@ class PurchaseRequest extends Model
     public function quotations(): \Illuminate\Database\Eloquent\Relations\hasMany
     {
         return $this->hasMany(Quotation::class);
+    }
+    public function quotationItems(): \Illuminate\Database\Eloquent\Relations\hasManyThrough
+    {
+        return $this->hasManyThrough(QuotationItem::class,Quotation::class);
     }
 }

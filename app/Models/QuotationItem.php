@@ -15,6 +15,10 @@ class QuotationItem extends Model
     {
         return $this->belongsTo(PurchaseRequest::class);
     }
+    public function item(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(PurchaseRequestItem::class,'purchase_request_item_id');
+    }
     public function quotation(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Quotation::class);
