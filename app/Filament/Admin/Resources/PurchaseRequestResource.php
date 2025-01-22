@@ -22,6 +22,8 @@ use Filament\Support\Enums\IconSize;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Support\RawJs;
 use Filament\Tables;
+use Filament\Tables\Columns\Summarizers\Sum;
+use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -161,12 +163,18 @@ class PurchaseRequestResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('employee.fullName')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('department.title')
+                Tables\Columns\TextColumn::make('department')
+                ->state(fn($record)=>$record->employee->department->title)
                     ->numeric()
                     ->sortable(),
+                    Tables\Columns\TextColumn::make('location')
+                    ->state(fn($record)=>$record->employee->structure->title)
+                        ->numeric()
+                        ->sortable(),
 
                 Tables\Columns\TextColumn::make('status'),
-                Tables\Columns\TextColumn::make('total')->state(function ($record){
+                Tables\Columns\TextColumn::make('total')
+                ->state(function ($record){
                     $total=0;
                     foreach ($record->items as $item){
                         $total+=$item->quantity *$item->estimated_unit_cost;

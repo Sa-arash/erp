@@ -261,12 +261,12 @@ class EmployeeResource extends Resource
                                         ->preload()
                                         ->searchable(),
                                     Forms\Components\TextInput::make('email')->email()->unique('users', 'email', ignoreRecord: true)->required()->maxLength(255),
-                                    Forms\Components\TextInput::make('password')->hintAction(Forms\Components\Actions\Action::make('generate_password')->action(function (Forms\Set $set) {
+                                    Forms\Components\TextInput::make('password')->autocomplete(false)->hintAction(Forms\Components\Actions\Action::make('generate_password')->action(function (Forms\Set $set) {
                                         $password = Str::password(8);
                                         $set('password', $password);
                                         $set('password_confirmation', $password);
                                     }))->dehydrated(fn(?string $state): bool => filled($state))->revealable()->required(fn(string $operation): bool => $operation === 'create')->configure()->same('password_confirmation')->password(),
-                                    Forms\Components\TextInput::make('password_confirmation')->revealable()->required(fn(string $operation): bool => $operation === 'create')->password()
+                                    Forms\Components\TextInput::make('password_confirmation')->autocomplete(false)->revealable()->required(fn(string $operation): bool => $operation === 'create')->password()
                                 ])->columns(3)->visible(fn($operation) => $operation === "edit"),
                             ])->columns(2),
                         ]),
@@ -474,12 +474,12 @@ class EmployeeResource extends Resource
                             ->preload()
                             ->searchable(),
                         Forms\Components\TextInput::make('email')->email()->unique('users', 'email', ignoreRecord: true)->required()->maxLength(255),
-                        Forms\Components\TextInput::make('password')->hintAction(Forms\Components\Actions\Action::make('generate_password')->action(function (Forms\Set $set) {
+                        Forms\Components\TextInput::make('password')->autocomplete(false)->hintAction(Forms\Components\Actions\Action::make('generate_password')->action(function (Forms\Set $set) {
                             $password = Str::password(8);
                             $set('password', $password);
                             $set('password_confirmation', $password);
                         }))->dehydrated(fn(?string $state): bool => filled($state))->revealable()->required(fn(string $operation): bool => $operation === 'create')->configure()->same('password_confirmation')->password(),
-                        Forms\Components\TextInput::make('password_confirmation')->revealable()->required(fn(string $operation): bool => $operation === 'create')->password()
+                        Forms\Components\TextInput::make('password_confirmation')->autocomplete(false)->revealable()->required(fn(string $operation): bool => $operation === 'create')->password()
                     ])->columns(3),
 
                 ]),

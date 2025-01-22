@@ -44,6 +44,10 @@ class Asset extends Model
     {
         return $this->hasMany(AssetEmployeeItem::class);
     }
+    public function brand()
+    {
+        return $this->belongsTo(Brand::class);
+    }
     public function finance(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(AssetEmployeeItem::class);

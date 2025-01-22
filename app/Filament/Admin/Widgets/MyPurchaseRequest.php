@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Filament\Admin\Resources\PurchaseRequestResource\Pages\ViewPurcheseRequest;
 use App\Models\PurchaseRequest;
 use App\Models\Structure;
 use Filament\Facades\Filament;
@@ -12,10 +13,15 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
+use Filament\Infolists\Components\Fieldset;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\Section as ComponentsSection;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Validation\Rules\Unique;
@@ -31,21 +37,33 @@ class MyPurchaseRequest extends BaseWidget
                 PurchaseRequest::query()->where('employee_id', auth()->user()->id)
             )
             ->columns([
-                Tables\Columns\TextColumn::make('request_date')
+                Tables\Columns\TextColumn::make('')->rowIndex(),
+                Tables\Columns\TextColumn::make('purchase_number')->label('PR NO')->searchable(),
+
+                    Tables\Columns\TextColumn::make('request_date')
                     ->date()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('employee_id')
+                Tables\Columns\TextColumn::make('employee.fullName')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('purchase_number')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('department.title')
+                Tables\Columns\TextColumn::make('department')
+                ->state(fn($record)=>$record->employee->department->title)
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('structure.title')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('status'),
+                    Tables\Columns\TextColumn::make('location')
+                    ->state(fn($record)=>$record->employee->structure->title)
+                        ->numeric()
+                        ->sortable(),
 
+                Tables\Columns\TextColumn::make('status'),
+                Tables\Columns\TextColumn::make('total')->state(function ($record){
+                    $total=0;
+                    foreach ($record->items as $item){
+                        $total+=$item->quantity *$item->estimated_unit_cost;
+                    }
+                    return $total;
+                })->numeric(),
+                Tables\Columns\TextColumn::make('status')
+                    ->sortable(),
                 // Tables\Columns\TextColumn::make('warehouse_status_date')
                 //     ->date()
                 //     ->sortable(),
@@ -72,7 +90,26 @@ class MyPurchaseRequest extends BaseWidget
             ])
 
 
-
+->actions([
+    Action::make('view')->infolist([
+        ComponentsSection::make('request')->schema([
+            TextEntry::make('request_date')->date(),
+            TextEntry::make('purchase_number')->badge(),
+            TextEntry::make('employee.department.title')->label('Department'),
+            TextEntry::make('employee.fullName'),
+            TextEntry::make('employee.structure.title')->label('Location'),
+            TextEntry::make('comment')->label('Location'),
+        ])->columns(6),
+        Fieldset::make('Requested')->relationship('employee')->schema([
+            TextEntry::make('fullName'),
+            TextEntry::make('position.title'),
+            TextEntry::make('structure.title')->label('Duty Station'),
+            ImageEntry::make('signature_pic')
+                ->label('Signature')
+                ->extraImgAttributes(['style' => 'height:60px; width: auto;']),
+        ])->columns(4)
+    ]),
+])
 
             ->headerActions([
                 Action::make('Request Purchase') ->modalWidth(MaxWidth::FitContent  )->form([
@@ -210,5 +247,13 @@ class MyPurchaseRequest extends BaseWidget
             ])
 
         ;
+    }
+
+    public static function getPages(): array
+    {
+        return [
+
+            'view' => ViewPurcheseRequest::route('/{record}/view'),
+        ];
     }
 }

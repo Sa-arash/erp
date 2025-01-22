@@ -39,6 +39,9 @@ class MyAsset extends BaseWidget
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\ImageColumn::make('asset.product.image')->label('Item Photo'),
+                Tables\Columns\TextColumn::make('product')->label('Product')
+                ->state(fn($record)=>$record->asset->product->title."-".$record->asset->brand->title."-".$record->asset->model),
+
                 Tables\Columns\TextColumn::make('asset.product.sku')->label('SKU'),
                 Tables\Columns\TextColumn::make('asset.product.title')->label('Asset Name'),
                 Tables\Columns\TextColumn::make('asset.serial_number')->label('Serial Number'),
