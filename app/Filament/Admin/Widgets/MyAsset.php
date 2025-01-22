@@ -16,6 +16,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Database\Eloquent\Model;
@@ -41,13 +42,22 @@ class MyAsset extends BaseWidget
                 Tables\Columns\ImageColumn::make('asset.product.image')->label('Item Photo'),
                 Tables\Columns\TextColumn::make('product')->label('Product')
                 ->state(fn($record)=>$record->asset->product->title."-".$record->asset->brand->title."-".$record->asset->model),
-
-                Tables\Columns\TextColumn::make('asset.product.sku')->label('SKU'),
-                Tables\Columns\TextColumn::make('asset.product.title')->label('Asset Name'),
+                Tables\Columns\TextColumn::make('warehouse.title')->label('Warehouse/Building')->sortable(),
+                Tables\Columns\TextColumn::make('structure.title')->label('Location')->sortable(),
                 Tables\Columns\TextColumn::make('asset.serial_number')->label('Serial Number'),
                 Tables\Columns\TextColumn::make('assetEmployee.approve_date')->label('Distribution Date')->date(),
                 Tables\Columns\TextColumn::make('return_date')->label('Return Date')->date(),
             ])
+            // ->actions([
+            //     Action::make('view')->infolist([
+            //         TextEntry::make('request_date')->date(),
+            //         TextEntry::make('purchase_number')->badge(),
+            //         TextEntry::make('employee.department.title')->label('Department'),
+            //         TextEntry::make('employee.fullName'),
+            //         TextEntry::make('employee.structure.title')->label('Location'),
+            //         TextEntry::make('comment')->label('Location'),
+            //     ])
+            // ])
             ->bulkActions([
                 Tables\Actions\BulkAction::make('return')->label('Return To Warehouse')
 
