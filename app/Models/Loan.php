@@ -1,0 +1,32 @@
+<?php
+
+namespace App\Models;
+
+use App\Enums\LoanStatus;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Loan extends Model
+{
+    use HasFactory;
+
+    protected $fillable = ['employee_id','loan_code', 'answer_date','request_amount','request_date', 'number_of_installments', 'number_of_payed_installments','status', 'user_id', 'company_id','amount'];
+
+    protected $casts=['status'=>LoanStatus::class];
+    public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    public function employee(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Employee::class);
+    }
+
+    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+
+}
