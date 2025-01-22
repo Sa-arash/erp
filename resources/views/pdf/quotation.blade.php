@@ -99,7 +99,7 @@
         <tbody>
 
         <!-- Empty rows for filling -->
-        @foreach($pr->items->where('status','purchased') as $item)
+        @foreach($pr->items->whereIn('ceo_decision',['purchase','approve']) as $item)
             {{$item}}
             <tr>
                 <td>{{++$i}}</td>

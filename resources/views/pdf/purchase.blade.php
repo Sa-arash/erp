@@ -154,10 +154,12 @@
 <table style="background: #ffffff !important;">
     <tr>
         <td style="text-align: start">
-            <p>Attested by: (Head of Dpt) </p>
+            <p>Attested by: {{$pr->employee?->department?->employee?->fullName}} </p>
         </td>
         <td style="text-align: start">
-            <img src="{!!   public_path('img/images (1).png')!!}" style="border-radius: 50px ; width: 80px;" alt="">
+            @if($pr->employee->department?->employee?->signature_pic)
+            <img src="{!!   public_path('images/'.$pr->employee->department?->employee?->signature_pic)!!}" style="border-radius: 50px ; width: 80px;" alt="">
+            @endif
         </td>
     </tr>
     <tr>

@@ -23,7 +23,7 @@ return new class extends Migration
                 'purchase',
                 'approve',
                 'reject',
-                'assigne',
+                'assign',
             ])->default('pending');
 
 
