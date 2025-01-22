@@ -32,6 +32,7 @@ class MyAsset extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
+        ->emptyStateHeading('No Asset')
             ->query(
                AssetEmployeeItem::query()->where('type',0)->whereHas('assetEmployee',function ($query){
                    return $query->where('employee_id',auth()->user()->employee->id)->where('type','Assigned');
