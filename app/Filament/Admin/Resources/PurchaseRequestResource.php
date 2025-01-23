@@ -124,7 +124,7 @@ class PurchaseRequestResource extends Resource
                                 ->options(getCompany()->projects->pluck('name', 'id')),
 
                                 Placeholder::make('total')
-                                ->content(fn($state , Get $get)=>(((int)str_replace(',','',$get('quantity')))*((int)str_replace(',','',$get('estimated_unit_cost'))))),
+                                ->content(fn($state , Get $get)=>number_format(((int)str_replace(',','',$get('quantity')))*((int)str_replace(',','',$get('estimated_unit_cost'))))),
                                 
                             Forms\Components\Hidden::make('company_id')
                                 ->default(Filament::getTenant()->id)
