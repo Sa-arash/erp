@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Models\Product;
 use App\Models\PurchaseRequest;
 use App\Models\PurchaseRequestItem;
 use Filament\Facades\Filament;
@@ -112,22 +113,24 @@ class CEOapproval extends BaseWidget
                                     ->label('Project')
                                     ->options(getCompany()->projects->pluck('name', 'id')),
 
-                                Placeholder::make('total')
-                                    ->content(fn($state, Get $get) => (((int)str_replace(',', '', $get('quantity'))) * ((int)str_replace(',', '', $get('estimated_unit_cost'))))),
+                                    Placeholder::make('total')
+                                    ->content(fn($state, Get $get) => number_format(((int)str_replace(',', '', $get('quantity'))) * ((int)str_replace(',', '', $get('estimated_unit_cost'))))),
+                                    Placeholder::make('stock in')
+                                    ->content(fn($record, Get $get) => number_format(Product::find($get('product_id'))->assets->count())),
 
                                 TextInput::make('ceo_comment'),
                                 Select::make('ceo_decision')->options([
-                                    'purchase',
-                                    'approve',
-                                    'reject',
-                                    'assigne',
+                                    // 'purchase',
+                                    'approve' => 'approve',
+                                    'reject' =>'reject',
+                                    // 'assigne',
                                 ])->required(),
 
                                 Hidden::make('company_id')
                                     ->default(Filament::getTenant()->id)
                                     ->required(),
                             ])
-                                ->columns(9)
+                                ->columns(10)
 
 
                                 ->columnSpanFull(),
@@ -135,22 +138,22 @@ class CEOapproval extends BaseWidget
 
                         ];
                     }
-                ) ->action(function (array $data, $record): void {
+                )->action(function (array $data, $record): void {
                     // dd($data['items']);
-                   PurchaseRequestItem::query()->where('purchase_request_id',$record->id)->delete();
+                    PurchaseRequestItem::query()->where('purchase_request_id', $record->id)->delete();
 
-                    foreach($data['items'] as $item){
+                    foreach ($data['items'] as $item) {
                         $record->items()->create([
                             ...$item
                         ]);
                     }
                     $record->update([
-                        'status'=>'FinishedCeo',
+                        'status' => 'FinishedCeo',
                     ]);
                     // $record->items()->attach($data);
                     // $record->save();
                 })
-            ]) 
+            ])
         ;
     }
 }
