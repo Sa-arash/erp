@@ -10,6 +10,10 @@ use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Form;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Support\RawJs;
@@ -68,7 +72,18 @@ class QuotationsRelationManager extends RelationManager
             ->recordTitleAttribute('title')
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
-                Tables\Columns\TextColumn::make('party.name')->label('Vendor'),
+                Tables\Columns\TextColumn::make('party.name')->label('Vendor Name'),
+                Tables\Columns\TextColumn::make('date')->label('Date')->date(),
+                Tables\Columns\TextColumn::make('employee.fullName')->label('Logistic'),
+                Tables\Columns\TextColumn::make('employeeOperation.fullName')->label('Operation'),
+                Tables\Columns\ImageColumn::make('file')->label('File'),
+                Tables\Columns\TextColumn::make('total')->numeric()->label('Total Quotation')->state(function ($record){
+                    $total=0;
+                    foreach ($record->quotationItems as $quotationItem){
+                        $total+=$quotationItem->item->quantity *$quotationItem->unit_rate;
+                    }
+                    return number_format($total);
+                }),
             ])
             ->filters([
                 //
@@ -99,8 +114,33 @@ class QuotationsRelationManager extends RelationManager
                 }),
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+               Tables\Actions\ViewAction::make()->infolist(function ($record){
+
+                   return [
+                       Section::make([
+                           TextEntry::make('party.name')->label('Vendor Name'),
+                           TextEntry::make('date')->label('Date')->date(),
+                           TextEntry::make('employee.fullName')->label('Logistic'),
+                           TextEntry::make('employeeOperation.fullName')->label('Operation'),
+                           TextEntry::make('total')->label('Total')->badge()->state(function ($record){
+                               $total=0;
+                               foreach ($record->quotationItems as $quotationItem){
+                                   $total+=$quotationItem->item->quantity *$quotationItem->unit_rate;
+                               }
+                               return number_format($total);
+                           }),
+                           ImageEntry::make('file'),
+                           RepeatableEntry::make('quotationItems')->schema([
+                               TextEntry::make('item')->label('Item')->state(fn($record)=>$record->item->product->title . " (" . $record->item->product->sku . ")"),
+                               TextEntry::make('unit_rate')->label('Unit Rate')->numeric(),
+                               TextEntry::make('item.quantity')->label('Quantity')->numeric(),
+                               TextEntry::make('total')->state(fn($record)=>$record->unit_rate*$record->item->quantity)->numeric(),
+                           ])->columns(4)->columnSpanFull()
+                       ])->columns()
+                   ];
+               }),
+//                Tables\Actions\EditAction::make(),
+//                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
