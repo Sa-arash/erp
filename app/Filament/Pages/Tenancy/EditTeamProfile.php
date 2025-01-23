@@ -98,7 +98,7 @@ class EditTeamProfile extends EditTenantProfile
 
 
 
-                       
+
                     ]),
             ]);
     }

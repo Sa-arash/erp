@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
+use App\Models\Bid;
 use App\Models\Company;
 use App\Models\Employee;
 use App\Models\FinancialPeriod;
@@ -366,5 +367,17 @@ class PdfController extends Controller
             compact('company','pr')
         );
         return $pdf->stream('pdf.quotation');
+    }
+    public function bid($id)
+    {
+        $bid=Bid::query()->with(['company'])->firstWhere('id',$id);
+        $company=$bid->company;
+
+
+        $pdf = Pdf::loadView(
+            'pdf.bid',
+            compact('company','bid')
+        );
+        return $pdf->stream('pdf.bid');
     }
 }

@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\PurchaseRequestResource\Pages;
 use App\Filament\Admin\Resources\PurchaseRequestResource\RelationManagers;
+use App\Models\Bid;
 use App\Models\Employee;
 use App\Models\PurchaseRequest;
 use App\Models\Quotation;
@@ -19,6 +20,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
 use Filament\Support\Enums\MaxWidth;
@@ -122,7 +124,7 @@ class PurchaseRequestResource extends Resource
                                 ->options(getCompany()->projects->pluck('name', 'id')),
 
                             Placeholder::make('total')
-                                ->content(fn($state, Get $get) => (((int)str_replace(',', '', $get('quantity'))) * ((int)str_replace(',', '', $get('estimated_unit_cost'))))),
+                                ->content(fn($state, Get $get) => number_format((((int)str_replace(',', '', $get('quantity'))) * ((int)str_replace(',', '', $get('estimated_unit_cost')))))),
 
                             Forms\Components\Hidden::make('company_id')
                                 ->default(Filament::getTenant()->id)
@@ -217,84 +219,99 @@ class PurchaseRequestResource extends Resource
 
                             Placeholder::make('content')->content(function () use ($record) {
                                 $trs = "";
+                                $totalTrs = "
+                                <tr>
+                                        <td style='border: 1px solid black;padding: 8px;text-align: center'> </td>
+                                        <td style='border: 1px solid black;padding: 8px;text-align: center'> </td>
+                                        <td style='border: 1px solid black;padding: 8px;text-align: center'> </td>
+                                        <td style='border: 1px solid black;padding: 8px;text-align: center'> </td>
+                                ";
                                 $vendors = '';
                                 $ths = '';
                                 foreach ($record->quotations as $quotation) {
                                     $vendor = $quotation->party->name;
-                                    $vendors .= "<th>{$vendor}</th>";
-                                    $ths .= "<th>Unit Cost | Total Cost</th>";
+                                    $vendors .= "<th style='border: 1px solid black;padding: 8px;text-align: center;background-color: #f2f2f2'>{$vendor}</th>";
+                                    $ths .= "<th style='border: 1px solid black;padding: 8px;text-align: center;background-color: #f2f2f2'>Unit Cost | Total Cost</th>";
+                                    $totalSum = 0;
+                                    foreach ($quotation->quotationItems as $quotationItem) {
+                                        $totalSum += $quotationItem->item->quantity * $quotationItem->unit_rate;
+                                    }
+                                    $totalSum = number_format($totalSum);
+                                    $totalTrs .= "<td style='border: 1px solid black;padding: 8px;text-align: center'> {$totalSum}</td>";
                                 }
-
+                                $totalTrs .= "<td style='border: 1px solid black;padding: 8px;text-align: center'> </td></tr>";
                                 foreach ($record->items->whereIn('ceo_decision', ['purchase', 'approve']) as $item) {
+                                    $product = $item->product->title . " (" . $item->product->sku . ")";
                                     $description = $item->description;
                                     $quantity = $item->quantity;
                                     $tr = "<tr>
-                                                 <td>$description</td>
-                                                 <td>{$item->unit->title}</td>
-                                                 <td>$quantity</td>
+                                                 <td style='border: 1px solid black;padding: 8px;text-align: center'>$product</td>
+                                                 <td style='border: 1px solid black;padding: 8px;text-align: center'>$description</td>
+                                                 <td style='border: 1px solid black;padding: 8px;text-align: center'>{$item->unit->title}</td>
+                                                 <td style='border: 1px solid black;padding: 8px;text-align: center'>$quantity</td>
 
                                              ";
                                     foreach ($item->quotationItems as $quotationItem) {
                                         $total = number_format($quotationItem->item->quantity * $quotationItem->unit_rate);
                                         $rate = number_format($quotationItem->unit_rate);
-                                        $tr .= "<td>{$rate} | {$total}</td>";
+                                        $tr .= "<td style='border: 1px solid black;padding: 8px;text-align: center'>{$rate} | {$total}</td>";
                                     }
-                                    $tr .= "<td>AFS</td>";
+                                    $tr .= "<td style='border: 1px solid black;padding: 8px;text-align: center'>AFS</td>";
                                     $tr .= "</tr>";
                                     $trs .= $tr;
                                 }
-                                $table = "
-<style>
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            border: 1px solid black;
-            padding: 8px;
-            text-align: center;
-        }
-        th {
-            background-color: #f2f2f2;
-        }
-    </style>
 
-<table>
+                                $table = "
+<table style='border-collapse: collapse;width: 100%'>
     <thead>
         <tr>
-            <th>Item Description</th>
-            <th>Unit</th>
-            <th>Qty</th>
+            <th style='border: 1px solid black;padding: 8px;text-align: center;background-color: #f2f2f2'>Item</th>
+            <th style='border: 1px solid black;padding: 8px;text-align: center;background-color: #f2f2f2'>Item Description</th>
+            <th style='border: 1px solid black;padding: 8px;text-align: center;background-color: #f2f2f2'>Unit</th>
+            <th style='border: 1px solid black;padding: 8px;text-align: center;background-color: #f2f2f2'>Qty</th>
             $vendors
-            <th>Remarks</th>
+            <th style='border: 1px solid black;padding: 8px;text-align: center;background-color: #f2f2f2'>Remarks</th>
         </tr>
         <tr>
-            <th></th>
-            <th></th>
-            <th></th>
+            <th style='border: 1px solid black;padding: 8px;text-align: center;background-color: #f2f2f2'></th>
+            <th style='border: 1px solid black;padding: 8px;text-align: center;background-color: #f2f2f2'></th>
+            <th style='border: 1px solid black;padding: 8px;text-align: center;background-color: #f2f2f2'></th>
+            <th style='border: 1px solid black;padding: 8px;text-align: center;background-color: #f2f2f2'></th>
           $ths
-            <th></th>
+            <th style='border: 1px solid black;padding: 8px;text-align: center;background-color: #f2f2f2'></th>
         </tr>
     </thead>
     <tbody>
         {$trs}
+        $totalTrs
     </tbody>
 </table>";
                                 return new HtmlString($table);
                             })->columnSpanFull(),
-                                Select::make('quotation_id')->options(function ()use($record){
-                                    $data=[];
-                                    $quotations= Quotation::query()->where('purchase_request_id',$record->id)->get();
-                                    foreach ($quotations as $quotation){
-                                        $data[$quotation->id]=$quotation->party->name;
-                                    }
-                                    return $data;
+                            Select::make('quotation_id')->options(function () use ($record) {
+                                $data = [];
+                                $quotations = Quotation::query()->where('purchase_request_id', $record->id)->get();
+                                foreach ($quotations as $quotation) {
+                                    $data[$quotation->id] = $quotation->party->name;
+                                }
+                                return $data;
 
-                                })->required()->label('Quotation Selected')->preload()->searchable()->columnSpanFull(),
-                                Select::make('position_procurement_controller')->options(Employee::query()->where('company_id',getCompany()->id)->pluck('fullName','id'))->preload()->searchable(),
-                                Select::make('procurement_committee_members')->options(Employee::query()->where('company_id',getCompany()->id)->pluck('fullName','id'))->preload()->searchable()
+                            })->required()->label('Quotation Selected')->preload()->searchable()->columnSpanFull(),
+                            Select::make('position_procurement_controller')->multiple()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->preload()->searchable(),
+                            Select::make('procurement_committee_members')->multiple()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->preload()->searchable()
                         ])->columns(2)
                     ];
+                })->action(function ($data, $record) {
+                    $data['company_id'] = getCompany()->id;
+                    $data['purchase_request_id'] = $record->id;
+                    $quotation = Quotation::query()->firstWhere('id', $data['quotation_id']);
+                    $totalSum = 0;
+                    foreach ($quotation->quotationItems as $quotationItem) {
+                        $totalSum += $quotationItem->item->quantity * $quotationItem->unit_rate;
+                    }
+                    $data['total_cost'] = $totalSum;
+                    Bid::query()->create($data);
+                    Notification::make('make bid')->success()->title('Created Successfully')->send()->sendToDatabase(auth()->user());
                 })->modalWidth(MaxWidth::Full),
                 Tables\Actions\Action::make('prPDF')->label('PR PDF')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.purchase', ['id' => $record->id])),
                 Tables\Actions\Action::make('prQuotation')->color('warning')->label('Qu PDF')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.quotation', ['id' => $record->id])),
