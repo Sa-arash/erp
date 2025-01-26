@@ -38,15 +38,14 @@ class DatabaseSeeder extends Seeder
 
         User::factory()->create([
             'id' => 1,
-            'name' => 'Test User',
+            'name' => 'Admin',
             'email' => 'admin@gmail.com',
             'password' => 'admin',
         ]);
         Company::factory()->create([
             'id' => 1,
-            'title' => 'test user fac',
+            'title' => 'Company erp',
             'user_id' => 1,
-            'description' => ' test company ',
         ]);
         CompanyUser::factory()->create([
             'user_id' => 1,
