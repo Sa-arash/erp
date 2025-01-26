@@ -6,36 +6,17 @@ use App\Filament\Admin\Resources\ProductResource\Pages;
 use App\Filament\Admin\Resources\ProductResource\RelationManagers;
 use App\Filament\Clusters\StackManagementSettings;
 use App\Models\Account;
-use App\Models\Inventory;
 use App\Models\Product;
-use App\Models\ProductCategory;
-use App\Models\Brand;
 use App\Models\Transaction;
-use App\Models\Unit;
-use App\Models\ProductSubCategory;
-use Closure;
-use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
-use Filament\Forms\Components\KeyValue;
-use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Wizard;
-use Filament\Forms\Components\Wizard\Step;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Resources\Resource;
-use Filament\Support\RawJs;
 use Filament\Tables;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Validation\Rules\Unique;
-use Illuminate\Validation\ValidationException;
-
-use function Laravel\Prompts\select;
 
 class ProductResource extends Resource
 {
@@ -52,9 +33,14 @@ class ProductResource extends Resource
                 Section::make([
                     Forms\Components\TextInput::make('title')->label('Product Name')->required()->maxLength(255),
                     Forms\Components\TextInput::make('sku')->label(' SKU')
-                    ->unique(modifyRuleUsing: function (Unique $rule) {
-                        return $rule->where('company_id', getCompany()->id);
-                    })
+                        ->unique(modifyRuleUsing: function (Unique $rule) {
+                            return $rule->where('company_id', getCompany()->id);
+                        })->default(function () {
+                            $product = Product::query()->where('company_id',getCompany()->id)->latest()->first();
+                            if ($product) {
+                                return generateNextCodeProduct($product->sku);
+                            }
+                        })
                     ->required()->maxLength(255),
                     Select::make('product_type')->searchable()->options(['consumable' => 'consumable', 'unConsumable' => 'unConsumable'])->default('consumable'),
                 ])->columns(3),
