@@ -95,7 +95,7 @@ class PurchaseOrderResource extends Resource
                                 return $item;
                             })->toArray();
 
-                            // dd($items);
+                            dd($items);
                             if (isset($items)) {
                                 $set('RequestedItems', $items);
                             }
