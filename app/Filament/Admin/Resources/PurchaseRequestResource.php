@@ -38,6 +38,8 @@ use Nette\Utils\Html;
 class PurchaseRequestResource extends Resource
 {
     protected static ?string $model = PurchaseRequest::class;
+
+    protected static ?string $pluralLabel = 'Purchase Request';
     protected static ?string $modelLabel = 'Request';
     protected static ?string $navigationGroup = 'Stock Management';
 
@@ -166,7 +168,7 @@ class PurchaseRequestResource extends Resource
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('location')
-                    ->state(fn($record) => $record->employee->structure->title)
+                    ->state(fn($record) => $record->employee->structure?->title)
                     ->numeric()
                     ->sortable(),
 

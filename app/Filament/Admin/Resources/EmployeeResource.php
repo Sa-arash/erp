@@ -290,7 +290,7 @@ class EmployeeResource extends Resource
                         ->required()
                         ->maxLength(255),
                     Forms\Components\DatePicker::make('birthday')->label('Date Birthday'),
-                    Forms\Components\TextInput::make('phone_number')->tel()->required()->maxLength(255),
+                    Forms\Components\TextInput::make('phone_number')->required()->maxLength(255),
                     Forms\Components\TextInput::make('NIC')->label('NIC')->maxLength(255),
                     Forms\Components\Select::make('marriage')->label('Marital Status')->options(['divorced' => 'Divorced', 'widowed' => 'Widowed', 'married' => 'Married', 'single' => 'Single',])->searchable()->preload(),
                     Forms\Components\TextInput::make('count_of_child')->label('Number Of Child')
