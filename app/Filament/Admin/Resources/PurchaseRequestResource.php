@@ -164,7 +164,7 @@ class PurchaseRequestResource extends Resource
                 Tables\Columns\TextColumn::make('employee.fullName')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('department')
-                    ->state(fn($record) => $record->employee->department->title)
+                    ->state(fn($record) => $record->employee->department?->title)
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('location')
