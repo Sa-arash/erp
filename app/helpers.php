@@ -494,6 +494,37 @@ function generateNextCode($code): string
     return str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
 }
 
+function generateNextCodePO($code): string
+{
+
+    $lastNumber = $code;
+    $lastNumber = (int)$lastNumber;
+    $nextNumber = $lastNumber + 1;
+
+    return str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+}
+
+function generateNextCodeProduct($code): string
+{
+    if (preg_match('/^([A-Za-z]+)(\d+)$/', $code, $matches)) {
+
+        $prefix = $matches[1]; // پیشوند (مثلاً IT یا هر چیز دیگر)
+        $number = $matches[2]; // عدد (مثلاً 0001 یا 123)
+
+        // افزایش عدد
+        $nextNumber = intval($number) + 1;
+
+        // حفظ طول عدد با اضافه کردن صفرهای پیش‌رو
+        $nextNumberFormatted = str_pad($nextNumber, strlen($number), '0', STR_PAD_LEFT);
+
+        // ترکیب پیشوند و عدد جدید
+        return $prefix . $nextNumberFormatted;
+    } else {
+        return '0001';
+    }
+}
+
+
 function generateNextCodeDote($code): string
 {
     // تقسیم کد به بخش‌های مختلف بر اساس نقطه

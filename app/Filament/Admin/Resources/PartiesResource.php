@@ -230,14 +230,20 @@ class PartiesResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('print')->label('')
+                Tables\Actions\Action::make('print')->label('')->visible(function (){
+                   return FinancialPeriod::query()->where('company_id', getCompany()->id)->first() !== null;
+                })
                 ->icon('heroicon-s-printer')
-                ->url(fn($record) => route('pdf.account', [
-                    'period' => FinancialPeriod::query()->where('company_id', getCompany()->id)->first()->id,
-                    'account' =>($record->accountVendor?->id && $record->accountCustomer?->id)
-                    ? $record->accountVendor->id . "-" . $record->accountCustomer->id
-                    : ($record->accountVendor?->id ?? $record->accountCustomer?->id),
-                ])),
+                ->url(function($record){
+                    if (FinancialPeriod::query()->where('company_id', getCompany()->id)->first()){
+                        route('pdf.account', [
+                            'period' => FinancialPeriod::query()->where('company_id', getCompany()->id)->first()?->id,
+                            'account' =>($record->accountVendor?->id && $record->accountCustomer?->id)
+                                ? $record->accountVendor->id . "-" . $record->accountCustomer->id
+                                : ($record->accountVendor?->id ?? $record->accountCustomer?->id),
+                        ]);
+                    }
+                }),
 //                Tables\Actions\DeleteAction::make()->hidden(fn($record)=>$record->account->tra)
 
 

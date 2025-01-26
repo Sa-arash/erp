@@ -59,25 +59,22 @@ class PurchaseRequestResource extends Resource
                         ->default(fn() => auth()->user()->employee->id),
 
                     Forms\Components\TextInput::make('purchase_number')
-                        ->label('PR Number')
+                        ->label('PR Number')->default(function (){
+                           $puncher= PurchaseRequest::query()->where('company_id',getCompany()->id)->latest()->first();
+                           if ($puncher){
+                               return  generateNextCodePO($puncher->purchase_number);
+                           }else{
+                               return "0001";
+                           }
+                        })
                         ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
                             return $rule->where('company_id', getCompany()->id);
                         })
                         ->required()
                         ->numeric(),
 
-                    Forms\Components\DatePicker::make('request_date')
-                        ->default(now())
-                        ->label('Request Date')
-                        ->required(),
-
-
-                    Forms\Components\Hidden::make('status')
-                        ->label('Status')
-                        ->default('Requested')
-                        ->required(),
-
-
+                    Forms\Components\DatePicker::make('request_date')->default(now())->label('Request Date')->required(),
+                    Forms\Components\Hidden::make('status')->label('Status')->default('Requested')->required(),
                     Forms\Components\TextInput::make('description')
                         ->label('Description'),
 
@@ -157,21 +154,10 @@ class PurchaseRequestResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('purchase_number')->label('PR NO')->searchable(),
-
-                Tables\Columns\TextColumn::make('request_date')
-                    ->date()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('employee.fullName')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('department')
-                    ->state(fn($record) => $record->employee->department?->title)
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('location')
-                    ->state(fn($record) => $record->employee->structure?->title)
-                    ->numeric()
-                    ->sortable(),
-
+                Tables\Columns\TextColumn::make('request_date')->date()->sortable(),
+                Tables\Columns\TextColumn::make('employee.fullName')->searchable(),
+                Tables\Columns\TextColumn::make('department')->state(fn($record) => $record->employee->department->title)->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('location')->state(fn($record) => $record->employee?->structure?->title)->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('status'),
                 Tables\Columns\TextColumn::make('total')
                     ->state(function ($record) {
@@ -211,9 +197,7 @@ class PurchaseRequestResource extends Resource
             ->actions([
                 Tables\Actions\Action::make('bid')->form(function ($record) {
 
-                    foreach ($record->quotations as $quotation) {
 
-                    }
                     return [
                         Section::make([
                             Forms\Components\DatePicker::make('opening_date')->default(now())->required(),
@@ -242,7 +226,7 @@ class PurchaseRequestResource extends Resource
                                     $totalTrs .= "<td style='border: 1px solid black;padding: 8px;text-align: center'> {$totalSum}</td>";
                                 }
                                 $totalTrs .= "<td style='border: 1px solid black;padding: 8px;text-align: center'> </td></tr>";
-                                foreach ($record->items->whereIn('ceo_decision', ['purchase', 'approve']) as $item) {
+                                foreach ($record->items->where('status', 'purchased') as $item) {
                                     $product = $item->product->title . " (" . $item->product->sku . ")";
                                     $description = $item->description;
                                     $quantity = $item->quantity;
