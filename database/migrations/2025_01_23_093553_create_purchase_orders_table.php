@@ -15,15 +15,24 @@ return new class extends Migration
             $table->id();
             // $table->string('vendor_contact', 100);
             // $table->text('vendor_address'); 
+            $table->enum('payment_type', ['Cheque','Cash','BankTransfer','Other']);
             $table->date('date_of_delivery'); 
             $table->string('location_of_delivery', 255); 
             $table->string('project_and_exp_code', 100);
             $table->string('po_no', 50);
+            $table->string('purchase_orders_number')->unique();
             $table->string('currency', 10);
             $table->decimal('exchange_rate', 10, 2)->nullable(); 
             $table->date('date_of_po');
+            $table->enum('status', [
+                'pending',
+                'approved',
+            ])->default('pending');
             
-            
+            $table->foreignId('prepared_by')->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('checked_by_finance')->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('approved_by')->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
+
             $table->foreignId('bid_id')->constrained('bids')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('quotation_id')->constrained('quotations')->cascadeOnDelete()->cascadeOnUpdate();
 
