@@ -143,6 +143,8 @@ class CEOapproval extends BaseWidget
                     PurchaseRequestItem::query()->where('purchase_request_id', $record->id)->delete();
 
                     foreach ($data['items'] as $item) {
+                      
+                        $item['ceo_decision'] == 'reject'? $item['status']='rejected' :'' ;
                         $record->items()->create([
                             ...$item
                         ]);
