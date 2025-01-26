@@ -24,7 +24,7 @@ return new class extends Migration
                 'approve',
                 'reject',
                 // 'assign',
-            ])->default('pending');
+            ])->nullable();
 
 
             $table->enum('status', [
