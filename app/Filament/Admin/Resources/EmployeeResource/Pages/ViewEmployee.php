@@ -3,32 +3,58 @@
 namespace App\Filament\Admin\Resources\EmployeeResource\Pages;
 
 use App\Filament\Admin\Resources\EmployeeResource;
+use App\Models\Separation;
 use Filament\Actions;
+use Filament\Forms\Components\DatePicker;
 use Filament\Infolists\Components\Actions\Action;
+use Filament\Infolists\Components\Fieldset;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\Split;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Illuminate\Contracts\Support\Htmlable;
 
-class ViewEmployee extends ViewRecord
+class  ViewEmployee extends ViewRecord
 {
-
     protected static string $resource = EmployeeResource::class;
     public function getTitle(): string|Htmlable
     {
         return $this->record->fullName;
     }
 
-
-
     protected function getHeaderActions(): array
     {
         return [
-            Actions\EditAction::make()->color('success')
+            Actions\EditAction::make()->color('success'),
+            Actions\Action::make('separation')->form([
+                DatePicker::make('date')->required()
+            ])->action(function ($data){
+                $data['employee_id']=$this->record->id;
+                $data['company_id']=getCompany()->id;
+                $data['approved_by']=auth()->user()->employee->id;
+                Separation::query()->create($data);
+                Notification::make('success')->title('Separation')->success()->send()->sendToDatabase(auth()->user());
+            })->color('danger')->hidden(fn($record)=>isset($record->separation)),
+            Actions\Action::make('View Separation')->label('View Separation')->infolist(function ($record){
+                return [
+                    Section::make([
+                        TextEntry::make('fullName'),
+                        TextEntry::make('date'),
+                        Fieldset::make('separation')->relationship('separation')->schema([
+                            RepeatableEntry::make('comments_signature')->schema([
+                                TextEntry::make('employee'),
+                                TextEntry::make('comment'),
+                                TextEntry::make('signature'),
+                                TextEntry::make('stats'),
+                            ])
+                        ])
+                    ])->columns()
+                ];
+            })
         ];
     }
 

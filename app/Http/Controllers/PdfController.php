@@ -380,4 +380,16 @@ class PdfController extends Controller
         );
         return $pdf->stream('pdf.bid');
     }
+    public function separation($id)
+    {
+        $employee=Employee::query()->firstWhere('id',$id);
+        $company=$employee->company;
+
+
+        $pdf = Pdf::loadView(
+            'pdf.separation',
+            compact('company','employee')
+        );
+        return $pdf->stream('pdf.separation');
+    }
 }

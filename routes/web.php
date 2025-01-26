@@ -57,6 +57,7 @@ Route::get('/pdf/payrolls/{ids}',[\App\Http\Controllers\PdfController::class,'pa
 Route::get('/pdf/purchase/{id}',[\App\Http\Controllers\PdfController::class,'purchase'])->name('pdf.purchase');
 Route::get('/pdf/quotation/{id}',[\App\Http\Controllers\PdfController::class,'quotation'])->name('pdf.quotation');
 Route::get('/pdf/bid/{id}',[\App\Http\Controllers\PdfController::class,'bid'])->name('pdf.bid');
+Route::get('/pdf/separation/{id}',[\App\Http\Controllers\PdfController::class,'separation'])->name('pdf.separation');
 
 
 Route::get('account',function (){
