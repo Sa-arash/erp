@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources;
 use App\Filament\Admin\Resources\PurchaseOrderResource\Pages;
 use App\Filament\Admin\Resources\PurchaseOrderResource\RelationManagers;
 use App\Models\PurchaseOrder;
+use App\Models\PurchaseRequest;
 use App\Models\PurchaseRequestItem;
 use Closure;
 use Filament\Facades\Filament;
@@ -41,7 +42,14 @@ class PurchaseOrderResource extends Resource
                         ->options(getCompany()->employees->pluck('fullName', 'id'))
                         ->default(fn() => auth()->user()->employee->id),
 
-                    Forms\Components\TextInput::make('purchase_orders_number')->label('Po Number')
+                    Forms\Components\TextInput::make('purchase_orders_number')->default(function (){
+                        $puncher= PurchaseOrder::query()->where('company_id',getCompany()->id)->latest()->first();
+                        if ($puncher){
+                            return  generateNextCodePO($puncher->purchase_orders_number);
+                        }else{
+                            return "0001";
+                        }
+                    })->label('Po Number')
                         ->required()
                         ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
                             return $rule->where('company_id', getCompany()->id);
@@ -96,7 +104,7 @@ class PurchaseOrderResource extends Resource
                         ->required(),
                     Forms\Components\Select::make('vendor_id')->label('Vendor')
                     ->options(getCompany()->parties->where('type','vendor')->pluck('name', 'id'))
-                        
+
                         ->searchable()
                         ->preload()
                         ->required(),
