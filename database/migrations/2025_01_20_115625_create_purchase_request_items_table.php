@@ -19,11 +19,11 @@ return new class extends Migration
             $table->float('estimated_unit_cost')->nullable();
             $table->text('ceo_comment')->nullable();
             $table->enum('ceo_decision', [
-                'pending',
-                'purchase',
+                // 'pending',
+                // 'purchase',
                 'approve',
                 'reject',
-                'assign',
+                // 'assign',
             ])->default('pending');
 
 
@@ -31,6 +31,7 @@ return new class extends Migration
                 'purchased',
                 'assigned',
                 'pending',
+                'rejected',
             ])->default('pending');
 
 
