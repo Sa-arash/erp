@@ -17,13 +17,13 @@ return new class extends Migration
             $table->morphs('approvable');
             $table->dateTime('approve_date')->nullable();
             $table->text('comment')->nullable();
-            $table->enum('status', ['approve', 'notApprove', 'pending'])->default('pending');
-            
-            
-            
+            $table->enum('status', ['Approve', 'NotApprove', 'Pending'])->default('Pending');
+
+
+
             $table->foreignId('employee_id')->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();
-            
+
             $table->timestamps();
         });
     }
