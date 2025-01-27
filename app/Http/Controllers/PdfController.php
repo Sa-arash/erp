@@ -12,6 +12,7 @@ use App\Models\Invoice;
 use App\Models\PurchaseRequest;
 use App\Models\TakeOut;
 use App\Models\Transaction;
+use App\Models\VisitorRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use \niklasravnsborg\LaravelPdf\Facades\Pdf;
@@ -405,5 +406,17 @@ class PdfController extends Controller
             compact('company','takeOut')
         );
         return $pdf->stream('pdf.takeOut');
+    } 
+     public function requestVisit($id)
+    {
+        $requestVisit=VisitorRequest::query()->firstWhere('id',$id);
+        $company=$requestVisit->company;
+
+
+        $pdf = Pdf::loadView(
+            'pdf.requestVisit',
+            compact('company','requestVisit')
+        );
+        return $pdf->stream('pdf.requestVisit');
     }
 }

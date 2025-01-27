@@ -59,6 +59,7 @@ Route::get('/pdf/quotation/{id}',[\App\Http\Controllers\PdfController::class,'qu
 Route::get('/pdf/bid/{id}',[\App\Http\Controllers\PdfController::class,'bid'])->name('pdf.bid');
 Route::get('/pdf/separation/{id}',[\App\Http\Controllers\PdfController::class,'separation'])->name('pdf.separation');
 Route::get('/pdf/takeOut/{id}',[\App\Http\Controllers\PdfController::class,'takeOut'])->name('pdf.takeOut');
+Route::get('/pdf/requestVisit/{id}',[\App\Http\Controllers\PdfController::class,'requestVisit'])->name('pdf.requestVisit');
 
 
 Route::get('account',function (){
