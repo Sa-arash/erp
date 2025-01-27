@@ -277,4 +277,10 @@ class Company extends Model implements HasAvatar, HasName
         return $this->hasMany(TakeOut::class);
     }
 
+    public function visitorRequests(): HasMany
+    {
+        return $this->hasMany(VisitorRequest::class);
+    }
+
+
 }
