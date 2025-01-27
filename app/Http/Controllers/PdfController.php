@@ -22,7 +22,7 @@ class PdfController extends Controller
     public function payroll($id)
     {
 
-        $payroll = Payroll::query()->with('employee', 'itemAllowances', 'itemDeductions', 'benefits')->firstWhere('id', $id);
+        $payroll = Payroll::query()->with('employee', 'itemAllowances', 'itemDeductions', 'benefits')->findOrFail('id', $id);
 
         $pdf = Pdf::loadView('pdf.payroll', compact('payroll'));
         return $pdf->stream('pdf.payroll');
@@ -327,7 +327,7 @@ class PdfController extends Controller
 
     public function employee($id)
     {
-        $employee =  Employee::query()->firstWhere('id', $id);
+        $employee =  Employee::query()->findOrFail('id', $id);
         $pdf = Pdf::loadView(
             'pdf.employee',
             compact('employee')
@@ -348,7 +348,7 @@ class PdfController extends Controller
 
     public function purchase($id)
     {
-        $pr=PurchaseRequest::query()->with(['company','items'])->firstWhere('id',$id);
+        $pr=PurchaseRequest::query()->with(['company','items'])->findOrFail('id',$id);
         $company=$pr->company;
 
         $pdf = Pdf::loadView(
@@ -359,7 +359,7 @@ class PdfController extends Controller
     }
     public function quotation($id)
     {
-        $pr=PurchaseRequest::query()->with(['company','items'])->firstWhere('id',$id);
+        $pr=PurchaseRequest::query()->with(['company','items'])->findOrFail('id',$id);
         $company=$pr->company;
 
 
@@ -371,7 +371,7 @@ class PdfController extends Controller
     }
     public function bid($id)
     {
-        $bid=Bid::query()->with(['company'])->firstWhere('id',$id);
+        $bid=Bid::query()->with(['company'])->findOrFail('id',$id);
         $company=$bid->company;
 
 
@@ -383,7 +383,7 @@ class PdfController extends Controller
     }
     public function separation($id)
     {
-        $employee=Employee::query()->firstWhere('id',$id);
+        $employee=Employee::query()->findOrFail('id',$id);
         $company=$employee->company;
 
 
@@ -395,7 +395,7 @@ class PdfController extends Controller
     }
     public function takeOut($id)
     {
-        $takeOut=TakeOut::query()->firstWhere('id',$id);
+        $takeOut=TakeOut::query()->findOrFail($id);
         $company=$takeOut->company;
 
 

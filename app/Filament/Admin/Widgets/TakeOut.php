@@ -19,7 +19,7 @@ class TakeOut extends BaseWidget
     {
         return $table
             ->query(
-                \App\Models\TakeOut::query()->where('employee_id', getEmployee()->id)
+                \App\Models\TakeOut::query()->where('employee_id', getEmployee()->id)->orderBy('id','desc')
             )->headerActions([
             ])
             ->columns([
