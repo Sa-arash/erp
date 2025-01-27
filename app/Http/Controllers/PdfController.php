@@ -348,7 +348,7 @@ class PdfController extends Controller
 
     public function purchase($id)
     {
-        $pr=PurchaseRequest::query()->with(['company','items'])->findOrFail('id',$id);
+        $pr=PurchaseRequest::query()->with(['company','items'])->findOrFail($id);
         $company=$pr->company;
 
         $pdf = Pdf::loadView(
@@ -359,7 +359,7 @@ class PdfController extends Controller
     }
     public function quotation($id)
     {
-        $pr=PurchaseRequest::query()->with(['company','items'])->findOrFail('id',$id);
+        $pr=PurchaseRequest::query()->with(['company','items'])->findOrFail($id);
         $company=$pr->company;
 
 
@@ -371,19 +371,20 @@ class PdfController extends Controller
     }
     public function bid($id)
     {
-        $bid=Bid::query()->with(['company'])->findOrFail('id',$id);
+        $bid=Bid::query()->with(['company'])->findOrFail($id);
         $company=$bid->company;
+        $PR=$bid->purchaseRequest;
 
 
         $pdf = Pdf::loadView(
             'pdf.bid',
-            compact('company','bid')
+            compact('company','bid','PR')
         );
         return $pdf->stream('pdf.bid');
     }
     public function separation($id)
     {
-        $employee=Employee::query()->findOrFail('id',$id);
+        $employee=Employee::query()->findOrFail($id);
         $company=$employee->company;
 
 
@@ -395,7 +396,7 @@ class PdfController extends Controller
     }
     public function takeOut($id)
     {
-        $takeOut=TakeOut::query()->findOrFail($id);
+                $takeOut=TakeOut::query()->findOrFail($id);
         $company=$takeOut->company;
 
 
