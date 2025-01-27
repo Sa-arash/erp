@@ -18,7 +18,7 @@ return new class extends Migration
             $table->dateTime('approve_date')->nullable();
             $table->text('comment')->nullable();
             $table->enum('status', ['Approve', 'NotApprove', 'Pending'])->default('Pending');
-
+            $table->string('position');
 
 
             $table->foreignId('employee_id')->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();

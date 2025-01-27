@@ -102,30 +102,25 @@
         <h1>Gate Pass</h1>
     </div>
 
-    <div class="">
-        <table>
-            <tr>
-                <td>From:</td>
-                <td>{{$takeOut->from}}</td>
-                <td>To:</td>
-                <td>{{$takeOut->to}}</td>
+    <div style="border: 0!important;">
+        <table style="border: 0!important;">
+            <tr style="border: 0!important;">
+                <td style="border: 0!important;">From:{{$takeOut->from}}</td>
+                <td style="border: 0!important;">To: {{$takeOut->to}}</td>
+
             </tr>
-            <tr>
-                <td>Requestor's Name:</td>
-                <td>{{$takeOut->employee->fullName}}</td>
-                <td>Badge Number:</td>
-                <td>{{$takeOut->employee->ID_number}}</td>
-            </tr>
-            <tr>
-                <td>Designation:</td>
-                <td>{{$takeOut->employee->position?->title}}</td>
-                <td>Department:</td>
-                <td>{{$takeOut->employee->department?->title}}</td>
+            <tr style="border: 0!important;">
+                <td style="border: 0!important;">Requestor's Name: {{$takeOut->employee->fullName}}</td>
+                <td style="border: 0!important;">Badge Number: {{$takeOut->employee->ID_number}}</td>
+            </tr >
+            <tr style="border: 0!important;">
+                <td style="border: 0!important;">Designation: {{$takeOut->employee->position?->title}}</td>
+                <td style="border: 0!important;">Department:{{$takeOut->employee->department?->title}}</td>
             </tr>
         </table>
     </div>
 
-    <table class="">
+    <table style="border: 0!important;">
         <thead>
         <tr>
             <th>SN</th>
@@ -136,7 +131,7 @@
         <tbody>
         @foreach($takeOut->items as $item)
         <tr>
-                <td>1</td>
+            <td>1</td>
             <td>{{$item->asset->product->title." (".$item->asset->product->sku." )".$item->asset->brand->title."  " .$item->asset->model}}</td>
             <td>{{$item->remarks}}</td>
         </tr>
@@ -167,14 +162,20 @@
         <thead>
         <tr>
             <th>Name</th>
+            <th>Designation</th>
             <th>Signature</th>
         </tr>
         </thead>
         <tbody>
-        <tr>
-            <td>{{$takeOut->headDepartment?->fullName}}</td>
-            <td >@if($takeOut->headDepartment?->signature_pic) <img src="{{public_path('images/'.$takeOut->headDepartment?->signature_pic)}}" style="width: 100px;height: 60px" alt=""> @endif</td>
-        </tr>
+        @foreach($takeOut->approvals->where('status','Approve') as $approve)
+            <tr>
+                <td>{{$approve->employee->fullName}}</td>
+                <td>{{$approve->position}}</td>
+                <td>@if($approve->employee?->signature_pic) <img
+                        src="{{public_path('images/'.$approve->employee?->signature_pic)}}"
+                        style="width: 100px;height: 60px" alt=""> @endif</td>
+            </tr>
+        @endforeach
 
         </tbody>
     </table>

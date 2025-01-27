@@ -188,7 +188,8 @@ class MyAsset extends BaseWidget
                     if ($employee->department->employee_id){
                         $takeOut->approvals()->create([
                             'employee_id'=>$employee->department->employee_id,
-                            'company_id'=>$id
+                            'company_id'=>$id,
+                            'position'=>'Head Department'
                         ]);
                     }
 
