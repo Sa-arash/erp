@@ -17,9 +17,9 @@ class TakeOut extends Page
         ];
     }
 
-    public static function getNavigationBadge():?string
-    {
-
-        return \App\Models\TakeOut::query()->where('head_department_id',null)->where('employee_id', getEmployee()->id)->count();
-    }
+//    public static function getNavigationBadge():?string
+//    {
+//
+//        return \App\Models\TakeOut::query()->where('head_department_id',null)->where('employee_id', getEmployee()->id)->count();
+//    }
 }

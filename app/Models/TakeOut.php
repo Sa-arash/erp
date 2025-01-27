@@ -21,12 +21,10 @@ class TakeOut extends Model
     {
         return $this->belongsTo(Employee::class);
     }
-    public function headDepartment(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+
+    public function approvals(): \Illuminate\Database\Eloquent\Relations\MorphMany
     {
-        return $this->belongsTo(Employee::class);
+        return $this->morphMany(Approval::class,'approvable','approvable_type','approvable_id');
     }
-    public function securityEmployee(): \Illuminate\Database\Eloquent\Relations\BelongsTo
-    {
-        return $this->belongsTo(Employee::class);
-    }
+
 }

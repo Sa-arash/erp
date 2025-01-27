@@ -503,6 +503,15 @@ function generateNextCodePO($code): string
 
     return str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
 }
+function generateNextCodeAsset($code): string
+{
+
+    $lastNumber = $code;
+    $lastNumber = (int)$lastNumber;
+    $nextNumber = $lastNumber + 1;
+
+    return str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+}
 
 function generateNextCodeProduct($code): string
 {

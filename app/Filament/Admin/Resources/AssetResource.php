@@ -52,7 +52,14 @@ class AssetResource extends Resource
                             ])->getKey();
                         }),
                     Forms\Components\TextInput::make('model')->nullable()->label('Model'),
-                    Forms\Components\TextInput::make('number')->required()->label('Asset Number')->maxLength(50),
+                    Forms\Components\TextInput::make('number')->default(function (){
+                        $asset=Asset::query()->where('company_id',getCompany()->id)->latest()->first();
+                        if ($asset){
+                          return  generateNextCodeAsset($asset->number);
+                        }else{
+                            return "0001";
+                        }
+                    })->required()->numeric()->label('Asset Number')->maxLength(50),
                     Forms\Components\TextInput::make('serial_number')->label('Serial Number')->maxLength(50),
                     Forms\Components\TextInput::make('price')->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->required()->numeric()->label('Purchase Price'),
                     Forms\Components\Select::make('warehouse_id')->live()->label('Warehouse/Building')->options(getCompany()->warehouses()->pluck('title', 'id'))->required()->searchable()->preload(),

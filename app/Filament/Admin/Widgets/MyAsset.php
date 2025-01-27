@@ -134,11 +134,11 @@ class MyAsset extends BaseWidget
                 Tables\Actions\BulkAction::make('Take Out')->modalWidth(MaxWidth::SixExtraLarge)->color('warning')->form(function ($records) {
                     return [
                         Section::make([
-                            TextInput::make('from')->required()->maxLength(255),
+                            TextInput::make('from')->default(getEmployee()->structure?->title)->required()->maxLength(255),
                             TextInput::make('to')->required()->maxLength(255),
-                            DatePicker::make('date')->columnSpanFull()->default(now())->required(),
+                            DatePicker::make('date')->default(now())->required(),
                             Textarea::make('reason')->columnSpanFull()->required(),
-                            ToggleButtons::make('status')->default('Returnable')->live()->required()->grouped()->options(['Returnable' => 'Returnable', 'Non-Returnable' => 'Non-Returnable']),
+                            ToggleButtons::make('status')->default('Returnable')->colors(['Returnable' => 'success', 'Non-Returnable' => 'danger'])->live()->required()->grouped()->options(['Returnable' => 'Returnable', 'Non-Returnable' => 'Non-Returnable']),
                             ToggleButtons::make('type')->default('Modification')->required()->grouped()->options(function (Get $get) {
                                 if ($get('status') === "Returnable") {
                                     return ['Modification' => 'Modification'];
@@ -170,12 +170,14 @@ class MyAsset extends BaseWidget
                                 }
                                 return $data;
                             })
-                        ])->columns()
+                        ])->columns(3)
                     ];
                 })->action(function ($data) {
                     $id=getCompany()->id;
                     $data['company_id'] = $id;
-                    $data['employee_id'] = getEmployee()->id;
+                    $employee=getEmployee();
+
+                    $data['employee_id'] = $employee->id;
                     $items = $data['items'];
                     unset($data['items']);
                     $takeOut = \App\Models\TakeOut::query()->create($data);
@@ -183,6 +185,13 @@ class MyAsset extends BaseWidget
                         $item['company_id']=$id;
                         $takeOut->items()->create($item);
                     }
+                    if ($employee->department->employee_id){
+                        $takeOut->approvals()->create([
+                            'employee_id'=>$employee->department->employee_id,
+                            'company_id'=>$id
+                        ]);
+                    }
+
                     Notification::make('success')->success()->title('Request  Sent')->send()->sendToDatabase(auth()->user());
                 })
             ]);

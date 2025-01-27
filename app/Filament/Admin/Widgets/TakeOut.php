@@ -30,7 +30,6 @@ class TakeOut extends BaseWidget
                 Tables\Columns\TextColumn::make('date')->date(),
                 Tables\Columns\TextColumn::make('status')->badge(),
                 Tables\Columns\TextColumn::make('type')->badge(),
-                Tables\Columns\TextColumn::make('headDepartment.fullName')->label('Approve By')->badge(),
             ])->actions([
                 Tables\Actions\Action::make('pdf')->url(fn($record) => route('pdf.takeOut', ['id' => $record->id]))->icon('heroicon-s-printer')->iconSize(IconSize::Large)->label('PDF'),
                 Tables\Actions\Action::make('view')->infolist([
@@ -41,8 +40,7 @@ class TakeOut extends BaseWidget
                         TextEntry::make('date')->date(),
                         TextEntry::make('status')->badge(),
                         TextEntry::make('type')->badge(),
-                        TextEntry::make('headDepartment.fullName'),
-                        TextEntry::make('securityEmployee.fullName')->label('Security Officer'),
+
                         RepeatableEntry::make('items')->label('Assets')->schema([
                             TextEntry::make('asset.product.title'),
                             TextEntry::make('remarks'),

@@ -20,8 +20,6 @@ return new class extends Migration
             $table->enum('status',['Returnable','Non-Returnable']);
             $table->enum('type',['Modification','Personal Belonging','Domestic Waste','Construction Waste']);
             $table->foreignId('employee_id')->constrained('employees')->cascadeOnUpdate()->cascadeOnDelete();
-            $table->foreignId('head_department_id')->nullable()->constrained('employees')->cascadeOnUpdate()->cascadeOnDelete();
-            $table->foreignId('security_employee_id')->nullable()->constrained('employees')->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('company_id')->constrained('employees')->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
         });
