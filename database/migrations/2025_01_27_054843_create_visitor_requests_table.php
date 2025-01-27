@@ -24,7 +24,7 @@ return new class extends Migration
             $table->date('valid_until');
             $table->enum('status', ['approved', 'notApproved'])->default('notApproved');
             $table->timestamps();
-
+                
 
             $table->foreignId('requested_by')->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('approved_by')->nullable()->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();

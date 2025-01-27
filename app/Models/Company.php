@@ -282,5 +282,11 @@ class Company extends Model implements HasAvatar, HasName
         return $this->hasMany(VisitorRequest::class);
     }
 
+    public function Approvals(): HasMany
+    {
+        return $this->hasMany(Approval::class);
+    }
+
+    
 
 }

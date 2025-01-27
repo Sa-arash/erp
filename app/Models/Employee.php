@@ -19,6 +19,7 @@ class Employee extends Model
         'emergency_contact'=>'array',
         'immunization'=>'array',
     ];
+
     public function structure(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Structure::class);
@@ -116,6 +117,11 @@ class Employee extends Model
         )->whereHas('assetEmployee',function ($query){
             return $query->where('type','Return');
         });
+    }
+
+    public function approvals(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Approval::class , 'employee_id');
     }
 
 }
