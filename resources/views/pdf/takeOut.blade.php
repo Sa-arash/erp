@@ -1,9 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
+
+<title>Gate Pass</title>
+@include('pdf.header',
+   ['titles'=>['Gate Pass']])
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gate Pass</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -12,10 +13,7 @@
 
         .container {
             width: 100%;
-            max-width: 900px;
             margin: auto;
-            border: 1px solid #000;
-            padding: 20px;
         }
 
         .header {
@@ -102,10 +100,9 @@
 <div class="container">
     <div class="header">
         <h1>Gate Pass</h1>
-        <p>SERVICES TEAM - UNC COMPOUND</p>
     </div>
 
-    <div class="details">
+    <div class="">
         <table>
             <tr>
                 <td>From:</td>
@@ -128,7 +125,7 @@
         </table>
     </div>
 
-    <table class="items-table">
+    <table class="">
         <thead>
         <tr>
             <th>SN</th>
@@ -152,7 +149,7 @@
         <p><strong>Reason for Taking out:</strong> {{$takeOut->reason}}</p>
     </div>
 
-    <table class="status-table">
+    <table class="">
         <thead>
         <tr>
             <th>Status</th>
@@ -166,30 +163,27 @@
         </tr>
         </tbody>
     </table>
-    <table class="status-table">
+    <table class="">
         <thead>
         <tr>
-
             <th>Name</th>
             <th>Signature</th>
         </tr>
         </thead>
         <tbody>
         <tr>
-            <td>Name: ________________________</td>
-            <td>Signature: ________________________</td>
+            <td>{{$takeOut->headDepartment?->fullName}}</td>
+            <td >@if($takeOut->headDepartment?->signature_pic) <img src="{{public_path('images/'.$takeOut->headDepartment?->signature_pic)}}" style="width: 100px;height: 60px" alt=""> @endif</td>
         </tr>
-        <tr>
-            <td>Name: ________________________</td>
-            <td>Signature: ____________________</td>
-        </tr>
+
         </tbody>
     </table>
 
     <div class="footer">
-        <p>Nikhil Thapa</p>
+        <p></p>
         <p>Security Officer - UNC</p>
     </div>
+
 </div>
 </body>
 </html>

@@ -21,4 +21,12 @@ class TakeOut extends Model
     {
         return $this->belongsTo(Employee::class);
     }
+    public function headDepartment(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Employee::class);
+    }
+    public function securityEmployee(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Employee::class);
+    }
 }
