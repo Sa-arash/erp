@@ -74,7 +74,7 @@ class AssetEmployeeItemsRelationManager extends RelationManager
                                         $data = [];
                                         $assets = Asset::query()->with('product')->where('company_id', getCompany()->id)->get();
                                         foreach ($assets as $asset) {
-                                            $data[$asset->id] = $asset->product?->title . " ( SKU #" . $asset->sku . " )";
+                                            $data[$asset->id] = $asset->product?->title . " ( SKU #" . $asset->product?->sku . " )";
                                         }
                                         return $data;
                                     })->required()->searchable()->preload(),

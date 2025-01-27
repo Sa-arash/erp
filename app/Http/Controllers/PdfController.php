@@ -10,6 +10,7 @@ use App\Models\FinancialPeriod;
 use App\Models\Payroll;
 use App\Models\Invoice;
 use App\Models\PurchaseRequest;
+use App\Models\TakeOut;
 use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -391,5 +392,17 @@ class PdfController extends Controller
             compact('company','employee')
         );
         return $pdf->stream('pdf.separation');
+    }
+    public function takeOut($id)
+    {
+        $takeOut=TakeOut::query()->firstWhere('id',$id);
+        $company=$takeOut->company;
+
+
+        $pdf = Pdf::loadView(
+            'pdf.takeOut',
+            compact('company','takeOut')
+        );
+        return $pdf->stream('pdf.takeOut');
     }
 }

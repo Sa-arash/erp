@@ -577,3 +577,7 @@ function addSpacesBasedOnParentLevel($record, $level = 0)
     // اگر رکورد والد نداشته باشد، فقط متن را با فاصله‌ها برگردانید
     return $spaces;
 }
+
+function getEmployee(){
+    return auth()->user()->employee;
+}

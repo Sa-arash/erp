@@ -13,8 +13,11 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
@@ -32,17 +35,17 @@ class MyAsset extends BaseWidget
     public function table(Table $table): Table
     {
         return $table
-        ->emptyStateHeading('No Asset')
+            ->emptyStateHeading('No Asset')
             ->query(
-               AssetEmployeeItem::query()->where('type',0)->whereHas('assetEmployee',function ($query){
-                   return $query->where('employee_id',auth()->user()->employee->id)->where('type','Assigned');
-               })
+                AssetEmployeeItem::query()->where('type', 0)->whereHas('assetEmployee', function ($query) {
+                    return $query->where('employee_id', auth()->user()->employee->id)->where('type', 'Assigned');
+                })
             )
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\ImageColumn::make('asset.product.image')->label('Item Photo'),
                 Tables\Columns\TextColumn::make('product')->label('Product')
-                ->state(fn($record)=>$record->asset->product->title."-".$record->asset->brand->title."-".$record->asset->model),
+                    ->state(fn($record) => $record->asset->product->title . "-" . $record->asset->brand->title . "-" . $record->asset->model),
                 Tables\Columns\TextColumn::make('warehouse.title')->label('Warehouse/Building')->sortable(),
                 Tables\Columns\TextColumn::make('structure.title')->label('Location')->sortable(),
                 Tables\Columns\TextColumn::make('asset.serial_number')->label('Serial Number'),
@@ -61,7 +64,6 @@ class MyAsset extends BaseWidget
             // ])
             ->bulkActions([
                 Tables\Actions\BulkAction::make('return')->label('Return To Warehouse')
-
                     ->modalHeading('Return Asset')
                     ->form(function ($records) {
                         return [
@@ -78,9 +80,13 @@ class MyAsset extends BaseWidget
                                     ->disableOptionsWhenSelectedInSiblingRepeaterItems()
                                     ->live()->label('Asset')->options(function () {
                                         $data = [];
-                                        $assets = Asset::query()->with('product')->where('company_id', getCompany()->id)->get();
+                                        $assets = Asset::query()->with('product')->whereHas('employees', function ($query) {
+                                            return $query->where('return_date', null)->where('return_approval_date', null)->whereHas('assetEmployee', function ($query) {
+                                                return $query->where('employee_id', getEmployee()->id);
+                                            });
+                                        })->where('company_id', getCompany()->id)->get();
                                         foreach ($assets as $asset) {
-                                            $data[$asset->id] = $asset->product?->title . " ( SKU #" . $asset->sku . " )";
+                                            $data[$asset->id] = $asset->product?->title . " ( SKU #" . $asset->product?->sku . " )";
                                         }
                                         return $data;
                                     })->required()->searchable()->preload(),
@@ -125,6 +131,60 @@ class MyAsset extends BaseWidget
 
                         Notification::make('success')->success()->title("Your Request is Send")->send();
                     })->color('danger'),
+                Tables\Actions\BulkAction::make('Take Out')->modalWidth(MaxWidth::SixExtraLarge)->color('warning')->form(function ($records) {
+                    return [
+                        Section::make([
+                            TextInput::make('from')->required()->maxLength(255),
+                            TextInput::make('to')->required()->maxLength(255),
+                            DatePicker::make('date')->columnSpanFull()->default(now())->required(),
+                            Textarea::make('reason')->columnSpanFull()->required(),
+                            ToggleButtons::make('status')->default('Returnable')->live()->required()->grouped()->options(['Returnable' => 'Returnable', 'Non-Returnable' => 'Non-Returnable']),
+                            ToggleButtons::make('type')->default('Modification')->required()->grouped()->options(function (Get $get) {
+                                if ($get('status') === "Returnable") {
+                                    return ['Modification' => 'Modification'];
+                                } else {
+                                    return ['Personal Belonging' => 'Personal Belonging', 'Domestic Waste' => 'Domestic Waste', 'Construction Waste' => 'Construction Waste'];
+                                }
+                            }),
+                            Repeater::make('items')->schema([
+                                Select::make('asset_id')
+                                    ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                                    ->live()->label('Asset')->options(function () {
+                                        $data = [];
+                                        $assets = Asset::query()->with('product')->whereHas('employees', function ($query) {
+                                            return $query->where('return_date', null)->where('return_approval_date', null)->whereHas('assetEmployee', function ($query) {
+                                                return $query->where('employee_id', getEmployee()->id);
+                                            });
+                                        })->where('company_id', getCompany()->id)->get();
+                                        foreach ($assets as $asset) {
+                                            $data[$asset->id] = $asset->product?->title . " ( SKU #" . $asset->product?->sku . " )";
+                                        }
+                                        return $data;
+                                    })->required()->searchable()->preload(),
+                                TextInput::make('remarks')->nullable()
+                            ])->columnSpanFull()->columns()->formatStateUsing(function () use ($records) {
+                                $data = [];
+
+                                foreach ($records as $record) {
+                                    $data[] = ['asset_id' => $record->asset_id];
+                                }
+                                return $data;
+                            })
+                        ])->columns()
+                    ];
+                })->action(function ($data) {
+                    $id=getCompany()->id;
+                    $data['company_id'] = $id;
+                    $data['employee_id'] = getEmployee()->id;
+                    $items = $data['items'];
+                    unset($data['items']);
+                    $takeOut = \App\Models\TakeOut::query()->create($data);
+                    foreach ($items as $item){
+                        $item['company_id']=$id;
+                        $takeOut->items()->create($item);
+                    }
+                    Notification::make('success')->success()->title('Request  Sent')->send()->sendToDatabase(auth()->user());
+                })
             ]);
     }
 }
