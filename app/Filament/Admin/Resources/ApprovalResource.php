@@ -16,7 +16,7 @@ class ApprovalResource extends Resource
 {
     protected static ?string $model = Approval::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-check-badge';
 
     public static function table(Table $table): Table
     {
