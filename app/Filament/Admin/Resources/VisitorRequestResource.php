@@ -20,6 +20,7 @@ class VisitorRequestResource extends Resource
 {
     protected static ?string $model = VisitorRequest::class;
     protected static ?string $navigationLabel = 'Visit Access Request';
+    protected static ?string $navigationGroup = 'Request';
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
@@ -27,16 +28,7 @@ class VisitorRequestResource extends Resource
         return $form
             ->schema([
                 Section::make('Visitor Access Request')->schema([
-
-                    
-             
-
-                 
-
-                 
                     Section::make('Visit’s Details')->schema([
-
-                    
                         Forms\Components\Select::make('requested_by')->live()
                             ->searchable()
                             ->preload()
@@ -50,10 +42,11 @@ class VisitorRequestResource extends Resource
 
 
                         Forms\Components\TimePicker::make('arrival_time')
-                        // ->format("h:m")
+                        ->seconds(false)
                         ->before('departure_time')
                             ->required(),
                         Forms\Components\TimePicker::make('departure_time')
+                        ->seconds(false)
                         ->after('arrival_time')
                             ->required(),
                         Forms\Components\TextInput::make('purpose')->columnSpanFull()
@@ -89,6 +82,7 @@ class VisitorRequestResource extends Resource
 
 
                     Forms\Components\Repeater::make('driver_vehicle_detail')
+                    ->addActionLabel('Add')
                     ->label('Drivers/Vehicles Detail')->schema([
                         Forms\Components\TextInput::make('name')
                             ->label('Full Name')
@@ -136,8 +130,9 @@ class VisitorRequestResource extends Resource
                 ->label('Requestor')
                     ->numeric()
                     ->sortable(),
-                    Tables\Columns\TextColumn::make('fullName')
+                    Tables\Columns\TextColumn::make('visitors_detail')
                     ->label('Visitors')
+                    ->state(fn($record)=>implode(', ',(array_map(fn($item)=>$item['name'],$record->visitors_detail))))
                         ->numeric()
                         ->sortable(),
                     Tables\Columns\TextColumn::make('visit_date')

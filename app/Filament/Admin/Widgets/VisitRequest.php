@@ -1,0 +1,167 @@
+<?php
+
+namespace App\Filament\Admin\Widgets;
+
+use App\Models\VisitorRequest;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\TimePicker;
+use Filament\Tables;
+use Filament\Tables\Actions\Action;
+use Filament\Tables\Actions\BulkAction;
+use Filament\Tables\Table;
+use Filament\Widgets\TableWidget as BaseWidget;
+
+class VisitRequest extends BaseWidget
+{
+    protected int | string | array $columnSpan = 'full';
+
+    public function table(Table $table): Table
+    {
+        return $table
+            ->query(
+                VisitorRequest::query()->where('company_id', getCompany()->id)
+                // ->where('status', '!=', 'FinishedCeo')
+            )
+            ->columns([
+                Tables\Columns\TextColumn::make('')->rowIndex(),
+                Tables\Columns\TextColumn::make('requested.fullName')
+                    ->label('Requestor')
+                    ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('visitors_detail')
+                    ->label('Visitors')
+                    ->state(fn($record) => implode(', ', (array_map(fn($item) => $item['name'], $record->visitors_detail))))
+                    ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('visit_date')
+                    ->date()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('arrival_time'),
+                Tables\Columns\TextColumn::make('departure_time'),
+
+                Tables\Columns\TextColumn::make('status'),
+
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('updated_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+
+            ])
+
+            ->actions([])
+            ->headerActions([
+                Action::make('approval')->form(
+                    [
+                        Section::make('Visitor Access Request')->schema([
+                            Section::make('Visit’s Details')->schema([
+
+                                DatePicker::make('visit_date')->default(now()->addDay())
+
+                                    ->required(),
+
+
+                                TimePicker::make('arrival_time')
+                                    ->seconds(false)
+                                    ->before('departure_time')
+                                    ->required(),
+                                TimePicker::make('departure_time')
+                                    ->seconds(false)
+                                    ->after('arrival_time')
+                                    ->required(),
+                                TextInput::make('purpose')->columnSpanFull()
+                                    ->required(),
+                            ])->columns(3),
+                            Repeater::make('visitors_detail')
+                                ->addActionLabel('Add')
+                                ->label('Visitors Detail')
+                                ->schema([
+                                    TextInput::make('name')
+                                        ->label('Full Name')
+                                        ->required(),
+                                    TextInput::make('id')
+                                        ->label('ID/Passport')
+                                        ->required(),
+                                    TextInput::make('phone')
+                                        ->label('Phone'),
+                                    TextInput::make('organization')
+                                        ->label('Organization'),
+                                    Select::make('type')
+                                        ->label('Type')
+                                        ->options([
+                                            'National' => 'National',
+                                            'International' => 'International',
+                                            'De-facto Security Forces' => 'De-facto Security Forces',
+                                        ]),
+                                    TextInput::make('remarks')
+                                        ->label('Remarks'),
+
+                                ])->columns(6)->columnSpanFull(),
+
+
+
+
+                            Repeater::make('driver_vehicle_detail')
+                                ->addActionLabel('Add')
+                                ->label('Drivers/Vehicles Detail')->schema([
+                                    TextInput::make('name')
+                                        ->label('Full Name')
+                                        ->required(),
+                                    TextInput::make('id')
+                                        ->label('ID/Passport')
+                                        ->required(),
+                                    TextInput::make('phone')
+                                        ->label('Phone'),
+                                    TextInput::make('model')
+                                        ->required(),
+                                    TextInput::make('color')
+                                        ->required(),
+                                    TextInput::make('Registration_Plate')
+                                        ->required(),
+
+                                ])->columns(3)->columnSpanFull(),
+
+
+
+
+
+
+
+
+
+
+
+
+
+                        ])->columns(2)
+
+                    ]
+
+                )->action(function (array $data, $record): void {
+                    VisitorRequest::query()->create([
+                        'arrival_time'=>$data['arrival_time'],
+                        'departure_time'=>$data['departure_time'],
+                        'purpose'=>$data['purpose'],
+                        'visitors_detail'=>$data['visitors_detail'],
+                        'driver_vehicle_detail'=>$data['driver_vehicle_detail'],
+                        'requested_by'=>auth()->user()->employee->id,
+                        'company_id'=>getCompany()->id,
+                    ]);
+                    $this->record->approvals()->create([
+                        'employee_id'=>$this->record->requested_by,
+                        'company_id'=>$this->record->company_id,
+                        'position'=>'VisitAccessRequest'
+                    ]);
+                })
+            ])
+            ->bulkActions([])
+        ;
+    }
+}
