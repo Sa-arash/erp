@@ -28,32 +28,15 @@ class VisitorRequestResource extends Resource
             ->schema([
                 Section::make('Visitor Access Request')->schema([
 
-                    Section::make('')->schema([
-                    Forms\Components\DatePicker::make('valid_until')->default(now()->addDay())
-                    ->afterOrEqual('visit_date')
-                    ->required(),
-                  
+                    
+             
 
-                    Forms\Components\DatePicker::make('visit_date')->default(now()->addDay()) 
-                    ->afterOrEqual('valid_until')
-                        ->required(),
+                 
 
-                    Forms\Components\TextInput::make('request_code')->default(function () {
-                        $visitRequest = VisitorRequest::query()->where('company_id', getCompany()->id)->latest()->first();
-                        if ($visitRequest) {
-                            return  generateNextCodePO($visitRequest->request_code);
-                        } else {
-                            return "0001";
-                        }
-                    })
-                        ->required()
-                        ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
-                            return $rule->where('company_id', getCompany()->id);
-                        })
-                        ->maxLength(50),
-                        ])->columns(3),
-                    Section::make('Requestor’s Details')->schema([
+                 
+                    Section::make('Visit’s Details')->schema([
 
+                    
                         Forms\Components\Select::make('requested_by')->live()
                             ->searchable()
                             ->preload()
@@ -61,10 +44,13 @@ class VisitorRequestResource extends Resource
                             ->options(getCompany()->employees->pluck('fullName', 'id'))
                             ->default(fn() => auth()->user()->employee->id),
 
-                       
+                            Forms\Components\DatePicker::make('visit_date')->default(now()->addDay()) 
+                 
+                            ->required(),   
 
 
                         Forms\Components\TimePicker::make('arrival_time')
+                        // ->format("h:m")
                         ->before('departure_time')
                             ->required(),
                         Forms\Components\TimePicker::make('departure_time')
@@ -72,7 +58,7 @@ class VisitorRequestResource extends Resource
                             ->required(),
                         Forms\Components\TextInput::make('purpose')->columnSpanFull()
                         ->required(),
-                        ])->columns(3),
+                        ])->columns(4),
                     Forms\Components\Repeater::make('visitors_detail')
                     ->addActionLabel('Add')
                     ->label('Visitors Detail')
@@ -146,22 +132,22 @@ class VisitorRequestResource extends Resource
             ->columns([
 
                 Tables\Columns\TextColumn::make('')->rowIndex(),
-                Tables\Columns\TextColumn::make('request_code')
-                    ->searchable(),
+                Tables\Columns\TextColumn::make('requested.fullName')
+                ->label('Requestor')
+                    ->numeric()
+                    ->sortable(),
+                    Tables\Columns\TextColumn::make('fullName')
+                    ->label('Visitors')
+                        ->numeric()
+                        ->sortable(),
                     Tables\Columns\TextColumn::make('visit_date')
                         ->date()
                         ->sortable(),
-                        Tables\Columns\TextColumn::make('requested.fullName')
-                            ->numeric()
-                            ->sortable(),
 
                 Tables\Columns\TextColumn::make('arrival_time'),
                 Tables\Columns\TextColumn::make('departure_time'),
 
                
-                Tables\Columns\TextColumn::make('valid_until')
-                    ->date()
-                    ->sortable(),
 
                 Tables\Columns\TextColumn::make('status'),
 

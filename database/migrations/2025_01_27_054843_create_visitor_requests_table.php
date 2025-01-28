@@ -13,7 +13,6 @@ return new class extends Migration
     {
         Schema::create('visitor_requests', function (Blueprint $table) {
             $table->id();
-            $table->string('request_code')->unique();
             $table->date('visit_date');
             $table->time('arrival_time');
             $table->time('departure_time');
@@ -21,7 +20,6 @@ return new class extends Migration
             $table->json('visitors_detail')->nullable();
             $table->string('driver_vehicle_detail')->nullable();
             $table->date('approval_date')->nullable();
-            $table->date('valid_until');
             $table->enum('status', ['approved', 'notApproved'])->default('notApproved');
             $table->timestamps();
                 
