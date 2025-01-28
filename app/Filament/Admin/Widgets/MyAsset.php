@@ -200,7 +200,6 @@ class MyAsset extends BaseWidget
                                 'position'=>'Head Department'
                             ]);
                         }
-
                     }
 
                     Notification::make('success')->success()->title('Request  Sent')->send()->sendToDatabase(auth()->user());
