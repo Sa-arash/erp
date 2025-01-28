@@ -21,7 +21,7 @@ class Employee extends Model
     ];
 
    public function getInfoAttribute(){
-       return $this->fullName." (".$this->ID_number." )";
+       return $this->fullName." (ID:".$this->ID_number." )";
    }
 
     public function structure(): \Illuminate\Database\Eloquent\Relations\BelongsTo

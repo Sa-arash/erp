@@ -13,18 +13,22 @@ class PurchaseOrder extends Model
         return $this->belongsTo(Company::class);
 
     }
-    public function bid (){
+    public function bid (): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
         return $this->belongsTo(Bid::class , 'bid_id');
     }
-    public function quotation (){
+    public function quotation (): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
         return $this->belongsTo(Quotation::class , 'quotation_id');
     }
 
 
-    public function purchaseRequest (){
+    public function purchaseRequest (): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
         return $this->belongsTo(PurchaseRequest::class , 'purchase_request_id');
     }
-    public function vendor (){
+    public function vendor (): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
         return $this->belongsTo(Parties::class , 'vendor_id');
     }
 

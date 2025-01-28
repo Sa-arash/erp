@@ -168,28 +168,11 @@ class PurchaseRequestResource extends Resource
                         }
                         return $total;
                     })->numeric(),
-                Tables\Columns\TextColumn::make('warehouse_decision')
-                    ->date()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('warehouse_status_date')
-                    ->date()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-
-                Tables\Columns\TextColumn::make('department_manager_status_date')
-                    ->date()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('ceo_status_date')
-                    ->date()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('purchase_date')
-                    ->date()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-
+                Tables\Columns\TextColumn::make('warehouse_decision')->date()->sortable()->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('warehouse_status_date')->date()->sortable()->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('department_manager_status_date')->date()->sortable()->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('ceo_status_date')->date()->sortable()->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('purchase_date')->date()->sortable()->toggleable(isToggledHiddenByDefault: true),
 
             ])
             ->filters([
@@ -197,8 +180,6 @@ class PurchaseRequestResource extends Resource
             ])
             ->actions([
                 Tables\Actions\Action::make('bid')->form(function ($record) {
-
-
                     return [
                         Section::make([
                             Forms\Components\DatePicker::make('opening_date')->default(now())->required(),
@@ -299,10 +280,10 @@ class PurchaseRequestResource extends Resource
                     $data['total_cost'] = $totalSum;
                     Bid::query()->create($data);
                     Notification::make('make bid')->success()->title('Created Successfully')->send()->sendToDatabase(auth()->user());
-                })->modalWidth(MaxWidth::Full),
+                })->modalWidth(MaxWidth::Full)->visible(fn($record)=>$record->quotations->count()>0),
                 Tables\Actions\Action::make('prPDF')->label('PR ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.purchase', ['id' => $record->id])),
-                Tables\Actions\Action::make('prQuotation')->color('warning')->label('Qu ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.quotation', ['id' => $record->id])),
-                Tables\Actions\Action::make('insertQu')->form(function ($record){
+                Tables\Actions\Action::make('prQuotation')->visible(fn($record)=>$record->is_quotation)->color('warning')->label('Qu ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.quotation', ['id' => $record->id])),
+                Tables\Actions\Action::make('insertQu')->label('InsertQu')->visible(fn($record)=>$record->is_quotation)->form(function ($record){
                    return [
                         Forms\Components\Select::make('party_id')->label('Vendor')->options(Parties::query()->where('company_id', getCompany()->id)->pluck('name', 'id'))->searchable()->preload()->required(),
                         Forms\Components\DatePicker::make('date')->default(now())->required(),

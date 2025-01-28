@@ -13,6 +13,10 @@ use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
+use Filament\Infolists\Components\Fieldset;
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\Section;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
@@ -35,7 +39,27 @@ class ApprovalResource extends Resource
                 Tables\Columns\TextColumn::make('approvable_type')->state(function ($record) {
                     return substr($record->approvable_type, 11);
                 })->searchable()->badge(),
-                Tables\Columns\TextColumn::make('approvable_id')->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('approvable_id')->action(Tables\Actions\Action::make('View')->infolist(function ($record){
+                    if (substr($record->approvable_type, 11) ==="TakeOut"){
+                        return [
+                           Section::make([
+                               TextEntry::make('employee_id')->state($record->approvable->employee->info)->label('Employee'),
+                               TextEntry::make('to')->state($record->approvable->from)->label('From'),
+                               TextEntry::make('from')->state($record->approvable->to)->label('To'),
+                               TextEntry::make('reason')->state($record->approvable->reason)->label('Reason'),
+                               TextEntry::make('date')->state($record->approvable->date)->label('Date'),
+                               TextEntry::make('status')->state($record->approvable->status)->label('Status'),
+                               TextEntry::make('type')->state($record->approvable->type)->label('Type'),
+                               RepeatableEntry::make('items')->getStateUsing(function ()use($record){
+                                   return $record->approvable->items;
+                               })->schema([
+                                   TextEntry::make('asset.title')->state(fn($record)=>$record->asset->title),
+                                   TextEntry::make('remarks')->state(fn($record)=>$record->remarks),
+                               ])->columnSpanFull()->columns()
+                           ])->columns()
+                        ];
+                    }
+                }))->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('comment')->sortable(),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('status')->badge(),
@@ -48,9 +72,10 @@ class ApprovalResource extends Resource
                 Tables\Actions\Action::make('ApprovePurchaseRequest')->tooltip('ApprovePurchaseRequest')->label('Approve')->icon('heroicon-o-check-badge')->iconSize(IconSize::Large)->color('success')->form([
                     Forms\Components\Section::make([
                         Select::make('employee')->disabled()->default(fn($record) => $record->approvable?->employee_id)->options(fn($record) => Employee::query()->where('id', $record->approvable?->employee_id)->get()->pluck('info', 'id'))->searchable(),
+                        Forms\Components\ToggleButtons::make('is_quotation')->label('Is Quotation')->boolean('Quotation', 'Not Quotation')->grouped()->inline(),
                         Forms\Components\ToggleButtons::make('status')->default('Approve')->colors(['Approve' => 'success', 'NotApprove' => 'danger', 'Pending' => 'primary'])->options(['Approve' => 'Approve', 'Pending' => 'Pending', 'NotApprove' => 'NotApprove'])->grouped(),
                         Forms\Components\Textarea::make('comment')->nullable(),
-                        Forms\Components\Repeater::make('items')->formatStateUsing(fn($record) => $record->approvable->items->toArray())->schema([
+                        Forms\Components\Repeater::make('items')->formatStateUsing(fn($record) => $record->approvable?->items?->toArray())->schema([
                             Select::make('product_id')
                                 ->label('Product')->options(function () {
                                     $products = getCompany()->products;
@@ -80,13 +105,25 @@ class ApprovalResource extends Resource
                         ])->columns(8)->columnSpanFull()->addable(false)
                     ])->columns(),
                 ])->modalWidth(MaxWidth::Full)->action(function ($data, $record) {
-                    $record->update([]);
+                    $record->update(['status'=>'Approve']);
+                    $record->approvable->update(['is_quotation' => $data['is_quotation']]);
                     foreach ($data['items'] as $item) {
                         $prItem=PurchaseRequestItem::query()->firstWhere('id',$item['id']);
                         $prItem->update($item);
                     }
+                })->visible(function ($record){
+                    if ($record->status->name!=="Approve"){
+                        if (substr($record->approvable_type, 11)==="PurchaseRequest"){
+                            return true;
+                        }
+                    }
+                    return  false;
                 }),
-                Tables\Actions\Action::make('approve')->icon('heroicon-o-check-badge')->iconSize(IconSize::Large)->color('success')->form([
+                Tables\Actions\Action::make('approve')->hidden(function ($record){
+                    if (substr($record->approvable_type, 11)==="PurchaseRequest"){
+                        return true;
+                    }
+                })->icon('heroicon-o-check-badge')->iconSize(IconSize::Large)->color('success')->form([
                     Forms\Components\ToggleButtons::make('status')->default('Approve')->colors(['Approve' => 'success', 'NotApprove' => 'danger', 'Pending' => 'primary'])->options(['Approve' => 'Approve', 'Pending' => 'Pending', 'NotApprove' => 'NotApprove'])->grouped(),
                     Forms\Components\Textarea::make('comment')->nullable()
                 ])->action(function ($data, $record) {

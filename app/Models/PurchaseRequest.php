@@ -17,6 +17,7 @@ class PurchaseRequest extends Model
         'comment',
         'company_id',
         'employee_id',
+        'is_quotation',
     ];
     public function approvals(): \Illuminate\Database\Eloquent\Relations\MorphMany
     {
