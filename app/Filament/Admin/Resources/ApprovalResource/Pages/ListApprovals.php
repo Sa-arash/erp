@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\ApprovalResource\Pages;
 
 use App\Filament\Admin\Resources\ApprovalResource;
+use App\Models\Approval;
 use Filament\Actions;
 use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
@@ -19,11 +20,15 @@ class ListApprovals extends ListRecords
     }
     public function getTabs(): array
     {
-        return [
+        $data=[
             'All'=>  Tab::make()->query(fn($query) => $query),
-            'Pending'=>  Tab::make()->query(fn($query) => $query->where('status','Pending')),
-            'Approved'=>  Tab::make()->query(fn($query) => $query->where('status','Approve')),
-            'Paid'=>  Tab::make()->query(fn($query) => $query->where('status','payed')),
         ];
+        $approvals=Approval::query()->where('company_id',getCompany()->id)->distinct()->get()->unique('approvable_type');
+        foreach($approvals as  $item){
+            $data[substr($item->approvable_type,11)]=Tab::make()->query(fn($query) => $query->where('approvable_type',$item->approvable_type));
+        }
+
+        return  $data;
+
     }
 }

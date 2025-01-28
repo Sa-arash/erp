@@ -39,7 +39,7 @@ class BalancePeriod extends ManageRelatedRecords
                 Forms\Components\TextInput::make('number')->default(1)->readOnly(),
                 Forms\Components\DatePicker::make('date')->default(now())->required(),
                 Forms\Components\Repeater::make('transactions')->reorderable(false)->label('')->schema([
-                    SelectTree::make('account_id')->defaultOpenLevel(4)->label('Account')->required()->searchable()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->whereIn('group', ['Assets', 'Liabilities', "Equity"])->where('company_id', getCompany()->id)),
+                    SelectTree::make('account_id')->defaultOpenLevel(4)->label('Account')->required()->searchable()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->whereIn('group', ['Asset', 'Liabilitie', "Equity"])->where('company_id', getCompany()->id)),
                     Forms\Components\TextInput::make('description')->default('Opening Journal Entry ')->required(),
                     Forms\Components\TextInput::make('debtor')
                         ->mask(RawJs::make('$money($input)'))->stripCharacters(',')

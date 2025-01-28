@@ -227,7 +227,7 @@ class PurchaseRequestResource extends Resource
                                     $totalTrs .= "<td style='border: 1px solid black;padding: 8px;text-align: center'> {$totalSum}</td>";
                                 }
                                 $totalTrs .= "<td style='border: 1px solid black;padding: 8px;text-align: center'> </td></tr>";
-                                foreach ($record->items->where('status', 'purchased') as $item) {
+                                foreach ($record->items->where('status', 'purchase') as $item) {
                                     $product = $item->product->title . " (" . $item->product->sku . ")";
                                     $description = $item->description;
                                     $quantity = $item->quantity;
@@ -309,11 +309,11 @@ class PurchaseRequestResource extends Resource
                         Forms\Components\Select::make('employee_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Logistic'),
                         Forms\Components\Select::make('employee_operation_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Operation'),
                         Forms\Components\FileUpload::make('file')->downloadable()->columnSpanFull(),
-                        Repeater::make('Requested Items')
+                        Repeater::make('Requested Items')->required()
                             ->schema([
                                 Forms\Components\Select::make('purchase_request_item_id')->disableOptionsWhenSelectedInSiblingRepeaterItems()
                                     ->label('Product')->options(function ()use($record) {
-                                        $products = $record->items->where('status', 'purchased');
+                                        $products = $record->items->where('status', 'purchase');
                                         $data = [];
                                         foreach ($products as $product) {
                                             $data[$product->id] = $product->product->title . " (" . $product->product->sku . ")";
@@ -330,7 +330,7 @@ class PurchaseRequestResource extends Resource
 
                             ])->formatStateUsing(function ()use($record) {
                                 $data = [];
-                                foreach ($record->items->where('status', 'purchased') as $item) {
+                                foreach ($record->items->where('status', 'purchase') as $item) {
                                     $data[] = ['purchase_request_item_id' => $item->id, 'quantity' => $item->quantity, 'unit_rate' => 0];
                                 }
                                 return $data;
@@ -338,6 +338,28 @@ class PurchaseRequestResource extends Resource
                             ->columns(4)->columnSpanFull()
 
                     ];
+                })->action(function ($data,$record) {
+
+                    $id = getCompany()->id;
+                    $quotation= Quotation::query()->create([
+                        'purchase_request_id' => $record->id,
+                        'party_id' => $data['party_id'],
+                        'date' => $data['date'],
+                        'employee_id' => $data['employee_id'],
+                        'employee_operation_id' => $data['employee_operation_id'],
+                        'company_id' => $id,
+                    ]);
+
+                    foreach ($data['Requested Items'] as $item) {
+                        $quotation->quotationItems()->create([
+                            'purchase_request_item_id'=>$item['purchase_request_item_id'],
+                            'unit_rate'=>$item['unit_rate'],
+                            'date'=>$data['date'],
+                            'company_id'=>$id
+                        ]);
+                    }
+                    Notification::make('add quotation')->success()->title('Quotation Added')->send()->sendToDatabase(auth()->user());
+
                 }),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
