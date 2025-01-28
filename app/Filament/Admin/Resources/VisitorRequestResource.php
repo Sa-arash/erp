@@ -19,7 +19,7 @@ use Illuminate\Validation\Rules\Unique;
 class VisitorRequestResource extends Resource
 {
     protected static ?string $model = VisitorRequest::class;
-
+    protected static ?string $navigationLabel = 'Visit Access Request';
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
