@@ -39,7 +39,7 @@ class QuotationsRelationManager extends RelationManager
                     ->schema([
                         Forms\Components\Select::make('purchase_request_item_id')->disableOptionsWhenSelectedInSiblingRepeaterItems()
                             ->label('Product')->options(function () {
-                                $products = $this->ownerRecord->items->where('status', 'purchased');
+                                $products = $this->ownerRecord->items->where('status', 'purchase');
                                 $data = [];
                                 foreach ($products as $product) {
                                     $data[$product->id] = $product->product->title . " (" . $product->product->sku . ")";
@@ -56,7 +56,7 @@ class QuotationsRelationManager extends RelationManager
 
                     ])->formatStateUsing(function () {
                         $data = [];
-                        foreach ($this->ownerRecord->items->where('status', 'purchased') as $item) {
+                        foreach ($this->ownerRecord->items->where('status', 'purchase') as $item) {
                             $data[] = ['purchase_request_item_id' => $item->id, 'quantity' => $item->quantity, 'unit_rate' => 0];
                         }
                         return $data;

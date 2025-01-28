@@ -80,6 +80,17 @@
     </style>
 </head>
 <body>
+<div style="border: 0!important;">
+    <table style="border: 0!important;">
+        <tr style="border: 0!important;">
+            <td style="border: 0!important;">Name:________________</td>
+            <td style="border: 0!important;">Phone:________________ </td>
+            <td style="border: 0!important;">Address:________________ </td>
+        </tr>
+
+
+    </table>
+</div>
 <div class="container">
     <h2 style="text-align: center;">Request for Quotation</h2>
     @php

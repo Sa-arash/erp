@@ -109,9 +109,8 @@ class MyPurchaseRequest extends BaseWidget
         ])->columns(4)
     ]),
 ])
-
             ->headerActions([
-                Action::make('Request Purchase') ->modalWidth(MaxWidth::FitContent  )->form([
+                Action::make('Request Purchase')->label('Request Purchase') ->modalWidth(MaxWidth::FitContent  )->form([
                     Section::make('')->schema([
                         TextInput::make('purchase_number')->default(function (){
                             $puncher= PurchaseRequest::query()->where('company_id',getCompany()->id)->latest()->first();

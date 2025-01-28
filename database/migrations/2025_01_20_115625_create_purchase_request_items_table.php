@@ -24,7 +24,7 @@ return new class extends Migration
                 'approve',
                 'reject',
             ])->nullable();
-            
+
             $table->enum('head_decision', [
                 'approve',
                 'reject',
@@ -34,7 +34,7 @@ return new class extends Migration
 
             $table->enum('status', [
                 'purchase',
-                'assigne',
+                'assign',
                 'pending',
                 'rejected',
             ])->default('pending');

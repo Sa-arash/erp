@@ -20,6 +20,10 @@ class Employee extends Model
         'immunization'=>'array',
     ];
 
+   public function getInfoAttribute(){
+       return $this->fullName." (".$this->ID_number." )";
+   }
+
     public function structure(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Structure::class);

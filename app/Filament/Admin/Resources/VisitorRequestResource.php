@@ -12,9 +12,6 @@ use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Illuminate\Validation\Rules\Unique;
 
 class VisitorRequestResource extends Resource
 {
@@ -36,9 +33,9 @@ class VisitorRequestResource extends Resource
                             ->options(getCompany()->employees->pluck('fullName', 'id'))
                             ->default(fn() => auth()->user()->employee->id),
 
-                            Forms\Components\DatePicker::make('visit_date')->default(now()->addDay()) 
-                 
-                            ->required(),   
+                            Forms\Components\DatePicker::make('visit_date')->default(now()->addDay())
+
+                            ->required(),
 
 
                         Forms\Components\TimePicker::make('arrival_time')
@@ -102,7 +99,6 @@ class VisitorRequestResource extends Resource
                     ])->columns(6)->columnSpanFull(),
 
 
-                  
 
 
 
@@ -110,7 +106,8 @@ class VisitorRequestResource extends Resource
 
 
 
-            
+
+
 
 
                     Forms\Components\Hidden::make('company_id')
@@ -142,7 +139,7 @@ class VisitorRequestResource extends Resource
                 Tables\Columns\TextColumn::make('arrival_time'),
                 Tables\Columns\TextColumn::make('departure_time'),
 
-               
+
 
                 Tables\Columns\TextColumn::make('status'),
 
@@ -154,7 +151,7 @@ class VisitorRequestResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-            
+
             ])
             ->filters([
                 //
@@ -177,6 +174,42 @@ class VisitorRequestResource extends Resource
     {
         return [
             //
+        ];
+    }
+
+    public static function getForm()
+    {
+        return [
+            Section::make('Visitor Access Request')->schema([
+                Section::make('Visit’s Details')->schema([
+                    Forms\Components\DatePicker::make('visit_date')->default(now()->addDay())->required(),
+                    Forms\Components\TimePicker::make('arrival_time')->seconds(false)->before('departure_time')->required(),
+                    Forms\Components\TimePicker::make('departure_time')->seconds(false)->after('arrival_time')->required(),
+                    Forms\Components\TextInput::make('purpose')->columnSpanFull()
+                        ->required(),
+                ])->columns(4),
+                Forms\Components\Repeater::make('visitors_detail')
+                    ->addActionLabel('Add')
+                    ->label('Visitors Detail')
+                    ->schema([
+                        Forms\Components\TextInput::make('name')->label('Full Name')->required(),
+                        Forms\Components\TextInput::make('id')->label('ID/Passport')->required(),
+                        Forms\Components\TextInput::make('phone')->label('Phone'),
+                        Forms\Components\TextInput::make('organization')->label('Organization'),
+                        Forms\Components\Select::make('type')->label('Type')->options(['National' => 'National', 'International' => 'International', 'De-facto Security Forces' => 'De-facto Security Forces',]),
+                        Forms\Components\TextInput::make('remarks')->label('Remarks'),
+                    ])->columns(6)->columnSpanFull(),
+                Forms\Components\Repeater::make('driver_vehicle_detail')
+                    ->addActionLabel('Add')
+                    ->label('Drivers/Vehicles Detail')->schema([
+                        Forms\Components\TextInput::make('name')->label('Full Name')->required(),
+                        Forms\Components\TextInput::make('id')->label('ID/Passport')->required(),
+                        Forms\Components\TextInput::make('phone')->label('Phone'),
+                        Forms\Components\TextInput::make('model')->required(),
+                        Forms\Components\TextInput::make('color')->required(),
+                        Forms\Components\TextInput::make('Registration_Plate')->required(),
+                    ])->columns(6)->columnSpanFull(),
+            ])->columns(2)
         ];
     }
 

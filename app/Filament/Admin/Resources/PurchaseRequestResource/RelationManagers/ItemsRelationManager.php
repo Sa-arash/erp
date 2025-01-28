@@ -98,11 +98,14 @@ class ItemsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('unit.title'),
                 Tables\Columns\TextColumn::make('quantity'),
                 Tables\Columns\TextColumn::make('estimated_unit_cost')->numeric(),
-                Tables\Columns\TextColumn::make('total')
-                    ->state(fn ($record) => $record->estimated_unit_cost * $record->quantity)
-                   ->numeric(),
+                Tables\Columns\TextColumn::make('total')->state(fn ($record) => $record->estimated_unit_cost * $record->quantity)->numeric(),
                 Tables\Columns\TextColumn::make('project.name'),
+                Tables\Columns\TextColumn::make('ceo_decision')->badge(),
+                Tables\Columns\TextColumn::make('ceo_comment')->badge(),
+                Tables\Columns\TextColumn::make('head_decision')->badge(),
+                Tables\Columns\TextColumn::make('head_comment')->badge(),
                 Tables\Columns\TextColumn::make('status')->badge(),
+
             ])
 
             ->filters([
@@ -115,11 +118,11 @@ class ItemsRelationManager extends RelationManager
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make(),
                 Tables\Actions\Action::make('purchases')->action(function ($record){
-                    $record->update(['status'=>'purchased']);
+                    $record->update(['status'=>'purchase']);
                     Notification::make('Change_Status')->success()->title('Change Status')->send();
                 })->hidden(fn($record)=>$record->status->value==="purchased"),
-                Tables\Actions\Action::make('assigned')->action(function ($record){
-                    $record->update(['status'=>'assigned']);
+                Tables\Actions\Action::make('assign')->action(function ($record){
+                    $record->update(['status'=>'assign']);
                     Notification::make('Change_Status')->success()->title('Change Status')->send();
                 })->hidden(fn($record)=>$record->status->value==="assigned")
             ])

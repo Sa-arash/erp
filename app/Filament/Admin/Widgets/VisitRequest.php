@@ -2,6 +2,8 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Filament\Admin\Resources\VisitorRequestResource;
+use App\Filament\Admin\Resources\VisitorRequestResource\Pages\EditVisitorRequest;
 use App\Models\VisitorRequest;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
@@ -9,6 +11,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\BulkAction;
@@ -59,10 +62,10 @@ class VisitRequest extends BaseWidget
             ])
 
             ->actions([
-                EditAction::make(),
+                EditAction::make()->form(VisitorRequestResource::getForm())->modalWidth(MaxWidth::Full),
             ])
             ->headerActions([
-                Action::make('approval')->form(
+                Action::make('approval')->modalWidth(MaxWidth::Full)->form(
                     [
                         Section::make('Visitor Access Request')->schema([
                             Section::make('Visit’s Details')->schema([
@@ -186,8 +189,8 @@ class VisitRequest extends BaseWidget
     public static function getPages(): array
     {
         return [
-           
-            'edit' => Pages\EditVisitorRequest::route('/{record}/edit'),
+
+            'edit' => EditVisitorRequest::route('/{record}/edit'),
         ];
     }
 }
