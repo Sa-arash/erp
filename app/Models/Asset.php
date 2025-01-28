@@ -24,6 +24,11 @@ class Asset extends Model
     protected $casts = [
         'attributes' => 'array',
     ];
+
+    public function getTitleAttribute()
+    {
+        return  $this->product?->title." (".$this->product?->sku.") ".$this->brand?->title." ".$this->model;
+    }
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);

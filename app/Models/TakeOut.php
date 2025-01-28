@@ -16,6 +16,9 @@ class TakeOut extends Model
     {
         return $this->hasMany(TakeOutItem::class);
     }
+    public function assets(){
+        return $this->hasManyThrough(Asset::class,TakeOutItem::class,'take_out_id','id','id','asset_id');
+    }
 
     public function employee(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

@@ -26,6 +26,7 @@ class ApprovalResource extends Resource
                     return substr($record->approvable_type, 11);
                 })->searchable()->badge(),
                 Tables\Columns\TextColumn::make('approvable_id')->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('comment')->sortable(),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('status')->badge(),
                 Tables\Columns\TextColumn::make('approve_date')->dateTime()->sortable(),
@@ -35,9 +36,10 @@ class ApprovalResource extends Resource
             ])
             ->actions([
                 Tables\Actions\Action::make('approve')->icon('heroicon-o-check-badge')->iconSize(IconSize::Large)->color('success')->form([
-                    Forms\Components\ToggleButtons::make('status')->default('Approve')->colors(['Approve' => 'success', 'NotApprove' => 'danger', 'Pending' => 'primary'])->options(['Approve' => 'Approve', 'Pending' => 'Pending', 'NotApprove' => 'NotApprove'])->grouped()
+                    Forms\Components\ToggleButtons::make('status')->default('Approve')->colors(['Approve' => 'success', 'NotApprove' => 'danger', 'Pending' => 'primary'])->options(['Approve' => 'Approve', 'Pending' => 'Pending', 'NotApprove' => 'NotApprove'])->grouped(),
+                    Forms\Components\Textarea::make('comment')->nullable()
                 ])->action(function ($data, $record) {
-                    $record->update(['status' => $data['status'],'approve_date'=>now()]);
+                    $record->update(['comment'=>$data['comment'],'status' => $data['status'],'approve_date'=>now()]);
                     Notification::make('success')->success()->title($data['status'])->send();
                 })->requiresConfirmation()->visible(fn($record) => $record->status->name === "Pending")
             ])

@@ -94,7 +94,7 @@
             <td>{{$item->quantity}}</td>
             <td>{{number_format($item->estimated_unit_cost)}}</td>
             <td>{{number_format($item->quantity *$item->estimated_unit_cost)}}</td>
-            <td>{{$item->warehouse_decision==="needs_purchase"?"Need Purchase" :"In Stack"}}</td>
+            <td>{{$item->product?->assets->where('status','inStorageUsable')->count()}}</td>
         </tr>
     @endforeach
     </tbody>

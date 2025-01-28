@@ -6,6 +6,7 @@ use App\Filament\Admin\Resources\PurchaseRequestResource\Pages;
 use App\Filament\Admin\Resources\PurchaseRequestResource\RelationManagers;
 use App\Models\Bid;
 use App\Models\Employee;
+use App\Models\Parties;
 use App\Models\PurchaseRequest;
 use App\Models\Quotation;
 use App\Models\Structure;
@@ -299,8 +300,45 @@ class PurchaseRequestResource extends Resource
                     Bid::query()->create($data);
                     Notification::make('make bid')->success()->title('Created Successfully')->send()->sendToDatabase(auth()->user());
                 })->modalWidth(MaxWidth::Full),
-                Tables\Actions\Action::make('prPDF')->label('PR PDF')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.purchase', ['id' => $record->id])),
-                Tables\Actions\Action::make('prQuotation')->color('warning')->label('Qu PDF')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.quotation', ['id' => $record->id])),
+                Tables\Actions\Action::make('prPDF')->label('PR ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.purchase', ['id' => $record->id])),
+                Tables\Actions\Action::make('prQuotation')->color('warning')->label('Qu ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.quotation', ['id' => $record->id])),
+                Tables\Actions\Action::make('insertQu')->form(function ($record){
+                   return [
+                        Forms\Components\Select::make('party_id')->label('Vendor')->options(Parties::query()->where('company_id', getCompany()->id)->pluck('name', 'id'))->searchable()->preload()->required(),
+                        Forms\Components\DatePicker::make('date')->default(now())->required(),
+                        Forms\Components\Select::make('employee_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Logistic'),
+                        Forms\Components\Select::make('employee_operation_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Operation'),
+                        Forms\Components\FileUpload::make('file')->downloadable()->columnSpanFull(),
+                        Repeater::make('Requested Items')
+                            ->schema([
+                                Forms\Components\Select::make('purchase_request_item_id')->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                                    ->label('Product')->options(function ()use($record) {
+                                        $products = $record->items->where('status', 'purchased');
+                                        $data = [];
+                                        foreach ($products as $product) {
+                                            $data[$product->id] = $product->product->title . " (" . $product->product->sku . ")";
+                                        }
+                                        return $data;
+                                    })->required()->searchable()->preload(),
+                                Forms\Components\TextInput::make('unit_rate')->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
+                                    if ($get('quantity') and $get('unit_rate')) {
+                                        $set('total', number_format(str_replace(',', '', $get('unit_rate')) * $get('quantity')));;
+                                    }
+                                })->live()->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                                Forms\Components\TextInput::make('quantity')->readOnly()->live()->required()->numeric(),
+                                Forms\Components\TextInput::make('total')->readOnly()->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+
+                            ])->formatStateUsing(function ()use($record) {
+                                $data = [];
+                                foreach ($record->items->where('status', 'purchased') as $item) {
+                                    $data[] = ['purchase_request_item_id' => $item->id, 'quantity' => $item->quantity, 'unit_rate' => 0];
+                                }
+                                return $data;
+                            })
+                            ->columns(4)->columnSpanFull()
+
+                    ];
+                }),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
 //                Tables\Actions\Action::make('Watehouse Check')->modalWidth(MaxWidth::Full)
