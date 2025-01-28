@@ -16,12 +16,16 @@ return new class extends Migration
         $table->date('request_date');
         $table->string('purchase_number')->unique();
         $table->text('description')->nullable();
+        $table->boolean('is_quotation');
+
         $table->enum('status', [
             'Requested',
+            'FinishedHead',
             'FinishedCeo',
             'Finished',
             'Rejected',
         ])->default('Requested');
+        
         $table->text('comment')->nullable();
         $table->timestamps();
          $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();
