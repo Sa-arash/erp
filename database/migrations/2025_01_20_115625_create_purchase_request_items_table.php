@@ -18,18 +18,23 @@ return new class extends Migration
             $table->string('quantity');
             $table->float('estimated_unit_cost')->nullable();
             $table->text('ceo_comment')->nullable();
+            $table->text('head_comment')->nullable();
+
             $table->enum('ceo_decision', [
-                // 'pending',
-                // 'purchase',
                 'approve',
                 'reject',
-                // 'assign',
+            ])->nullable();
+            
+            $table->enum('head_decision', [
+                'approve',
+                'reject',
             ])->nullable();
 
 
+
             $table->enum('status', [
-                'purchased',
-                'assigned',
+                'purchase',
+                'assigne',
                 'pending',
                 'rejected',
             ])->default('pending');
