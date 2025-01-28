@@ -21,10 +21,11 @@ class Company extends Model implements HasAvatar, HasName
         return $this->title;
     }
 
-    protected $fillable = ['category_account','customer_account', 'vendor_account', 'account_bank', 'weekend_days', 'daily_working_hours', 'overtime_rate', 'title', 'logo', 'description', 'user_id', 'country', 'address', 'contact_information', 'company_registration_document', 'currency'];
+    protected $fillable = ['product_accounts','category_account','customer_account', 'vendor_account', 'account_bank', 'weekend_days', 'daily_working_hours', 'overtime_rate', 'title', 'logo', 'description', 'user_id', 'country', 'address', 'contact_information', 'company_registration_document', 'currency'];
 
     protected $casts = [
         'weekend_days' => 'array',
+        'product_accounts' => 'array',
     ];
 
     public function getFilamentAvatarUrl(): ?string
@@ -287,6 +288,6 @@ class Company extends Model implements HasAvatar, HasName
         return $this->hasMany(Approval::class);
     }
 
-    
+
 
 }

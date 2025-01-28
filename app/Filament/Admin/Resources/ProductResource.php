@@ -45,9 +45,20 @@ class ProductResource extends Resource
                     Select::make('product_type')->searchable()->options(['consumable' => 'consumable', 'unConsumable' => 'unConsumable'])->default('consumable'),
                 ])->columns(3),
                 Select::make('account_id')->options(function () {
-                    return Account::query()
-                    // ->whereIn('id', [46,178,179])
-                    ->where('company_id', getCompany()->id)->pluck('name','id')->toArray();
+                    $data=[];
+                    if (getCompany()->product_accounts){
+                        $accounts= Account::query()
+                            ->whereIn('id', getCompany()->product_accounts)
+                            ->where('company_id', getCompany()->id)->get();
+                    }else{
+                        $accounts= Account::query()
+                            ->where('company_id', getCompany()->id)->get();
+                    }
+                    foreach ( $accounts as $account){
+                        $data[$account->id]=$account->name." (".$account->code .")";
+                    }
+                    return $data;
+
                 })->required()->model(Transaction::class)->searchable()->label('Categoy'),
 
                 select::make('sub_account_id')->required()->searchable()->label('SubCategory')->options(fn(Get $get)=>  $get('account_id') !== null? getCompany()->accounts()->where('parent_id',$get('account_id'))->pluck('name', 'id'):[])

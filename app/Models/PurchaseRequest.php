@@ -18,7 +18,10 @@ class PurchaseRequest extends Model
         'company_id',
         'employee_id',
     ];
-
+    public function approvals(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(Approval::class,'approvable','approvable_type','approvable_id');
+    }
 
     public function department(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Widgets;
 
 use App\Filament\Admin\Resources\PurchaseRequestResource\Pages\ViewPurcheseRequest;
+use App\Models\Employee;
 use App\Models\PurchaseRequest;
 use App\Models\Structure;
 use Filament\Facades\Filament;
@@ -11,6 +12,7 @@ use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
 use Filament\Infolists\Components\Fieldset;
@@ -34,7 +36,7 @@ class MyPurchaseRequest extends BaseWidget
     {
         return $table
             ->query(
-                PurchaseRequest::query()->where('employee_id', auth()->user()->id)
+                PurchaseRequest::query()->where('employee_id', auth()->user()->id)->orderBy('id','desc')
             )
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
@@ -54,7 +56,7 @@ class MyPurchaseRequest extends BaseWidget
                 //         ->numeric()
                 //         ->sortable(),
 
-                Tables\Columns\TextColumn::make('status'),
+                Tables\Columns\TextColumn::make('status')->badge(),
                 Tables\Columns\TextColumn::make('total')->state(function ($record){
                     $total=0;
                     foreach ($record->items as $item){
@@ -62,8 +64,7 @@ class MyPurchaseRequest extends BaseWidget
                     }
                     return $total;
                 })->numeric(),
-                Tables\Columns\TextColumn::make('status')
-                    ->sortable(),
+
                 // Tables\Columns\TextColumn::make('warehouse_status_date')
                 //     ->date()
                 //     ->sortable(),
@@ -94,11 +95,9 @@ class MyPurchaseRequest extends BaseWidget
     Action::make('view')->infolist([
         ComponentsSection::make('request')->schema([
             TextEntry::make('request_date')->date(),
-            TextEntry::make('purchase_number')->badge(),
-            TextEntry::make('employee.department.title')->label('Department'),
+            TextEntry::make('purchase_number')->label('PR NO')->badge(),
             TextEntry::make('employee.fullName'),
-            TextEntry::make('employee.structure.title')->label('Location'),
-            TextEntry::make('comment')->label('Location'),
+            TextEntry::make('comment')->label('Description'),
         ])->columns(6),
         Fieldset::make('Requested')->relationship('employee')->schema([
             TextEntry::make('fullName'),
@@ -114,133 +113,63 @@ class MyPurchaseRequest extends BaseWidget
             ->headerActions([
                 Action::make('Request Purchase') ->modalWidth(MaxWidth::FitContent  )->form([
                     Section::make('')->schema([
-                        Hidden::make('employee_id')->default(fn()=>auth()->user()->id)
-                            ->required(),
-
-                        TextInput::make('purchase_number')
-                            ->label('PR Number')
-                            ->unique(modifyRuleUsing: function (Unique $rule) {
-                                return $rule->where('company_id', getCompany()->id);
-                            })
-                            ->unique('purchase_requests', 'purchase_number')
-                            ->required()
-                            ->numeric(),
-
-                        DatePicker::make('request_date')
-                            ->default(now())
-                            ->label('Request Date')
-                            ->required(),
-
-
-
-                        Hidden::make('status')
-                            ->label('Status')
-                            // ->options([
-                            //     'requested' => 'Requested',
-                            //     'warehouse_checked' => 'Warehouse Checked',
-                            //     'department_manager_approved' => 'Department Manager Approved',
-                            //     'department_manager_rejected' => 'Department Manager Rejected',
-                            //     'ceo_approved' => 'CEO Approved',
-                            //     'ceo_rejected' => 'CEO Rejected',
-                            //     'purchased' => 'Purchased',
-                            //     'not_purchased' => 'Not Purchased',
-                            // ])
-                            ->default('requested')
-                            ->required(),
-                        Select::make('department_id')
-                            ->searchable()
-                            ->preload()
-                            ->label('Department')
-                            ->options(getCompany()->departments->pluck('title', 'id'))
-                            ->required(),
-                        Select::make('structure_id')->searchable()->label('Location')
-
-                            ->options(function (Get $get) {
-                                return Structure::where('id', (auth()->user()->employee?->structure_id))->pluck('title', 'id');
-                            })->required()->live(),
-
-
-                        // SelectTree::make('structure_id')
-                        // ->searchable()
-                        // ->preload()
-                        //     ->label('Location')
-                        //     ->options(getCompany()->structures->pluck('title', 'id'))
-                        //     ->required(),
-
-                        TextInput::make('description')
-                            ->label('Description'),
-
-
-
+                        TextInput::make('purchase_number')->default(function (){
+                            $puncher= PurchaseRequest::query()->where('company_id',getCompany()->id)->latest()->first();
+                            if ($puncher){
+                                return  generateNextCodePO($puncher->purchase_number);
+                            }else{
+                                return "0001";
+                            }
+                        })->readOnly()->label('PR Number')->unique(modifyRuleUsing: function (Unique $rule) {return $rule->where('company_id', getCompany()->id);})->unique('purchase_requests', 'purchase_number')->required()->numeric(),
+                        DatePicker::make('request_date')->default(now())->label('Request Date')->required(),
+                        Textarea::make('description')->columnSpanFull()->label('Description'),
                         Repeater::make('Requested Items')
-
                             ->schema([
-                                Select::make('product_id')
-                                    ->searchable()
-                                    ->preload()
-                                    ->label('Product')
-                                    ->options(getCompany()->products->pluck('title', 'id'))
-                                    ->required(),
-
-                                TextInput::make('description')
-                                    ->label('Description')
-                                    ->required(),
-
-                                Select::make('unit_id')
-                                    ->searchable()
-                                    ->preload()
-                                    ->label('Unit')
-                                    ->options(getCompany()->units->pluck('title', 'id'))
-                                    ->required(),
-                                TextInput::make('quantity')
-                                    ->required()
-                                    ->mask(RawJs::make('$money($input)'))
-                                    ->stripCharacters(','),
-
-                                TextInput::make('estimated_unit_cost')
-                                    ->label('Estimated Unit Cost')
-                                    ->numeric()
-                                    ->mask(RawJs::make('$money($input)'))
-                                    ->stripCharacters(',')->required(),
-
-                                Select::make('project_id')
-                                    ->searchable()
-                                    ->preload()
-                                    ->label('Project')
-                                    ->options(getCompany()->projects->pluck('name', 'id')),
-
-
-                                // Select::make('warehouse_decision')
-                                //     ->label('Warehouse Decision')
-                                //     ->options([
-                                //         'available_in_stock' => 'Available in Stock',
-                                //         'needs_purchase' => 'Needs Purchase',
-                                //     ])
-                                //     ->default('needs_purchase')
-                                //     ->required(),
-
-                                // Select::make('status')
-                                //     ->label('Status')
-                                //     ->options([
-                                //         'purchased' => 'Purchased',
-                                //         'assigned' => 'Assigned',
-                                //         'not_purchased' => 'Not Purchased',
-                                //         'rejected' => 'Rejected',
-                                //     ])
-                                //     ->default('not_purchased')
-                                //     ->required(),
-
+                                Select::make('product_id')->searchable()->preload()->label('Product')->options(getCompany()->products->pluck('title', 'id'))->required(),
+                                TextInput::make('description')->label('Description')->required(),
+                                Select::make('unit_id')->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id'))->required(),
+                                TextInput::make('quantity')->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                                TextInput::make('estimated_unit_cost')->label('Estimated Unit Cost')->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required(),
+                                Select::make('project_id')->searchable()->preload()->label('Project')->options(getCompany()->projects->pluck('name', 'id')),
                             ])
                             ->columns(6)
                             ->columnSpanFull(),
                     ])->columns(2)
                 ])->action(function ($data){
-
-                    $data['company_id']=getCompany()->id;
+                    $employee=getEmployee();
+                    $company=getCompany();
+                    $data['company_id']=$company->id;
+                    $data['employee_id']=$employee->id;
+                    $data['status']='Requested';
                     $request= PurchaseRequest::query()->create($data);
                     foreach ($data['Requested Items'] as $requestedItem) {
-                        $requestedItem['company_id']=getCompany()->id;
+                        $requestedItem['company_id']=$company->id;
                         $request->items()->create($requestedItem);
+                    }
+                    if ($employee->department->employee_id){
+                        if ($employee->department->employee_id ===$employee->id){
+                            $request->approvals()->create([
+                                'employee_id'=>$employee->department->employee_id,
+                                'company_id'=>$company->id,
+                                'position'=>'Head Department',
+                                'status'=>"Approve"
+                            ]);
+                            $request->update(['status'=>'FinishedHead']);
+                            $CEO=Employee::query()->firstWhere('user_id',$company->user_id);
+                            $request->approvals()->create([
+                                'employee_id'=>$CEO->id,
+                                'company_id'=>$company->id,
+                                'position'=>'CEO',
+                                'status'=>"Pending"
+                            ]);
+
+                        }else{
+                            $request->approvals()->create([
+                                'employee_id'=>$employee->department->employee_id,
+                                'company_id'=>$company->id,
+                                'position'=>'Head Department'
+                            ]);
+                        }
                     }
 
                 })

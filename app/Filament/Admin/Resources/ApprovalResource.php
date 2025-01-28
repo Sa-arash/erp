@@ -20,7 +20,7 @@ class ApprovalResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->query(Approval::query()->where('employee_id', getEmployee()->id))
+        return $table->query(Approval::query()->where('employee_id', getEmployee()->id)->orderBy('id','desc'))
             ->columns([
                 Tables\Columns\TextColumn::make('approvable_type')->state(function ($record) {
                     return substr($record->approvable_type, 11);

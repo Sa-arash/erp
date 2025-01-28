@@ -28,6 +28,7 @@ return new class extends Migration
             $table->integer('vendor_account')->nullable();
             $table->integer('customer_account')->nullable();
             $table->integer('category_account')->nullable();
+            $table->text('product_accounts')->nullable();
 //          $table->text('company_type');
             $table->text('logo')->nullable();
             $table->timestamps();

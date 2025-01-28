@@ -23,6 +23,9 @@ class Account extends Model
         'company_id',
         'closed_at',
     ];
+    public function getTitleAttribute(){
+        return $this->name." (".$this->code." )";
+    }
 
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
