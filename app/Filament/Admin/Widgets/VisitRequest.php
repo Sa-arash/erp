@@ -12,6 +12,8 @@ use Filament\Forms\Components\TimePicker;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\BulkAction;
+use Filament\Tables\Actions\EditAction;
+use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 
@@ -56,7 +58,9 @@ class VisitRequest extends BaseWidget
 
             ])
 
-            ->actions([])
+            ->actions([
+                EditAction::make(),
+            ])
             ->headerActions([
                 Action::make('approval')->form(
                     [
@@ -145,23 +149,45 @@ class VisitRequest extends BaseWidget
                     ]
 
                 )->action(function (array $data, $record): void {
-                    VisitorRequest::query()->create([
+                   $visitorRequest = VisitorRequest::query()->create([
+                        'visit_date'=>$data['visit_date'],
                         'arrival_time'=>$data['arrival_time'],
                         'departure_time'=>$data['departure_time'],
                         'purpose'=>$data['purpose'],
                         'visitors_detail'=>$data['visitors_detail'],
                         'driver_vehicle_detail'=>$data['driver_vehicle_detail'],
-                        'requested_by'=>auth()->user()->employee->id,
+                        'requested_by'=>getEmployee()->id,
                         'company_id'=>getCompany()->id,
                     ]);
-                    $this->record->approvals()->create([
-                        'employee_id'=>$this->record->requested_by,
-                        'company_id'=>$this->record->company_id,
-                        'position'=>'VisitAccessRequest'
-                    ]);
+
+
+
+                    if (getEmployee()->department->employee_id){
+                        if (getEmployee()->department->employee_id ===getEmployee()->id){
+                            $visitorRequest->approvals()->create([
+                                'employee_id'=>getEmployee()->department->employee_id,
+                                'company_id'=>getCompany()->id,
+                                'position'=>'Head Department',
+                                'status'=>"Approve"
+                            ]);
+                        }else{
+                            $visitorRequest->approvals()->create([
+                                'employee_id'=>getEmployee()->department->employee_id,
+                                'company_id'=>getCompany()->id,
+                                'position'=>'Head Department'
+                            ]);
+                        }
+                    }
                 })
             ])
             ->bulkActions([])
         ;
+    }
+    public static function getPages(): array
+    {
+        return [
+           
+            'edit' => Pages\EditVisitorRequest::route('/{record}/edit'),
+        ];
     }
 }

@@ -13,7 +13,7 @@ class CreateVisitorRequest extends CreateRecord
     public function afterCreate(){
         
         $this->record->approvals()->create([
-            'employee_id'=>$this->record->requested_by,
+            'employee_id'=>$this->record->requested_by->department->employee_id,
             'company_id'=>$this->record->company_id,
             'position'=>'VisitAccessRequest'
         ]);
