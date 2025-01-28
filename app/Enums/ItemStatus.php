@@ -8,14 +8,14 @@ use Filament\Support\Contracts\HasLabel;
 enum ItemStatus:string implements HasColor,HasLabel
 {
 
-    case purchased = 'purchased';
+    case purchase = 'purchase';
     case assigned = 'assigned';
     case pending = 'pending';
 
     public function getLabel(): ?string
     {
         return match ($this){
-            self::purchased => 'purchased',
+            self::purchase => 'purchase',
             self::assigned => 'assigned',
             self::pending => 'pending',
 
@@ -25,7 +25,7 @@ enum ItemStatus:string implements HasColor,HasLabel
     public function getColor(): string|array|null
     {
         return match($this){
-            self::purchased => 'primary',
+            self::purchase => 'primary',
             self::assigned => 'success',
             self::pending => 'info',
 

@@ -35,7 +35,7 @@ class QuotationsRelationManager extends RelationManager
                 Forms\Components\Select::make('employee_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Logistic'),
                 Forms\Components\Select::make('employee_operation_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Operation'),
                 Forms\Components\FileUpload::make('file')->downloadable()->columnSpanFull(),
-                Repeater::make('Requested Items')
+                Repeater::make('Requested Items')->required()
                     ->schema([
                         Forms\Components\Select::make('purchase_request_item_id')->disableOptionsWhenSelectedInSiblingRepeaterItems()
                             ->label('Product')->options(function () {
