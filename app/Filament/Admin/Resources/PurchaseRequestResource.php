@@ -325,7 +325,6 @@ class PurchaseRequestResource extends Resource
                                         ->stripCharacters(','),
 
                                     Forms\Components\TextInput::make('estimated_unit_cost')
-                                        ->required()
                                         ->disabled()
                                         ->numeric()
                                         ->mask(RawJs::make('$money($input)'))
@@ -417,7 +416,7 @@ class PurchaseRequestResource extends Resource
                     Tables\Actions\Action::make('prQuotation')->visible(fn($record) => $record->is_quotation)->color('warning')->label('Qu ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.quotation', ['id' => $record->id])),
 
 
-                    Tables\Actions\Action::make('insertQu')->modalWidth(MaxWidth::Full)->icon('heroicon-s-newspaper')->label('InsertQu')->visible(fn($record) => $record->is_quotation)->form(function ($record) {
+                    Tables\Actions\Action::make('insertQuotation')->modalWidth(MaxWidth::Full)->icon('heroicon-s-newspaper')->label('InsertQu')->visible(fn($record) => $record->is_quotation)->form(function ($record) {
 
                         return [
                             Section::make([
@@ -452,7 +451,7 @@ class PurchaseRequestResource extends Resource
                                         $q=$get('quantity');
                                         $tax=$state === null ? 0 : (float)$state;
                                         $price= $get('unit_rate') !==null? str_replace(',', '', $get('unit_rate')): 0;
-                                        $set('total', number_format(($q * $price) + ($q * $price * $tax)+ ($q * $price * $freights)));
+                                        // $set('total', number_format(($q * $price) + ($q * $price * $tax)+ ($q * $price * $freights)));
                                     })->live(true)
                                         ->prefix('%')
                                         ->numeric()->maxValue(1)
