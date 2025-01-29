@@ -61,15 +61,15 @@ class PurchaseOrderResource extends Resource
 
                         Forms\Components\Select::make('vendor_id')->label('Vendor')
                         
-                        ->options(getCompany()->parties->where('type', 'vendor')->map(fn($item)=> $item->name."(".$item->accountVendor->code.")")->toArray())
+                        ->options((getCompany()->parties->where('type', 'vendor')->pluck('info','id')))
 
                         ->searchable()
                         ->preload()
                         ->required(),
+                        Forms\Components\Select::make('currency')->required()->required()->options(getCurrency())->searchable()->preload(),
                         Forms\Components\TextInput::make('exchange_rate')
                         ->required()->default(1)
                         ->numeric(),
-                        Forms\Components\Select::make('currency')->required()->required()->options(getCurrency())->searchable()->preload(),
 
 
 
@@ -101,7 +101,6 @@ class PurchaseOrderResource extends Resource
                     Forms\Components\DatePicker::make('date_of_delivery')
                         ->required(),
                     Forms\Components\TextInput::make('location_of_delivery')
-                        ->required()
                         ->maxLength(255),
 
                
@@ -138,12 +137,12 @@ class PurchaseOrderResource extends Resource
 
 
 
-                    Repeater::make('RequestedItems')->defaultItems(0)
+                    Repeater::make('RequestedItems')->defaultItems(0)->required()
                         // ->formatStateUsing(fn(Get $get) => dd($get('purchase_request_id')):'')
                         ->relationship('items')
                         ->schema([
                             Forms\Components\Select::make('product_id')
-                                ->disabled()
+                                
                                 ->label('Product')->options(function () {
                                     $products = getCompany()->products;
                                     $data = [];
@@ -154,19 +153,19 @@ class PurchaseOrderResource extends Resource
                                 })->required()->searchable()->preload(),
 
                             Forms\Components\TextInput::make('description')
-                                ->disabled()
+                               
                                 ->label('Description')
                                 ->required(),
 
                             Forms\Components\Select::make('unit_id')
-                                ->disabled()
+                               
                                 ->searchable()
                                 ->preload()
                                 ->label('Unit')
                                 ->options(getCompany()->units->pluck('title', 'id'))
                                 ->required(),
                             Forms\Components\TextInput::make('quantity')
-                                ->disabled()
+                               
                                 ->required()->live()
                                 ->mask(RawJs::make('$money($input)'))
                                 ->stripCharacters(','),
@@ -204,7 +203,7 @@ class PurchaseOrderResource extends Resource
                             Forms\Components\Select::make('project_id')
                                 ->searchable()
                                 ->preload()
-                                ->disabled()
+                               
                                 ->label('Project')
                                 ->options(getCompany()->projects->pluck('name', 'id')),
 

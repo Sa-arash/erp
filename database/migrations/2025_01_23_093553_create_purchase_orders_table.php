@@ -27,8 +27,8 @@ return new class extends Migration
             
             $table->foreignId('prepared_by')->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
            
-            $table->foreignId('bid_id')->constrained('bids')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->foreignId('quotation_id')->constrained('quotations')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('bid_id')->nullable()->constrained('bids')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('quotation_id')->nullable()->constrained('quotations')->cascadeOnDelete()->cascadeOnUpdate();
 
             // $table->boolean('quotations')->default(false); 
             // $table->boolean('bid_summary')->default(false);

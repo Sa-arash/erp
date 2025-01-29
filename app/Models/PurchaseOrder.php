@@ -8,6 +8,8 @@ class PurchaseOrder extends Model
 {
     protected $guarded = ['id'];
 
+
+    
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);
@@ -27,7 +29,7 @@ class PurchaseOrder extends Model
     {
         return $this->belongsTo(PurchaseRequest::class , 'purchase_request_id');
     }
-    public function vendor (): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function vendor(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Parties::class , 'vendor_id');
     }

@@ -20,6 +20,9 @@ class Parties extends Model
         'account_code_customer',
     ];
 
+    public function getInfoAttribute(){
+return $this->name."(".$this->accountVendor->code.")";
+    }
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);
