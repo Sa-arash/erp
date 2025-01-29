@@ -49,7 +49,7 @@ class PurchaseRequestResource extends Resource
 
     protected static ?string $pluralLabel = 'Purchase Request';
     protected static ?string $modelLabel = 'Request';
-    protected static ?string $navigationGroup = 'Stock Management';
+    protected static ?string $navigationGroup = 'Logistic management';
 
     protected static ?string $navigationIcon = 'heroicon-c-document-arrow-down';
 

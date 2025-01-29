@@ -19,7 +19,7 @@ class InventoryResource extends Resource
 {
     protected static ?string $model = Inventory::class;
 
-    protected static ?string $navigationGroup = 'Stock Management';
+    protected static ?string $navigationGroup = 'Logistic management';
     protected static ?string $navigationIcon = 'heroicon-s-archive-box-arrow-down';
 
     public static function canAccess(): bool

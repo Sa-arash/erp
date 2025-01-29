@@ -24,7 +24,7 @@ class ProductCategoryResource extends Resource
 {
     protected static ?string $model = ProductCategory::class;
     protected static ?string $label = 'Category';
-    protected static ?string $navigationGroup = 'Stock Management';
+    protected static ?string $navigationGroup = 'Logistic management';
     protected static ?string $navigationIcon = 'heroicon-c-server-stack';
     public static function canAccess(): bool
     {

@@ -21,7 +21,7 @@ use Illuminate\Validation\Rules\Unique;
 class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
-    protected static ?string $navigationGroup = 'Stock Management';
+    protected static ?string $navigationGroup = 'Logistic management';
     protected static ?string $label = "Product";
     protected static ?string $navigationIcon = 'heroicon-m-cube';
     protected static ?string $cluster = StackManagementSettings::class;

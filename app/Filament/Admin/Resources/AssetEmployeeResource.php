@@ -25,7 +25,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class AssetEmployeeResource extends Resource
 {
     protected static ?string $model = AssetEmployee::class;
-    protected static ?string $navigationGroup = 'Stock Management';
+    protected static ?string $navigationGroup = 'Logistic management';
     protected static ?string $label="Check in/Check out Assets";
 
     protected static ?string $navigationIcon = 'heroicon-s-arrows-up-down';

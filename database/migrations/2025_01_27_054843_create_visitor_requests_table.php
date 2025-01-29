@@ -18,7 +18,7 @@ return new class extends Migration
             $table->time('departure_time');
             $table->text('purpose');
             $table->json('visitors_detail')->nullable();
-            $table->string('driver_vehicle_detail')->nullable();
+            $table->json('driver_vehicle_detail')->nullable();
             $table->date('approval_date')->nullable();
             $table->enum('status', ['approved', 'notApproved'])->default('notApproved');
             $table->timestamps();

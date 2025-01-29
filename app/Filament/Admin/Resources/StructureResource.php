@@ -20,7 +20,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class StructureResource extends Resource
 {
     protected static ?string $model = Structure::class;
-    protected static ?string $navigationGroup = 'Stock Management';
+    protected static ?string $navigationGroup = 'Logistic management';
     protected static ?string $navigationIcon = 'heroicon-m-square-3-stack-3d';
     public static function canAccess(): bool
     {
