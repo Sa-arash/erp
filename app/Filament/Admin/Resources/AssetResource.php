@@ -88,7 +88,10 @@ class AssetResource extends Resource
                 Tables\Columns\TextColumn::make('status')->badge(),
 
                 Tables\Columns\TextColumn::make('warehouse.title')->label('Warehouse/Building')->sortable(),
-                Tables\Columns\TextColumn::make('structure.title')->label('Location')->sortable(),
+                Tables\Columns\TextColumn::make('structure')->state(function ($record){
+                    $str=getParents($record->structure);
+                    return substr($str,1,strlen($str)-1);
+                })->label('Location')->sortable(),
                 Tables\Columns\TextColumn::make('employee')->state(function ($record) {
                     return $record->employees->last()?->assetEmployee?->employee?->fullName;
                 })->badge()->url(function ($record) {
