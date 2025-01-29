@@ -8,6 +8,7 @@ use App\Models\Approval;
 use App\Models\Employee;
 use App\Models\Product;
 use App\Models\PurchaseRequestItem;
+use Filament\Actions\ViewAction;
 use Filament\Forms;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
@@ -78,6 +79,7 @@ class ApprovalResource extends Resource
                 })->searchable()
             ],getModelFilter())
             ->actions([
+                ViewAction::make(),
                 Tables\Actions\Action::make('ApprovePurchaseRequest')->tooltip('ApprovePurchaseRequest')->label('Approve')->icon('heroicon-o-check-badge')->iconSize(IconSize::Large)->color('success')->form([
                     Forms\Components\Section::make([
                         Select::make('employee')->disabled()->default(fn($record) => $record->approvable?->employee_id)->options(fn($record) => Employee::query()->where('id', $record->approvable?->employee_id)->get()->pluck('info', 'id'))->searchable(),
