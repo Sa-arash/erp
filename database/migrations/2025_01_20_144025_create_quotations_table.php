@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('party_id')->constrained('parties')->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamp('date');
             $table->text('file')->nullable();
+            $table->text('currency')->nullable();
             $table->foreignId('employee_id')->nullable()->constrained('employees')->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('employee_operation_id')->nullable()->constrained('employees')->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();

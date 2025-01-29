@@ -15,8 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('purchase_request_item_id')->constrained('purchase_request_items')->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('quotation_id')->constrained('quotations')->cascadeOnUpdate()->cascadeOnDelete();
-            
+
             $table->float('unit_rate')->nullable();
+            $table->decimal('taxes', 10, 2)->nullable();
+            $table->decimal('freights', 10, 2)->nullable();
             $table->timestamp('date')->default(now());
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();

@@ -180,12 +180,88 @@ class PurchaseRequestResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\Action::make('bid')->form(function ($record) {
-                    return [
-                        Section::make([
-                            Forms\Components\DatePicker::make('opening_date')->default(now())->required(),
-                            Select::make('currency')->options(getCurrency())->searchable()->preload()->required(),
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\ActionGroup::make([
 
+                    Tables\Actions\Action::make('prQuotation')->visible(fn($record)=>$record->is_quotation)->color('warning')->label('Qu ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.quotation', ['id' => $record->id])),
+                    Tables\Actions\Action::make('insertQu')->icon('heroicon-s-newspaper')->label('InsertQu')->visible(fn($record)=>$record->is_quotation)->form(function ($record){
+                        return [
+                            Forms\Components\Select::make('party_id')->label('Vendor')->options(Parties::query()->where('company_id', getCompany()->id)->pluck('name', 'id'))->searchable()->preload()->required(),
+                            Forms\Components\DatePicker::make('date')->default(now())->required(),
+                            Forms\Components\Select::make('employee_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Logistic'),
+                            Forms\Components\Select::make('employee_operation_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Operation'),
+                            Forms\Components\FileUpload::make('file')->downloadable()->columnSpanFull(),
+                            Repeater::make('Requested Items')->required()
+                                ->schema([
+                                    Forms\Components\Select::make('purchase_request_item_id')->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                                        ->label('Product')->options(function ()use($record) {
+                                            $products = $record->items->where('status', 'purchase');
+                                            $data = [];
+                                            foreach ($products as $product) {
+                                                $data[$product->id] = $product->product->title . " (" . $product->product->sku . ")";
+                                            }
+                                            return $data;
+                                        })->required()->searchable()->preload(),
+                                    Forms\Components\TextInput::make('quantity')->readOnly()->live()->required()->numeric(),
+                                    Forms\Components\TextInput::make('unit_rate')->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
+                                        if ($get('quantity') and $get('unit_rate')) {
+                                            $set('total', number_format(str_replace(',', '', $get('unit_rate')) * $get('quantity')));;
+                                        }
+                                    })->live(true)->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                                    Forms\Components\TextInput::make('total')->readOnly()->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+
+                                ])->formatStateUsing(function ()use($record) {
+                                    $data = [];
+                                    foreach ($record->items->where('status', 'purchase') as $item) {
+                                        $data[] = ['purchase_request_item_id' => $item->id, 'quantity' => $item->quantity, 'unit_rate' => 0];
+                                    }
+                                    return $data;
+                                })
+                                ->columns(4)->columnSpanFull()
+
+                        ];
+                    })->action(function ($data,$record) {
+
+                        $id = getCompany()->id;
+                        $quotation= Quotation::query()->create([
+                            'purchase_request_id' => $record->id,
+                            'party_id' => $data['party_id'],
+                            'date' => $data['date'],
+                            'employee_id' => $data['employee_id'],
+                            'employee_operation_id' => $data['employee_operation_id'],
+                            'company_id' => $id,
+                        ]);
+
+                        foreach ($data['Requested Items'] as $item) {
+                            $quotation->quotationItems()->create([
+                                'purchase_request_item_id'=>$item['purchase_request_item_id'],
+                                'unit_rate'=>$item['unit_rate'],
+                                'date'=>$data['date'],
+                                'company_id'=>$id
+                            ]);
+                        }
+                        Notification::make('add quotation')->success()->title('Quotation Added')->send()->sendToDatabase(auth()->user());
+
+                    }),
+                    Tables\Actions\Action::make('prPDF')->label('PR ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.purchase', ['id' => $record->id])),
+
+                    Tables\Actions\Action::make('bid')->icon('heroicon-c-check-badge')->form(function ($record) {
+                        return [
+                            Section::make([
+                                Forms\Components\DatePicker::make('opening_date')->default(now())->required(),
+                                Select::make('quotation_id')->options(function () use ($record) {
+                                    $data = [];
+                                    $quotations = Quotation::query()->where('purchase_request_id', $record->id)->get();
+                                    foreach ($quotations as $quotation) {
+                                        $data[$quotation->id] = $quotation->party->name;
+                                    }
+                                    return $data;
+                                })->required()->label('Quotation Selected')->preload()->searchable(),
+                                Select::make('position_procurement_controller')->multiple()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->preload()->searchable(),
+                                Select::make('procurement_committee_members')->multiple()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->preload()->searchable(),
+
+                            ])->columns(4),
                             Placeholder::make('content')->content(function () use ($record) {
                                 $trs = "";
                                 $totalTrs = "
@@ -257,169 +333,22 @@ class PurchaseRequestResource extends Resource
 </table>";
                                 return new HtmlString($table);
                             })->columnSpanFull(),
-                            Select::make('quotation_id')->options(function () use ($record) {
-                                $data = [];
-                                $quotations = Quotation::query()->where('purchase_request_id', $record->id)->get();
-                                foreach ($quotations as $quotation) {
-                                    $data[$quotation->id] = $quotation->party->name;
-                                }
-                                return $data;
 
-                            })->required()->label('Quotation Selected')->preload()->searchable()->columnSpanFull(),
-                            Select::make('position_procurement_controller')->multiple()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->preload()->searchable(),
-                            Select::make('procurement_committee_members')->multiple()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->preload()->searchable()
-                        ])->columns(2)
-                    ];
-                })->action(function ($data, $record) {
-                    $data['company_id'] = getCompany()->id;
-                    $data['purchase_request_id'] = $record->id;
-                    $quotation = Quotation::query()->firstWhere('id', $data['quotation_id']);
-                    $totalSum = 0;
-                    foreach ($quotation->quotationItems as $quotationItem) {
-                        $totalSum += $quotationItem->item->quantity * $quotationItem->unit_rate;
-                    }
-                    $data['total_cost'] = $totalSum;
-                    Bid::query()->create($data);
-                    Notification::make('make bid')->success()->title('Created Successfully')->send()->sendToDatabase(auth()->user());
-                })->modalWidth(MaxWidth::Full)->visible(fn($record)=>$record->quotations->count()>0),
-                Tables\Actions\Action::make('prPDF')->label('PR ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.purchase', ['id' => $record->id])),
-                Tables\Actions\Action::make('prQuotation')->visible(fn($record)=>$record->is_quotation)->color('warning')->label('Qu ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.quotation', ['id' => $record->id])),
-                Tables\Actions\Action::make('insertQu')->label('InsertQu')->visible(fn($record)=>$record->is_quotation)->form(function ($record){
-                   return [
-                        Forms\Components\Select::make('party_id')->label('Vendor')->options(Parties::query()->where('company_id', getCompany()->id)->pluck('name', 'id'))->searchable()->preload()->required(),
-                        Forms\Components\DatePicker::make('date')->default(now())->required(),
-                        Forms\Components\Select::make('employee_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Logistic'),
-                        Forms\Components\Select::make('employee_operation_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Operation'),
-                        Forms\Components\FileUpload::make('file')->downloadable()->columnSpanFull(),
-                        Repeater::make('Requested Items')->required()
-                            ->schema([
-                                Forms\Components\Select::make('purchase_request_item_id')->disableOptionsWhenSelectedInSiblingRepeaterItems()
-                                    ->label('Product')->options(function ()use($record) {
-                                        $products = $record->items->where('status', 'purchase');
-                                        $data = [];
-                                        foreach ($products as $product) {
-                                            $data[$product->id] = $product->product->title . " (" . $product->product->sku . ")";
-                                        }
-                                        return $data;
-                                    })->required()->searchable()->preload(),
-                                Forms\Components\TextInput::make('unit_rate')->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
-                                    if ($get('quantity') and $get('unit_rate')) {
-                                        $set('total', number_format(str_replace(',', '', $get('unit_rate')) * $get('quantity')));;
-                                    }
-                                })->live()->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-                                Forms\Components\TextInput::make('quantity')->readOnly()->live()->required()->numeric(),
-                                Forms\Components\TextInput::make('total')->readOnly()->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
 
-                            ])->formatStateUsing(function ()use($record) {
-                                $data = [];
-                                foreach ($record->items->where('status', 'purchase') as $item) {
-                                    $data[] = ['purchase_request_item_id' => $item->id, 'quantity' => $item->quantity, 'unit_rate' => 0];
-                                }
-                                return $data;
-                            })
-                            ->columns(4)->columnSpanFull()
-
-                    ];
-                })->action(function ($data,$record) {
-
-                    $id = getCompany()->id;
-                    $quotation= Quotation::query()->create([
-                        'purchase_request_id' => $record->id,
-                        'party_id' => $data['party_id'],
-                        'date' => $data['date'],
-                        'employee_id' => $data['employee_id'],
-                        'employee_operation_id' => $data['employee_operation_id'],
-                        'company_id' => $id,
-                    ]);
-
-                    foreach ($data['Requested Items'] as $item) {
-                        $quotation->quotationItems()->create([
-                            'purchase_request_item_id'=>$item['purchase_request_item_id'],
-                            'unit_rate'=>$item['unit_rate'],
-                            'date'=>$data['date'],
-                            'company_id'=>$id
-                        ]);
-                    }
-                    Notification::make('add quotation')->success()->title('Quotation Added')->send()->sendToDatabase(auth()->user());
-
-                }),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\ViewAction::make(),
-//                Tables\Actions\Action::make('Watehouse Check')->modalWidth(MaxWidth::Full)
-//
-//                    ->form(function ($record) {
-//
-//                        return [
-//                            Repeater::make('items')->formatStateUsing(fn($record) => $record->items->toArray())
-//                                ->schema([
-//                                    Forms\Components\Select::make('product_id')
-//                                        ->searchable()
-//                                        ->preload()
-//                                        ->label('Product')
-//                                        ->options(getCompany()->products->pluck('title', 'id'))
-//                                        ->required(),
-//
-//                                    Forms\Components\TextInput::make('description')
-//                                        ->label('Description')
-//                                        ->required(),
-//
-//                                    Forms\Components\Select::make('unit_id')
-//                                        ->searchable()
-//                                        ->preload()
-//                                        ->label('Unit')
-//                                        ->options(getCompany()->units->pluck('title', 'id'))
-//                                        ->required(),
-//                                    Forms\Components\TextInput::make('quantity')
-//                                        ->required()
-//                                        ->mask(RawJs::make('$money($input)'))
-//                                        ->stripCharacters(','),
-//
-//                                    Forms\Components\TextInput::make('estimated_unit_cost')
-//                                        ->label('Estimated Unit Cost')
-//                                        ->numeric()
-//                                        ->mask(RawJs::make('$money($input)'))
-//                                        ->stripCharacters(','),
-//
-//                                    Forms\Components\Select::make('project_id')
-//                                        ->searchable()
-//                                        ->preload()
-//                                        ->label('Project')
-//                                        ->options(getCompany()->projects->pluck('name', 'id')),
-//
-//
-//                                    Forms\Components\Select::make('warehouse_decision')
-//                                        ->label('Warehouse Decision')
-//                                        ->options([
-//                                            'available_in_stock' => 'Available in Stock',
-//                                            'needs_purchase' => 'Needs Purchase',
-//                                        ])
-//                                        ->default('needs_purchase')
-//                                        ->required(),
-//
-//                                    // Forms\Components\Select::make('status')
-//                                    //     ->label('Status')
-//                                    //     ->options([
-//                                    //         'purchased' => 'Purchased',
-//                                    //         'assigned' => 'Assigned',
-//                                    //         'not_purchased' => 'Not Purchased',
-//                                    //         'rejected' => 'Rejected',
-//                                    //     ])
-//                                    //     ->default('not_purchased')
-//                                    //     ->required(),
-//
-//
-//                                    Forms\Components\Hidden::make('company_id')
-//                                        ->default(Filament::getTenant()->id)
-//                                        ->required(),
-//                                ])->columns(7)
-//                        ];
-//                    })->action(function (array $data,   $record): void {
-//                      $record->items->delete();
-//                            $record->items->create($data['items']);
-//
-//
-//
-//                    })
+                        ];
+                    })->action(function ($data, $record) {
+                        $data['company_id'] = getCompany()->id;
+                        $data['purchase_request_id'] = $record->id;
+                        $quotation = Quotation::query()->firstWhere('id', $data['quotation_id']);
+                        $totalSum = 0;
+                        foreach ($quotation->quotationItems as $quotationItem) {
+                            $totalSum += $quotationItem->item->quantity * $quotationItem->unit_rate;
+                        }
+                        $data['total_cost'] = $totalSum;
+                        Bid::query()->create($data);
+                        Notification::make('make bid')->success()->title('Created Successfully')->send()->sendToDatabase(auth()->user());
+                    })->modalWidth(MaxWidth::Full)->visible(fn($record)=>$record->quotations->count()>0),
+                ]),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
