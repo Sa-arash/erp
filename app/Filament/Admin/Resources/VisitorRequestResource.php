@@ -18,7 +18,7 @@ class VisitorRequestResource extends Resource
     protected static ?string $model = VisitorRequest::class;
     protected static ?string $navigationLabel = 'Visit Access Request';
     protected static ?string $navigationGroup = 'Security Management';
-    protected static ?int $navigationSort = 0;
+    protected static ?int $navigationSort = 100;
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
     public static function form(Form $form): Form
