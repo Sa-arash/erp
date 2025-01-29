@@ -447,10 +447,10 @@ class PurchaseRequestResource extends Resource
                                             $set('total', number_format(($q * $price) + ($q * $price * $tax)+ ($q * $price * $freights)));                                        }
                                     })->live(true)->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                                     Forms\Components\TextInput::make('taxes')->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
-                                        $freights = $get('freights') === null ? 0 : (float)$get('freights');
-                                        $q=$get('quantity');
-                                        $tax=$state === null ? 0 : (float)$state;
-                                        $price= $get('unit_rate') !==null? str_replace(',', '', $get('unit_rate')): 0;
+                                        // $freights = $get('freights') === null ? 0 : (float)$get('freights');
+                                        // $q=$get('quantity');
+                                        // $tax=$state === null ? 0 : (float)$state;
+                                        // $price= $get('unit_rate') !==null? str_replace(',', '', $get('unit_rate')): 0;
                                         // $set('total', number_format(($q * $price) + ($q * $price * $tax)+ ($q * $price * $freights)));
                                     })->live(true)
                                         ->prefix('%')
