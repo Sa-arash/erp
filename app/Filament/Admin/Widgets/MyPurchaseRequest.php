@@ -53,7 +53,7 @@ class MyPurchaseRequest extends BaseWidget
                 //         ->numeric()
                 //         ->sortable(),
                 Tables\Columns\TextColumn::make('status')->badge()->tooltip(function ($record){
-                    return $record->approvals->last()->approve_date;
+                    return $record->approvals->last()?->approve_date;
                 })->alignCenter(),
                 Tables\Columns\TextColumn::make('total')->state(function ($record){
                     $total=0;
