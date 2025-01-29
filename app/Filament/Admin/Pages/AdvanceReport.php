@@ -11,10 +11,12 @@ use Filament\Pages\Page;
 use Filament\Support\Enums\ActionSize;
 use App\Models\Account;
 use App\Models\FinancialPeriod;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Malzariey\FilamentDaterangepickerFilter\Fields\DateRangePicker;
 
 class AdvanceReport extends Page
 {
+    use HasPageShield;
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationGroup = "Accounting Report";
 
