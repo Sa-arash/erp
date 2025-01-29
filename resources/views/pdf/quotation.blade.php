@@ -86,6 +86,7 @@
             <td style="border: 0!important;">Vendodr Name:________________</td>
             <td style="border: 0!important;">Phone:________________ </td>
             <td style="border: 0!important;">Address:________________ </td>
+            <td style="border: 0!important;">Currency:USD/FSD</td>
         </tr>
 
 
