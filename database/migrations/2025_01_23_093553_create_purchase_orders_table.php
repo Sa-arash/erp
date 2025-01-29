@@ -13,12 +13,9 @@ return new class extends Migration
     {
         Schema::create('purchase_orders', function (Blueprint $table) {
             $table->id();
-            // $table->string('vendor_contact', 100);
-            // $table->text('vendor_address'); 
-            $table->enum('payment_type', ['Cheque','Cash','BankTransfer','Other']);
+            $table->foreignId('account_id')->nullable()->constrained('accounts')->cascadeOnDelete()->cascadeOnUpdate();
             $table->date('date_of_delivery'); 
             $table->string('location_of_delivery', 255); 
-            $table->string('project_and_exp_code', 100);
             $table->string('po_no', 50);
             $table->string('purchase_orders_number')->unique();
             $table->string('currency', 10);
@@ -42,7 +39,7 @@ return new class extends Migration
 
 
 
-            $table->foreignId('purchase_request_id')->constrained('purchase_requests')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('purchase_request_id')->nullable()->constrained('purchase_requests')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('vendor_id')->constrained('parties')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();
 
