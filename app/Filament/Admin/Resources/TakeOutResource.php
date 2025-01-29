@@ -21,7 +21,7 @@ class TakeOutResource extends Resource
 {
     protected static ?string $model = TakeOut::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-c-arrow-up-tray';
 
 
 

@@ -7,10 +7,9 @@ use Filament\Pages\Page;
 
 class TakeOut extends Page
 {
-    use HasPageShield;
-    
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
 
+    use HasPageShield;
+    protected static ?string $navigationIcon = 'heroicon-c-arrow-up-tray';
     protected static string $view = 'filament.admin.pages.take-out';
 
     protected function getHeaderWidgets(): array

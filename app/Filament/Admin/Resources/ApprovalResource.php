@@ -36,7 +36,8 @@ class ApprovalResource extends Resource
     {
         return $table->query(Approval::query()->where('employee_id', getEmployee()->id)->orderBy('id','desc'))
             ->columns([
-                Tables\Columns\TextColumn::make('approvable_type')->state(function ($record) {
+                Tables\Columns\TextColumn::make('approvable.employee.info')->label('Employee')->searchable()->badge(),
+                Tables\Columns\TextColumn::make('approvable_type')->label('Request Type')->state(function ($record) {
                     return substr($record->approvable_type, 11);
                 })->searchable()->badge(),
                 Tables\Columns\TextColumn::make('approvable_id')->action(Tables\Actions\Action::make('View')->infolist(function ($record){
@@ -66,13 +67,13 @@ class ApprovalResource extends Resource
                 Tables\Columns\TextColumn::make('approve_date')->dateTime()->sortable(),
             ])
             ->filters([
-                //
+                Tables\Filters\SelectFilter::make()
             ])
             ->actions([
                 Tables\Actions\Action::make('ApprovePurchaseRequest')->tooltip('ApprovePurchaseRequest')->label('Approve')->icon('heroicon-o-check-badge')->iconSize(IconSize::Large)->color('success')->form([
                     Forms\Components\Section::make([
                         Select::make('employee')->disabled()->default(fn($record) => $record->approvable?->employee_id)->options(fn($record) => Employee::query()->where('id', $record->approvable?->employee_id)->get()->pluck('info', 'id'))->searchable(),
-                        Forms\Components\ToggleButtons::make('is_quotation')->label('Is Quotation')->boolean('Quotation', 'Not Quotation')->grouped()->inline(),
+                        Forms\Components\ToggleButtons::make('is_quotation')->required()->label('Need Quotation')->boolean(' With Quotation', 'With out Quotation')->grouped()->inline(),
                         Forms\Components\ToggleButtons::make('status')->default('Approve')->colors(['Approve' => 'success', 'NotApprove' => 'danger', 'Pending' => 'primary'])->options(['Approve' => 'Approve', 'Pending' => 'Pending', 'NotApprove' => 'NotApprove'])->grouped(),
                         Forms\Components\Textarea::make('comment')->nullable(),
                         Forms\Components\Repeater::make('items')->formatStateUsing(fn($record) => $record->approvable?->items?->toArray())->schema([
@@ -105,7 +106,7 @@ class ApprovalResource extends Resource
                         ])->columns(8)->columnSpanFull()->addable(false)
                     ])->columns(),
                 ])->modalWidth(MaxWidth::Full)->action(function ($data, $record) {
-                    $record->update(['status'=>'Approve']);
+                    $record->update(['comment' => $data['comment'], 'status' => $data['status'], 'approve_date' => now()]);
                     $record->approvable->update(['is_quotation' => $data['is_quotation']]);
                     foreach ($data['items'] as $item) {
                         $prItem=PurchaseRequestItem::query()->firstWhere('id',$item['id']);

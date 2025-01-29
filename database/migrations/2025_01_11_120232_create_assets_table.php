@@ -16,8 +16,7 @@ return new class extends Migration
             $table->string('number')->nullable();
             $table->string('serial_number', 250)->nullable();
             $table->string('model', 250)->nullable();
-            $table->decimal('price', 10, 2)->nullable();
-            $table->decimal('market_price', 10, 2)->nullable();
+            $table->decimal('price', 20, 2)->nullable();
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete()->cascadeOnUpdate();
             $table->enum('status',['inuse','inStorageUsable','storageUnUsable','outForRepair','loanedOut'])->default('inStorageUsable');
             $table->text('attributes')->nullable();
