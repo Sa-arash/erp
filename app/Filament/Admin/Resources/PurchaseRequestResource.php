@@ -77,7 +77,7 @@ class PurchaseRequestResource extends Resource
                     Forms\Components\DatePicker::make('request_date')->default(now())->label('Request Date')->required(),
                     Forms\Components\Hidden::make('status')->label('Status')->default('Requested')->required(),
                     Forms\Components\TextInput::make('description')
-                        ->label('Description'),
+                        ->label('Description')->columnSpanFull(),
 
                     Forms\Components\Hidden::make('company_id')
                         ->default(Filament::getTenant()->id)
@@ -91,7 +91,7 @@ class PurchaseRequestResource extends Resource
                                     $products = getCompany()->products;
                                     $data = [];
                                     foreach ($products as $product) {
-                                        $data[$product->id] = $product->title . " (" . $product->sku . ")";
+                                        $data[$product->id] = $product->title . " (sku:" . $product->sku . ")";
                                     }
                                     return $data;
                                 })->required()->searchable()->preload(),
@@ -143,7 +143,7 @@ class PurchaseRequestResource extends Resource
                     //         return $sum;
                     //     } )
                     // ])
-                ])->columns(2)
+                ])->columns(3)
 
 
             ]);
