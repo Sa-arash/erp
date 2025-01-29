@@ -107,7 +107,7 @@
             <th>Unit rate</th>
             <th>Taxes</th>
             <th>Freights</th>
-            <th>TotFl Cost</th>
+            <th>Total Cost</th>
         </tr>
         </thead>
         <tbody>
