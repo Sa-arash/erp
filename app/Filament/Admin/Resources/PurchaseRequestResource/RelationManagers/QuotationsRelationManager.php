@@ -134,8 +134,10 @@ class QuotationsRelationManager extends RelationManager
                                TextEntry::make('item')->label('Item')->state(fn($record)=>$record->item->product->title . " (" . $record->item->product->sku . ")"),
                                TextEntry::make('unit_rate')->label('Unit Rate')->numeric(),
                                TextEntry::make('item.quantity')->label('Quantity')->numeric(),
+                               TextEntry::make('item.taxes')->label('Taxes')->numeric(),
+                               TextEntry::make('item.freights')->label('Freights')->numeric(),
                                TextEntry::make('total')->state(fn($record)=>$record->unit_rate*$record->item->quantity)->numeric(),
-                           ])->columns(4)->columnSpanFull()
+                           ])->columns(6)->columnSpanFull()
                        ])->columns()
                    ];
                }),

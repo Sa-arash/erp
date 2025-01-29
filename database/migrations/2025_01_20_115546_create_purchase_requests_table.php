@@ -17,6 +17,7 @@ return new class extends Migration
         $table->string('purchase_number')->unique();
         $table->text('description')->nullable();
         $table->boolean('is_quotation')->default(0);
+        $table->text('currency')->nullable();
 
         $table->enum('status', [
             'Requested',
