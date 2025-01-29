@@ -297,7 +297,7 @@ class PurchaseRequestResource extends Resource
                                             }
                                             return $data;
                                         })->required()->searchable()->preload(),
-                                    Forms\Components\TextInput::make('description')->disabled()->label('Description')->required(),
+                                    Forms\Components\TextInput::make('description')->readOnly()->label('Description')->required(),
 
                                     Forms\Components\Select::make('unit_id')
                                         ->searchable()

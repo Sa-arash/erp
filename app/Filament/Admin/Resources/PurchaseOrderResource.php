@@ -225,7 +225,7 @@ class PurchaseOrderResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('payment_type'),
+                Tables\Columns\TextColumn::make('account.name'),
                 Tables\Columns\TextColumn::make('date_of_delivery')
                     ->date()
                     ->sortable(),
@@ -245,12 +245,7 @@ class PurchaseOrderResource extends Resource
                 Tables\Columns\Textcolumn::make('status')
                     ->label('Status'),
 
-                Tables\Columns\TextColumn::make('bid_id')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('quotation_id')
-                    ->numeric()
-                    ->sortable(),
+             
                 Tables\Columns\TextColumn::make('purchase_request_id')
                     ->numeric()
                     ->sortable(),
