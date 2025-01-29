@@ -64,8 +64,8 @@ class BankResource extends Resource
         return $table->headerActions([
         ])
             ->columns([
-                Tables\Columns\TextColumn::make('bank_name')
-                ->state(fn($record)=>$record->bank_name."\n".$record->account->code)
+                Tables\Columns\TextColumn::make('bank_name')->label('Bank/Cash Name')
+                ->state(fn($record)=>$record->bank_name.$record->name."\n".$record->account->code)
                 ->searchable(),
                 Tables\Columns\TextColumn::make('branch_name')->searchable(),
                 Tables\Columns\TextColumn::make('account_number')->searchable(),
@@ -81,7 +81,7 @@ class BankResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->url(fn($record)=>$record->type?BankResource::getUrl('editCash',['record'=>$record->id]):BankResource::getUrl('edit',['record'=>$record->id])),
                 Tables\Actions\DeleteAction::make()->hidden(fn($record)=>$record->account->transactions->count())->action(function ($record){
                     $record->account()->delete();
                     $record->delete();
