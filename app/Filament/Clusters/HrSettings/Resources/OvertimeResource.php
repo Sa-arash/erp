@@ -25,7 +25,7 @@ class OvertimeResource extends Resource
     protected static ?string $model = Overtime::class;
 
     protected static ?string $navigationIcon = 'heroicon-s-folder-plus';
-    protected static ?string $navigationGroup = 'Human Resource';
+    protected static ?string $navigationGroup = 'HR Management';
 
 
     public static function form(Form $form): Form
