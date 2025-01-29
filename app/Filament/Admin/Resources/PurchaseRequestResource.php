@@ -416,7 +416,7 @@ class PurchaseRequestResource extends Resource
                     Tables\Actions\Action::make('prQuotation')->visible(fn($record) => $record->is_quotation)->color('warning')->label('Qu ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.quotation', ['id' => $record->id])),
 
 
-                    Tables\Actions\Action::make('insertQuotation')->modalWidth(MaxWidth::Full)->icon('heroicon-s-newspaper')->label('InsertQu')->visible(fn($record) => $record->is_quotation)->form(function ($record) {
+                    Tables\Actions\Action::make('insertQuotation')->modalWidth(MaxWidth::Full)->icon('heroicon-s-newspaper')->label('insertQuotation')->visible(fn($record) => $record->is_quotation)->form(function ($record) {
 
                         return [
                             Section::make([
