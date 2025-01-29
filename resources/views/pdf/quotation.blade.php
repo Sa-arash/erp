@@ -105,7 +105,9 @@
             <th>Unit</th>
             <th>Qty</th>
             <th>Unit rate</th>
-            <th>Total Cost</th>
+            <th>Taxes</th>
+            <th>Freights</th>
+            <th>TotFl Cost</th>
         </tr>
         </thead>
         <tbody>
@@ -118,6 +120,8 @@
                 <td>{{$item->description}}</td>
                 <td>{{$item->unit->title}}</td>
                 <td>{{$item->quantity}}</td>
+                <td></td>
+                <td></td>
                 <td></td>
                 <td></td>
             </tr>
