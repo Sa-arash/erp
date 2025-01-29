@@ -25,7 +25,7 @@ class FinancialPeriodResource extends Resource
     protected static ?string $label='Financial Period';
     protected static ?string $navigationIcon = 'heroicon-o-clock';
     protected static ?int $navigationSort = 4;
-    protected static ?string $navigationGroup = 'Finance';
+    protected static ?string $navigationGroup = 'Finance Management';
 
     public static function getCluster(): ?string
     {

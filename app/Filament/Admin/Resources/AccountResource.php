@@ -29,7 +29,7 @@ class AccountResource extends Resource
     protected static ?int $navigationSort = 0;
     protected static ?string $cluster = FinanceSettings::class;
     protected static ?string $navigationIcon = 'heroicon-o-document-chart-bar';
-    protected static ?string $navigationGroup = 'Finance';
+    protected static ?string $navigationGroup = 'Finance Management';
 
     public static function getCluster(): ?string
     {

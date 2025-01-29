@@ -35,7 +35,7 @@ class IncomeResource extends Resource
 {
     protected static ?int $navigationSort = 5;
     protected static ?string $model = Income::class;
-    protected static ?string $navigationGroup = 'Finance';
+    protected static ?string $navigationGroup = 'Finance Management';
 
     protected static ?string $navigationIcon = 'heroicon-m-document-plus';
     public static function canAccess(): bool

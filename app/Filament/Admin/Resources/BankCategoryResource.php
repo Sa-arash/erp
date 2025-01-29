@@ -21,7 +21,7 @@ class BankCategoryResource extends Resource
 
     protected static ?string $model = Bank_category::class;
     protected static ?string $label = 'Incomes/Expenses Type';
-    protected static ?string $navigationGroup = 'Finance';
+    protected static ?string $navigationGroup = 'Finance Management';
     protected static ?string $cluster = \App\Filament\Clusters\AccountSettings::class;
 
     protected static ?int $navigationSort=10;

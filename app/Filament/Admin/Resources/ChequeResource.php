@@ -25,7 +25,7 @@ class ChequeResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-s-pencil-square';
     protected static ?int $navigationSort = 2;
-    protected static ?string $navigationGroup = 'Finance';
+    protected static ?string $navigationGroup = 'Finance Management';
 
     protected static ?string $navigationLabel = 'Cheque Management';
     public static function form(Form $form): Form

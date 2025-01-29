@@ -24,7 +24,7 @@ class PartiesResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-s-user-group';
 
     protected static ?int $navigationSort = 1;
-    protected static ?string $navigationGroup = 'Finance';
+    protected static ?string $navigationGroup = 'Finance Management';
     protected static ?string $navigationLabel =  'Customers/Vendors';
 
     public static function form(Form $form): Form

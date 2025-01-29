@@ -20,7 +20,7 @@ class ProjectResource extends Resource
     protected static ?int $navigationSort=2;
 
     protected static ?string $navigationIcon = 'heroicon-o-squares-plus';
-    protected static ?string $navigationGroup = 'Finance';
+    protected static ?string $navigationGroup = 'Finance Management';
     public static function form(Form $form): Form
     {
         return $form

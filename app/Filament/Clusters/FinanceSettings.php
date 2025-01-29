@@ -7,7 +7,7 @@ use Filament\Clusters\Cluster;
 class FinanceSettings extends Cluster
 {
 
-    protected static ?string $navigationGroup = 'Finance';
+    protected static ?string $navigationGroup = 'Finance Management';
     protected static ?string $navigationIcon = 'heroicon-m-cog';
     protected static ?string $title = 'Basic Info';
 

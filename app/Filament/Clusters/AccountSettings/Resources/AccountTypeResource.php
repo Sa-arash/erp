@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class AccountTypeResource extends Resource
 {
     protected static ?string $model = AccountType::class;
-    protected static ?string $navigationGroup = 'Finance';
+    protected static ?string $navigationGroup = 'Finance Management';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
     public static function canAccess(): bool

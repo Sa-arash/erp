@@ -23,7 +23,7 @@ class BankResource extends Resource
     protected static ?string $label='Bank/Cash';
     protected static ?string $navigationIcon = 'heroicon-o-building-library';
     protected static ?int $navigationSort=1;
-    protected static ?string $navigationGroup = 'Finance';
+    protected static ?string $navigationGroup = 'Finance Management';
     public static function getCluster(): ?string
     {
         $period = FinancialPeriod::query()->where('company_id', getCompanyUrl())->where('status', 'During')->first();
