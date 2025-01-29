@@ -25,7 +25,7 @@ class BrandResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('title')->required()->maxLength(255),
+                Forms\Components\TextInput::make('title')->columnSpanFull()->required()->maxLength(255),
             ]);
     }
 
