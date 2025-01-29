@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class BrandResource extends Resource
 {
     protected static ?string $model = Brand::class;
-    protected static ?string $navigationGroup = 'Logistic management';
+    protected static ?string $navigationGroup = 'Logistic Management';
     protected static ?string $cluster = StackManagementSettings::class;
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 

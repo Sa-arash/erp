@@ -28,7 +28,7 @@ use function Laravel\Prompts\select;
 class WarehouseResource extends Resource
 {
     protected static ?string $model = Warehouse::class;
-    protected static ?string $navigationGroup = 'Logistic management';
+    protected static ?string $navigationGroup = 'Logistic Management';
     protected static ?string $navigationIcon = 'heroicon-c-home-modern';
     protected static ?string $cluster = StackManagementSettings::class;
 

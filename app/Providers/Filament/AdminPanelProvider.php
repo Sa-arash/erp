@@ -240,7 +240,7 @@ class AdminPanelProvider extends PanelProvider
 //
 //                    ->label('Add Assets list')
 //                    ->url(fn() => AssetResource::getUrl('create'))
-//                    ->group('Logistic management'),
+//                    ->group('Logistic Management'),
 
 
                 ...$reportNavigationItems,
@@ -253,7 +253,7 @@ class AdminPanelProvider extends PanelProvider
                 'Human Resource',
                 'Finance',
                 'Accounting Report',
-                'Logistic management',
+                'Logistic Management',
             ])
             ->databaseNotifications()->tenant(Company::class, 'id', 'company');
     }

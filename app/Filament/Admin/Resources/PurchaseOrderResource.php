@@ -28,7 +28,7 @@ use Illuminate\Validation\Rules\Unique;
 class PurchaseOrderResource extends Resource
 {
     protected static ?string $model = PurchaseOrder::class;
-    protected static ?string $navigationGroup = 'Logistic management';
+    protected static ?string $navigationGroup = 'Logistic Management';
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
 

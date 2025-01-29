@@ -6,7 +6,7 @@ use Filament\Clusters\Cluster;
 
 class StackManagementSettings extends Cluster
 {
-    protected static ?string $navigationGroup = 'Logistic management';
+    protected static ?string $navigationGroup = 'Logistic Management';
     protected static ?string $navigationIcon = 'heroicon-m-cog';
     protected static ?string $title = 'Basic Info';
 
