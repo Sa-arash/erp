@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\PurchaseOrderResource\Pages;
 use App\Filament\Admin\Resources\PurchaseOrderResource\RelationManagers;
+use App\Models\Account;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseRequest;
 use App\Models\PurchaseRequestItem;
@@ -35,6 +36,43 @@ class PurchaseOrderResource extends Resource
     {
         return $form
             ->schema([
+                Section::make('Payment')->schema([
+                    Forms\Components\Select::make('account_id')
+                    ->label('Payment Account')
+                    ->options(
+                        function () {
+                            $accounts = getCompany()->accounts->whereIn('stamp', ['Bank', 'Cash'])->pluck('id')->toArray();
+                            return Account::query()->whereIn('id', $accounts)
+                                ->orWhereIn('parent_id', $accounts)
+                                ->orWhereHas('account', function ($query) use ($accounts) {
+                                    return $query->whereIn('parent_id', $accounts)->orWhereHas('account', function ($query) use ($accounts) {
+                                        return $query->whereIn('parent_id', $accounts);
+                                    });
+                                })
+                                ->get()->pluck('name', 'id')->toArray();
+                        }
+
+
+
+                    )
+                        ->searchable()
+                        ->preload()
+                        ->required(),
+
+                        Forms\Components\Select::make('vendor_id')->label('Vendor')
+                        
+                        ->options(getCompany()->parties->where('type', 'vendor')->map(fn($item)=> $item->name."(".$item->accountVendor->code.")")->toArray())
+
+                        ->searchable()
+                        ->preload()
+                        ->required(),
+                        Forms\Components\TextInput::make('exchange_rate')
+                        ->numeric(),
+                        Forms\Components\Select::make('currency')->required()->required()->options(getCurrency())->searchable()->preload(),
+
+
+
+                ])->columns(4),
                 Section::make('Request')->schema([
                     Forms\Components\Select::make('prepared_by')->live()
                         ->searchable()
@@ -43,11 +81,11 @@ class PurchaseOrderResource extends Resource
                         ->options(getCompany()->employees->pluck('fullName', 'id'))
                         ->default(fn() => auth()->user()->employee->id),
 
-                    Forms\Components\TextInput::make('purchase_orders_number')->default(function (){
-                        $puncher= PurchaseOrder::query()->where('company_id',getCompany()->id)->latest()->first();
-                        if ($puncher){
+                    Forms\Components\TextInput::make('purchase_orders_number')->default(function () {
+                        $puncher = PurchaseOrder::query()->where('company_id', getCompany()->id)->latest()->first();
+                        if ($puncher) {
                             return  generateNextCodePO($puncher->purchase_orders_number);
-                        }else{
+                        } else {
                             return "0001";
                         }
                     })->label('Po Number')
@@ -57,37 +95,27 @@ class PurchaseOrderResource extends Resource
                         })
                         ->maxLength(50),
 
-                    // prepared_by_logistic
-                    // checked_by_finance
-                    // approved_by
 
-                    Forms\Components\Select::make('payment_type')->options(['Cheque' => 'Cheque', 'Cash' => 'Cash', 'BankTransfer' => 'BankTransfer', 'Other' => 'Other',])
-                        ->searchable()
-                        ->preload()
-                        ->required(),
+
                     Forms\Components\DatePicker::make('date_of_delivery')
                         ->required(),
                     Forms\Components\TextInput::make('location_of_delivery')
                         ->required()
                         ->maxLength(255),
-                    Forms\Components\TextInput::make('project_and_exp_code')
-                        ->required()
-                        ->maxLength(100),
 
-                    Forms\Components\Select::make('currency')->required()->required()->options(getCurrency())->searchable()->preload(),
-
-                    Forms\Components\TextInput::make('exchange_rate')
-                        ->numeric(),
-                    Forms\Components\DatePicker::make('date_of_po')->default(now())
+               
+                        
+                        Forms\Components\DatePicker::make('date_of_po')->default(now())
+                        ->label('Date of PO')
                         ->required(),
-                    // Forms\Components\Select::make('bid_id')
-                    // ->relationship('bid', 'id')
-                    // ->required(),
-                    // Forms\Components\Select::make('quotation_id')
-                    // ->relationship('quotation', 'id')
-                    // ->required(),
-                    Forms\Components\Select::make('purchase_request_id')->live()
-                    ->label('purchase Request')
+                        // Forms\Components\Select::make('bid_id')
+                        // ->relationship('bid', 'id')
+                        // ->required(),
+                        // Forms\Components\Select::make('quotation_id')
+                        // ->relationship('quotation', 'id')
+                        // ->required(),
+                        Forms\Components\Select::make('purchase_request_id')->live()
+                        ->label('purchase Request')
                         ->searchable()
                         ->preload()
                         ->afterStateUpdated(function (Set $set, $state, $component) {
@@ -95,21 +123,14 @@ class PurchaseOrderResource extends Resource
                                 $item->taxes = $item->freights = $item->unit_price = 0;
                                 return $item;
                             })->toArray();
-
+                            
                             if (isset($items)) {
                                 $set('RequestedItems', $items);
                             }
                         })
-                        ->options(getCompany()->purchaseRequests->pluck('id', 'purchase_number'))
-                        ->required(),
-                    Forms\Components\Select::make('vendor_id')->label('Vendor')
-                    ->options(getCompany()->parties->where('type','vendor')->pluck('name', 'id'))
-
-                        ->searchable()
-                        ->preload()
-                        ->required(),
-
-
+                        ->options(getCompany()->purchaseRequests->pluck('id', 'purchase_number')),
+                        
+                   
                     Forms\Components\Hidden::make('company_id')
                         ->default(getCompany()->id)
                         ->required(),
@@ -195,7 +216,7 @@ class PurchaseOrderResource extends Resource
                         ])
                         ->columns(9)
                         ->columnSpanFull(),
-                ])->columns(2)
+                ])->columns(3)
             ]);
     }
 
@@ -209,8 +230,6 @@ class PurchaseOrderResource extends Resource
                     ->sortable(),
                 Tables\Columns\TextColumn::make('location_of_delivery')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('project_and_exp_code')
-                    ->searchable(),
                 Tables\Columns\TextColumn::make('po_no')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('currency')
@@ -219,6 +238,7 @@ class PurchaseOrderResource extends Resource
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('date_of_po')
+                ->label('Date Of PO')
                     ->date()
                     ->sortable(),
                 Tables\Columns\Textcolumn::make('status')

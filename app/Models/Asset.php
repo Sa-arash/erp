@@ -27,7 +27,7 @@ class Asset extends Model
 
     public function getTitleAttribute()
     {
-        return  $this->product?->title." (".$this->product?->sku.") ".$this->brand?->title." ".$this->model;
+        return  $this->product?->title." (sku:".$this->product?->sku.") ".$this->brand?->title." ".$this->model;
     }
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
