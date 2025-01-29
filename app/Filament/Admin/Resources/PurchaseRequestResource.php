@@ -161,6 +161,7 @@ class PurchaseRequestResource extends Resource
                 Tables\Columns\TextColumn::make('location')->state(fn($record) => $record->employee?->structure?->title)->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('status'),
                 Tables\Columns\TextColumn::make('total')
+                ->label('Total('.getCompany()->currency.")")
                     ->state(function ($record) {
                         $total = 0;
                         foreach ($record->items as $item) {
