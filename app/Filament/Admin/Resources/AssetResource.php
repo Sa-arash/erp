@@ -6,6 +6,7 @@ use App\Filament\Admin\Resources\AssetResource\Pages;
 use App\Filament\Admin\Resources\AssetResource\RelationManagers;
 use App\Models\Asset;
 use App\Models\Brand;
+use App\Models\Product;
 use App\Models\Structure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
@@ -97,6 +98,7 @@ class AssetResource extends Resource
 
             ])
             ->filters([
+                Tables\Filters\SelectFilter::make('product_id')->searchable()->options(getCompany()->products->pluck('title','id'))->label('Product'),
                 Tables\Filters\SelectFilter::make('status')->searchable()->options(['inuse' => "Inuse", 'inStorageUsable' => "InStorageUsable", 'storageUnUsable' => "StorageUnUsable", 'outForRepair' => 'OutForRepair', 'loanedOut' => "LoanedOut"]),
                 Tables\Filters\Filter::make('tree')
                     ->form([

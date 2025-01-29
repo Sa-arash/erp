@@ -63,7 +63,7 @@ class ApprovalResource extends Resource
                     }
                 }))->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('comment')->sortable(),
-                Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable(),
+                Tables\Columns\TextColumn::make('created_at')->label('Request Date')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('status')->badge(),
                 Tables\Columns\TextColumn::make('approve_date')->dateTime()->sortable(),
             ])
@@ -101,22 +101,30 @@ class ApprovalResource extends Resource
                             Select::make('project_id')->searchable()->preload()->label('Project')->options(getCompany()->projects->pluck('name', 'id')),
                             Placeholder::make('total')->content(fn($state, Get $get) => number_format(((int)str_replace(',', '', $get('quantity'))) * ((int)str_replace(',', '', $get('estimated_unit_cost'))))),
                             Placeholder::make('stock in')->content(function ($record, Get $get) {
-                                $products = Product::find($get('product_id'))->assets->where('status', 'inStorageUsable');
-                                $data = "";
-                                foreach ($products as $product) {
-                                    $url = AssetResource::getUrl('view', ['record' => $product->id]);
-                                    $data .= "<a style='color: #1cc6b9 ' target='_blank' href='{$url}'>{$product->title}</a>";
-                                }
-                                return new HtmlString($products->count() . "<br>" . $data);
+                                $products = Product::find($get('product_id'))->assets->where('status', 'inStorageUsable')->count();
+                                $url=AssetResource::getUrl('index',['tableFilters[product_id][value]'=>$get('product_id'),'tableFilters[status][value]'=>'inStorageUsable']);
+                                return new HtmlString( "<a style='color: #1cc6b9' target='_blank' href='{$url}'>$products</a>");
                             }),
-                            TextInput::make('ceo_comment')->columnSpan(6),
-                            Forms\Components\ToggleButtons::make('ceo_decision')->grouped()->inline()->columnSpan(2)->options(['approve' => 'Approve', 'reject' => 'Reject'])->required()->colors(['approve' => 'success', 'reject' => 'danger']),
+                            TextInput::make('comment')->columnSpan(6),
+                            Forms\Components\ToggleButtons::make('decision')->grouped()->inline()->columnSpan(2)->options(['approve' => 'Approve', 'reject' => 'Reject'])->required()->colors(['approve' => 'success', 'reject' => 'danger']),
                         ])->columns(8)->columnSpanFull()->addable(false)
                     ])->columns(),
                 ])->modalWidth(MaxWidth::Full)->action(function ($data, $record) {
                     $record->update(['comment' => $data['comment'], 'status' => $data['status'], 'approve_date' => now()]);
-                    $record->approvable->update(['is_quotation' => $data['is_quotation']]);
+
+                    if ($record->position==="CEO"){
+                        $record->approvable->update(['is_quotation' => $data['is_quotation'],'status'=>"FinishedCeo"]);
+                    }else{
+                        $record->approvable->update(['is_quotation' => $data['is_quotation'],'status'=>'FinishedHead']);
+                    }
                     foreach ($data['items'] as $item) {
+                        if ($record->position==="CEO"){
+                            $item['ceo_comment']=$item['comment'];
+                            $item['ceo_decision']=$item['decision'];
+                        }else{
+                            $item['head_comment']=$item['comment'];
+                            $item['head_decision']=$item['decision'];
+                        }
                         $prItem=PurchaseRequestItem::query()->firstWhere('id',$item['id']);
                         $prItem->update($item);
                     }

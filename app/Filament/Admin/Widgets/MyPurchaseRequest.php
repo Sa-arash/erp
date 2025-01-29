@@ -41,10 +41,7 @@ class MyPurchaseRequest extends BaseWidget
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('purchase_number')->label('PR NO')->searchable(),
-
-                    Tables\Columns\TextColumn::make('request_date')
-                    ->date()
-                    ->sortable(),
+                    Tables\Columns\TextColumn::make('request_date')->date()->sortable(),
                 // Tables\Columns\TextColumn::make('employee.fullName')
                 //     ->searchable(),
                 // Tables\Columns\TextColumn::make('department')
@@ -55,8 +52,9 @@ class MyPurchaseRequest extends BaseWidget
                 //     ->state(fn($record)=>$record->employee->structure->title)
                 //         ->numeric()
                 //         ->sortable(),
-
-                Tables\Columns\TextColumn::make('status')->badge(),
+                Tables\Columns\TextColumn::make('status')->badge()->tooltip(function ($record){
+                    return $record->approvals->last()->approve_date;
+                })->alignCenter(),
                 Tables\Columns\TextColumn::make('total')->state(function ($record){
                     $total=0;
                     foreach ($record->items as $item){
