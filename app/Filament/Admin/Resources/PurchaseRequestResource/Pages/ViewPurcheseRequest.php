@@ -25,7 +25,6 @@ class ViewPurcheseRequest extends ViewRecord
                     TextEntry::make('employee.structure.title')->label('Location'),
                     TextEntry::make('position.title'),
                     TextEntry::make('structure.title')->label('Duty Station'),
-                    ImageEntry::make('signature_pic')->label('Signature')->extraImgAttributes(['style' => 'height:60px; width: auto;']),
                 ])->columns()])]);
     }
 }

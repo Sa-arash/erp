@@ -17,8 +17,8 @@ enum POStatus:string implements HasColor,HasLabel
     {
         return match ($this){
             self::Requested => 'Requested',
-            self::FinishedHead => 'Approve By Head Of Department',
-            self::FinishedCeo => 'Approve By CEO',
+            self::FinishedHead => 'Approved By Head Of Department',
+            self::FinishedCeo => 'Approved By CEO',
             self::Finished => 'Finished',
             self::Rejected => 'Rejected',
         };

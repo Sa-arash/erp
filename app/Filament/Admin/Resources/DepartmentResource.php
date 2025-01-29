@@ -49,7 +49,7 @@ class DepartmentResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('title')->label('Department Name')->sortable(),
-                Tables\Columns\TextColumn::make('employee.fullName')->label('Header Department ')->badge(),
+                Tables\Columns\TextColumn::make('employee.fullName')->label('Head Of Department ')->badge(),
                 TextColumn::make('employees')->color('aColor')->alignCenter()->state(fn($record)=> $record->employees->count())->url(fn($record)=>EmployeeResource::getUrl().'?tableFilters[department_id][value]='.$record->id),
 
             ])

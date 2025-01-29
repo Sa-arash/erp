@@ -36,7 +36,6 @@ class PartiesResource extends Resource
                     Forms\Components\TextInput::make('phone')->tel()->maxLength(255),
                     Forms\Components\TextInput::make('email')->email()->maxLength(255),
                     Forms\Components\Textarea::make('address')->columnSpanFull(),
-
                 ])->columns(3),
 
 //                SelectTree::make('account_vendor')->hidden(function($state){
