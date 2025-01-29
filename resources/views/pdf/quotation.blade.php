@@ -83,9 +83,10 @@
 <div style="border: 0!important;">
     <table style="border: 0!important;">
         <tr style="border: 0!important;">
-            <td style="border: 0!important;">Vendodr Name:________________</td>
+            <td style="border: 0!important;">Vendor Name:________________</td>
             <td style="border: 0!important;">Phone:________________ </td>
             <td style="border: 0!important;">Address:________________ </td>
+            <td style="border: 0!important;">Currency:USD/FSD</td>
         </tr>
 
 
@@ -104,7 +105,9 @@
             <th>Unit</th>
             <th>Qty</th>
             <th>Unit rate</th>
-            <th>Total Cost</th>
+            <th>Taxes</th>
+            <th>Freights</th>
+            <th>TotFl Cost</th>
         </tr>
         </thead>
         <tbody>
@@ -117,6 +120,8 @@
                 <td>{{$item->description}}</td>
                 <td>{{$item->unit->title}}</td>
                 <td>{{$item->quantity}}</td>
+                <td></td>
+                <td></td>
                 <td></td>
                 <td></td>
             </tr>
