@@ -213,9 +213,6 @@ class PurchaseRequestResource extends Resource
                                             })
                                             ->get()->pluck('name', 'id')->toArray();
                                     }
-
-
-
                                 )
                                 ->searchable()
                                 ->preload()
@@ -291,10 +288,8 @@ class PurchaseRequestResource extends Resource
                                     return $item;
                                 })->toArray()))
                                 // ->formatStateUsing(fn(Get $get) => dd($get('purchase_request_id')):'')
-                                ->relationship('items')
                                 ->schema([
                                     Forms\Components\Select::make('product_id')
-
                                     ->label('Product')->options(function ($state) {
                                         $products = getCompany()->products->where('id',$state);
                                         $data = [];
@@ -302,37 +297,28 @@ class PurchaseRequestResource extends Resource
                                             $data[$product->id] = $product->title . " (sku:" . $product->sku . ")";
                                         }
                                         return $data;
-                                    })->required()->searchable()->preload()
-
-
-                                        ->disabled()
-                                       ,
-
-                                    Forms\Components\TextInput::make('description')
-                                        ->disabled()
-                                        ->label('Description')
-                                        ->required(),
+                                    })->required()->searchable()->preload(),
+                                    Forms\Components\TextInput::make('description')->disabled()->label('Description')->required(),
 
                                     Forms\Components\Select::make('unit_id')
-                                        ->disabled()
                                         ->searchable()
                                         ->preload()
                                         ->label('Unit')
                                         ->options(getCompany()->units->pluck('title', 'id'))
                                         ->required(),
                                     Forms\Components\TextInput::make('quantity')
-                                        ->disabled()
+                                        ->readOnly()
                                         ->required()->live()
                                         ->mask(RawJs::make('$money($input)'))
                                         ->stripCharacters(','),
 
                                     Forms\Components\TextInput::make('estimated_unit_cost')
-                                        ->disabled()
+                                        ->readOnly()
                                         ->numeric()
                                         ->mask(RawJs::make('$money($input)'))
                                         ->stripCharacters(','),
                                     Forms\Components\TextInput::make('unit_price')
-                                        ->required()
+                                        ->readOnly()
                                         ->label('Unit Cost')
                                         ->numeric()
                                         ->mask(RawJs::make('$money($input)'))
@@ -367,19 +353,15 @@ class PurchaseRequestResource extends Resource
                                         ->label('Project')
                                         ->options(getCompany()->projects->pluck('name', 'id')),
 
-                                    Placeholder::make('total')
-                                        ->content(fn($state, Get $get) => number_format((((int)str_replace(',', '', $get('quantity'))) * ((int)str_replace(',', '', $get('estimated_unit_cost')))))),
+                                    Placeholder::make('total')->content(fn($state, Get $get) => number_format((((int)str_replace(',', '', $get('quantity'))) * ((int)str_replace(',', '', $get('estimated_unit_cost')))))),
 
-                                    Forms\Components\Hidden::make('company_id')
-                                        ->default(Filament::getTenant()->id)
-                                        ->required(),
                                 ])
                                 ->columns(10)
-                                ->columnSpanFull(),
+                                ->columnSpanFull()->addable(false),
                         ])->columns(3)
                     ])->action(function ($data, $record) {
 
-                        dd($data);
+
                         // $id = getCompany()->id;
                         // $quotation= Quotation::query()->create([
                         //     'purchase_request_id' => $record->id,
@@ -402,22 +384,8 @@ class PurchaseRequestResource extends Resource
 
                     }),
 
-
-
-
-
-
-
-
-
-
-
-
                 Tables\Actions\ActionGroup::make([
-
                     Tables\Actions\Action::make('prQuotation')->visible(fn($record) => $record->is_quotation)->color('warning')->label('Quotation ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.quotation', ['id' => $record->id])),
-
-
                     Tables\Actions\Action::make('insertQuotation')->modalWidth(MaxWidth::Full)->icon('heroicon-s-newspaper')->color('info')->label('InsertQuotation')->visible(fn($record) => $record->is_quotation)->form(function ($record) {
 
                         return [
