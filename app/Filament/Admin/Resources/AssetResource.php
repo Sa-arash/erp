@@ -64,7 +64,7 @@ class AssetResource extends Resource
                     Forms\Components\TextInput::make('price')->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->required()->numeric()->label('Purchase Price'),
                     Forms\Components\Select::make('warehouse_id')->live()->label('Warehouse/Building')->options(getCompany()->warehouses()->pluck('title', 'id'))->required()->searchable()->preload(),
                     SelectTree::make('structure_id')->searchable()->label('Location')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id', modifyQueryUsing: function ($query, Forms\Get $get) {
-                        return $query->where('warehouse_id', $get('warehouse_id'))->where('location', 0);
+                        return $query->where('warehouse_id', $get('warehouse_id'));
                     })->required(),
                     Forms\Components\Hidden::make('status')->default('inStorageUsable')->required(),
                     KeyValue::make('attributes')->keyLabel('title')->columnSpanFull(),

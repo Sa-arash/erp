@@ -65,7 +65,7 @@ class VisitRequest extends BaseWidget
                 EditAction::make()->form(VisitorRequestResource::getForm())->modalWidth(MaxWidth::Full),
             ])
             ->headerActions([
-                Action::make('approval')->modalWidth(MaxWidth::Full)->form(
+                Action::make('Visit Request')->label('New Visit Request')->modalWidth(MaxWidth::Full)->form(
                     [
                         Section::make('Visitor Access Request')->schema([
                             Section::make('Visit’s Details')->schema([
