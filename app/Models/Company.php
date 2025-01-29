@@ -96,6 +96,14 @@ class Company extends Model implements HasAvatar, HasName
         return $this->hasMany(PurchaseRequestItem::class);
     }
 
+    public function purchaseOrders(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(PurchaseOrder::class);
+    }
+    public function purchaseOrderItems(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(PurchaseOrderItem::class);
+    }
     public function incomes(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Income::class);

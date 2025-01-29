@@ -67,6 +67,7 @@ class PurchaseOrderResource extends Resource
                         ->preload()
                         ->required(),
                         Forms\Components\TextInput::make('exchange_rate')
+                        ->required()->default(1)
                         ->numeric(),
                         Forms\Components\Select::make('currency')->required()->required()->options(getCurrency())->searchable()->preload(),
 
@@ -184,10 +185,10 @@ class PurchaseOrderResource extends Resource
                                 ->required()
                                 ->rules([
                                     fn(): Closure => function (string $attribute, $value, Closure $fail) {
-                                        if ($value <= 0) {
+                                        if ($value < 0) {
                                             $fail('The :attribute must be greater than 0.');
                                         }
-                                        if ($value >= 100) {
+                                        if ($value > 100) {
                                             $fail('The :attribute must be less than 100.');
                                         }
                                     },
@@ -207,14 +208,14 @@ class PurchaseOrderResource extends Resource
                                 ->label('Project')
                                 ->options(getCompany()->projects->pluck('name', 'id')),
 
-                            Placeholder::make('total')
-                                ->content(fn($state, Get $get) => number_format((((int)str_replace(',', '', $get('quantity'))) * ((int)str_replace(',', '', $get('estimated_unit_cost')))))),
+                            // Placeholder::make('total')
+                            //     ->content(fn($state, Get $get) => number_format((((int)str_replace(',', '', $get('quantity'))) * ((int)str_replace(',', '', $get('estimated_unit_cost')))))),
 
                             Forms\Components\Hidden::make('company_id')
                                 ->default(Filament::getTenant()->id)
                                 ->required(),
                         ])
-                        ->columns(9)
+                        ->columns(8)
                         ->columnSpanFull(),
                 ])->columns(3)
             ]);

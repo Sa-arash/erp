@@ -16,7 +16,6 @@ return new class extends Migration
             $table->foreignId('account_id')->nullable()->constrained('accounts')->cascadeOnDelete()->cascadeOnUpdate();
             $table->date('date_of_delivery'); 
             $table->string('location_of_delivery', 255); 
-            $table->string('po_no', 50);
             $table->string('purchase_orders_number')->unique();
             $table->string('currency', 10);
             $table->decimal('exchange_rate', 10, 2)->nullable(); 
