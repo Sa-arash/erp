@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Bank extends Model
 {
     protected $fillable = [
+        'name',
         'bank_name',
         'branch_name',
         'account_number',
@@ -20,7 +21,8 @@ class Bank extends Model
         'description',
         'company_id',
         'account_id',
-        'account_code'
+        'account_code',
+        'type'
     ];
 
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo

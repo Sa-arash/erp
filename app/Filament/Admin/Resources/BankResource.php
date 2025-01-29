@@ -20,6 +20,7 @@ class BankResource extends Resource
 {
     protected static ?string $model = Bank::class;
     protected static ?string $cluster = FinanceSettings::class;
+    protected static ?string $label='Bank/Cash';
     protected static ?string $navigationIcon = 'heroicon-o-building-library';
     protected static ?int $navigationSort=1;
     protected static ?string $navigationGroup = 'Finance';
@@ -40,7 +41,7 @@ class BankResource extends Resource
                 Forms\Components\TextInput::make('branch_name')->maxLength(255),
                 Forms\Components\TextInput::make('account_number')->required()->maxLength(255),
                 Forms\Components\TextInput::make('account_code')->default(function () {
-                    if (Bank::query()->where('company_id', getCompany()->id)->latest()->first()) {
+                    if (Bank::query()->where('company_id', getCompany()->id)->where('type',0)->latest()->first()) {
                         return generateNextCode(Bank::query()->where('company_id', getCompany()->id)->latest()->first()->account_code);
                     } else {
                         return "001";
@@ -114,6 +115,8 @@ class BankResource extends Resource
             'index' => Pages\ListBanks::route('/'),
             'create' => Pages\CreateBank::route('/create'),
             'edit' => Pages\EditBank::route('/{record}/edit'),
+            'createCash' => Pages\CreateCash::route('/create-cash'),
+            'editCash' => Pages\EditCash::route('/{record}/edit-cash'),
         ];
     }
 }

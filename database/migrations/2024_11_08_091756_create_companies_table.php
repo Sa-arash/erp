@@ -25,6 +25,7 @@ return new class extends Migration
             $table->string('daily_working_hours')->nullable();
             $table->string('weekend_days')->nullable();
             $table->integer('account_bank')->nullable();
+            $table->integer('account_cash')->nullable();
             $table->integer('vendor_account')->nullable();
             $table->integer('customer_account')->nullable();
             $table->integer('category_account')->nullable();

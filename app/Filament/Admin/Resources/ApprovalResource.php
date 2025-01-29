@@ -32,6 +32,7 @@ class ApprovalResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-check-badge';
 
+
     public static function table(Table $table): Table
     {
         return $table->query(Approval::query()->where('employee_id', getEmployee()->id)->orderBy('id','desc'))
@@ -67,8 +68,15 @@ class ApprovalResource extends Resource
                 Tables\Columns\TextColumn::make('approve_date')->dateTime()->sortable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make()
-            ])
+                Tables\Filters\SelectFilter::make('approvable_type')->label('Request Type')->options(function (){
+                    $data=[];
+                    $approvals=Approval::query()->where('company_id',getCompany()->id)->distinct()->get()->unique('approvable_type');
+                    foreach($approvals as  $item){
+                        $data[$item->approvable_type]= substr($item->approvable_type,11);
+                    }
+                    return $data;
+                })->searchable()
+            ],getModelFilter())
             ->actions([
                 Tables\Actions\Action::make('ApprovePurchaseRequest')->tooltip('ApprovePurchaseRequest')->label('Approve')->icon('heroicon-o-check-badge')->iconSize(IconSize::Large)->color('success')->form([
                     Forms\Components\Section::make([

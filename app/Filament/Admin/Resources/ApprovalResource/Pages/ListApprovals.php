@@ -18,17 +18,14 @@ class ListApprovals extends ListRecords
 //            Actions\CreateAction::make(),
         ];
     }
+
     public function getTabs(): array
     {
-        $data=[
-            'All'=>  Tab::make()->query(fn($query) => $query),
+        return [
+            'Pending' => Tab::make()->query(fn($query) => $query->where('status', "Pending")),
+            'Approve' => Tab::make()->query(fn($query) => $query->where('status', "Approve")),
+            'NotApprove' => Tab::make()->query(fn($query) => $query->where('status', "NotApprove")),
+            'All' => Tab::make()->query(fn($query) => $query),
         ];
-        $approvals=Approval::query()->where('company_id',getCompany()->id)->distinct()->get()->unique('approvable_type');
-        foreach($approvals as  $item){
-            $data[substr($item->approvable_type,11)]=Tab::make()->query(fn($query) => $query->where('approvable_type',$item->approvable_type));
-        }
-
-        return  $data;
-
     }
 }
