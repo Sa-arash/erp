@@ -26,9 +26,7 @@ return new class extends Migration
             ])->default('pending');
             
             $table->foreignId('prepared_by')->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->foreignId('checked_by_finance')->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->foreignId('approved_by')->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
-
+           
             $table->foreignId('bid_id')->constrained('bids')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('quotation_id')->constrained('quotations')->cascadeOnDelete()->cascadeOnUpdate();
 
