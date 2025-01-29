@@ -572,21 +572,31 @@ function getGender($record)
     }
 }
 
-function addSpacesBasedOnParentLevel($record, $level = 0)
+function addSpacesBasedOnParentLevel($record, $level = 0,$visited = [])
 {
-    // تعداد فاصله‌ها را محاسبه کنید (۵ فاصله به ازای هر سطح)
     $spaces = str_repeat(' ', $level * 10);
 
-    // اگر رکورد والد داشته باشد
     if ($record->parent) {
 
         return addSpacesBasedOnParentLevel($record->parent, $level + 1);
     }
-
-    // اگر رکورد والد نداشته باشد، فقط متن را با فاصله‌ها برگردانید
     return $spaces;
 }
 
 function getEmployee(){
     return auth()->user()->employee;
+}
+
+
+function getParents($record, $visited = []) {
+    $str = "/".$record->title;
+
+    // بررسی اینکه آیا والد موجود است و آیا قبلاً بازدید نشده
+    if ($record->parent && !in_array($record->parent->id, $visited)) {
+        $visited[] = $record->id;
+
+        $str .= getParents($record->parent, $visited);
+    }
+
+    return $str;
 }

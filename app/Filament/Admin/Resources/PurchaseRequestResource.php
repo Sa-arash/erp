@@ -537,7 +537,7 @@ class PurchaseRequestResource extends Resource
                     }),
                     Tables\Actions\Action::make('prPDF')->label('PR ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.purchase', ['id' => $record->id])),
 
-                    Tables\Actions\Action::make('bid')->icon('heroicon-c-check-badge')->form(function ($record) {
+                    Tables\Actions\Action::make('bid')->label('Bid Summery')->color('success')->icon('heroicon-c-check-badge')->form(function ($record) {
                         return [
                             Section::make([
                                 Forms\Components\DatePicker::make('opening_date')->default(now())->required(),
