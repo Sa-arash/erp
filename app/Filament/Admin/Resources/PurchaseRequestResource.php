@@ -74,7 +74,6 @@ class PurchaseRequestResource extends Resource
                             if ($puncher) {
 
                                 return  generateNextCodePO($puncher->purchase_number);
-
                             } else {
                                 return "0001";
                             }
@@ -139,9 +138,9 @@ class PurchaseRequestResource extends Resource
                                 ->default(Filament::getTenant()->id)
                                 ->required(),
                             Forms\Components\TextInput::make('description')
-                            ->label('Description')
-                            ->columnSpanFull()
-                            ->required(),
+                                ->label('Description')
+                                ->columnSpanFull()
+                                ->required(),
 
                         ])
                         ->columns(6)
@@ -220,7 +219,7 @@ class PurchaseRequestResource extends Resource
 
                             Forms\Components\Select::make('vendor_id')->label('Vendor')
 
-                            ->options((getCompany()->parties->where('type', 'vendor')->pluck('info','id')))
+                                ->options((getCompany()->parties->where('type', 'vendor')->pluck('info', 'id')))
 
                                 ->searchable()
                                 ->preload()
@@ -290,14 +289,14 @@ class PurchaseRequestResource extends Resource
                                 // ->formatStateUsing(fn(Get $get) => dd($get('purchase_request_id')):'')
                                 ->schema([
                                     Forms\Components\Select::make('product_id')
-                                    ->label('Product')->options(function ($state) {
-                                        $products = getCompany()->products->where('id',$state);
-                                        $data = [];
-                                        foreach ($products as $product) {
-                                            $data[$product->id] = $product->title . " (sku:" . $product->sku . ")";
-                                        }
-                                        return $data;
-                                    })->required()->searchable()->preload(),
+                                        ->label('Product')->options(function ($state) {
+                                            $products = getCompany()->products->where('id', $state);
+                                            $data = [];
+                                            foreach ($products as $product) {
+                                                $data[$product->id] = $product->title . " (sku:" . $product->sku . ")";
+                                            }
+                                            return $data;
+                                        })->required()->searchable()->preload(),
                                     Forms\Components\TextInput::make('description')->disabled()->label('Description')->required(),
 
                                     Forms\Components\Select::make('unit_id')
@@ -361,27 +360,41 @@ class PurchaseRequestResource extends Resource
                         ])->columns(3)
                     ])->action(function ($data, $record) {
 
+                        // dd($record);
+                        $id = getCompany()->id;
 
-                        // $id = getCompany()->id;
-                        // $quotation= Quotation::query()->create([
-                        //     'purchase_request_id' => $record->id,
-                        //     'party_id' => $data['party_id'],
-                        //     'date' => $data['date'],
-                        //     'employee_id' => $data['employee_id'],
-                        //     'employee_operation_id' => $data['employee_operation_id'],
-                        //     'company_id' => $id,
-                        // ]);
 
-                        // foreach ($data['Requested Items'] as $item) {
-                        //     $quotation->quotationItems()->create([
-                        //         'purchase_request_item_id'=>$item['purchase_request_item_id'],
-                        //         'unit_rate'=>$item['unit_rate'],
-                        //         'date'=>$data['date'],
-                        //         'company_id'=>$id
-                        //     ]);
-                        // }
-                        // Notification::make('add quotation')->success()->title('Quotation Added')->send()->sendToDatabase(auth()->user());
+                        $purchaseOrder = PurchaseOrder::query()->create([
+                            'account_id' => $data['account_id'],
+                            'vendor_id' => $data['vendor_id'],
+                            'currency' => $data['currency'],
+                            'exchange_rate' => $data['exchange_rate'],
+                            'prepared_by' => getEmployee()->id,
 
+                            'purchase_orders_number' => $data['purchase_orders_number'],
+                            'date_of_delivery' => $data['date_of_delivery'],
+                            'location_of_delivery' => $data['location_of_delivery'],
+                            'date_of_po' => $data['date_of_po'],
+                            'purchase_request_id' => $record->id,
+                            'company_id' => $id,
+                        ]);
+
+
+                        // RequestedItems
+
+                        foreach ($data['RequestedItems'] as $item) {
+                            $purchaseOrder->items()->create([
+                                'product_id' => $item['product_id'],
+                                'description' => $item['description'],
+                                'quantity' => $item['quantity'],
+                                'unit_price' => $item['unit_price'],
+                                'taxes' => $item['taxes'],
+                                'freights' => $item['freights'],
+                                'unit_id' => $item['unit_id'],
+                                'company_id' => $id,
+                            ]);
+                        }
+                        Notification::make('add Purchase Order')->success()->title('Purchase Order Added')->send()->sendToDatabase(auth()->user());
                     }),
 
                 Tables\Actions\ActionGroup::make([
@@ -390,8 +403,8 @@ class PurchaseRequestResource extends Resource
 
                         return [
                             Section::make([
-                                Forms\Components\Select::make('party_id')->createOptionUsing(function ($data){
-                                    $parentAccount=Account::query()->where('id',$data['parent_vendor'])->where('company_id',getCompany()->id)->first();
+                                Forms\Components\Select::make('party_id')->createOptionUsing(function ($data) {
+                                    $parentAccount = Account::query()->where('id', $data['parent_vendor'])->where('company_id', getCompany()->id)->first();
                                     $account = Account::query()->create([
                                         'name' =>  $data['name'],
                                         'type' => 'creditor',
@@ -401,19 +414,27 @@ class PurchaseRequestResource extends Resource
                                         'built_in' => false,
                                         'company_id' => getCompany()->id,
                                     ]);
-                                    $data['account_vendor']=$account->id;
-                                    $data['company_id']=getCompany()->id;
-                                   return Parties::query()->create($data)->getKey();
+                                    $data['account_vendor'] = $account->id;
+                                    $data['company_id'] = getCompany()->id;
+                                    return Parties::query()->create($data)->getKey();
                                 })->createOptionForm([
                                     Forms\Components\Section::make([
                                         Forms\Components\TextInput::make('name')->label('Company/Name')->required()->maxLength(255),
                                         Forms\Components\TextInput::make('phone')->tel()->maxLength(255),
                                         Forms\Components\TextInput::make('email')->email()->maxLength(255),
                                         Forms\Components\Textarea::make('address')->columnSpanFull(),
-                                        SelectTree::make('parent_vendor')->disabledOptions(function () {return Account::query()->where('level', 'detail')->where('company_id', getCompany()->id)->pluck('id')->toArray();})->default(getCompany()?->vendor_account)->enableBranchNode()->model(Transaction::class)->defaultOpenLevel(3)->live()->label('Parent Vendor Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('stamp', "Liabilities")->where('company_id', getCompany()->id)),
-                                        Forms\Components\TextInput::make('account_code_vendor')->prefix(fn(Get $get)=>Account::find($get('parent_vendor'))?->code)->default(function () {if (Parties::query()->where('company_id', getCompany()->id)->where('type', 'vendor')->latest()->first()) {return generateNextCode(Parties::query()->where('company_id', getCompany()->id)->where('type', 'vendor')->latest()->first()->account_code_vendor);} else {return "001";}})->required()->maxLength(255),
+                                        SelectTree::make('parent_vendor')->disabledOptions(function () {
+                                            return Account::query()->where('level', 'detail')->where('company_id', getCompany()->id)->pluck('id')->toArray();
+                                        })->default(getCompany()?->vendor_account)->enableBranchNode()->model(Transaction::class)->defaultOpenLevel(3)->live()->label('Parent Vendor Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('stamp', "Liabilities")->where('company_id', getCompany()->id)),
+                                        Forms\Components\TextInput::make('account_code_vendor')->prefix(fn(Get $get) => Account::find($get('parent_vendor'))?->code)->default(function () {
+                                            if (Parties::query()->where('company_id', getCompany()->id)->where('type', 'vendor')->latest()->first()) {
+                                                return generateNextCode(Parties::query()->where('company_id', getCompany()->id)->where('type', 'vendor')->latest()->first()->account_code_vendor);
+                                            } else {
+                                                return "001";
+                                            }
+                                        })->required()->maxLength(255),
                                     ])->columns(3),
-                                ])->label('Vendor')->options(Parties::query()->where('company_id', getCompany()->id)->get()->pluck('info' ,'id'))->searchable()->preload()->required(),
+                                ])->label('Vendor')->options(Parties::query()->where('company_id', getCompany()->id)->get()->pluck('info', 'id'))->searchable()->preload()->required(),
                                 Forms\Components\DatePicker::make('date')->default(now())->required(),
                                 Forms\Components\Select::make('employee_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Logistic'),
                                 Forms\Components\Select::make('employee_operation_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Operation'),
@@ -433,20 +454,21 @@ class PurchaseRequestResource extends Resource
                                             return $data;
                                         })->required()->searchable()->preload(),
                                     Forms\Components\TextInput::make('quantity')->readOnly()->live()->required()->numeric(),
-                                    Forms\Components\TextInput::make('unit_rate')->afterStateUpdated(function (Forms\Get $get, Forms\Set $set,$state) {
+                                    Forms\Components\TextInput::make('unit_rate')->afterStateUpdated(function (Forms\Get $get, Forms\Set $set, $state) {
                                         if ($get('quantity') and $get('unit_rate')) {
                                             $freights = $get('freights') === null ? 0 : (float)$get('freights');
-                                            $q=$get('quantity');
-                                            $tax=$get('taxes') === null ? 0 : (float)$get('taxes');
-                                            $price= $state !==null? str_replace(',', '', $state): 0;
-                                            $set('total', number_format(($q * $price) + ($q * $price * $tax)+ ($q * $price * $freights)));                                        }
+                                            $q = $get('quantity');
+                                            $tax = $get('taxes') === null ? 0 : (float)$get('taxes');
+                                            $price = $state !== null ? str_replace(',', '', $state) : 0;
+                                            $set('total', number_format(($q * $price) + ($q * $price * $tax) + ($q * $price * $freights)));
+                                        }
                                     })->live(true)->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                                     Forms\Components\TextInput::make('taxes')->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
-                                         $freights = $get('freights') === null ? 0 : (float)$get('freights');
-                                         $q=$get('quantity');
-                                         $tax=$state === null ? 0 : (float)$state;
-                                         $price= $get('unit_rate') !==null? str_replace(',', '', $get('unit_rate')): 0;
-                                         $set('total', number_format(($q * $price) + ($q * $price * $tax)+ ($q * $price * $freights)));
+                                        $freights = $get('freights') === null ? 0 : (float)$get('freights');
+                                        $q = $get('quantity');
+                                        $tax = $state === null ? 0 : (float)$state;
+                                        $price = $get('unit_rate') !== null ? str_replace(',', '', $get('unit_rate')) : 0;
+                                        $set('total', number_format(($q * $price) + ($q * $price * $tax) + ($q * $price * $freights)));
                                     })->live(true)
                                         ->prefix('%')
                                         ->numeric()->maxValue(1)
@@ -463,12 +485,12 @@ class PurchaseRequestResource extends Resource
                                         ])
                                         ->mask(RawJs::make('$money($input)'))
                                         ->stripCharacters(','),
-                                    Forms\Components\TextInput::make('freights')->afterStateUpdated(function ($state, Get $get, Forms\Set $set){
+                                    Forms\Components\TextInput::make('freights')->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
                                         $tax = $get('taxes') === null ? 0 : (float)$get('taxes');
-                                        $q=$get('quantity');
-                                        $freights=$state === null ? 0 : (float)$state;
-                                        $price= $get('unit_rate') !==null? str_replace(',', '', $get('unit_rate')): 0;
-                                        $set('total', number_format(($q * $price) + ($q * $price * $tax)+ ($q * $price * $freights)));
+                                        $q = $get('quantity');
+                                        $freights = $state === null ? 0 : (float)$state;
+                                        $price = $get('unit_rate') !== null ? str_replace(',', '', $get('unit_rate')) : 0;
+                                        $set('total', number_format(($q * $price) + ($q * $price * $tax) + ($q * $price * $freights)));
                                     })->live(true)
                                         ->required()
                                         ->numeric()
@@ -479,7 +501,7 @@ class PurchaseRequestResource extends Resource
                                 ])->formatStateUsing(function () use ($record) {
                                     $data = [];
                                     foreach ($record->items->where('status', 'purchase') as $item) {
-                                        $data[] = ['purchase_request_item_id' => $item->id, 'quantity' => $item->quantity, 'unit_rate' => 0,'taxes'=>0,'freights'=>0];
+                                        $data[] = ['purchase_request_item_id' => $item->id, 'quantity' => $item->quantity, 'unit_rate' => 0, 'taxes' => 0, 'freights' => 0];
                                     }
                                     return $data;
                                 })
