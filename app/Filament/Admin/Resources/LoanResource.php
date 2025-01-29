@@ -28,7 +28,7 @@ class LoanResource extends Resource
     }
 
     protected static ?string $navigationIcon = 'loan';
-    protected static ?string $navigationGroup = 'HR Management';
+    protected static ?string $navigationGroup = 'HR Management System';
 
     public static function form(Form $form): Form
     {

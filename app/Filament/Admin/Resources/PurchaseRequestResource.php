@@ -47,6 +47,7 @@ class PurchaseRequestResource extends Resource
 {
     protected static ?string $model = PurchaseRequest::class;
 
+    protected static ?int $navigationSort = null;
     protected static ?string $pluralLabel = 'Purchase Request';
     protected static ?string $modelLabel = 'Request';
     protected static ?string $navigationGroup = 'Logistic Management';

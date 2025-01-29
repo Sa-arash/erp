@@ -22,7 +22,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class LoanResource extends Resource
 {
     protected static ?string $model = Loan::class;
-    protected static ?string $navigationGroup = 'HR Management';
+    protected static ?string $navigationGroup = 'HR Management System';
     protected static ?string $navigationIcon = 'loan';
 
     public static function form(Form $form): Form

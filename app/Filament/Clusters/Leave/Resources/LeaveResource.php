@@ -32,7 +32,7 @@ use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 class LeaveResource extends Resource
 {
     protected static ?string $model = ModelLeave::class;
-    protected static ?string $navigationGroup = 'HR Management';
+    protected static ?string $navigationGroup = 'HR Management System';
 
     protected static ?string $navigationIcon = 'heroicon-o-folder-minus';
 
