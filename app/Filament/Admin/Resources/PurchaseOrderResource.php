@@ -29,6 +29,7 @@ class PurchaseOrderResource extends Resource
 {
     protected static ?string $model = PurchaseOrder::class;
     protected static ?string $navigationGroup = 'Logistic Management';
+    protected static ?int $navigationSort = 1;
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
 
