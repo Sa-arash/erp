@@ -205,8 +205,9 @@ class VisitorRequestResource extends Resource
                         Forms\Components\TextInput::make('name')->label('Full Name')->required(),
                         Forms\Components\TextInput::make('id')->label('ID/Passport')->required(),
                         Forms\Components\TextInput::make('phone')->label('Phone'),
-                        Forms\Components\TextInput::make('model')->required(),
-                        Forms\Components\TextInput::make('color')->required(),
+                        Forms\Components\TextInput::make('model')->label('Vehicles Model')->required(),
+
+                        Forms\Components\TextInput::make('color')->label('Vehicles Color')->required(),
                         Forms\Components\TextInput::make('Registration_Plate')->required(),
                     ])->columns(6)->columnSpanFull(),
             ])->columns(2)
