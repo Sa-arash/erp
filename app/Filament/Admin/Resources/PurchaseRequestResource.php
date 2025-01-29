@@ -8,6 +8,7 @@ use App\Models\Account;
 use App\Models\Bid;
 use App\Models\Employee;
 use App\Models\Parties;
+use App\Models\Product;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseRequest;
 use App\Models\PurchaseRequestItem;
@@ -190,7 +191,7 @@ class PurchaseRequestResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\Action::make('create po')
+                Tables\Actions\Action::make('Order')
                     ->modalWidth(MaxWidth::FitContent)->form([
                         Section::make('Payment')->schema([
                             Forms\Components\Select::make('account_id')
@@ -217,7 +218,7 @@ class PurchaseRequestResource extends Resource
 
                             Forms\Components\Select::make('vendor_id')->label('Vendor')
 
-                                ->options(getCompany()->parties->where('type', 'vendor')->map(fn($item) => $item->name . "(" . $item->accountVendor->code . ")")->toArray())
+                            ->options((getCompany()->parties->where('type', 'vendor')->pluck('info','id')))
 
                                 ->searchable()
                                 ->preload()
@@ -241,15 +242,13 @@ class PurchaseRequestResource extends Resource
                             Forms\Components\TextInput::make('purchase_orders_number')->default(function () {
                                 $puncher = PurchaseOrder::query()->where('company_id', getCompany()->id)->latest()->first();
                                 if ($puncher) {
-                                    return  generateNextCodePO($puncher->purchase_orders_number);
+                                    return  generateNextCodePO($puncher?->purchase_orders_number);
                                 } else {
                                     return "0001";
                                 }
                             })->label('Po Number')
                                 ->required()
-                                ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
-                                    return $rule->where('company_id', getCompany()->id);
-                                })
+                             
                                 ->maxLength(50),
 
 
@@ -282,14 +281,25 @@ class PurchaseRequestResource extends Resource
 
 
                             Repeater::make('RequestedItems')->defaultItems(0)->required()
-                                ->default(fn($record) => PurchaseRequestItem::where('purchase_request_id', $record->purchase_number)->get()->map(function ($item) {
+                                ->default(fn($record) => (PurchaseRequestItem::where('purchase_request_id', $record->purchase_number)->get()->map(function ($item) {
                                     $item->taxes = $item->freights = $item->unit_price = 0;
                                     return $item;
-                                })->toArray())
+                                })->toArray()))
                                 // ->formatStateUsing(fn(Get $get) => dd($get('purchase_request_id')):'')
                                 ->relationship('items')
                                 ->schema([
                                     Forms\Components\Select::make('product_id')
+                                    
+                                    ->label('Product')->options(function ($state) {
+                                        $products = getCompany()->products->where('id',$state);
+                                        $data = [];
+                                        foreach ($products as $product) {
+                                            $data[$product->id] = $product->title . " (sku:" . $product->sku . ")";
+                                        }
+                                        return $data;
+                                    })->required()->searchable()->preload()
+                              
+                              
                                         ->disabled()
                                        ,
 
