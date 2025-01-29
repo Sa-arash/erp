@@ -325,6 +325,7 @@ class PurchaseRequestResource extends Resource
                                         ->stripCharacters(','),
 
                                     Forms\Components\TextInput::make('estimated_unit_cost')
+                                        ->required()
                                         ->disabled()
                                         ->numeric()
                                         ->mask(RawJs::make('$money($input)'))
@@ -416,7 +417,7 @@ class PurchaseRequestResource extends Resource
                     Tables\Actions\Action::make('prQuotation')->visible(fn($record) => $record->is_quotation)->color('warning')->label('Qu ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.quotation', ['id' => $record->id])),
 
 
-                    Tables\Actions\Action::make('insertQuotation')->modalWidth(MaxWidth::Full)->icon('heroicon-s-newspaper')->label('insertQuotation')->visible(fn($record) => $record->is_quotation)->form(function ($record) {
+                    Tables\Actions\Action::make('insertQu')->modalWidth(MaxWidth::Full)->icon('heroicon-s-newspaper')->label('InsertQu')->visible(fn($record) => $record->is_quotation)->form(function ($record) {
 
                         return [
                             Section::make([
@@ -447,11 +448,11 @@ class PurchaseRequestResource extends Resource
                                             $set('total', number_format(($q * $price) + ($q * $price * $tax)+ ($q * $price * $freights)));                                        }
                                     })->live(true)->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                                     Forms\Components\TextInput::make('taxes')->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
-                                        // $freights = $get('freights') === null ? 0 : (float)$get('freights');
-                                        // $q=$get('quantity');
-                                        // $tax=$state === null ? 0 : (float)$state;
-                                        // $price= $get('unit_rate') !==null? str_replace(',', '', $get('unit_rate')): 0;
-                                        // $set('total', number_format(($q * $price) + ($q * $price * $tax)+ ($q * $price * $freights)));
+                                        $freights = $get('freights') === null ? 0 : (float)$get('freights');
+                                        $q=$get('quantity');
+                                        $tax=$state === null ? 0 : (float)$state;
+                                        $price= $get('unit_rate') !==null? str_replace(',', '', $get('unit_rate')): 0;
+                                        $set('total', number_format(($q * $price) + ($q * $price * $tax)+ ($q * $price * $freights)));
                                     })->live(true)
                                         ->prefix('%')
                                         ->numeric()->maxValue(1)
@@ -469,11 +470,11 @@ class PurchaseRequestResource extends Resource
                                         ->mask(RawJs::make('$money($input)'))
                                         ->stripCharacters(','),
                                     Forms\Components\TextInput::make('freights')->afterStateUpdated(function ($state, Get $get, Forms\Set $set){
-                                        // $tax = $get('taxes') === null ? 0 : (float)$get('taxes');
-                                        // $q=$get('quantity');
-                                        // $freights=$state === null ? 0 : (float)$state;
-                                        // $price= $get('unit_rate') !==null? str_replace(',', '', $get('unit_rate')): 0;
-                                        // $set('total', number_format(($q * $price) + ($q * $price * $tax)+ ($q * $price * $freights)));
+                                        $tax = $get('taxes') === null ? 0 : (float)$get('taxes');
+                                        $q=$get('quantity');
+                                        $freights=$state === null ? 0 : (float)$state;
+                                        $price= $get('unit_rate') !==null? str_replace(',', '', $get('unit_rate')): 0;
+                                        $set('total', number_format(($q * $price) + ($q * $price * $tax)+ ($q * $price * $freights)));
                                     })->live(true)
                                         ->required()
                                         ->numeric()
