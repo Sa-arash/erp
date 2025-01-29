@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\Structure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
@@ -19,6 +20,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class AssetResource extends Resource
 {
@@ -68,6 +70,9 @@ class AssetResource extends Resource
                     SelectTree::make('structure_id')->searchable()->label('Location')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id', modifyQueryUsing: function ($query, Forms\Get $get) {
                         return $query->where('warehouse_id', $get('warehouse_id'));
                     })->required(),
+                    DatePicker::make('buy_date')->default(now()),
+                    DatePicker::make('garanry_date')->default(now()),
+                    DatePicker::make('varanty_date')->default(now()),
                     Forms\Components\Hidden::make('status')->default('inStorageUsable')->required(),
                     KeyValue::make('attributes')->keyLabel('title')->columnSpanFull(),
 
@@ -99,11 +104,41 @@ class AssetResource extends Resource
                         return EmployeeResource::getUrl('view', ['record' => $record->employees->last()?->assetEmployee?->employee_id]);
                     }
                 })->label('Employee'),
+                
+
+
+
+Tables\Columns\TextColumn::make('buy_date')
+                ->dateTime()
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('garanry_date')
+                ->dateTime()
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('varanty_date')
+                ->dateTime()
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: false),
+
+                Tables\Columns\TextColumn::make('created_at')
+                ->dateTime()
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: true),
+            Tables\Columns\TextColumn::make('updated_at')
+                ->dateTime()
+                ->sortable()
+                ->toggleable(isToggledHiddenByDefault: true),
 
             ])
             ->filters([
+
                 Tables\Filters\SelectFilter::make('product_id')->searchable()->options(getCompany()->products->pluck('title','id'))->label('Product'),
                 Tables\Filters\SelectFilter::make('status')->searchable()->options(['inuse' => "Inuse", 'inStorageUsable' => "InStorageUsable", 'storageUnUsable' => "StorageUnUsable", 'outForRepair' => 'OutForRepair', 'loanedOut' => "LoanedOut"]),
+                DateRangeFilter::make('buy_date'),
+                DateRangeFilter::make('garanry_data'),
+                DateRangeFilter::make('varanty_data'),
+                DateRangeFilter::make('created_at'),
                 Tables\Filters\Filter::make('tree')
                     ->form([
                         Forms\Components\Select::make('warehouse_id')->label('Warehouse')->options(getCompany()->warehouses()->pluck('title', 'id'))->searchable()->preload(),
@@ -115,7 +150,9 @@ class AssetResource extends Resource
                         return $query->when($data['structure_id'], function ($query, $data) {
                             return $query->where('structure_id', $data);
                         });
-                    })->columns(3)->columnSpanFull()
+                    })->columns(4)->columnSpanFull(),
+                   
+                    
 
             ], getModelFilter())
             ->actions([

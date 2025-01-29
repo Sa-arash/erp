@@ -6,25 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class Asset extends Model
 {
-    protected $fillable=[
-        'number',
-        'product_id',
-        'status',
-        'price',
-        'market_price',
-        'warehouse_id',
-        'structure_id',
-        'company_id',
-        'serial_number',
-        'attributes',
-        'brand_id',
-        'model',
-
-    ];
+    protected $guarded = ['id'];
+ 
     protected $casts = [
         'attributes' => 'array',
     ];
-
+    
     public function getTitleAttribute()
     {
         return  $this->product?->title." (sku:".$this->product?->sku.") ".$this->brand?->title." ".$this->model;
@@ -70,6 +57,5 @@ class Asset extends Model
         return $this->hasMany(AssetEmployeeItem::class);
     }
 
-    protected $guarded=["id"];
 
 }
