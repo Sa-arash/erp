@@ -469,11 +469,11 @@ class PurchaseRequestResource extends Resource
                                         ->mask(RawJs::make('$money($input)'))
                                         ->stripCharacters(','),
                                     Forms\Components\TextInput::make('freights')->afterStateUpdated(function ($state, Get $get, Forms\Set $set){
-                                        $tax = $get('taxes') === null ? 0 : (float)$get('taxes');
-                                        $q=$get('quantity');
-                                        $freights=$state === null ? 0 : (float)$state;
-                                        $price= $get('unit_rate') !==null? str_replace(',', '', $get('unit_rate')): 0;
-                                        $set('total', number_format(($q * $price) + ($q * $price * $tax)+ ($q * $price * $freights)));
+                                        // $tax = $get('taxes') === null ? 0 : (float)$get('taxes');
+                                        // $q=$get('quantity');
+                                        // $freights=$state === null ? 0 : (float)$state;
+                                        // $price= $get('unit_rate') !==null? str_replace(',', '', $get('unit_rate')): 0;
+                                        // $set('total', number_format(($q * $price) + ($q * $price * $tax)+ ($q * $price * $freights)));
                                     })->live(true)
                                         ->required()
                                         ->numeric()
