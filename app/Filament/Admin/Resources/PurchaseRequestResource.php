@@ -105,9 +105,7 @@ class PurchaseRequestResource extends Resource
                                     return $data;
                                 })->required()->searchable()->preload(),
 
-                            Forms\Components\TextInput::make('description')
-                                ->label('Description')
-                                ->required(),
+                        
 
                             Forms\Components\Select::make('unit_id')
                                 ->searchable()
@@ -138,8 +136,13 @@ class PurchaseRequestResource extends Resource
                             Forms\Components\Hidden::make('company_id')
                                 ->default(Filament::getTenant()->id)
                                 ->required(),
+                            Forms\Components\TextInput::make('description')
+                            ->label('Description')
+                            ->columnSpanFull()
+                            ->required(),
+
                         ])
-                        ->columns(7)
+                        ->columns(6)
                         ->columnSpanFull(),
                     // Section::make('estimated_unit_cost')->schema([
                     //     Placeholder::make('Total')->live()
@@ -191,7 +194,7 @@ class PurchaseRequestResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\Action::make('Order')
+                Tables\Actions\Action::make('Order')->icon('heroicon-s-shopping-cart')
                     ->modalWidth(MaxWidth::FitContent)->form([
                         Section::make('Payment')->schema([
                             Forms\Components\Select::make('account_id')

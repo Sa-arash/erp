@@ -86,7 +86,7 @@
             <td style="border: 0!important;">Vendor Name:________________</td>
             <td style="border: 0!important;">Phone:________________ </td>
             <td style="border: 0!important;">Address:________________ </td>
-            <td style="border: 0!important;">Currency:USD/FSD</td>
+            <td style="border: 0!important;">Currency:USD/AFN</td>
         </tr>
 
 
