@@ -21,6 +21,9 @@ class Product extends Model
         'description',
         'company_id',
     ];
+    public function getInfoAttribute(){
+        return $this->title . "(SKU#".$this->sku.")";
+    }
 
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

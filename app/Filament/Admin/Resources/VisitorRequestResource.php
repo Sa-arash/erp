@@ -82,35 +82,13 @@ class VisitorRequestResource extends Resource
                     Forms\Components\Repeater::make('driver_vehicle_detail')
                     ->addActionLabel('Add')
                     ->label('Drivers/Vehicles Detail')->schema([
-                        Forms\Components\TextInput::make('name')
-                            ->label('Full Name')
-                            ->required(),
-                        Forms\Components\TextInput::make('id')
-                            ->label('ID/Passport')
-                            ->required(),
-                        Forms\Components\TextInput::make('phone')
-                            ->label('Phone'),
-                            Forms\Components\TextInput::make('model')
-                            ->required(),
-                        Forms\Components\TextInput::make('color')
-                            ->required(),
-                        Forms\Components\TextInput::make('Registration_Plate')
-                            ->required(),
-
+                        Forms\Components\TextInput::make('name')->label('Full Name')->required(),
+                        Forms\Components\TextInput::make('id')->label('ID/Passport')->required(),
+                        Forms\Components\TextInput::make('phone')->label('Phone'),
+                            Forms\Components\TextInput::make('model')->required(),
+                        Forms\Components\TextInput::make('color')->required(),
+                        Forms\Components\TextInput::make('Registration_Plate')->required(),
                     ])->columns(6)->columnSpanFull(),
-
-
-
-
-
-
-
-
-
-
-
-
-
                     Forms\Components\Hidden::make('company_id')
                         ->default(getCompany()->id)
                         ->required(),

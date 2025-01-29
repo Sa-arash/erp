@@ -20,7 +20,7 @@ return new class extends Migration
             $table->timestamp('end_date')->nullable();
             $table->foreignId('employee_id')->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
             $table->text('members')->nullable();
-            $table->enum('priority_level',['High','Medium','Low']);
+            $table->enum('priority_level',['High','Medium','Low'])->nullable();
             $table->float('budget')->nullable();
             $table->text('files')->nullable();
             $table->text('tags')->nullable();

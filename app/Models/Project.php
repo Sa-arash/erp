@@ -21,4 +21,8 @@ class Project extends Model
     {
         return $this->belongsTo(Employee::class);
     }
+    public function purchaseRequestItem(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(PurchaseRequestItem::class,'project_id')->where('ceo_decision','approve');
+    }
 }

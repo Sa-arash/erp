@@ -78,7 +78,7 @@ class ApprovalResource extends Resource
                 })->searchable()
             ], getModelFilter())
             ->actions([
-               
+
                 Tables\Actions\Action::make('ApprovePurchaseRequest')->tooltip('ApprovePurchaseRequest')->label('Approve')->icon('heroicon-o-check-badge')->iconSize(IconSize::Large)->color('success')->form([
                     Forms\Components\Section::make([
                         Select::make('employee')->disabled()->default(fn($record) => $record->approvable?->employee_id)->options(fn($record) => Employee::query()->where('id', $record->approvable?->employee_id)->get()->pluck('info', 'id'))->searchable(),
@@ -111,6 +111,7 @@ class ApprovalResource extends Resource
                         ])->columns(8)->columnSpanFull()->addable(false)
                     ])->columns(),
                 ])->modalWidth(MaxWidth::Full)->action(function ($data, $record) {
+
                     $record->update(['comment' => $data['comment'], 'status' => $data['status'], 'approve_date' => now()]);
 
                     if ($record->position === "CEO") {
@@ -129,6 +130,16 @@ class ApprovalResource extends Resource
                         $prItem = PurchaseRequestItem::query()->firstWhere('id', $item['id']);
                         $prItem->update($item);
                     }
+                    $CEO = Employee::query()->firstWhere('user_id', getCompany()->user_id);
+                    if ($record->position !== "CEO") {
+                        $record->approvable->approvals()->create([
+                            'employee_id' => $CEO->id,
+                            'company_id' => getCompany()->id,
+                            'position' => 'CEO',
+                            'status' => "Pending"
+                        ]);
+                    }
+
                 })->visible(function ($record) {
                     if ($record->status->name !== "Approve") {
                         if (substr($record->approvable_type, 11) === "PurchaseRequest") {

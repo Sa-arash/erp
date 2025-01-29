@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->timestamp('opening_date');
             $table->foreignId('purchase_request_id')->constrained('purchase_requests')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->string('currency');
             $table->float('total_cost');
             $table->foreignId('quotation_id')->constrained('quotations')->cascadeOnUpdate()->cascadeOnDelete();
             $table->text('position_procurement_controller')->nullable();

@@ -17,6 +17,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
 use Filament\Infolists\Components\Fieldset;
 use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\Section as ComponentsSection;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Support\Enums\MaxWidth;
@@ -36,7 +37,7 @@ class MyPurchaseRequest extends BaseWidget
     {
         return $table
             ->query(
-                PurchaseRequest::query()->where('employee_id', auth()->user()->id)->orderBy('id','desc')
+                PurchaseRequest::query()->where('employee_id', getEmployee()->id)->orderBy('id','desc')
             )
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
@@ -90,21 +91,34 @@ class MyPurchaseRequest extends BaseWidget
 
 
 ->actions([
-    Action::make('view')->infolist([
+    Action::make('view')->modalWidth(MaxWidth::Full)->infolist([
         ComponentsSection::make('request')->schema([
             TextEntry::make('request_date')->date(),
             TextEntry::make('purchase_number')->label('PR NO')->badge(),
             TextEntry::make('employee.fullName'),
-            TextEntry::make('comment')->label('Description'),
-        ])->columns(6),
-        Fieldset::make('Requested')->relationship('employee')->schema([
-            TextEntry::make('fullName'),
-            TextEntry::make('position.title'),
-            TextEntry::make('structure.title')->label('Duty Station'),
-            ImageEntry::make('signature_pic')
-                ->label('Signature')
-                ->extraImgAttributes(['style' => 'height:60px; width: auto;']),
-        ])->columns(4)
+
+            TextEntry::make('description')->columnSpanFull()->label('Description'),
+        ])->columns(3),
+
+        RepeatableEntry::make('items')->schema([
+            TextEntry::make('product.info')->badge(),
+            TextEntry::make('unit.title')->badge(),
+            TextEntry::make('quantity'),
+            TextEntry::make('estimated_unit_cost')->numeric(),
+            TextEntry::make('project.name')->badge(),
+            TextEntry::make('description')->columnSpanFull(),
+            TextEntry::make('head_decision')->badge()->label('Head Of Department Decision'),
+            TextEntry::make('head_comment')->label('Head Of Department Comment')->badge(),
+            TextEntry::make('ceo_decision')->badge()->label('CEO Decision'),
+            TextEntry::make('ceo_comment')->badge()->label('CEO Comment'),
+        ])->columns(5),
+        RepeatableEntry::make('approvals')->schema([
+            TextEntry::make('employee.fullName'),
+            TextEntry::make('created_at')->label('Request Date')->date(),
+            TextEntry::make('status')->badge(),
+            TextEntry::make('comment')->badge(),
+            TextEntry::make('approve_date')->date(),
+        ])->columns(5)
     ]),
 ])
             ->headerActions([
@@ -122,14 +136,21 @@ class MyPurchaseRequest extends BaseWidget
                         Textarea::make('description')->columnSpanFull()->label('Description'),
                         Repeater::make('Requested Items')
                             ->schema([
-                                Select::make('product_id')->searchable()->preload()->label('Product')->options(getCompany()->products->pluck('title', 'id'))->required(),
-                                TextInput::make('description')->label('Description')->required(),
+                                Select::make('product_id')->searchable()->preload()->label('Product')->options(function (){
+                                    $data=[];
+                                    foreach (getCompany()->products as $product){
+                                        $data[$product->id]=$product->title."(SKU#".$product->sku.")";
+                                    }
+                                    return $data;
+                                })->required(),
                                 Select::make('unit_id')->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id'))->required(),
                                 TextInput::make('quantity')->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                                 TextInput::make('estimated_unit_cost')->label('Estimated Unit Cost')->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required(),
                                 Select::make('project_id')->searchable()->preload()->label('Project')->options(getCompany()->projects->pluck('name', 'id')),
+                                Textarea::make('description')->columnSpan(5)->label('Product Name And Description ')->required(),
+
                             ])
-                            ->columns(6)
+                            ->columns(5)
                             ->columnSpanFull(),
                     ])->columns(2)
                 ])->action(function ($data){
@@ -149,7 +170,8 @@ class MyPurchaseRequest extends BaseWidget
                                 'employee_id'=>$employee->department->employee_id,
                                 'company_id'=>$company->id,
                                 'position'=>'Head Department',
-                                'status'=>"Approve"
+                                'status'=>"Approve",
+                                'approve_date'=>now()
                             ]);
                             $request->update(['status'=>'FinishedHead']);
                             $CEO=Employee::query()->firstWhere('user_id',$company->user_id);

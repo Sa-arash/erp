@@ -19,6 +19,8 @@ class PurchaseRequestItem extends Model
         'ceo_decision',
         'status',
         'unit_id',
+        'head_comment',
+        'head_decision',
         'purchase_request_id',
         'project_id',
         'company_id',

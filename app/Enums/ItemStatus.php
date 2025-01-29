@@ -18,8 +18,6 @@ enum ItemStatus:string implements HasColor,HasLabel
             self::purchase => 'purchase',
             self::assigned => 'assigned',
             self::pending => 'pending',
-
-
         };
     }
     public function getColor(): string|array|null

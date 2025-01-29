@@ -7,6 +7,8 @@ use App\Filament\Admin\Resources\ProjectResource\RelationManagers;
 use App\Models\Project;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
 use Filament\Support\RawJs;
 use Filament\Tables;
@@ -25,15 +27,19 @@ class ProjectResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')->required()->maxLength(255),
-                Forms\Components\TextInput::make('code')->required()->maxLength(255),
-                Forms\Components\DatePicker::make('start_date'),
-                Forms\Components\DatePicker::make('end_date')->afterOrEqual(fn(Forms\Get $get)=>$get('start_date')),
+               Forms\Components\Section::make([
+                   Forms\Components\TextInput::make('name')->columnSpan(2)->required()->maxLength(255),
+                   Forms\Components\TextInput::make('code')->required()->maxLength(255),
+                   Forms\Components\DatePicker::make('start_date'),
+                   Forms\Components\DatePicker::make('end_date')->afterOrEqual(fn(Forms\Get $get)=>$get('start_date')),
+               ])->columns(5),
+                Forms\Components\Section::make([
+                    Forms\Components\Select::make('employee_id')->label('Project Manager')->options(getCompany()->employees()->pluck('fullName','id'))->searchable()->required(),
+                    Forms\Components\Select::make('members')->label('Team Members')->options(getCompany()->employees()->pluck('fullName','id'))->searchable()->preload(),
+                    Forms\Components\Select::make('priority_level')->label('Priority Level')->searchable()->options(['High'=>'High','Medium'=>'Medium','Low'=>'Low']),
+                    Forms\Components\TextInput::make('budget')->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->numeric(),
+                ])->columns(4),
                 Forms\Components\Textarea::make('description')->columnSpanFull(),
-                Forms\Components\Select::make('employee_id')->label('Project Manager')->options(getCompany()->employees()->pluck('fullName','id'))->searchable()->required(),
-                Forms\Components\Select::make('members')->label('Team Members')->options(getCompany()->employees()->pluck('fullName','id'))->searchable()->preload(),
-                Forms\Components\Select::make('priority_level')->searchable()->options(['High'=>'High','Medium'=>'Medium','Low'=>'Low'])->required(),
-                Forms\Components\TextInput::make('budget')->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->numeric(),
                 Forms\Components\FileUpload::make('files')->multiple()->downloadable()->columnSpanFull(),
                 Forms\Components\TagsInput::make('tags')->columnSpanFull(),
 
@@ -57,6 +63,14 @@ class ProjectResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('Supplies')->label('Supplies')->infolist(function ($record){
+                  return  [
+                      RepeatableEntry::make('purchaseRequestItem')->schema([
+                          TextEntry::make('product.title'),
+                          TextEntry::make('status')->badge(),
+                      ])->columns(4)
+                  ];
+                })
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

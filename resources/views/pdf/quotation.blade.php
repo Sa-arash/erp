@@ -83,10 +83,13 @@
 <div style="border: 0!important;">
     <table style="border: 0!important;">
         <tr style="border: 0!important;">
-            <td style="border: 0!important;">Vendor Name:________________</td>
-            <td style="border: 0!important;">Phone:________________ </td>
-            <td style="border: 0!important;">Address:________________ </td>
-            <td style="border: 0!important;">Currency:USD/AFN</td>
+            <td style="border: 0!important;text-align: left!important;">Vendor Name:</td>
+            <td style="border: 0!important;text-align: left!important;">Phone:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </td>
+            <td style="border: 0!important;text-align: center!important;">Currency: USD [&nbsp; &nbsp;&nbsp; ] &nbsp;&nbsp; AFN [   &nbsp;&nbsp;&nbsp;]</td>
+        </tr>
+        <tr style="background: transparent!important;">
+            <td style=" background: transparent!important;border: 0!important;text-align: left!important;">Address: </td>
+
         </tr>
 
 
@@ -101,6 +104,7 @@
         <thead>
         <tr>
             <th>Nr</th>
+            <th>Product</th>
             <th>Item Description</th>
             <th>Unit</th>
             <th>Qty</th>
@@ -117,6 +121,7 @@
             {{$item}}
             <tr>
                 <td>{{++$i}}</td>
+                <td>{{$item->product->title}}</td>
                 <td>{{$item->description}}</td>
                 <td>{{$item->unit->title}}</td>
                 <td>{{$item->quantity}}</td>
