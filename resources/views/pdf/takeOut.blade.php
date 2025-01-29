@@ -98,9 +98,7 @@
 </head>
 <body>
 <div class="container">
-    <div class="header">
-        <h1>Gate Pass</h1>
-    </div>
+
 
     <div style="border: 0!important;">
         <table style="border: 0!important;">
