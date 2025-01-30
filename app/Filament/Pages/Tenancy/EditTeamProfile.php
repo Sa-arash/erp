@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages\Tenancy;
 
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
@@ -17,6 +18,7 @@ use Filament\Pages\Tenancy\EditTenantProfile;
 
 class EditTeamProfile extends EditTenantProfile
 {
+    use HasPageShield;
     public static function getLabel(): string
     {
         return 'company profile';
@@ -33,6 +35,7 @@ class EditTeamProfile extends EditTenantProfile
                 ->url(fn()=>self::getUrl())
                 ->group('Basic Setting')
                 ->sort(5)
+                // ->visible(fn()=> auth()->usre()->can('publish_post'))
         ];
     }
 

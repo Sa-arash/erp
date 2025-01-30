@@ -49,36 +49,36 @@ class AdminPanelProvider extends PanelProvider
         if ($financialPeriod) {
             $reportNavigationItems = [
 
-                // NavigationItem::make()
-                //     ->icon('heroicon-o-document-text')
-                //     ->label('Journal')
-                //     ->url(fn() => route('pdf.jornal', [
-                //         'period' => $financialPeriod ?? ' '
-                //     ]))
-                //     ->group('Accounting Report')
-                //     ->sort(1),
+                NavigationItem::make()
+                    ->icon('heroicon-o-document-text')
+                    ->label('Journal')
+                    ->url(fn() => route('pdf.jornal', [
+                        'period' => $financialPeriod ?? ' '
+                    ]))
+                    ->group('Accounting Report')
+                    ->sort(1),
 
-                // NavigationItem::make()
-                //     ->icon('heroicon-o-document-text')
-                //     ->label('Subsidiary Leadger')
-                //     ->url(fn() => route('pdf.account', [
-                //         'period' => $financialPeriod ?? ' ',
-                //         'reportTitle' => 'Subsidiary Leadger',
-                //         'account' => implode('-', getCompany()->accounts->where('level', 'subsidiary')->pluck('id')->toArray()),
-                //     ]))
-                //     ->group('Accounting Report')
-                //     ->sort(2),
+                NavigationItem::make()
+                    ->icon('heroicon-o-document-text')
+                    ->label('Subsidiary Leadger')
+                    ->url(fn() => route('pdf.account', [
+                        'period' => $financialPeriod ?? ' ',
+                        'reportTitle' => 'Subsidiary Leadger',
+                        'account' => implode('-', getCompany()->accounts->where('level', 'subsidiary')->pluck('id')->toArray()),
+                    ]))
+                    ->group('Accounting Report')
+                    ->sort(2),
 
-                // NavigationItem::make()
-                //     ->icon('heroicon-o-document-text')
-                //     ->label('General Leadger')
-                //     ->url(fn() => route('pdf.account', [
-                //         'period' => $financialPeriod ?? ' ',
-                //         'reportTitle' => 'General Leadger',
-                //         'account' => implode('-', getCompany()->accounts->where('level', 'general')->pluck('id')->toArray()),
-                //     ]))
-                //     ->group('Accounting Report')
-                //     ->sort(3),
+                NavigationItem::make()
+                    ->icon('heroicon-o-document-text')
+                    ->label('General Leadger')
+                    ->url(fn() => route('pdf.account', [
+                        'period' => $financialPeriod ?? ' ',
+                        'reportTitle' => 'General Leadger',
+                        'account' => implode('-', getCompany()->accounts->where('level', 'general')->pluck('id')->toArray()),
+                    ]))
+                    ->group('Accounting Report')
+                    ->sort(3),
 
                 NavigationItem::make()
                     ->icon('heroicon-o-document-text')
@@ -246,7 +246,7 @@ class AdminPanelProvider extends PanelProvider
                 ...$reportNavigationItems,
 
 
-                ...EditTeamProfile::getNavigationItems()
+                // ...EditTeamProfile::getNavigationItems()
                 // ...PayRoll::getNavigationItems()
             ])->navigationGroups([
                 'Profile',
