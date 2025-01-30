@@ -15,6 +15,7 @@ use App\Models\PurchaseRequestItem;
 use App\Models\Quotation;
 use App\Models\Structure;
 use App\Models\Transaction;
+use App\Models\Unit;
 use Closure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Actions\Action;
@@ -72,7 +73,6 @@ class PurchaseRequestResource extends Resource
                         ->label('PR Number')->default(function () {
                             $puncher = PurchaseRequest::query()->where('company_id', getCompany()->id)->latest()->first();
                             if ($puncher) {
-
                                 return  generateNextCodePO($puncher->purchase_number);
                             } else {
                                 return "0001";
@@ -90,7 +90,7 @@ class PurchaseRequestResource extends Resource
                         ->label('Description')->columnSpanFull(),
 
                     Forms\Components\Hidden::make('company_id')
-                        ->default(Filament::getTenant()->id)
+                        ->default(getCompany()->id)
                         ->required(),
 
                     Repeater::make('Requested Items')
@@ -98,30 +98,22 @@ class PurchaseRequestResource extends Resource
                         ->schema([
                             Forms\Components\Select::make('product_id')
                                 ->label('Product')->options(function () {
-                                    $products = getCompany()->products;
-                                    $data = [];
-                                    foreach ($products as $product) {
-                                        $data[$product->id] = $product->title . " (sku:" . $product->sku . ")";
-                                    }
-                                    return $data;
+                                    return getCompany()->products->pluck('info','id');
                                 })->required()->searchable()->preload(),
-
-
-
-                            Forms\Components\Select::make('unit_id')
-                                ->searchable()
-                                ->preload()
-                                ->label('Unit')
-                                ->options(getCompany()->units->pluck('title', 'id'))
-                                ->required(),
-                            Forms\Components\TextInput::make('quantity')
-                                ->required()->live()
-                                ->mask(RawJs::make('$money($input)'))
-                                ->stripCharacters(','),
+                            Forms\Components\Select::make('unit_id')->createOptionForm([
+                                Forms\Components\TextInput::make('title')->label('Unit Name')->unique('units','title')->required()->maxLength(255),
+                                Forms\Components\Toggle::make('is_package')->live()->required(),
+                                Forms\Components\TextInput::make('items_per_package')->numeric()->visible(fn(Get $get)=>$get('is_package'))->default(null),
+                            ])->createOptionUsing(function ($data){
+                                $data['company_id']=getCompany()->id;
+                                Notification::make('success')->success()->title('Create Unit')->send();
+                             return  Unit::query()->create($data)->getKey();
+                            })->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id'))->required(),
+                            Forms\Components\TextInput::make('quantity')->required()->live()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
 
                             Forms\Components\TextInput::make('estimated_unit_cost')
-                                ->label('Estimated Unit Cost')->live()
-                                ->numeric()
+                                ->label('Estimated Unit Cost')->live(true)
+                                ->numeric()->required()
                                 ->mask(RawJs::make('$money($input)'))
                                 ->stripCharacters(','),
 
@@ -137,8 +129,8 @@ class PurchaseRequestResource extends Resource
                             Forms\Components\Hidden::make('company_id')
                                 ->default(Filament::getTenant()->id)
                                 ->required(),
-                            Forms\Components\TextInput::make('description')
-                                ->label('Description')
+                            Forms\Components\Textarea::make('description')
+                                ->label(' Product Name And Description')
                                 ->columnSpanFull()
                                 ->required(),
 
@@ -444,7 +436,7 @@ class PurchaseRequestResource extends Resource
                                 ->schema([
                                     Forms\Components\Select::make('purchase_request_item_id')->disableOptionsWhenSelectedInSiblingRepeaterItems()
                                         ->label('Product')->options(function () use ($record) {
-                                            $products = $record->items->where('status', 'purchase');
+                                            $products = $record->items->where('status', 'approve');
                                             $data = [];
                                             foreach ($products as $product) {
                                                 $data[$product->id] = $product->product->title . " (" . $product->product->sku . ")";
@@ -500,7 +492,7 @@ class PurchaseRequestResource extends Resource
 
                                 ])->formatStateUsing(function () use ($record) {
                                     $data = [];
-                                    foreach ($record->items->where('status', 'purchase') as $item) {
+                                    foreach ($record->items->where('status', 'approve') as $item) {
                                         $data[] = ['purchase_request_item_id' => $item->id, 'description'=>$item->description,'quantity' => $item->quantity, 'unit_rate' => 0, 'taxes' => 0, 'freights' => 0];
                                     }
                                     return $data;
@@ -526,10 +518,8 @@ class PurchaseRequestResource extends Resource
                                 'purchase_request_item_id' => $item['purchase_request_item_id'],
                                 'unit_rate' => $item['unit_rate'],
                                 'date' => $data['date'],
-
                                 'freights' => $item['freights'],
                                 'taxes' => $item['taxes'],
-
                                 'company_id' => $id
                             ]);
                         }
@@ -573,7 +563,7 @@ class PurchaseRequestResource extends Resource
                                     $totalTrs .= "<td style='border: 1px solid black;padding: 8px;text-align: center'> Total {$totalSum}</td>";
                                 }
                                 $totalTrs .= "<td style='border: 1px solid black;padding: 8px;text-align: center'> </td></tr>";
-                                foreach ($record->items->where('status', 'purchase') as $item) {
+                                foreach ($record->items->where('status', 'approve') as $item) {
                                     $product = $item->product->title . " (" . $item->product->sku . ")";
                                     $description = $item->description;
                                     $quantity = $item->quantity;

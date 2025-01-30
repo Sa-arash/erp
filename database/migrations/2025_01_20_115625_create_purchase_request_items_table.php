@@ -24,19 +24,15 @@ return new class extends Migration
                 'approve',
                 'reject',
             ])->nullable();
-
             $table->enum('head_decision', [
                 'approve',
                 'reject',
             ])->nullable();
 
-
-
             $table->enum('status', [
-                'purchase',
-                'assign',
                 'pending',
                 'rejected',
+                'approve',
             ])->default('pending');
 
 

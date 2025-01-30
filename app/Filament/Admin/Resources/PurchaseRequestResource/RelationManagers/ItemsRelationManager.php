@@ -116,19 +116,12 @@ class ItemsRelationManager extends RelationManager
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\Action::make('purchase')->action(function ($record){
-                    $record->update(['status'=>'purchase']);
-                    Notification::make('Change_Status')->success()->title('Change Status')->send();
-                })->hidden(fn($record)=>$record->status->value==="purchase"),
-                Tables\Actions\Action::make('assign')->action(function ($record){
-                    $record->update(['status'=>'assign']);
-                    Notification::make('Change_Status')->success()->title('Change Status')->send();
-                })->hidden(fn($record)=>$record->status->value==="assigned")
+//                Tables\Actions\DeleteAction::make(),
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+//                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

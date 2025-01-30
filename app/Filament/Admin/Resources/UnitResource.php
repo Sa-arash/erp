@@ -36,7 +36,6 @@ class UnitResource extends Resource
                 Forms\Components\TextInput::make('items_per_package')
                     ->numeric()->visible(fn(Get $get)=>$get('is_package'))
                     ->default(null),
-                    Forms\Components\Hidden::make('company_id')->default(getCompany()->id)->required(),
             ]);
     }
 
