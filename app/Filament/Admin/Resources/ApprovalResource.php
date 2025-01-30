@@ -151,7 +151,7 @@ class ApprovalResource extends Resource
                         $record->approvable->update(['is_quotation' => $data['is_quotation'], 'status' => 'FinishedHead']);
                     }
                     foreach ($data['items'] as $item) {
-                        $item['status']=$item['decision'];
+                        $item['status']=$item['decision']==="reject"? "rejected":"approve";
                         if ($record->position === "CEO") {
                             $item['ceo_comment'] = $item['comment'];
                             $item['ceo_decision'] = $item['decision'];

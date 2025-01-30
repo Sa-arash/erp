@@ -138,7 +138,7 @@ class MyPurchaseRequest extends BaseWidget
                                 Select::make('product_id')->searchable()->preload()->label('Product')->options(function (){
                                     $data=[];
                                     foreach (getCompany()->products as $product){
-                                        $data[$product->id]=$product->title."(SKU#".$product->sku.")";
+                                        $data[$product->id]=$product->info;
                                     }
                                     return $data;
                                 })->required(),

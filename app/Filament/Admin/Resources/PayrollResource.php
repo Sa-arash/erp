@@ -39,7 +39,7 @@ use Malzariey\FilamentDaterangepickerFilter\Fields\DateRangePicker;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 
-class PayrollResource extends Resource
+class   PayrollResource extends Resource
 {
     protected static ?string $model = Payroll::class;
     protected static ?int $navigationSort = 2;
@@ -690,6 +690,10 @@ class PayrollResource extends Resource
                         return;
                     }
                     $period = FinancialPeriod::query()->firstWhere('status', "During");
+                    if ($period) {
+                        Notification::make('warning')->title('Financial Period Not Find')->warning()->send();
+                        return;
+                    }
 
                     $invoice = Invoice::query()->create([
                         'name' => $data['name'], 'number' => $data['number'], 'date' => $data['date'], 'description' => $data['description'], 'reference' => $data['reference'], 'status' => 'final', 'company_id' => getCompany()->id, 'document' => $data['document']
@@ -718,7 +722,7 @@ class PayrollResource extends Resource
                     return [
                         Forms\Components\Section::make([
                             Forms\Components\TextInput::make('name')->default($record->employee->fullName . " " . Carbon::make($record->start_date)->format('Y/m/d') . " - " . Carbon::make($record->end_date)->format('Y/m/d') . " Payroll")->required()->maxLength(255),
-                            Forms\Components\TextInput::make('number')->numeric()->required()->maxLength(255)->readOnly()->default(getCompany()->financialPeriods()->where('status', "During")->first()->invoices()->get()->last()?->number != null ? getCompany()->financialPeriods()->where('status', "During")->first()->invoices()->get()->last()->number + 1 : 1),
+                            Forms\Components\TextInput::make('number')->numeric()->required()->maxLength(255)->readOnly()->default(getCompany()->financialPeriods->where('status', "During")->first()?->invoices()->get()->last()?->number != null ? getCompany()->financialPeriods()->where('status', "During")->first()?->invoices()?->get()->last()->number + 1 : 1),
                             Forms\Components\DateTimePicker::make('date')->required()->default(now()),
                             Forms\Components\TextInput::make('reference')->maxLength(255),
                             Forms\Components\FileUpload::make('document')->nullable()->columnSpanFull(),
@@ -754,7 +758,7 @@ class PayrollResource extends Resource
                             ])
                         ])->columns(2)
                     ];
-                })->modalSubmitActionLabel('Payment')->modalWidth(MaxWidth::SixExtraLarge),
+                })->modalSubmitActionLabel('Payment')->modalWidth(MaxWidth::ScreenTwoExtraLarge),
                 Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')
                     ->url(fn($record) => route('pdf.payroll', ['id' => $record->id]))->openUrlInNewTab(),
             ])
