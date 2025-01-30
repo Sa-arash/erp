@@ -18,7 +18,7 @@ use Filament\Pages\Tenancy\EditTenantProfile;
 
 class EditTeamProfile extends EditTenantProfile
 {
-    use HasPageShield;
+    // use HasPageShield;
     public static function getLabel(): string
     {
         return 'company profile';

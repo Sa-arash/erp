@@ -15,6 +15,7 @@ use App\Models\Company;
 use App\Models\FinancialPeriod;
 use App\Models\Invoice;
 use App\Models\Account;
+use App\Models\Transaction;
 use Filament\FontProviders\LocalFontProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -53,7 +54,7 @@ class AdminPanelProvider extends PanelProvider
                     ->icon('heroicon-o-document-text')
                     ->label('Journal')
                     ->url(fn() => route('pdf.jornal', [
-                        'period' => $financialPeriod ?? ' '
+                        'transactions' => implode('-',( Transaction::query()->where('company_id',getCompanyUrl())->where('financial_period_id',$financialPeriod )->pluck('id')->toArray())) !='' ?: 'test' ,
                     ]))
                     ->group('Accounting Report')
                     ->sort(1),
@@ -64,7 +65,7 @@ class AdminPanelProvider extends PanelProvider
                     ->url(fn() => route('pdf.account', [
                         'period' => $financialPeriod ?? ' ',
                         'reportTitle' => 'Subsidiary Leadger',
-                        'account' => implode('-', getCompany()->accounts->where('level', 'subsidiary')->pluck('id')->toArray()),
+                        'account' => implode('-', getCompany()->accounts->where('level', 'general')->pluck('id')->toArray()),
                     ]))
                     ->group('Accounting Report')
                     ->sort(2),
@@ -75,7 +76,7 @@ class AdminPanelProvider extends PanelProvider
                     ->url(fn() => route('pdf.account', [
                         'period' => $financialPeriod ?? ' ',
                         'reportTitle' => 'General Leadger',
-                        'account' => implode('-', getCompany()->accounts->where('level', 'general')->pluck('id')->toArray()),
+                        'account' => implode('-', getCompany()->accounts->where('level', 'group')->pluck('id')->toArray()),
                     ]))
                     ->group('Accounting Report')
                     ->sort(3),
