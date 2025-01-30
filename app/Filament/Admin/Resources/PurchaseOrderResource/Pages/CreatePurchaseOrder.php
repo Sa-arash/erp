@@ -35,7 +35,8 @@ class CreatePurchaseOrder extends CreateRecord
                 $total += str_replace(',', '', $item['total']);
             }
 
-            // dd($data, $total, $this->form->getLivewire()->data['RequestedItems'][0]);
+            dd($data, $total, $this->form->getLivewire()->data['RequestedItems'][0]);
+            
             $data['status'] = 'approved';
             $invoice = Invoice::query()->create([
                 'name' => 'Purchase Order',
