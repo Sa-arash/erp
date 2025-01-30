@@ -207,7 +207,7 @@ class PurchaseOrderResource extends Resource
                                 $price = $state !== null ? str_replace(',', '', $state) : 0;
                                 $set('total', number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100)));
                             })->live(true)
-                                ->readOnly()
+                                // ->readOnly(fn(Get $get)=>$record=PurchaseRequest::query()->with('bid')->firstWhere('id',$state);)
                                 ->numeric()
                                 ->mask(RawJs::make('$money($input)'))
                                 ->stripCharacters(',')->label('Final Price'),
