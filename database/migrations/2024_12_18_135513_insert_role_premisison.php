@@ -14,7 +14,12 @@ return new class extends Migration
     {
         DB::table('roles')->insert([
             ['id' => 1, 'name' => 'Admin', 'guard_name' => 'web', 'created_at' => now(), 'updated_at' => now() ,'company_id' =>  1,],
-            ['id' => 2, 'name' => 'User', 'guard_name' => 'web', 'created_at' => now(), 'updated_at' => now() ,'company_id' =>  1,],
+            ['id' => 2, 'name' => 'CEO', 'guard_name' => 'web', 'created_at' => now(), 'updated_at' => now() ,'company_id' =>  1,],
+            ['id' => 3, 'name' => 'Head', 'guard_name' => 'web', 'created_at' => now(), 'updated_at' => now() ,'company_id' =>  1,],
+            ['id' => 4, 'name' => 'Logestic', 'guard_name' => 'web', 'created_at' => now(), 'updated_at' => now() ,'company_id' =>  1,],
+            ['id' => 5, 'name' => 'User', 'guard_name' => 'web', 'created_at' => now(), 'updated_at' => now() ,'company_id' =>  1,],
+            ['id' => 6, 'name' => 'Security', 'guard_name' => 'web', 'created_at' => now(), 'updated_at' => now() ,'company_id' =>  1,],
+            
         ]);
         // $premissions = [
 
@@ -385,8 +390,12 @@ return new class extends Migration
         // );
 
         DB::table('model_has_roles')->insert([
-            ['role_id' => 1, 'model_type' => 'App\\Models\\User', 'model_id' => 1, 'company_id' =>  1,],
+            ['role_id' => 1, 'model_type' => 'App\\Models\\User', 'model_id' => 1, 'company_id' => 1],
+            ['role_id' => 2, 'model_type' => 'App\\Models\\User', 'model_id' => 1, 'company_id' => 1],
+            ['role_id' => 3, 'model_type' => 'App\\Models\\User', 'model_id' => 2, 'company_id' => 1],
+            ['role_id' => 4, 'model_type' => 'App\\Models\\User', 'model_id' => 3, 'company_id' => 1],
         ]);
+      
     }
 
     public function down()

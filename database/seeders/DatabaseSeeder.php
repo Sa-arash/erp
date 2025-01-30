@@ -21,9 +21,12 @@ use App\Models\Loan;
 use App\Models\LoanPay;
 use App\Models\Payroll;
 use App\Models\Position;
+use App\Models\Structure;
 use App\Models\Typeleave;
+use App\Models\Unit;
 use App\Models\User;
 use App\Models\Vendor;
+use App\Models\Warehouse;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -34,35 +37,157 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
 
+
+
+        #CEO
         User::factory()->create([
             'id' => 1,
-            'name' => 'Admin',
-            'email' => 'admin@gmail.com',
+            'name' => 'CEO',
+            'email' => 'ceo@gmail.com',
             'password' => 'admin',
         ]);
+
         Company::factory()->create([
             'id' => 1,
-            'title' => 'Company erp',
+            'title' => 'ERP Company',
             'user_id' => 1,
+        ]);
+
+
+        Position::factory()->create([
+            'title' => 'manager',
+            'company_id' => 1,
+            'description' => 'this is test position for manager',
+        ]);
+
+
+        #HEAD
+        User::factory()->create([
+            'id' => 2,
+            'name' => 'Head',
+            'email' => 'head@gmail.com',
+            'password' => 'admin',
+        ]);
+        Employee::factory()->create([
+            'id'=>2,
+            'fullName' => 'Head Of department',
+            'user_id' => 2,
+            'company_id' => 1,
+            'department_id' => Department::factory()->create([
+                'id' => 1,
+                'title' => 'Web Department',
+                'company_id' => 1,
+                'description' => 'webdepartment',
+                'employee_id' => 2,
+                'description' => 'this is test position for manager',
+            ]),
+            'position_id' => 1,
         ]);
         CompanyUser::factory()->create([
             'user_id' => 1,
             'company_id' => 1,
         ]);
-        Position::factory()->create([
-            'title' => 'manager',
-            'company_id' => 1,
 
-            'description' => 'this is test position for manager',
-        ]);
+
+
+
+        Unit::factory(10)->create();
+
         Employee::factory()->create([
-            'fullName'=>'test employee',
+            'id'=>1,
+            'fullName' => 'CEO of company',
+            'user_id' => 1,
+            'department_id' => 1,
+            'warehouse_id' => 1,
+            'structure_id' => 2,
+            'company_id' => 1,
+            'position_id' => 1,
+        ]);
+
+        CompanyUser::factory()->create([
             'user_id' => 1,
             'company_id' => 1,
-            'position_id'=>1,
         ]);
+
+        #logestic
+
+        User::factory()->create([
+            'id' => 3,
+            'name' => 'Logestic',
+            'email' => 'logestic@gmail.com',
+            'password' => 'admin',
+        ]);
+        Employee::factory()->create([
+            'id'=>3,
+            'fullName' => 'Logestic manager',
+            'user_id' => 3,
+            'department_id' => 1,
+            'company_id' => 1,
+            'position_id' => 1,
+        ]);
+        CompanyUser::factory()->create([
+            'user_id' => 3,
+            'company_id' => 1,
+        ]);
+        Warehouse::factory()->create([
+            'id' => 1,
+            'employee_id' => 3,
+            'company_id' => 1,
+        ]);
+        Structure::factory()->create([
+            'id' => 1,
+            'title' => 'room 1',
+            'type' => 'room',
+            'location' => 0,
+            'parent_id' => null,
+            'warehouse_id' => 1,
+            'company_id' => 1,
+
+        ]);
+        Structure::factory()->create([
+            'id' => 2,
+            'title' => 'employee room',
+            'type' => 'room',
+            'location' => 1,
+            'parent_id' => null,
+            'warehouse_id' => 1,
+            'company_id' => 1,
+
+        ]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // User::factory()->create([
+        //     'id' => 1,
+        //     'name' => 'Admin',
+        //     'email' => 'admin@gmail.com',
+        //     'password' => 'admin',
+        // ]);
+
+        // CompanyUser::factory()->create([
+        //     'user_id' => 1,
+        //     'company_id' => 1,
+        // ]);
+
+        // Employee::factory()->create([
+        //     'fullName' => 'First employee',
+        //     'user_id' => 1,
+        //     'company_id' => 1,
+        //     'position_id' => 1,
+        // ]);
+
         $accounts = [
             [
                 'id' => 1,
@@ -70,7 +195,7 @@ class DatabaseSeeder extends Seeder
                 'type' => 'debtor',
                 'code' => '10',
                 'level' => 'main',
-                'group'=>'Asset',
+                'group' => 'Asset',
                 'parent_id' => null,
                 'built_in' => true,
                 'description' => 'Group of all asset accounts',
@@ -80,7 +205,7 @@ class DatabaseSeeder extends Seeder
                 'id' => 2,
                 'name' => 'Current Assets',
                 'type' => 'debtor',
-                'group'=>'Asset',
+                'group' => 'Asset',
                 'code' => '10001',
                 'level' => 'group',
                 'parent_id' => 1,
@@ -92,7 +217,7 @@ class DatabaseSeeder extends Seeder
                 'id' => 3,
                 'name' => 'Bank',
                 'type' => 'debtor',
-                'group'=>'Asset',
+                'group' => 'Asset',
                 'code' => '10001110',
                 'level' => 'general',
                 'parent_id' => 2,
@@ -104,7 +229,7 @@ class DatabaseSeeder extends Seeder
                 'id' => 4,
                 'name' => 'Cash',
                 'type' => 'debtor',
-                'group'=>'Asset',
+                'group' => 'Asset',
                 'code' => '10001120',
                 'level' => 'general',
                 'parent_id' => 2,
@@ -116,7 +241,7 @@ class DatabaseSeeder extends Seeder
                 'id' => 5,
                 'name' => 'Accounts Receivable',
                 'type' => 'debtor',
-                'group'=>'Asset',
+                'group' => 'Asset',
                 'code' => '10001130',
                 'level' => 'general',
                 'parent_id' => 2,
@@ -128,7 +253,7 @@ class DatabaseSeeder extends Seeder
                 'id' => 6,
                 'name' => 'Inventory',
                 'type' => 'debtor',
-                'group'=>'Asset',
+                'group' => 'Asset',
                 'code' => '10001140',
                 'level' => 'general',
                 'parent_id' => 2,
@@ -140,7 +265,7 @@ class DatabaseSeeder extends Seeder
                 'id' => 7,
                 'name' => 'Fixed Assets',
                 'type' => 'debtor',
-                'group'=>'Asset',
+                'group' => 'Asset',
                 'code' => '10002',
                 'level' => 'group',
                 'parent_id' => 1,
@@ -152,7 +277,7 @@ class DatabaseSeeder extends Seeder
                 'id' => 8,
                 'name' => 'Buildings',
                 'type' => 'debtor',
-                'group'=>'Asset',
+                'group' => 'Asset',
                 'code' => '10002110',
                 'level' => 'general',
                 'parent_id' => 7,
@@ -164,7 +289,7 @@ class DatabaseSeeder extends Seeder
                 'id' => 9,
                 'name' => 'Vehicles',
                 'type' => 'debtor',
-                'group'=>'Asset',
+                'group' => 'Asset',
                 'code' => '10002120',
                 'level' => 'general',
                 'parent_id' => 7,
@@ -176,7 +301,7 @@ class DatabaseSeeder extends Seeder
                 'id' => 10,
                 'name' => 'Equipment',
                 'type' => 'debtor',
-                'group'=>'Asset',
+                'group' => 'Asset',
                 'code' => '10002130',
                 'level' => 'general',
                 'parent_id' => 7,
@@ -188,10 +313,10 @@ class DatabaseSeeder extends Seeder
                 'id' => 11,
                 'name' => 'Liabilities',
                 'type' => 'creditor',
-                  'group'=>'Liabilitie',
+                'group' => 'Liabilitie',
                 'code' => '20',
                 'level' => 'main',
-                'group'=>'Liabilitie',
+                'group' => 'Liabilitie',
                 'parent_id' => null,
                 'built_in' => true,
                 'description' => 'Group of all liability accounts',
@@ -201,7 +326,7 @@ class DatabaseSeeder extends Seeder
                 'id' => 12,
                 'name' => 'Current Liabilities',
                 'type' => 'creditor',
-                  'group'=>'Liabilitie',
+                'group' => 'Liabilitie',
                 'code' => '20001',
                 'level' => 'group',
                 'parent_id' => 11,
@@ -213,7 +338,7 @@ class DatabaseSeeder extends Seeder
                 'id' => 13,
                 'name' => 'Accounts Payable',
                 'type' => 'creditor',
-                  'group'=>'Liabilitie',
+                'group' => 'Liabilitie',
                 'code' => '20001110',
                 'level' => 'general',
                 'parent_id' => 12,
@@ -225,7 +350,7 @@ class DatabaseSeeder extends Seeder
                 'id' => 14,
                 'name' => 'Bank Loans',
                 'type' => 'creditor',
-                  'group'=>'Liabilitie',
+                'group' => 'Liabilitie',
                 'code' => '20001120',
                 'level' => 'general',
                 'parent_id' => 12,
@@ -237,7 +362,7 @@ class DatabaseSeeder extends Seeder
                 'id' => 15,
                 'name' => 'Long-Term Liabilities',
                 'type' => 'creditor',
-                  'group'=>'Liabilitie',
+                'group' => 'Liabilitie',
                 'code' => '20002',
                 'level' => 'group',
                 'parent_id' => 11,
@@ -249,7 +374,7 @@ class DatabaseSeeder extends Seeder
                 'id' => 16,
                 'name' => 'Mortgages',
                 'type' => 'creditor',
-                  'group'=>'Liabilitie',
+                'group' => 'Liabilitie',
                 'code' => '20002110',
                 'level' => 'general',
                 'parent_id' => 15,
@@ -261,7 +386,7 @@ class DatabaseSeeder extends Seeder
                 'id' => 17,
                 'name' => 'Bonds Payable',
                 'type' => 'creditor',
-                  'group'=>'Liabilitie',
+                'group' => 'Liabilitie',
                 'code' => '20002120',
                 'level' => 'general',
                 'parent_id' => 15,
@@ -275,7 +400,7 @@ class DatabaseSeeder extends Seeder
                 'type' => 'creditor',
                 'code' => '30',
                 'level' => 'main',
-                'group'=>'Equity',
+                'group' => 'Equity',
                 'parent_id' => null,
                 'built_in' => true,
                 'description' => 'Equity accounts',
@@ -287,7 +412,7 @@ class DatabaseSeeder extends Seeder
                 'type' => 'creditor',
                 'code' => '30001',
                 'level' => 'general',
-                'group'=>'Equity',
+                'group' => 'Equity',
                 'parent_id' => 18,
                 'built_in' => true,
                 'description' => null,
@@ -300,7 +425,7 @@ class DatabaseSeeder extends Seeder
                 'code' => '30002',
                 'level' => 'general',
                 'parent_id' => 18,
-                'group'=>'Equity',
+                'group' => 'Equity',
                 'built_in' => true,
                 'description' => null,
                 'company_id' => 1,
@@ -312,7 +437,7 @@ class DatabaseSeeder extends Seeder
                 'code' => '40',
                 'level' => 'main',
                 'parent_id' => null,
-                'group'=>'Income',
+                'group' => 'Income',
                 'built_in' => true,
                 'description' => 'Income accounts',
                 'company_id' => 1,
@@ -324,7 +449,7 @@ class DatabaseSeeder extends Seeder
                 'code' => '40001',
                 'level' => 'general',
                 'parent_id' => 21,
-                'group'=>'Income',
+                'group' => 'Income',
                 'built_in' => true,
                 'description' => null,
                 'company_id' => 1,
@@ -334,7 +459,7 @@ class DatabaseSeeder extends Seeder
                 'name' => 'Service Revenue',
                 'type' => 'creditor',
                 'code' => '40002',
-                 'group'=>'Income',
+                'group' => 'Income',
                 'level' => 'general',
                 'parent_id' => 21,
                 'built_in' => true,
@@ -348,7 +473,7 @@ class DatabaseSeeder extends Seeder
                 'code' => '40003',
                 'level' => 'general',
                 'parent_id' => 21,
-                 'group'=>'Income',
+                'group' => 'Income',
                 'built_in' => true,
                 'description' => null,
                 'company_id' => 1,
@@ -359,7 +484,7 @@ class DatabaseSeeder extends Seeder
                 'type' => 'debtor',
                 'code' => '50',
                 'level' => 'main',
-                'group'=>'Expense',
+                'group' => 'Expense',
                 'parent_id' => null,
                 'built_in' => true,
                 'description' => 'Expense accounts',
@@ -371,7 +496,7 @@ class DatabaseSeeder extends Seeder
                 'type' => 'debtor',
                 'code' => '50001',
                 'level' => 'general',
-                'group'=>'Expense',
+                'group' => 'Expense',
                 'parent_id' => 25,
                 'built_in' => true,
                 'description' => null,
@@ -385,7 +510,7 @@ class DatabaseSeeder extends Seeder
                 'level' => 'general',
                 'parent_id' => 25,
                 'built_in' => true,
-                'group'=>'Expense',
+                'group' => 'Expense',
                 'description' => null,
                 'company_id' => 1,
             ],
@@ -396,7 +521,7 @@ class DatabaseSeeder extends Seeder
                 'code' => '50003',
                 'level' => 'general',
                 'parent_id' => 25,
-                'group'=>'Expense',
+                'group' => 'Expense',
                 'built_in' => true,
                 'description' => null,
                 'company_id' => 1,
@@ -404,12 +529,12 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($accounts as $account) {
-            $account['stamp']=$account['name'];
+            $account['stamp'] = $account['name'];
             DB::table('accounts')->insert($account);
         }
 
 
-        
+
         //     Contract::factory(10)->create();
         //     User::factory(10)->create();
         //     Company::factory(10)->create();

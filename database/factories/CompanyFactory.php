@@ -19,7 +19,7 @@ class CompanyFactory extends Factory
     {
         return [
           'title' => $this->faker->company,
-            'user_id' => User::factory(),
+            'user_id' => 1,
             'description' => $this->faker->paragraph,
             'address' => $this->faker->address,
             'country'=> $this->faker->company,
