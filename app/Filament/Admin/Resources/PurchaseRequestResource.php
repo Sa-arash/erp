@@ -449,7 +449,7 @@ class PurchaseRequestResource extends Resource
                                             $q = $get('quantity');
                                             $tax = $get('taxes') === null ? 0 : (float)$get('taxes');
                                             $price = $state !== null ? str_replace(',', '', $state) : 0;
-                                            $set('total', number_format(($q * $price) + ($q * $price * $tax) + ($q * $price * $freights)));
+                                            $set('total', number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100)));
                                         }
                                     })->live(true)->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                                     Forms\Components\TextInput::make('taxes')->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
@@ -457,7 +457,7 @@ class PurchaseRequestResource extends Resource
                                         $q = $get('quantity');
                                         $tax = $state === null ? 0 : (float)$state;
                                         $price = $get('unit_rate') !== null ? str_replace(',', '', $get('unit_rate')) : 0;
-                                        $set('total', number_format(($q * $price) + ($q * $price * $tax) + ($q * $price * $freights)));
+                                        $set('total', number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100)));
                                     })->live(true)
                                         ->prefix('%')
                                         ->numeric()->maxValue(1)
@@ -474,12 +474,12 @@ class PurchaseRequestResource extends Resource
                                         ])
                                         ->mask(RawJs::make('$money($input)'))
                                         ->stripCharacters(','),
-                                    Forms\Components\TextInput::make('freights')->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
+                                    Forms\Components\TextInput::make('freights')->prefix('%')->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
                                         $tax = $get('taxes') === null ? 0 : (float)$get('taxes');
                                         $q = $get('quantity');
                                         $freights = $state === null ? 0 : (float)$state;
                                         $price = $get('unit_rate') !== null ? str_replace(',', '', $get('unit_rate')) : 0;
-                                        $set('total', number_format(($q * $price) + ($q * $price * $tax) + ($q * $price * $freights)));
+                                        $set('total', number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100)));
                                     })->live(true)
                                         ->required()
                                         ->numeric()
