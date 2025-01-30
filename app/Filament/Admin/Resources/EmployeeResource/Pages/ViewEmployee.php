@@ -65,7 +65,7 @@ class  ViewEmployee extends ViewRecord
                 section::make()
                     ->schema([
                         ImageEntry::make('pic')
-                            ->defaultImageUrl(asset('img/user.png'))
+                            ->defaultImageUrl(fn($record)=>$record->gender==="male" ?  asset('img/user.png') :asset('img/female.png'))
                             ->label('')
                             ->extraAttributes(['style' => 'border-radius: 10px;  padding: 0px;margin:0px;'])
                             ->width(200)
