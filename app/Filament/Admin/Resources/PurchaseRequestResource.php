@@ -467,7 +467,7 @@ class PurchaseRequestResource extends Resource
                                                 if ($value < 0) {
                                                     $fail('The :attribute must be greater than 0.');
                                                 }
-                                                if ($value > 1) {
+                                                if ($value > 100) {
                                                     $fail('The :attribute must be less than 100.');
                                                 }
                                             },
