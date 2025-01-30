@@ -137,6 +137,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')->maxContentWidth(MaxWidth::Full)->favicon(asset('img/my.png'))
             ->path('admin')->sidebarCollapsibleOnDesktop()
             ->login()
+            // ->favicon(fn()=>(asset('images/' . Company::first()?->logo)))
             ->font(
                 'Inter',
                 url: asset('css/app/custom-stylesheet.css'),
