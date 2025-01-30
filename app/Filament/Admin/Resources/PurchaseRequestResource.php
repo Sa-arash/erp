@@ -165,6 +165,8 @@ class PurchaseRequestResource extends Resource
                 Tables\Columns\TextColumn::make('department')->state(fn($record) => $record->employee->department->title)->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('location')->state(fn($record) => $record->employee?->structure?->title)->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('status'),
+                Tables\Columns\TextColumn::make('bid.quotation.party.name')->label('Vendor'),
+                Tables\Columns\TextColumn::make('bid.total_cost')->label('Total Bid')->numeric(),
                 Tables\Columns\TextColumn::make('total')
                     ->label('Total(' . getCompany()->currency . ")")
                     ->state(function ($record) {
@@ -174,11 +176,6 @@ class PurchaseRequestResource extends Resource
                         }
                         return $total;
                     })->numeric(),
-                Tables\Columns\TextColumn::make('warehouse_decision')->date()->sortable()->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('warehouse_status_date')->date()->sortable()->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('department_manager_status_date')->date()->sortable()->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('ceo_status_date')->date()->sortable()->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('purchase_date')->date()->sortable()->toggleable(isToggledHiddenByDefault: true),
 
             ])
             ->filters([
@@ -283,7 +280,7 @@ class PurchaseRequestResource extends Resource
                                         foreach ($record->bid->quotation?->quotationItems->toArray() as $item){
                                             $prItem= PurchaseRequestItem::query()->firstWhere('id',$item['purchase_request_item_id']);
                                             $item['quantity']=$prItem->quantity;
-                                            $item['unit_price']=$item['unit_rate'];
+                                            $item['unit_price']=number_format($item['unit_rate']);
                                             $data[]=$item;
                                         }
                                         return  $data;
