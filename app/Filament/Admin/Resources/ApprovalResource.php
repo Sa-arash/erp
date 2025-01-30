@@ -43,9 +43,9 @@ class ApprovalResource extends Resource
                     return substr($record->approvable_type, 11);
                 })->searchable()->badge(),
                 Tables\Columns\TextColumn::make('comment')->sortable(),
-                Tables\Columns\TextColumn::make('created_at')->label('Request Date')->dateTime()->sortable(),
+                Tables\Columns\TextColumn::make('created_at')->label('Request Date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('status')->badge(),
-                Tables\Columns\TextColumn::make('approve_date')->dateTime()->sortable(),
+                Tables\Columns\TextColumn::make('approve_date')->date()->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('approvable_type')->label('Request Type')->options(function () {
@@ -93,9 +93,9 @@ class ApprovalResource extends Resource
                                 TextEntry::make('project.name')->badge(),
                                 TextEntry::make('description')->columnSpanFull(),
                                 TextEntry::make('head_decision')->badge()->label('Head Of Department Decision'),
-                                TextEntry::make('head_comment')->label('Head Of Department Comment')->badge(),
+                                TextEntry::make('head_comment')->tooltip(fn($record)=>$record->head_comment)->label('Head Of Department Comment')->badge(),
                                 TextEntry::make('ceo_decision')->badge()->label('CEO Decision'),
-                                TextEntry::make('ceo_comment')->badge()->label('CEO Comment'),
+                                TextEntry::make('ceo_comment')->tooltip(fn($record)=>$record->ceo_comment)->badge()->label('CEO Comment'),
                             ])->columns(5)->columnSpanFull(),
                             RepeatableEntry::make('approvals')->schema([
                                 TextEntry::make('employee.fullName'),

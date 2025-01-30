@@ -107,9 +107,9 @@ class MyPurchaseRequest extends BaseWidget
             TextEntry::make('project.name')->badge(),
             TextEntry::make('description')->columnSpanFull(),
             TextEntry::make('head_decision')->badge()->label('Head Of Department Decision'),
-            TextEntry::make('head_comment')->label('Head Of Department Comment')->badge(),
+            TextEntry::make('head_comment')->tooltip(fn($record)=>$record->head_comment)->label('Head Of Department Comment')->badge(),
             TextEntry::make('ceo_decision')->badge()->label('CEO Decision'),
-            TextEntry::make('ceo_comment')->badge()->label('CEO Comment'),
+            TextEntry::make('ceo_comment')->tooltip(fn($record)=>$record->ceo_comment)->badge()->label('CEO Comment'),
         ])->columns(5),
         RepeatableEntry::make('approvals')->schema([
             TextEntry::make('employee.fullName'),

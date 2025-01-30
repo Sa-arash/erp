@@ -22,9 +22,8 @@ class ViewPurcheseRequest extends ViewRecord
                     TextEntry::make('purchase_number')->badge(),
                     TextEntry::make('employee.department.title')->label('Department'),
                     TextEntry::make('employee.fullName'),
-                    TextEntry::make('employee.structure.title')->label('Location'),
                     TextEntry::make('position.title'),
-                    TextEntry::make('structure.title')->label('Duty Station'),
-                ])->columns()])]);
+                    TextEntry::make('structure')->state(fn($record)=>$record->employee->structure?->warehouse?->title. getParents($record->employee->structure))->label('Location'),
+                ])->columns(3)])]);
     }
 }

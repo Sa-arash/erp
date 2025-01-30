@@ -20,6 +20,7 @@ use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -157,55 +158,12 @@ class QuotationsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('employee.fullName')->label('Logistic'),
                 Tables\Columns\TextColumn::make('employeeOperation.fullName')->label('Operation'),
                 Tables\Columns\ImageColumn::make('file')->label('File'),
-                Forms\Components\TextInput::make('unit_rate')->afterStateUpdated(function (Forms\Get $get, Forms\Set $set,$state) {
-                    if ($get('quantity') and $get('unit_rate')) {
-                        $freights = $get('freights') === null ? 0 : (float)$get('freights');
-                        $q=$get('quantity');
-                        $tax=$get('taxes') === null ? 0 : (float)$get('taxes');
-                        $price= $state !==null? str_replace(',', '', $state): 0;
-                        $set('total', number_format(($q * $price) + ($q * $price * $tax)+ ($q * $price * $freights)));                                        }
-                })->live(true)->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-                Forms\Components\TextInput::make('taxes')->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
-                    $freights = $get('freights') === null ? 0 : (float)$get('freights');
-                    $q=$get('quantity');
-                    $tax=$state === null ? 0 : (float)$state;
-                    $price= $get('unit_rate') !==null? str_replace(',', '', $get('unit_rate')): 0;
-                    $set('total', number_format(($q * $price) + ($q * $price * $tax)+ ($q * $price * $freights)));
-                })->live(true)
-                    ->prefix('%')
-                    ->numeric()->maxValue(1)
-                    ->required()
-                    ->rules([
-                        fn(): \Closure => function (string $attribute, $value, \Closure $fail) {
-                            if ($value < 0) {
-                                $fail('The :attribute must be greater than 0.');
-                            }
-                            if ($value > 1) {
-                                $fail('The :attribute must be less than 100.');
-                            }
-                        },
-                    ])
-                    ->mask(RawJs::make('$money($input)'))
-                    ->stripCharacters(','),
-                Forms\Components\TextInput::make('freights')->afterStateUpdated(function ($state, Get $get, Forms\Set $set){
-                    $tax = $get('taxes') === null ? 0 : (float)$get('taxes');
-                    $q=$get('quantity');
-                    $freights=$state === null ? 0 : (float)$state;
-                    $price= $get('unit_rate') !==null? str_replace(',', '', $get('unit_rate')): 0;
-                    $set('total', number_format(($q * $price) + ($q * $price * $tax)+ ($q * $price * $freights)));
-                })->live(true)
-                    ->required()
-                    ->numeric()
-                    ->mask(RawJs::make('$money($input)'))
-                    ->stripCharacters(','),
-                Forms\Components\TextInput::make('total')->readOnly()->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-
             ])
             ->filters([
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make()->action(function ($data) {
+                Tables\Actions\CreateAction::make()->modalWidth(MaxWidth::MaxContent)->action(function ($data) {
 
                     $id = getCompany()->id;
                     $quotation = Quotation::query()->create([

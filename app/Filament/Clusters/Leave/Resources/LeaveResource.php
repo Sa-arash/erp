@@ -33,6 +33,7 @@ class LeaveResource extends Resource
 {
     protected static ?string $model = ModelLeave::class;
     protected static ?string $navigationGroup = 'HR Management System';
+    protected static ?int $navigationSort=3;
 
     protected static ?string $navigationIcon = 'heroicon-o-folder-minus';
 
