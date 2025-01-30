@@ -15,6 +15,7 @@ use Filament\Forms;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
@@ -39,7 +40,7 @@ class PurchaseOrderResource extends Resource
         return $form
             ->schema([
                 Section::make('Payment')->schema([
-                    SelectTree::make('account_id')
+                    Select::make('account_id')
                     ->label('Payment Account')
                     ->options(
                         function () {
