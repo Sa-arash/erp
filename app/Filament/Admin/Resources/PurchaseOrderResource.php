@@ -113,7 +113,7 @@ class PurchaseOrderResource extends Resource
                         } else {
                             return "0001";
                         }
-                    })->label('Po Number')
+                    })->label('PO NO')
                         ->required()
                         ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
                             return $rule->where('company_id', getCompany()->id);
@@ -139,7 +139,7 @@ class PurchaseOrderResource extends Resource
                         // ->relationship('quotation', 'id')
                         // ->required(),
                         Forms\Components\Select::make('purchase_request_id')->live()
-                        ->label('purchase Request')
+                        ->label('PR NO')
                         ->searchable()
                         ->preload()
                         ->afterStateUpdated(function (Set $set, $state) {
@@ -197,7 +197,7 @@ class PurchaseOrderResource extends Resource
                                 $price = $state !== null ? str_replace(',', '', $state) : 0;
                                 $set('total', number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100)));
                             })->live(true)
-                                ->readOnly()
+                                // ->readOnly(fn(Get $get)=>$record=PurchaseRequest::query()->with('bid')->firstWhere('id',$state);)
                                 ->numeric()
                                 ->mask(RawJs::make('$money($input)'))
                                 ->stripCharacters(',')->label('Final Price'),
