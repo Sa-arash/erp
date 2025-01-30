@@ -281,9 +281,12 @@ class PurchaseRequestResource extends Resource
 
                                             $prItem= PurchaseRequestItem::query()->firstWhere('id',$item['purchase_request_item_id']);
                                             $item['quantity']=$prItem->quantity;
-                                            $item['unit_price']=number_format($item['unit_rate']);
+                                            $item['unit_id']=$prItem->unit_id;
+                                            $item['description']=$prItem->description;
+                                            $item['project_id']=$prItem->project_id;
                                             $item['product_id']=$prItem->product_id;
                                             $q=$prItem->quantity;
+                                            $item['unit_price']=number_format($item['unit_rate']);
                                             $price=$item['unit_rate'];
                                             $tax=$item['taxes'];
                                             $freights=$item['freights'];
@@ -301,7 +304,7 @@ class PurchaseRequestResource extends Resource
                                             $products = getCompany()->products->where('id', $state);
                                             $data = [];
                                             foreach ($products as $product) {
-                                                $data[$product->id] = $product->title . " (sku:" . $product->sku . ")";
+                                                $data[$product->id] = $product->info;
                                             }
                                             return $data;
                                         })->required()->searchable()->preload(),

@@ -97,7 +97,7 @@ class PurchaseOrderResource extends Resource
                         Forms\Components\TextInput::make('exchange_rate')
                         ->required()->default(1)
                         ->numeric(),
-                ])->columns(5),
+                ])->columns(4),
                 Section::make('Request')->schema([
                     Forms\Components\Select::make('prepared_by')->live()
                         ->searchable()
@@ -151,12 +151,15 @@ class PurchaseOrderResource extends Resource
                                         $prItem= PurchaseRequestItem::query()->firstWhere('id',$item['purchase_request_item_id']);
                                         $item['quantity']=$prItem->quantity;
                                         $item['unit_id']=$prItem->unit_id;
-                                        $item['unit_price']=number_format($item['unit_rate']);
+                                        $item['description']=$prItem->description;
+                                        $item['product_id']=$prItem->product_id;
+                                        $item['project_id']=$prItem->project_id;
                                         $q=$prItem->quantity;
+                                        $item['unit_price']=number_format($item['unit_rate']);
                                         $price=$item['unit_rate'];
                                         $tax=$item['taxes'];
                                         $freights=$item['freights'];
-                                        $item['product_id']=$prItem->product_id;
+
                                         $item['total']=number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100));
                                         $data[]=$item;
                                     }
@@ -183,7 +186,7 @@ class PurchaseOrderResource extends Resource
                                     $products = getCompany()->products->where('id', $state);
                                     $data = [];
                                     foreach ($products as $product) {
-                                        $data[$product->id] = $product->title . " (sku:" . $product->sku . ")";
+                                        $data[$product->id] = $product->info;
                                     }
                                     return $data;
                                 })->required()->searchable()->preload(),
