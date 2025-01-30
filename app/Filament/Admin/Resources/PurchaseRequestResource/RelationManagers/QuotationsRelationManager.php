@@ -94,7 +94,7 @@ class QuotationsRelationManager extends RelationManager
                                 $q = $get('quantity');
                                 $tax = $get('taxes') === null ? 0 : (float)$get('taxes');
                                 $price = $state !== null ? str_replace(',', '', $state) : 0;
-                                $set('total', number_format(($q * $price) + ($q * $price * $tax) + ($q * $price * $freights)));
+                                $set('total', number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100)));
                             }
                         })->live(true)->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                         Forms\Components\TextInput::make('taxes')->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
@@ -102,7 +102,7 @@ class QuotationsRelationManager extends RelationManager
                             $q = $get('quantity');
                             $tax = $state === null ? 0 : (float)$state;
                             $price = $get('unit_rate') !== null ? str_replace(',', '', $get('unit_rate')) : 0;
-                            $set('total', number_format(($q * $price) + ($q * $price * $tax) + ($q * $price * $freights)));
+                            $set('total', number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100)));
                         })->live(true)
                             ->prefix('%')
                             ->numeric()->maxValue(1)
@@ -112,7 +112,7 @@ class QuotationsRelationManager extends RelationManager
                                     if ($value < 0) {
                                         $fail('The :attribute must be greater than 0.');
                                     }
-                                    if ($value > 1) {
+                                    if ($value > 100) {
                                         $fail('The :attribute must be less than 100.');
                                     }
                                 },
@@ -124,7 +124,7 @@ class QuotationsRelationManager extends RelationManager
                             $q = $get('quantity');
                             $freights = $state === null ? 0 : (float)$state;
                             $price = $get('unit_rate') !== null ? str_replace(',', '', $get('unit_rate')) : 0;
-                            $set('total', number_format(($q * $price) + ($q * $price * $tax) + ($q * $price * $freights)));
+                            $set('total', number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100)));
                         })->live(true)
                             ->required()
                             ->numeric()

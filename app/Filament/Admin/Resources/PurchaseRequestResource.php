@@ -460,7 +460,7 @@ class PurchaseRequestResource extends Resource
                                         $set('total', number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100)));
                                     })->live(true)
                                         ->prefix('%')
-                                        ->numeric()->maxValue(1)
+                                        ->numeric()->maxValue(100)
                                         ->required()
                                         ->rules([
                                             fn(): \Closure => function (string $attribute, $value, \Closure $fail) {
