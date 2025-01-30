@@ -262,7 +262,6 @@ class PurchaseRequestResource extends Resource
                                 // Forms\Components\Select::make('quotation_id')
                                 // ->relationship('quotation', 'id')
                                 // ->required(),
-                                Hidden::make('purchase_request_id'),
 
 
                                 Forms\Components\Hidden::make('company_id')
