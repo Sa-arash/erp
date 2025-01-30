@@ -50,6 +50,7 @@ class QuotationsRelationManager extends RelationManager
                         ]);
                         $data['account_vendor'] = $account->id;
                         $data['company_id'] = getCompany()->id;
+                        $data['type'] = 'vendor';
                         return Parties::query()->create($data)->getKey();
                     })->createOptionForm([
                         Forms\Components\Section::make([
@@ -68,7 +69,7 @@ class QuotationsRelationManager extends RelationManager
                                 }
                             })->required()->maxLength(255),
                         ])->columns(3),
-                    ])->label('Vendor')->options(Parties::query()->where('company_id', getCompany()->id)->get()->pluck('info', 'id'))->searchable()->preload()->required(),
+                    ])->label('Vendor')->options(Parties::query()->where('company_id', getCompany()->id)->where('type','vendor')->get()->pluck('info', 'id'))->searchable()->preload()->required(),
                     Forms\Components\DatePicker::make('date')->default(now())->required(),
                     Forms\Components\Select::make('employee_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Logistic'),
                     Forms\Components\Select::make('employee_operation_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Operation'),
@@ -105,7 +106,7 @@ class QuotationsRelationManager extends RelationManager
                             $set('total', number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100)));
                         })->live(true)
                             ->prefix('%')
-                            ->numeric()->maxValue(1)
+                            ->numeric()->maxValue(100)
                             ->required()
                             ->rules([
                                 fn(): \Closure => function (string $attribute, $value, \Closure $fail) {
@@ -163,7 +164,7 @@ class QuotationsRelationManager extends RelationManager
                 //
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make()->modalWidth(MaxWidth::MaxContent)->action(function ($data) {
+                Tables\Actions\CreateAction::make()->visible($this->ownerRecord->is_quotation)->modalWidth(MaxWidth::MaxContent)->action(function ($data) {
 
                     $id = getCompany()->id;
                     $quotation = Quotation::query()->create([
@@ -219,7 +220,7 @@ class QuotationsRelationManager extends RelationManager
                    ];
                }),
 //                Tables\Actions\EditAction::make(),
-//                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
