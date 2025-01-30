@@ -60,7 +60,7 @@
     </tr>
     <tr>
         <td style="text-align: left">Department: {{$pr->employee->department?->title}}</td>
-        <td style="text-align: left">Location: {{$pr->employee->structure->title}}</td>
+        <td style="text-align: left">Location: {{$pr->employee?->structure?->title}}</td>
     </tr>
 </table>
 
