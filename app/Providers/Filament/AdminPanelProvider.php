@@ -15,6 +15,7 @@ use App\Models\Company;
 use App\Models\FinancialPeriod;
 use App\Models\Invoice;
 use App\Models\Account;
+use App\Models\Transaction;
 use Filament\FontProviders\LocalFontProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -49,36 +50,36 @@ class AdminPanelProvider extends PanelProvider
         if ($financialPeriod) {
             $reportNavigationItems = [
 
-                // NavigationItem::make()
-                //     ->icon('heroicon-o-document-text')
-                //     ->label('Journal')
-                //     ->url(fn() => route('pdf.jornal', [
-                //         'period' => $financialPeriod ?? ' '
-                //     ]))
-                //     ->group('Accounting Report')
-                //     ->sort(1),
+                NavigationItem::make()
+                    ->icon('heroicon-o-document-text')
+                    ->label('Journal')
+                    ->url(fn() => route('pdf.jornal', [
+                        'transactions' => implode('-',( Transaction::query()->where('company_id',getCompanyUrl())->where('financial_period_id',$financialPeriod )->pluck('id')->toArray())) !='' ?: 'test' ,
+                    ]))
+                    ->group('Accounting Report')
+                    ->sort(1),
 
-                // NavigationItem::make()
-                //     ->icon('heroicon-o-document-text')
-                //     ->label('Subsidiary Leadger')
-                //     ->url(fn() => route('pdf.account', [
-                //         'period' => $financialPeriod ?? ' ',
-                //         'reportTitle' => 'Subsidiary Leadger',
-                //         'account' => implode('-', getCompany()->accounts->where('level', 'subsidiary')->pluck('id')->toArray()),
-                //     ]))
-                //     ->group('Accounting Report')
-                //     ->sort(2),
+                NavigationItem::make()
+                    ->icon('heroicon-o-document-text')
+                    ->label('Subsidiary Leadger')
+                    ->url(fn() => route('pdf.account', [
+                        'period' => $financialPeriod ?? ' ',
+                        'reportTitle' => 'Subsidiary Leadger',
+                        'account' => implode('-', getCompany()->accounts->where('level', 'general')->pluck('id')->toArray()),
+                    ]))
+                    ->group('Accounting Report')
+                    ->sort(2),
 
-                // NavigationItem::make()
-                //     ->icon('heroicon-o-document-text')
-                //     ->label('General Leadger')
-                //     ->url(fn() => route('pdf.account', [
-                //         'period' => $financialPeriod ?? ' ',
-                //         'reportTitle' => 'General Leadger',
-                //         'account' => implode('-', getCompany()->accounts->where('level', 'general')->pluck('id')->toArray()),
-                //     ]))
-                //     ->group('Accounting Report')
-                //     ->sort(3),
+                NavigationItem::make()
+                    ->icon('heroicon-o-document-text')
+                    ->label('General Leadger')
+                    ->url(fn() => route('pdf.account', [
+                        'period' => $financialPeriod ?? ' ',
+                        'reportTitle' => 'General Leadger',
+                        'account' => implode('-', getCompany()->accounts->where('level', 'group')->pluck('id')->toArray()),
+                    ]))
+                    ->group('Accounting Report')
+                    ->sort(3),
 
                 NavigationItem::make()
                     ->icon('heroicon-o-document-text')
@@ -158,11 +159,11 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 Widgets\AccountWidget::class,
             ])
-            ->userMenuItems([
-                MenuItem::make()
-                    ->label('Profile')->icon('heroicon-c-user-circle')->url(fn() => EmployeeResource::getUrl('view', ['record' => auth()->user()?->employee?->id ? auth()->user()?->employee?->id : 1])),
+            // ->userMenuItems([
+            //     // MenuItem::make()
+            //     //     ->label('Profile')->icon('heroicon-c-user-circle')->url(fn() => EmployeeResource::getUrl('view', ['record' => auth()->user()?->employee?->id ? auth()->user()?->employee?->id : 1])),
 
-            ])
+            // ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -190,70 +191,25 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->tenantProfile(EditTeamProfile::class)
             ->navigationItems([
-                //     // NavigationGroup::make('Website')
-                //     // ->items([
-                //     //     ...PageResource::getNavigationItems(),
-                //     //     ...CategoryResource::getNavigationItems(),
-                //     //     ...HomePageSettings::getNavigationItems(),
-                //     // ]),
+       
                 NavigationItem::make()
                     ->label('Profile')->icon('heroicon-c-user-circle')->url(fn() => EmployeeResource::getUrl('view', ['record' => auth()->user()?->employee->id])),
 
-                //         // Invoice
-                //             NavigationItem::make()
-                //             ->icon('heroicon-o-document-text')
-                //             ->label('Add Journal Entry')->url(fn()=>InvoiceResource::getUrl('create'))
-                //             ->group('Finance')
-                //             ->parentItem('Journal Entry'),
-
-                //             // Customers/Vendors
-                //             NavigationItem::make()
-                //             ->icon('heroicon-o-document-text')
-                //             ->label('Add Customers/Vendors')->url(fn()=>PartiesResource::getUrl('create'))
-                //             ->group('Finance')
-                //             ->parentItem('Customers/Vendors'),
-                //             NavigationItem::make()
-                //             ->icon('heroicon-o-document-text')
-                //             ->label('Customers')->url(fn()=>PartiesResource::getUrl('index').'?tableFilters[type][value]=customer')
-                //             ->group('Finance')
-                //             ->parentItem('Customers/Vendors'),
-                //             NavigationItem::make()
-                //             ->icon('heroicon-o-document-text')
-                //             ->label('Vendors')->url(fn()=>PartiesResource::getUrl('index').'?tableFilters[type][value]=vendor')
-                //             ->group('Finance')
-                //             ->parentItem('Customers/Vendors'),
-
-                //             // Cheque
-                //             NavigationItem::make()
-                //             ->icon('heroicon-o-document-text')
-                //             ->label('Received Cheque List')->url(fn()=>ChequeResource::getUrl('index').'?tableFilters[status][value]=cleared')
-                //             ->group('Finance')
-                //             ->parentItem('Cheque Management'),
-                //             NavigationItem::make()
-                //             ->icon('heroicon-o-document-text')
-                //             ->label('Issued Cheque List')->url(fn()=>ChequeResource::getUrl('index').'?tableFilters[status][value]=issued')
-                //             ->group('Finance')
-                //             ->parentItem('Cheque Management'),
-//                NavigationItem::make()
-//                    ->icon('heroicon-o-document-text')->sort(0)
-////                    ->visible(fn() => isset($financialPeriod)===false)
-//
-//                    ->label('Add Assets list')
-//                    ->url(fn() => AssetResource::getUrl('create'))
-//                    ->group('Logistic Management'),
+                
 
 
                 ...$reportNavigationItems,
 
 
-                ...EditTeamProfile::getNavigationItems()
-                // ...PayRoll::getNavigationItems()
+                // ...EditTeamProfile::getNavigationItems()
+                // ...PayRoll::getNavigationItems() 
             ])->navigationGroups([
-                'Profile',
-                'Human Resource',
-                'Finance',
+                'HR Management System',
+                'Finance Management',
                 'Accounting Report',
                 'Logistic Management',
+                'Security Management',
+                'Basic Setting',
             ])
             ->databaseNotifications()->tenant(Company::class, 'id', 'company');
     }

@@ -51,7 +51,7 @@ class EmployeeResource extends Resource
 {
 
     protected static ?string $model = Employee::class;
-    protected static ?int $navigationSort = -5;
+    protected static ?int $navigationSort = 1;
     protected static ?string $navigationGroup = 'HR Management System';
     protected static ?string $navigationIcon = 'heroicon-c-user-group';
 

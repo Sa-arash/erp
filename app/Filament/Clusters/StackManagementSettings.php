@@ -11,5 +11,5 @@ class StackManagementSettings extends Cluster
     protected static ?string $title = 'Setting';
 
     protected static ?string $clusterBreadcrumb = 'Setting';
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 10;
 }

@@ -26,7 +26,7 @@ class AssetResource extends Resource
 {
     protected static ?string $model = Asset::class;
     protected static ?string $navigationGroup = 'Logistic Management';
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 7;
     protected static ?string $navigationLabel = 'Asset/Inventory';
     protected static ?string $navigationIcon = 'heroicon-s-inbox-stack';
 

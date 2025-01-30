@@ -25,6 +25,7 @@ class OvertimeResource extends Resource
     protected static ?string $model = Overtime::class;
 
     protected static ?string $navigationIcon = 'heroicon-s-folder-plus';
+    protected static ?int $navigationSort = 3;
     protected static ?string $navigationGroup = 'HR Management System';
 
 
