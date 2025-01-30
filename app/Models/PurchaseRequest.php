@@ -20,10 +20,11 @@ class PurchaseRequest extends Model
         'employee_id',
         'is_quotation',
     ];
-    protected $casts=['status'=>POStatus::class];
+    protected $casts = ['status' => POStatus::class];
+
     public function approvals(): \Illuminate\Database\Eloquent\Relations\MorphMany
     {
-        return $this->morphMany(Approval::class,'approvable','approvable_type','approvable_id');
+        return $this->morphMany(Approval::class, 'approvable', 'approvable_type', 'approvable_id');
     }
 
     public function department(): \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -47,17 +48,23 @@ class PurchaseRequest extends Model
         return $this->hasMany(PurchaseRequestItem::class, 'purchase_request_id');
     }
 
+    public function bid(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Bid::class);
+    }
 
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);
     }
+
     public function quotations(): \Illuminate\Database\Eloquent\Relations\hasMany
     {
         return $this->hasMany(Quotation::class);
     }
+
     public function quotationItems(): \Illuminate\Database\Eloquent\Relations\hasManyThrough
     {
-        return $this->hasManyThrough(QuotationItem::class,Quotation::class);
+        return $this->hasManyThrough(QuotationItem::class, Quotation::class);
     }
 }

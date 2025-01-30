@@ -220,7 +220,7 @@ class QuotationsRelationManager extends RelationManager
                    ];
                }),
 //                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+                Tables\Actions\DeleteAction::make()->visible($this->ownerRecord->bid===null ),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

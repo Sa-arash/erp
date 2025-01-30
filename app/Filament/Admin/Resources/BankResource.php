@@ -90,10 +90,15 @@ class BankResource extends Resource
                 Tables\Actions\Action::make('print')
                 ->label('')
                 ->icon('heroicon-s-printer')
-                ->url(fn($record) => route('pdf.account', [
-                    'period' => FinancialPeriod::query()->where('company_id', getCompany()->id)?->first()->id,
-                    'account' =>$record->account->id,
-                ])),
+                ->url(
+                function($record){
+                    if (FinancialPeriod::query()->where('company_id', getCompany()->id)->first()){
+                        route('pdf.account', [
+                            'period' => FinancialPeriod::query()->where('company_id', getCompany()->id)->first()?->id,
+                            'account' =>$record->account->id,
+                        ]);
+                    }
+                }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
