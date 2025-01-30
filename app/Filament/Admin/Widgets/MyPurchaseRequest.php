@@ -99,7 +99,6 @@ class MyPurchaseRequest extends BaseWidget
 
             TextEntry::make('description')->columnSpanFull()->label('Description'),
         ])->columns(3),
-
         RepeatableEntry::make('items')->schema([
             TextEntry::make('product.info')->badge(),
             TextEntry::make('unit.title')->badge(),

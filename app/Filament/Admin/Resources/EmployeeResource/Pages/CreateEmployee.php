@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\EmployeeResource\Pages;
 
 use App\Filament\Admin\Resources\EmployeeResource;
+use App\Models\CompanyUser;
 use App\Models\User;
 use App\Models\Vendor;
 use App\Models\VendorType;
@@ -73,7 +74,7 @@ class CreateEmployee extends CreateRecord
             $this->form->model($this->getRecord())->saveRelationships();
 
             $this->callHook('afterCreate');
-
+            CompanyUser::query()->create(['user_id'=>$this->record->user_id,'company_id'=>getCompany()->id]);
             $this->commitDatabaseTransaction();
         } catch (Halt $exception) {
             $exception->shouldRollbackDatabaseTransaction() ?
@@ -105,4 +106,5 @@ class CreateEmployee extends CreateRecord
 
         $this->redirect($redirectUrl, navigate: FilamentView::hasSpaMode() && is_app_url($redirectUrl));
     }
+
 }
