@@ -36,7 +36,10 @@ class PurchaseOrder extends Model
     {
         return $this->belongsTo(Parties::class, 'vendor_id');
     }
-
+ public function invoice()
+    {
+        return $this->belongsTo(Invoice::class, 'invoice_id');
+    }
     public function items(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(PurchaseOrderItem::class, 'purchase_order_id');
