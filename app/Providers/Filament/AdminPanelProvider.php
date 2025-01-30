@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Admin\Pages\EmployeeProfile;
 use App\Filament\Admin\Resources\AssetResource;
 use App\Filament\Admin\Resources\ChequeResource;
 use App\Filament\Admin\Resources\EmployeeResource\Pages\ViewEmployee;
@@ -160,11 +161,11 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 Widgets\AccountWidget::class,
             ])
-            // ->userMenuItems([
-            //     // MenuItem::make()
-            //     //     ->label('Profile')->icon('heroicon-c-user-circle')->url(fn() => EmployeeResource::getUrl('view', ['record' => auth()->user()?->employee?->id ? auth()->user()?->employee?->id : 1])),
+            ->userMenuItems([
+                MenuItem::make()
+                    ->label('View Profile')->icon('heroicon-c-user-circle')->url(fn() => EmployeeProfile::getNavigationUrl()),
 
-            // ])
+            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -193,9 +194,7 @@ class AdminPanelProvider extends PanelProvider
             ->tenantProfile(EditTeamProfile::class)
             ->navigationItems([
        
-                NavigationItem::make()
-                    ->label('Profile')->icon('heroicon-c-user-circle')->url(fn() => EmployeeResource::getUrl('view', ['record' => auth()->user()?->employee->id])),
-
+               
                 
 
 
