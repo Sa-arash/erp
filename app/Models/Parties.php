@@ -20,19 +20,23 @@ class Parties extends Model
         'account_code_customer',
     ];
 
-    public function getInfoAttribute(){
-return $this->name."(".$this->accountVendor->code.")";
+    public function getInfoAttribute()
+    {
+        return $this->name . "(" . $this->accountVendor?->code . ")";
     }
+
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);
     }
+
     public function accountVendor(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(Account::class,'account_vendor');
+        return $this->belongsTo(Account::class, 'account_vendor');
     }
+
     public function accountCustomer(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(Account::class,'account_customer');
+        return $this->belongsTo(Account::class, 'account_customer');
     }
 }
