@@ -43,9 +43,9 @@ class ApprovalResource extends Resource
                     return substr($record->approvable_type, 11);
                 })->searchable()->badge(),
                 Tables\Columns\TextColumn::make('comment')->sortable(),
-                Tables\Columns\TextColumn::make('created_at')->label('Request Date')->dateTime()->sortable(),
+                Tables\Columns\TextColumn::make('created_at')->label('Request Date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('status')->badge(),
-                Tables\Columns\TextColumn::make('approve_date')->dateTime()->sortable(),
+                Tables\Columns\TextColumn::make('approve_date')->date()->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('approvable_type')->label('Request Type')->options(function () {
