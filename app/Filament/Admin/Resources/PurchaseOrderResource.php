@@ -9,6 +9,7 @@ use App\Models\PurchaseOrder;
 use App\Models\PurchaseRequest;
 use App\Models\PurchaseRequestItem;
 use Closure;
+use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Components\Placeholder;
@@ -38,7 +39,7 @@ class PurchaseOrderResource extends Resource
         return $form
             ->schema([
                 Section::make('Payment')->schema([
-                    Forms\Components\Select::make('account_id')
+                    SelectTree::make('account_id')
                     ->label('Payment Account')
                     ->options(
                         function () {
@@ -59,7 +60,30 @@ class PurchaseOrderResource extends Resource
                         ->searchable()
                         ->preload()
                         ->required(),
+                        // Forms\Components\Checkbox::make('Cheque')->inline()->live(),
+                        // Forms\Components\Section::make([
+                        //     Forms\Components\Fieldset::make('cheque')->relationship('account.cheque')->schema([
+                        //         Forms\Components\TextInput::make('cheque_number')->required()->maxLength(255),
+                        //         Forms\Components\TextInput::make('amount')->default(function (Get $get) {
 
+                        //             if ($get('debtor') > 0) {
+                        //                 return $get('debtor');
+                        //             }
+                        //             if ($get('creditor') > 0) {
+                        //                 return $get('creditor');
+                        //             }
+                        //         })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->numeric(),
+                        //         Forms\Components\DatePicker::make('issue_date')->required(),
+                        //         Forms\Components\DatePicker::make('due_date')->required(),
+                        //         Forms\Components\TextInput::make('payer_name')->required()->maxLength(255),
+                        //         Forms\Components\TextInput::make('payee_name')->required()->maxLength(255),
+                        //         Forms\Components\TextInput::make('bank_name')->maxLength(255),
+                        //         Forms\Components\TextInput::make('branch_name')->maxLength(255),
+                        //         Forms\Components\Textarea::make('description')->columnSpanFull(),
+                        //         Forms\Components\ToggleButtons::make('type')->options([0 => 'Receivable', 1 => 'Payable'])->inline()->grouped()->required(),
+                        //         Forms\Components\Hidden::make('company_id')->default(getCompany()->id)
+                        //     ]),
+                        // ])->collapsible()->persistCollapsed()->visible(fn(Forms\Get $get) => $get('Cheque')),
                         Forms\Components\Select::make('vendor_id')->label('Vendor')
                         
                         ->options((getCompany()->parties->where('type', 'vendor')->pluck('info','id')))
@@ -74,7 +98,7 @@ class PurchaseOrderResource extends Resource
 
 
 
-                ])->columns(4),
+                ])->columns(5),
                 Section::make('Request')->schema([
                     Forms\Components\Select::make('prepared_by')->live()
                         ->searchable()
@@ -129,7 +153,7 @@ class PurchaseOrderResource extends Resource
                                 $set('RequestedItems', $items);
                             }
                         })
-                        ->options(getCompany()->purchaseRequests->pluck('id', 'purchase_number')),
+                        ->options(getCompany()->purchaseRequests->pluck('purchase_number', 'id')),
                         
                    
                     Forms\Components\Hidden::make('company_id')

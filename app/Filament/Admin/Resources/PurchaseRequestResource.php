@@ -187,7 +187,8 @@ class PurchaseRequestResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\Action::make('Order')->icon('heroicon-s-shopping-cart')
+                Tables\Actions\Action::make('Order')
+                ->icon('heroicon-s-shopping-cart')
                     ->modalWidth(MaxWidth::FitContent)->form([
                         Section::make('Payment')->schema([
                             Forms\Components\Select::make('account_id')
