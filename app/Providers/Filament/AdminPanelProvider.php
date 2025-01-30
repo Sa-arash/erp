@@ -158,11 +158,11 @@ class AdminPanelProvider extends PanelProvider
             ->widgets([
                 Widgets\AccountWidget::class,
             ])
-            ->userMenuItems([
-                MenuItem::make()
-                    ->label('Profile')->icon('heroicon-c-user-circle')->url(fn() => EmployeeResource::getUrl('view', ['record' => auth()->user()?->employee?->id ? auth()->user()?->employee?->id : 1])),
+            // ->userMenuItems([
+            //     // MenuItem::make()
+            //     //     ->label('Profile')->icon('heroicon-c-user-circle')->url(fn() => EmployeeResource::getUrl('view', ['record' => auth()->user()?->employee?->id ? auth()->user()?->employee?->id : 1])),
 
-            ])
+            // ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -190,70 +190,25 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->tenantProfile(EditTeamProfile::class)
             ->navigationItems([
-                //     // NavigationGroup::make('Website')
-                //     // ->items([
-                //     //     ...PageResource::getNavigationItems(),
-                //     //     ...CategoryResource::getNavigationItems(),
-                //     //     ...HomePageSettings::getNavigationItems(),
-                //     // ]),
+       
                 NavigationItem::make()
                     ->label('Profile')->icon('heroicon-c-user-circle')->url(fn() => EmployeeResource::getUrl('view', ['record' => auth()->user()?->employee->id])),
 
-                //         // Invoice
-                //             NavigationItem::make()
-                //             ->icon('heroicon-o-document-text')
-                //             ->label('Add Journal Entry')->url(fn()=>InvoiceResource::getUrl('create'))
-                //             ->group('Finance')
-                //             ->parentItem('Journal Entry'),
-
-                //             // Customers/Vendors
-                //             NavigationItem::make()
-                //             ->icon('heroicon-o-document-text')
-                //             ->label('Add Customers/Vendors')->url(fn()=>PartiesResource::getUrl('create'))
-                //             ->group('Finance')
-                //             ->parentItem('Customers/Vendors'),
-                //             NavigationItem::make()
-                //             ->icon('heroicon-o-document-text')
-                //             ->label('Customers')->url(fn()=>PartiesResource::getUrl('index').'?tableFilters[type][value]=customer')
-                //             ->group('Finance')
-                //             ->parentItem('Customers/Vendors'),
-                //             NavigationItem::make()
-                //             ->icon('heroicon-o-document-text')
-                //             ->label('Vendors')->url(fn()=>PartiesResource::getUrl('index').'?tableFilters[type][value]=vendor')
-                //             ->group('Finance')
-                //             ->parentItem('Customers/Vendors'),
-
-                //             // Cheque
-                //             NavigationItem::make()
-                //             ->icon('heroicon-o-document-text')
-                //             ->label('Received Cheque List')->url(fn()=>ChequeResource::getUrl('index').'?tableFilters[status][value]=cleared')
-                //             ->group('Finance')
-                //             ->parentItem('Cheque Management'),
-                //             NavigationItem::make()
-                //             ->icon('heroicon-o-document-text')
-                //             ->label('Issued Cheque List')->url(fn()=>ChequeResource::getUrl('index').'?tableFilters[status][value]=issued')
-                //             ->group('Finance')
-                //             ->parentItem('Cheque Management'),
-//                NavigationItem::make()
-//                    ->icon('heroicon-o-document-text')->sort(0)
-////                    ->visible(fn() => isset($financialPeriod)===false)
-//
-//                    ->label('Add Assets list')
-//                    ->url(fn() => AssetResource::getUrl('create'))
-//                    ->group('Logistic Management'),
+                
 
 
                 ...$reportNavigationItems,
 
 
                 // ...EditTeamProfile::getNavigationItems()
-                // ...PayRoll::getNavigationItems()
+                // ...PayRoll::getNavigationItems() 
             ])->navigationGroups([
-                'Profile',
-                'Human Resource',
-                'Finance',
+                'HR Management System',
+                'Finance Management',
                 'Accounting Report',
                 'Logistic Management',
+                'Security Management',
+                'Basic Setting',
             ])
             ->databaseNotifications()->tenant(Company::class, 'id', 'company');
     }

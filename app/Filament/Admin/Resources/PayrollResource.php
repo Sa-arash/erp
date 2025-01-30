@@ -42,6 +42,7 @@ use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 class PayrollResource extends Resource
 {
     protected static ?string $model = Payroll::class;
+    protected static ?int $navigationSort = 2;
     protected static ?string $navigationGroup = 'HR Management System';
     protected static ?string $navigationIcon = 'payment';
 
