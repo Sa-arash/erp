@@ -17,6 +17,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Filament\Notifications\Notification;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -32,6 +33,7 @@ class MyLeave extends BaseWidget
                     $data['company_id']=getCompany()->id;
                     $data['employee_id']=getEmployee()->id;
                     Leave::query()->create($data);
+                    Notification::make('success')->title('Created')->send();
                 })->label('New Leave')->form([
                    Section::make([
                            Select::make('typeleave_id')->columnSpanFull()->label('Leave Type')->required()->options(Typeleave::query()->where('company_id', getCompany()->id)->pluck('title', 'id'))->searchable()->preload(),
