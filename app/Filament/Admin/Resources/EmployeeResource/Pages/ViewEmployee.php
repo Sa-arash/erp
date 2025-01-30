@@ -65,7 +65,7 @@ class  ViewEmployee extends ViewRecord
                 section::make()
                     ->schema([
                         ImageEntry::make('pic')
-                            ->defaultImageUrl(asset('images/user.png'))
+                            ->defaultImageUrl(asset('img/user.png'))
                             ->label('')
                             ->extraAttributes(['style' => 'border-radius: 10px;  padding: 0px;margin:0px;'])
                             ->width(200)
@@ -74,7 +74,6 @@ class  ViewEmployee extends ViewRecord
                             ->alignLeft()
                             ->columnSpan(1),
                         ImageEntry::make('signature_pic')
-                            ->defaultImageUrl(asset('images/user.png'))
                             ->label('Employee Signature ')
                             ->extraAttributes(['style' => 'border-radius: 10px;  padding: 0px;margin:0px;'])
                             ->width(100)

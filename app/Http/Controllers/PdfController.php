@@ -23,7 +23,7 @@ class PdfController extends Controller
     public function payroll($id)
     {
 
-        $payroll = Payroll::query()->with('employee', 'itemAllowances', 'itemDeductions', 'benefits')->findOrFail('id', $id);
+        $payroll = Payroll::query()->with('employee', 'itemAllowances', 'itemDeductions', 'benefits')->findOrFail( $id);
 
         $pdf = Pdf::loadView('pdf.payroll', compact('payroll'));
         return $pdf->stream('pdf.payroll');
@@ -328,7 +328,7 @@ class PdfController extends Controller
 
     public function employee($id)
     {
-        $employee =  Employee::query()->findOrFail('id', $id);
+        $employee =  Employee::query()->findOrFail( $id);
         $pdf = Pdf::loadView(
             'pdf.employee',
             compact('employee')
@@ -406,7 +406,7 @@ class PdfController extends Controller
             compact('company','takeOut')
         );
         return $pdf->stream('pdf.takeOut');
-    } 
+    }
      public function requestVisit($id)
     {
         $requestVisit=VisitorRequest::query()->firstWhere('id',$id);
