@@ -31,7 +31,7 @@ class CreatePurchaseOrder extends CreateRecord
 
             dd($data,$this->form->getLivewire()->data['RequestedItems']);
             foreach ($this->form->getLivewire()->data['RequestedItems'] as $item){
-                
+
             }
             $price = 0;
 
@@ -60,13 +60,13 @@ class CreatePurchaseOrder extends CreateRecord
                 'creditor'=> 0,
                 'debtor'=> $price,
                 'description'=> ' ',
-             
+
                 'invoice_id'=> $invoice->id,
                 'financial_period_id'=> getPeriod(),
                 'company_id'=> getCompany()->id,
                 'user_id'=> auth()->user(),
             ]);
-            
+
             $this->callHook('beforeCreate');
 
             $this->record = $this->handleRecordCreation($data);

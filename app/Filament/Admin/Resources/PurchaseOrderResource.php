@@ -150,6 +150,7 @@ class PurchaseOrderResource extends Resource
                                     foreach ($record->bid->quotation?->quotationItems->toArray() as $item){
                                         $prItem= PurchaseRequestItem::query()->firstWhere('id',$item['purchase_request_item_id']);
                                         $item['quantity']=$prItem->quantity;
+                                        $item['unit_id']=$prItem->unit_id;
                                         $item['unit_price']=number_format($item['unit_rate']);
                                         $q=$prItem->quantity;
                                         $price=$item['unit_rate'];
@@ -174,7 +175,7 @@ class PurchaseOrderResource extends Resource
 
 
 
-                    Repeater::make('RequestedItems')->defaultItems(0)->required()
+                    Repeater::make('RequestedItems')->defaultItems(0)->required()->relationship('items')
                         // ->formatStateUsing(fn(Get $get) => dd($get('purchase_request_id')):'')
                         ->schema([
                             Forms\Components\Select::make('product_id')
@@ -186,20 +187,9 @@ class PurchaseOrderResource extends Resource
                                     }
                                     return $data;
                                 })->required()->searchable()->preload(),
-                            Forms\Components\TextInput::make('description')->readOnly()->label('Description')->required(),
-
-                            Forms\Components\Select::make('unit_id')
-                                ->searchable()
-                                ->preload()
-                                ->label('Unit')
-                                ->options(getCompany()->units->pluck('title', 'id'))
-                                ->required(),
-                            Forms\Components\TextInput::make('quantity')
-                                ->readOnly()
-                                ->required()->live()
-                                ->mask(RawJs::make('$money($input)'))
-                                ->stripCharacters(','),
-
+                            Forms\Components\TextInput::make('description')->label('Description')->required(),
+                            Forms\Components\Select::make('unit_id')->required()->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id')),
+                            Forms\Components\TextInput::make('quantity')->required()->live(true),
                             Forms\Components\TextInput::make('unit_price')->afterStateUpdated(function ($state,Set $set, Get $get){
                                 $freights = $get('taxes') === null ? 0 : (float) $get('taxes');
                                 $q = $get('quantity');
@@ -211,7 +201,6 @@ class PurchaseOrderResource extends Resource
                                 ->numeric()
                                 ->mask(RawJs::make('$money($input)'))
                                 ->stripCharacters(',')->label('Final Price'),
-
                             Forms\Components\TextInput::make('taxes')->afterStateUpdated(function ($state,Set $set, Get $get){
                                 $freights = $get('freights') === null ? 0 : (float)$get('freights');
                                 $q = $get('quantity');
@@ -257,7 +246,7 @@ class PurchaseOrderResource extends Resource
 
                         ])
                         ->columns(9)
-                        ->columnSpanFull()->addable(false),
+                        ->columnSpanFull(),
                 ])->columns(3)
             ]);
     }
@@ -293,23 +282,14 @@ class PurchaseOrderResource extends Resource
                 Tables\Columns\TextColumn::make('vendor_id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('company.title')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+
             ])
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('registration')->label('Registration assets')->url(fn($record)=> AssetResource::getUrl('create',['po'=>$record->id]))
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

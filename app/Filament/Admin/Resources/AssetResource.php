@@ -77,11 +77,34 @@ class AssetResource extends Resource
                     Forms\Components\Hidden::make('status')->default('inStorageUsable')->required(),
                     KeyValue::make('attributes')->keyLabel('title')->columnSpanFull(),
                 ])->columns(4)->columnSpanFull()->collapsed()->default(function (){
-                   if ($_GET['pr']){
-                       PurchaseOrder::query()->firstWhere('id',$_GET['pr']);
+                   if ($_GET['po']){
+                       $asset = Asset::query()->where('company_id', getCompany()->id)->latest()->first();
+                       if ($asset) {
+                           $number= generateNextCodeAsset($asset->number);
+                       } else {
+                           $number= "0001";
+                       }
+                      $PO= PurchaseOrder::query()->firstWhere('id',$_GET['po']);
+                      $assets=[];
+
+                      foreach ($PO->items as $item){
+                          for ($i=0;$i<=$item->quantity;$i++) {
+                              $data=[];
+                              $freights = $item->freights === null ? 0 : (float) $item->freights;
+                              $q = 1;
+                              $tax = $item->taxes === null ? 0 : (float)$item->taxes;
+                              $price = $item->unit_price;
+                              $data['product_id'] = $item->product_id;
+                              $data['buy_date'] =  $PO->date_of_po;
+                              $data['number'] = $number;
+                              $data['price'] = number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100));
+                              $assets[]=$data;
+                              $number= generateNextCodeAsset($number);
+                          }
+                      }
+                    return $assets;
                    }
                 })
-
             ]);
     }
 
