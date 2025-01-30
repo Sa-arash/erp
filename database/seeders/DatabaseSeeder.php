@@ -85,7 +85,7 @@ class DatabaseSeeder extends Seeder
             'position_id' => 1,
         ]);
         CompanyUser::factory()->create([
-            'user_id' => 1,
+            'user_id' => 2,
             'company_id' => 1,
         ]);
 
@@ -160,7 +160,24 @@ class DatabaseSeeder extends Seeder
 
 
 
-
+        User::factory()->create([
+            'id' => 4,
+            'name' => 'Employee',
+            'email' => 'employee@gmail.com',
+            'password' => 'admin',
+        ]);
+        Employee::factory()->create([
+            'id'=>4,
+            'fullName' => 'SimpleEmployee',
+            'user_id' => 4,
+            'department_id' => 1,
+            'company_id' => 1,
+            'position_id' => 1,
+        ]);
+        CompanyUser::factory()->create([
+            'user_id' => 4,
+            'company_id' => 1,
+        ]);
 
 
 
