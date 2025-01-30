@@ -116,7 +116,7 @@ class PurchaseOrderResource extends Resource
                         } else {
                             return "0001";
                         }
-                    })->label('Po Number')
+                    })->label('PO NO')
                         ->required()
                         ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
                             return $rule->where('company_id', getCompany()->id);
@@ -142,7 +142,7 @@ class PurchaseOrderResource extends Resource
                         // ->relationship('quotation', 'id')
                         // ->required(),
                         Forms\Components\Select::make('purchase_request_id')->live()
-                        ->label('purchase Request')
+                        ->label('PR NO')
                         ->searchable()
                         ->preload()
                         ->afterStateUpdated(function (Set $set, $state) {
