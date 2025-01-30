@@ -18,8 +18,9 @@ class DepartmentFactory extends Factory
     public function definition(): array
     {
         return [
+            
             'title' => $this->faker->sentence(3),
-            'company_id' => Company::factory(),
+            // 'company_id' => Company::factory(),
             'description' => $this->faker->text(),
         ];
     }

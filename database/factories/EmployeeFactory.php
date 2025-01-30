@@ -42,17 +42,18 @@ class EmployeeFactory extends Factory
             'base_salary' => $this->faker->numberBetween(30000, 100000),
             'benefit_salary' => $this->faker->numberBetween(0, 20000),
             'ID_number' => $this->faker->numberBetween(0, 9999),
-            'department_id' => Department::factory(),
-            'position_id' => Position::factory(),
+            // 'department_id' => Department::factory(),
+            // 'position_id' => Position::factory(),
             'type_of_ID' => $this->faker->randomElement(['New','Renewal','Mutilated','Loss','Theft']),
             'gender' => $this->faker->randomElement(['male','female','other']),
             'count_of_child' => $this->faker->numberBetween(0, 5),
             'emergency_phone_number' => $this->faker->optional()->phoneNumber,
             'pic' => $this->faker->optional()->imageUrl(100, 100, 'people'),
             'blood_group' => $this->faker->randomElement(['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']),
-            'company_id' => Company::factory(),
+            // 'company_id' => Company::factory(),
             'NIC'=>$this->faker->phoneNumber,
             'contract_id'=>Contract::factory(),
+            'card_status'=>$this->faker->randomElement(['National Staff' => 'National Staff', 'International Staff' => 'International Staff', 'National Contractor' => 'National Contractor', 'International Contractor' => 'International Contractor', 'VIP' => 'VIP', 'International Resident' => 'International Resident'])
         ];
     }
 }

@@ -17,7 +17,21 @@ class UnitFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'title' => $this->faker->unique()->randomElement([
+                'Kilogram',
+                'Liter',
+                'Piece',
+                'Box',
+                'Pound',
+                'Meter',
+                'Dozen',
+                'Gram',
+                'Square Meter',
+                'Cubic Meter'
+            ]), 
+            'is_package' => false,
+            'items_per_package' => null,
+            'company_id' => 1,
         ];
     }
 }

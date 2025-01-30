@@ -19,7 +19,7 @@ class PositionFactory extends Factory
     {
         return [
             'title' => $this->faker->sentence(3),
-            'company_id' => Company::factory(),
+            // 'company_id' => Company::factory(),
             'description' => $this->faker->optional()->text(200),
         ];
     }
