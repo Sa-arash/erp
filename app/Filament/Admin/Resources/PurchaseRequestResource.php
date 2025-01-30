@@ -406,6 +406,7 @@ class PurchaseRequestResource extends Resource
                                     ]);
                                     $data['account_vendor'] = $account->id;
                                     $data['company_id'] = getCompany()->id;
+                                    $data['type']='vendor';
                                     return Parties::query()->create($data)->getKey();
                                 })->createOptionForm([
                                     Forms\Components\Section::make([
@@ -424,7 +425,7 @@ class PurchaseRequestResource extends Resource
                                             }
                                         })->required()->maxLength(255),
                                     ])->columns(3),
-                                ])->label('Vendor')->options(Parties::query()->where('company_id', getCompany()->id)->get()->pluck('info', 'id'))->searchable()->preload()->required(),
+                                ])->label('Vendor')->options(Parties::query()->where('company_id', getCompany()->id)->where('type','vendor')->get()->pluck('info', 'id'))->searchable()->preload()->required(),
                                 Forms\Components\DatePicker::make('date')->default(now())->required(),
                                 Forms\Components\Select::make('employee_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Logistic'),
                                 Forms\Components\Select::make('employee_operation_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Operation'),
@@ -450,7 +451,7 @@ class PurchaseRequestResource extends Resource
                                             $q = $get('quantity');
                                             $tax = $get('taxes') === null ? 0 : (float)$get('taxes');
                                             $price = $state !== null ? str_replace(',', '', $state) : 0;
-                                            $set('total', number_format(($q * $price) + ($q * $price * $tax) + ($q * $price * $freights)));
+                                            $set('total', number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100)));
                                         }
                                     })->live(true)->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                                     Forms\Components\TextInput::make('taxes')->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
@@ -458,29 +459,29 @@ class PurchaseRequestResource extends Resource
                                         $q = $get('quantity');
                                         $tax = $state === null ? 0 : (float)$state;
                                         $price = $get('unit_rate') !== null ? str_replace(',', '', $get('unit_rate')) : 0;
-                                        $set('total', number_format(($q * $price) + ($q * $price * $tax) + ($q * $price * $freights)));
+                                        $set('total', number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100)));
                                     })->live(true)
                                         ->prefix('%')
-                                        ->numeric()->maxValue(1)
+                                        ->numeric()->maxValue(100)
                                         ->required()
                                         ->rules([
                                             fn(): \Closure => function (string $attribute, $value, \Closure $fail) {
                                                 if ($value < 0) {
                                                     $fail('The :attribute must be greater than 0.');
                                                 }
-                                                if ($value > 1) {
+                                                if ($value > 100) {
                                                     $fail('The :attribute must be less than 100.');
                                                 }
                                             },
                                         ])
                                         ->mask(RawJs::make('$money($input)'))
                                         ->stripCharacters(','),
-                                    Forms\Components\TextInput::make('freights')->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
+                                    Forms\Components\TextInput::make('freights')->prefix('%')->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
                                         $tax = $get('taxes') === null ? 0 : (float)$get('taxes');
                                         $q = $get('quantity');
                                         $freights = $state === null ? 0 : (float)$state;
                                         $price = $get('unit_rate') !== null ? str_replace(',', '', $get('unit_rate')) : 0;
-                                        $set('total', number_format(($q * $price) + ($q * $price * $tax) + ($q * $price * $freights)));
+                                        $set('total', number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100)));
                                     })->live(true)
                                         ->required()
                                         ->numeric()
