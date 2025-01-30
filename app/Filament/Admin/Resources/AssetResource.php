@@ -71,12 +71,10 @@ class AssetResource extends Resource
                         return $query->where('warehouse_id', $get('warehouse_id'));
                     })->required(),
                     DatePicker::make('buy_date')->default(now()),
-                    DatePicker::make('garanry_date')->default(now()),
-                    DatePicker::make('varanty_date')->default(now()),
+                    DatePicker::make('guaranty_date')->default(now()),
+                    DatePicker::make('warranty_date')->default(now()),
                     Forms\Components\Hidden::make('status')->default('inStorageUsable')->required(),
                     KeyValue::make('attributes')->keyLabel('title')->columnSpanFull(),
-
-
                 ])->columns(4)->columnSpanFull()->cloneable()
 
             ]);
@@ -104,7 +102,7 @@ class AssetResource extends Resource
                         return EmployeeResource::getUrl('view', ['record' => $record->employees->last()?->assetEmployee?->employee_id]);
                     }
                 })->label('Employee'),
-                
+
 
 
 
@@ -151,8 +149,8 @@ Tables\Columns\TextColumn::make('buy_date')
                             return $query->where('structure_id', $data);
                         });
                     })->columns(4)->columnSpanFull(),
-                   
-                    
+
+
 
             ], getModelFilter())
             ->actions([
