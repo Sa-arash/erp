@@ -7,6 +7,7 @@ use App\Models\Account;
 use App\Models\Transaction;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Actions;
+use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
 
 class ListParties extends ListRecords
@@ -30,6 +31,14 @@ class ListParties extends ListRecords
                     'vendor_account'=>$data['vendor'],
                 ]);
             })
+        ];
+    }
+    public function getTabs(): array
+    {
+
+        return [
+            "Vendor"=> Tab::make()->query(fn(\Illuminate\Database\Eloquent\Builder $query)=>$query->where('type','vendor')),
+            "Customer"=> Tab::make()->query(fn(\Illuminate\Database\Eloquent\Builder $query)=>$query->where('type','customer')),
         ];
     }
 }

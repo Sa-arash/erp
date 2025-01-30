@@ -278,9 +278,16 @@ class PurchaseRequestResource extends Resource
                                     if ($record->bid){
                                         $data=[];
                                         foreach ($record->bid->quotation?->quotationItems->toArray() as $item){
+
                                             $prItem= PurchaseRequestItem::query()->firstWhere('id',$item['purchase_request_item_id']);
                                             $item['quantity']=$prItem->quantity;
                                             $item['unit_price']=number_format($item['unit_rate']);
+                                            $item['product_id']=$prItem->product_id;
+                                            $q=$prItem->quantity;
+                                            $price=$item['unit_rate'];
+                                            $tax=$item['taxes'];
+                                            $freights=$item['freights'];
+                                            $item['total']=number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100));
                                             $data[]=$item;
                                         }
                                         return  $data;

@@ -7,6 +7,7 @@ use App\Models\Account;
 use App\Models\Transaction;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Actions;
+use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
 
 class ListBanks extends ListRecords
@@ -31,7 +32,14 @@ class ListBanks extends ListRecords
                     'account_cash'=>$data['account_cash'],
                 ]);
             })
+        ];
+    }
+    public function getTabs(): array
+    {
 
+        return [
+           "Bank"=> Tab::make()->query(fn(\Illuminate\Database\Eloquent\Builder $query)=>$query->where('type',0)),
+           "Cash"=> Tab::make()->query(fn(\Illuminate\Database\Eloquent\Builder $query)=>$query->where('type',1)),
         ];
     }
 }
