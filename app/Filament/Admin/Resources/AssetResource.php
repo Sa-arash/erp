@@ -7,6 +7,7 @@ use App\Filament\Admin\Resources\AssetResource\RelationManagers;
 use App\Models\Asset;
 use App\Models\Brand;
 use App\Models\Product;
+use App\Models\PurchaseOrder;
 use App\Models\Structure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
@@ -56,11 +57,11 @@ class AssetResource extends Resource
                             ])->getKey();
                         }),
                     Forms\Components\TextInput::make('model')->nullable()->label('Model'),
-                    Forms\Components\TextInput::make('number')->default(function (){
-                        $asset=Asset::query()->where('company_id',getCompany()->id)->latest()->first();
-                        if ($asset){
-                          return  generateNextCodeAsset($asset->number);
-                        }else{
+                    Forms\Components\TextInput::make('number')->default(function () {
+                        $asset = Asset::query()->where('company_id', getCompany()->id)->latest()->first();
+                        if ($asset) {
+                            return generateNextCodeAsset($asset->number);
+                        } else {
                             return "0001";
                         }
                     })->required()->numeric()->label('Asset Number')->maxLength(50),
@@ -75,7 +76,11 @@ class AssetResource extends Resource
                     DatePicker::make('warranty_date')->default(now()),
                     Forms\Components\Hidden::make('status')->default('inStorageUsable')->required(),
                     KeyValue::make('attributes')->keyLabel('title')->columnSpanFull(),
-                ])->columns(4)->columnSpanFull()->cloneable()
+                ])->columns(4)->columnSpanFull()->collapsed()->default(function (){
+                   if ($_GET['pr']){
+                       PurchaseOrder::query()->firstWhere('id',$_GET['pr']);
+                   }
+                })
 
             ]);
     }
@@ -91,9 +96,9 @@ class AssetResource extends Resource
                 Tables\Columns\TextColumn::make('status')->badge(),
 
                 Tables\Columns\TextColumn::make('warehouse.title')->label('Warehouse/Building')->sortable(),
-                Tables\Columns\TextColumn::make('structure')->state(function ($record){
-                    $str=getParents($record->structure);
-                    return substr($str,1,strlen($str)-1);
+                Tables\Columns\TextColumn::make('structure')->state(function ($record) {
+                    $str = getParents($record->structure);
+                    return substr($str, 1, strlen($str) - 1);
                 })->label('Location')->sortable(),
                 Tables\Columns\TextColumn::make('employee')->state(function ($record) {
                     return $record->employees->last()?->assetEmployee?->employee?->fullName;
@@ -104,34 +109,24 @@ class AssetResource extends Resource
                 })->label('Employee'),
 
 
-
-
-Tables\Columns\TextColumn::make('buy_date')
-                ->dateTime()
-                ->sortable()
-                ->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('buy_date')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('garanry_date')
-                ->dateTime()
-                ->sortable()
-                ->toggleable(isToggledHiddenByDefault: false),
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('varanty_date')
-                ->dateTime()
-                ->sortable()
-                ->toggleable(isToggledHiddenByDefault: false),
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
 
-                Tables\Columns\TextColumn::make('created_at')
-                ->dateTime()
-                ->sortable()
-                ->toggleable(isToggledHiddenByDefault: true),
-            Tables\Columns\TextColumn::make('updated_at')
-                ->dateTime()
-                ->sortable()
-                ->toggleable(isToggledHiddenByDefault: true),
 
             ])
             ->filters([
 
-                Tables\Filters\SelectFilter::make('product_id')->searchable()->options(getCompany()->products->pluck('title','id'))->label('Product'),
+                Tables\Filters\SelectFilter::make('product_id')->searchable()->options(getCompany()->products->pluck('title', 'id'))->label('Product'),
                 Tables\Filters\SelectFilter::make('status')->searchable()->options(['inuse' => "Inuse", 'inStorageUsable' => "InStorageUsable", 'storageUnUsable' => "StorageUnUsable", 'outForRepair' => 'OutForRepair', 'loanedOut' => "LoanedOut"]),
                 DateRangeFilter::make('buy_date'),
                 DateRangeFilter::make('garanry_data'),
@@ -149,7 +144,6 @@ Tables\Columns\TextColumn::make('buy_date')
                             return $query->where('structure_id', $data);
                         });
                     })->columns(4)->columnSpanFull(),
-
 
 
             ], getModelFilter())

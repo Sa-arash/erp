@@ -97,9 +97,6 @@ class PurchaseOrderResource extends Resource
                         Forms\Components\TextInput::make('exchange_rate')
                         ->required()->default(1)
                         ->numeric(),
-
-
-
                 ])->columns(5),
                 Section::make('Request')->schema([
                     Forms\Components\Select::make('prepared_by')->live()
@@ -158,7 +155,8 @@ class PurchaseOrderResource extends Resource
                                         $price=$item['unit_rate'];
                                         $tax=$item['taxes'];
                                         $freights=$item['freights'];
-                                      $item['total']=number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100));
+                                        $item['product_id']=$prItem->product_id;
+                                        $item['total']=number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100));
                                         $data[]=$item;
                                     }
                                     $set('RequestedItems',$data);
