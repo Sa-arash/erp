@@ -210,7 +210,11 @@ class PurchaseRequestResource extends Resource
                                 ->preload()
                                 ->required(),
 
-                            Forms\Components\Select::make('vendor_id')->label('Vendor')
+                            Forms\Components\Select::make('vendor_id')->default(function ($record){
+                               if ($record->bid){
+                                   return $record->bid?->quotation?->party_id;
+                               }
+                            }) ->label('Vendor')
 
                                 ->options((getCompany()->parties->where('type', 'vendor')->pluck('info', 'id')))
 
@@ -273,10 +277,19 @@ class PurchaseRequestResource extends Resource
 
 
                             Repeater::make('RequestedItems')->defaultItems(0)->required()
-                                ->default(fn($record) => (PurchaseRequestItem::where('purchase_request_id', $record->purchase_number)->get()->map(function ($item) {
-                                    $item->taxes = $item->freights = $item->unit_price = 0;
-                                    return $item;
-                                })->toArray()))
+                                ->default(function ($record){
+                                    if ($record->bid){
+                                        $data=[];
+                                        foreach ($record->bid->quotation?->quotationItems->toArray() as $item){
+                                            $prItem= PurchaseRequestItem::query()->firstWhere('id',$item['purchase_request_item_id']);
+                                            $item['quantity']=$prItem->quantity;
+                                            $item['unit_price']=$item['unit_rate'];
+                                            $data[]=$item;
+                                        }
+                                        return  $data;
+                                    }
+                                    return $record->items->where('status','approve')->toArray();
+                                })
                                 // ->formatStateUsing(fn(Get $get) => dd($get('purchase_request_id')):'')
                                 ->schema([
                                     Forms\Components\Select::make('product_id')
@@ -302,18 +315,25 @@ class PurchaseRequestResource extends Resource
                                         ->mask(RawJs::make('$money($input)'))
                                         ->stripCharacters(','),
 
-                                    Forms\Components\TextInput::make('estimated_unit_cost')
-                                        ->readOnly()
-                                        ->numeric()
-                                        ->mask(RawJs::make('$money($input)'))
-                                        ->stripCharacters(','),
-                                    Forms\Components\TextInput::make('unit_price')
+                                    Forms\Components\TextInput::make('unit_price')->afterStateUpdated(function ($state,Set $set, Get $get){
+                                        $freights = $get('taxes') === null ? 0 : (float) $get('taxes');
+                                        $q = $get('quantity');
+                                        $tax = $get('taxes') === null ? 0 : (float)$get('taxes');
+                                        $price = $state !== null ? str_replace(',', '', $state) : 0;
+                                        $set('total', number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100)));
+                                    })->live(true)
                                         ->readOnly()
                                         ->numeric()
                                         ->mask(RawJs::make('$money($input)'))
                                         ->stripCharacters(',')->label('Final Price'),
 
-                                    Forms\Components\TextInput::make('taxes')
+                                    Forms\Components\TextInput::make('taxes')->afterStateUpdated(function ($state,Set $set, Get $get){
+                                        $freights = $get('freights') === null ? 0 : (float)$get('freights');
+                                        $q = $get('quantity');
+                                        $tax = $state === null ? 0 : (float)$state;
+                                        $price = $get('unit_rate') !== null ? str_replace(',', '', $get('unit_rate')) : 0;
+                                        $set('total', number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100)));
+                                    })->live(true)
                                         ->prefix('%')
                                         ->numeric()
                                         ->required()
@@ -329,7 +349,13 @@ class PurchaseRequestResource extends Resource
                                         ])
                                         ->mask(RawJs::make('$money($input)'))
                                         ->stripCharacters(','),
-                                    Forms\Components\TextInput::make('freights')
+                                    Forms\Components\TextInput::make('freights')->afterStateUpdated(function ($state,Set $set, Get $get){
+                                        $freights = $state === null ? 0 : (float) $state;
+                                        $q = $get('quantity');
+                                        $tax = $get('taxes') === null ? 0 : (float)$get('taxes');
+                                        $price = $get('unit_rate') !== null ? str_replace(',', '', $get('unit_rate')) : 0;
+                                        $set('total', number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100)));
+                                    })->live(true)
                                         ->required()
                                         ->numeric()
                                         ->mask(RawJs::make('$money($input)'))
@@ -342,10 +368,10 @@ class PurchaseRequestResource extends Resource
                                         ->label('Project')
                                         ->options(getCompany()->projects->pluck('name', 'id')),
 
-                                    Placeholder::make('total')->content(fn($state, Get $get) => number_format((((int)str_replace(',', '', $get('quantity'))) * ((int)str_replace(',', '', $get('estimated_unit_cost')))))),
+                                    TextInput::make('total')->readOnly(),
 
                                 ])
-                                ->columns(10)
+                                ->columns(9)
                                 ->columnSpanFull()->addable(false),
                         ])->columns(3)
                     ])->action(function ($data, $record) {
