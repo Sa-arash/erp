@@ -184,7 +184,7 @@ class CreatePurchaseOrder extends CreateRecord
             }
 
        
-            
+            #fix
             $vendorAccount = Account::find($data['vendor_id']);
             
             //Giving money to Vendor
