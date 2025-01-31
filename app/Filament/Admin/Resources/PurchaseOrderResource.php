@@ -14,6 +14,7 @@ use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Components\Fieldset;
+use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
@@ -218,11 +219,11 @@ class PurchaseOrderResource extends Resource
                                     ])
                                     ->columns(9)
                                     ->columnSpanFull(),
-                            ])->columns(3)
-                        ]),
-                    Wizard\Step::make('Delivery')
-                        ->schema([
-                            Fieldset::make('invoice')->relationship('invoice')->schema([
+                            ])->columns(3),
+                    //     ]),
+                    // Wizard\Step::make('Delivery')
+                    //     ->schema([
+                            Group::make()->relationship('invoice')->schema([
 
                                 Forms\Components\Hidden::make('company_id')->default(Filament::getTenant()->id)->required(),
 
@@ -266,51 +267,53 @@ class PurchaseOrderResource extends Resource
                                                         // dd(()));
                                                         $produtTotal = array_map(function ($item) {
                                                             // dd($item);
-                                                            return (($item['quantity'] * str_replace(',','',$item['unit_price'])) + (($item['quantity'] * str_replace(',','',$item['unit_price']) * $item['taxes']) / 100) + (($item['quantity'] * str_replace(',','',$item['unit_price']) * $item['freights']) / 100));
+                                                            return (($item['quantity'] * str_replace(',', '', $item['unit_price'])) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['taxes']) / 100) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['freights']) / 100));
                                                         }, $get->getData()['RequestedItems']);
 
                                                         $invoiceTotal = array_map(function ($item) {
                                                             // dd($item);
-                                                            return (str_replace(',','',$item['creditor']));
+                                                            return (str_replace(',', '', $item['creditor']));
                                                         }, $get->getData()['invoice']['transactions']);
 
-                                                        $productSum = collect($produtTotal)->sum(); 
-                                                        $invoiceSum = collect($invoiceTotal)->sum(); 
+                                                        $productSum = collect($produtTotal)->sum();
+                                                        $invoiceSum = collect($invoiceTotal)->sum();
 
                                                         if ($invoiceSum != $productSum) {
                                                             $remainingAmount = $productSum - $invoiceSum;
-                                                            $fail("The paid amount does not match the total price. Total amount:". number_format($productSum).", Remaining amount: ".number_format($remainingAmount));
+                                                            $fail("The paid amount does not match the total price. Total amount:" . number_format($productSum) . ", Remaining amount: " . number_format($remainingAmount));
                                                         }
                                                     }
                                                 },
                                             ]),
                                         Forms\Components\Checkbox::make('Cheque')->inline()->live(),
                                         Forms\Components\Section::make([
-                                            Forms\Components\Fieldset::make('cheque')->relationship('cheque')->schema([
-                                                Forms\Components\TextInput::make('cheque_number')->required()->maxLength(255),
-                                                Forms\Components\TextInput::make('amount')->default(function (Get $get) {
+                                            Group::make()
+                                                ->relationship('cheque')
+                                                ->schema([
+                                                    Forms\Components\TextInput::make('cheque_number')->required()->maxLength(255),
+                                                    Forms\Components\TextInput::make('amount')->default(function (Get $get) {
 
-                                                    if ($get('debtor') > 0) {
-                                                        return $get('debtor');
-                                                    }
-                                                    if ($get('creditor') > 0) {
-                                                        return $get('creditor');
-                                                    }
-                                                })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->numeric(),
-                                                Forms\Components\DatePicker::make('issue_date')->required(),
-                                                Forms\Components\DatePicker::make('due_date')->required(),
-                                                Forms\Components\TextInput::make('payer_name')->required()->maxLength(255),
-                                                Forms\Components\TextInput::make('payee_name')->required()->maxLength(255),
-                                                Forms\Components\TextInput::make('bank_name')->maxLength(255),
-                                                Forms\Components\TextInput::make('branch_name')->maxLength(255),
-                                                Forms\Components\Textarea::make('description')->columnSpanFull(),
-                                                Forms\Components\ToggleButtons::make('type')->options([0 => 'Receivable', 1 => 'Payable'])->inline()->grouped()->required(),
-                                                Forms\Components\Hidden::make('company_id')->default(getCompany()->id)
-                                            ]),
+                                                        if ($get('debtor') > 0) {
+                                                            return $get('debtor');
+                                                        }
+                                                        if ($get('creditor') > 0) {
+                                                            return $get('creditor');
+                                                        }
+                                                    })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->numeric(),
+                                                    Forms\Components\DatePicker::make('issue_date')->required(),
+                                                    Forms\Components\DatePicker::make('due_date')->required(),
+                                                    Forms\Components\TextInput::make('payer_name')->required()->maxLength(255),
+                                                    Forms\Components\TextInput::make('payee_name')->required()->maxLength(255),
+                                                    Forms\Components\TextInput::make('bank_name')->maxLength(255),
+                                                    Forms\Components\TextInput::make('branch_name')->maxLength(255),
+                                                    Forms\Components\Textarea::make('description')->columnSpanFull(),
+                                                    Forms\Components\ToggleButtons::make('type')->options([0 => 'Receivable', 1 => 'Payable'])->inline()->grouped()->required(),
+                                                    Forms\Components\Hidden::make('company_id')->default(getCompany()->id)
+                                                ]),
                                         ])->collapsible()->persistCollapsed()->visible(fn(Forms\Get $get) => $get('Cheque')),
                                         Forms\Components\Hidden::make('financial_period_id')->required()->label('Financial Period')
                                             ->default(getPeriod()->id)
-                                    ])->minItems(2)->columns(5)->defaultItems(2)
+                                    ])->columns(4)->defaultItems(1)
                                         ->mutateRelationshipDataBeforecreateUsing(function (array $data): array {
                                             $data['user_id'] = auth()->id();
                                             $data['company_id'] = getCompany()->id;

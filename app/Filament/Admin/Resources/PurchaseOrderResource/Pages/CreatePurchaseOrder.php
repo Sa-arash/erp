@@ -10,17 +10,19 @@ use Filament\Resources\Pages\CreateRecord;
 use Filament\Support\Exceptions\Halt;
 use Throwable;
 use Filament\Notifications\Notification;
+use Filament\Support\Facades\FilamentView;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class CreatePurchaseOrder extends CreateRecord
 {
     protected static string $resource = PurchaseOrderResource::class;
 
-//     protected function onValidationError(ValidationException $exception): void
-// {
-//     dd($exception->getMessage() , $exception);
-   
-// }
+    //     protected function onValidationError(ValidationException $exception): void
+    // {
+    //     dd($exception->getMessage() , $exception);
+
+    // }
 
     public function create(bool $another = false): void
     {
@@ -30,14 +32,14 @@ class CreatePurchaseOrder extends CreateRecord
             $this->beginDatabaseTransaction();
 
             $this->callHook('beforeValidate');
-            
+
             $data = $this->form->getState();
-            
+
             $this->callHook('afterValidate');
-            
+
             $data = $this->mutateFormDataBeforeCreate($data);
-            
-           
+
+
             // dd($data, $this->data);
             // $total = 0;
             // foreach ($this->form->getLivewire()->data['RequestedItems'] as $item) {
@@ -45,7 +47,7 @@ class CreatePurchaseOrder extends CreateRecord
             // }
 
             // dd($data, $total,   $this->form->getLivewire()->data['invoice']);
-            
+
             // $datainvoice =$this->form->getLivewire()->data['invoice'];
             // $data['status'] = 'approved';
             // $invoice = Invoice::query()->create([
@@ -70,7 +72,7 @@ class CreatePurchaseOrder extends CreateRecord
             //         'user_id' => auth()->user(),
             //     ]);
             // }
-           
+
             // // CREDITOR
             // $vendorAccount = Account::find($data['vendor_id']);
 
@@ -115,10 +117,112 @@ class CreatePurchaseOrder extends CreateRecord
             //     ]);
             // }
 
+            // dd($this->data['invoice']['transactions']); 
             $this->callHook('beforeCreate');
 
             $this->record = $this->handleRecordCreation($data);
             $this->form->model($this->getRecord())->saveRelationships();
+            // foreach ($this->data['invoice']['transactions'] as $tr){
+            //     $this->record->invoice->transactions()->create(
+            //         [
+            //             $tr['creditor'] = str_replace(',','',$tr['creditor'])
+            //             ,
+            //             ...$tr
+            //         ,
+            //         'debtor'=>0,
+            //         ]
+            //     );
+            // }
+
+
+
+
+
+            DB::beginTransaction(); // شروع تراکنش
+
+            try {
+
+                //     // ذخیره فاکتور (Invoice)
+
+
+                //     // ذخیره تراکنش‌های فاکتور (Transactions)
+                foreach ($this->data['invoice']['transactions'] as $transaction) {
+                    $savedTransaction = $this->record->invoice->transactions()->create([
+                        'account_id' => $transaction['account_id'],
+                        'description' => $transaction['description'],
+                        'company_id' => $transaction['company_id'],
+                        'user_id' => auth()->user()->id,
+                        'creditor' => str_replace(',', '', $transaction['creditor']),
+                        'debtor' => 0,
+                        'Cheque' => $transaction['Cheque'],
+                        'financial_period_id' => $transaction['financial_period_id'],
+                    ]);
+// dd($transaction ,!empty($transaction['cheque']) && isset($transaction['cheque']['amount']) );
+                    // چک 
+                    if ($transaction['Cheque']) {
+                        $savedTransaction->cheque()->create([
+                            'type' => $transaction['cheque']['type'] ?? null,
+                            'bank_name' => $transaction['cheque']['bank_name'] ?? null,
+                            'branch_name' => $transaction['cheque']['branch_name'] ?? null,
+                            'account_number' => $transaction['cheque']['account_number'] ?? null,
+                            'amount' => str_replace(',', '', $transaction['cheque']['amount']),
+                            'issue_date' => $transaction['cheque']['issue_date'] ?? null,
+                            'due_date' => $transaction['cheque']['due_date'] ?? null,
+                            'status' => $transaction['cheque']['status'] ?? null,
+                            'payer_name' => $transaction['cheque']['payer_name'] ?? null,
+                            'payee_name' => $transaction['cheque']['payee_name'] ?? null,
+                            'description' => $transaction['cheque']['description'] ?? null,
+                            'company_id' => $transaction['cheque']['company_id'] ?? null,
+                            'status'=>'pending',
+                            'cheque_number' => $transaction['cheque']['cheque_number'] ?? null,
+                            'transaction_id' => $savedTransaction->id, // اتصال چک به تراکنش
+                        ]);
+                    }
+                }
+
+                DB::commit(); // تایید تراکنش
+
+                //     return response()->json(['message' => 'Purchase Order Created Successfully', 'data' => $purchaseOrder], 201);
+
+            } catch (\Exception $e) {
+                dd($e);
+                DB::rollBack(); // لغو تراکنش در صورت خطا
+                // return response()->json(['message' => 'Error occurred', 'error' => $e->getMessage()], 500);
+            }
+
+            // $this->record->update([
+            //     'invoice_id'=>$this->record->invoice->id,
+            // ]);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
             $this->callHook('afterCreate');
 
@@ -149,8 +253,8 @@ class CreatePurchaseOrder extends CreateRecord
             return;
         }
 
-        // $redirectUrl = $this->getRedirectUrl();
+        $redirectUrl = $this->getRedirectUrl();
 
-        // $this->redirect($redirectUrl, navigate: FilamentView::hasSpaMode() && is_app_url($redirectUrl));
+        $this->redirect($redirectUrl, navigate: FilamentView::hasSpaMode() && is_app_url($redirectUrl));
     }
 }
