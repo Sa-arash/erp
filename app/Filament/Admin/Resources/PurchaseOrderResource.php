@@ -38,6 +38,11 @@ use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class PurchaseOrderResource extends Resource
 {
+ 
+    public static function canCreate(): bool
+    {
+        return getPeriod()!=null;
+    }
     protected static ?string $model = PurchaseOrder::class;
     protected static ?string $navigationGroup = 'Logistic Management';
     protected static ?int $navigationSort = 6;
