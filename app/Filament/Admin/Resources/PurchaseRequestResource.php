@@ -38,11 +38,13 @@ use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\Summarizers\Summarizer;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\HtmlString;
 use Illuminate\Validation\Rules\Unique;
+use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use Nette\Utils\Html;
 
 class PurchaseRequestResource extends Resource
@@ -178,9 +180,19 @@ class PurchaseRequestResource extends Resource
                     })->numeric(),
 
             ])
+         
             ->filters([
-                //
-            ])
+             
+                SelectFilter::make('purchase_number')->searchable()->preload()->options(PurchaseRequest::where('company_id', getCompany()->id)->get()->pluck('purchase_number', 'id'))
+                ->label("PR NO"),
+                SelectFilter::make('vendor_id')->searchable()->preload()->options(Parties::where('company_id', getCompany()->id)->where('account_code_vendor','!=',null)->get()->pluck('name', 'id'))
+                ->label("Vendor"),
+                DateRangeFilter::make('request_date'),
+
+              
+
+
+            ], getModelFilter())
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),

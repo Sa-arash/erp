@@ -124,6 +124,10 @@ class CreatePurchaseOrder extends CreateRecord
 
 
 
+            $total = 0;
+            foreach ($this->form->getLivewire()->data['RequestedItems'] as $item) {
+                $total += str_replace(',', '', $item['total']);
+            }
 
 
             DB::beginTransaction(); // شروع تراکنش
@@ -132,12 +136,14 @@ class CreatePurchaseOrder extends CreateRecord
 
                 //     // ذخیره فاکتور (Invoice)
 
-
+                $this->record->invoice->update([
+                    'name'=>$this->record->invoice->name."(Total:".number_format($total).")",
+                ]);
                 //     // ذخیره تراکنش‌های فاکتور (Transactions)
                 foreach ($this->data['invoice']['transactions'] as $transaction) {
                     $savedTransaction = $this->record->invoice->transactions()->create([
                         'account_id' => $transaction['account_id'],
-                        'description' => $transaction['description'],
+                        'description' => $transaction['description']." PONO:".$this->record->purchase_orders_number.($this->record->purchase_request_id ? (" PRNO:".$this->record->purchaseRequest->purchase_number): ""),
                         'company_id' => $transaction['company_id'],
                         'user_id' => auth()->user()->id,
                         'creditor' => str_replace(',', '', $transaction['creditor']),
@@ -179,23 +185,19 @@ class CreatePurchaseOrder extends CreateRecord
             }
 
 
-            $total = 0;
-            foreach ($this->form->getLivewire()->data['RequestedItems'] as $item) {
-                $total += str_replace(',', '', $item['total']);
-            }
-
+         
        
             #fix
-            $vendorAccount = Parties::find($data['vendor_id'])->accountVendor;
+            $vendorAccount = Parties::find($data['vendor_id']);
             
             //Giving money to Vendor
              $savedTransaction = $this->record->invoice->transactions()->create([
            
-                'account_id' => $vendorAccount->id,
+                'account_id' => $vendorAccount->accountVendor->id,
                 'user_id' => auth()->user()->id,
                 'creditor' => 0,
                 'debtor' => $total,
-                'description' => 'Giving money to Vendor',
+                'description' => 'Giving money to '.$vendorAccount->name.($this->record->purchase_request_id ? (" PRNO:".$this->record->purchaseRequest->purchase_number): ""." PONO:".$this->record->purchase_orders_number),
                 'company_id' => getCompany()->id,
                 'financial_period_id' => getPeriod()->id,
                 //  'invoice_id' => $invoice->id,
@@ -206,11 +208,11 @@ class CreatePurchaseOrder extends CreateRecord
                   // Giving assets by vendor
                   $savedTransaction = $this->record->invoice->transactions()->create([
            
-                    'account_id' => $vendorAccount->id,
+                    'account_id' => $vendorAccount->accountVendor->id,
                     'user_id' => auth()->user()->id,
                     'debtor' => 0,
                     'creditor' => $total,
-                    'description' => 'Giving assets by vendor '.$this->record->purchase_order_id,
+                    'description' => 'Get assets from '.$vendorAccount->name.($this->record->purchase_request_id ? (" PRNO:".$this->record->purchaseRequest->purchase_number): ""." PONO:".$this->record->purchase_orders_number),
                     'company_id' => getCompany()->id,
                     'financial_period_id' => getPeriod()->id,
                     //  'invoice_id' => $invoice->id,
@@ -231,8 +233,7 @@ class CreatePurchaseOrder extends CreateRecord
                         'user_id' => auth()->user()->id,
                         'creditor' => 0,
                         'debtor' => (($item['quantity'] * str_replace(',', '', $item['unit_price'])) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['taxes']) / 100) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['freights']) / 100)),
-
-                        'description' => 'Added '.$product->title.' to assets by po '.$this->record->purchase_order_id,
+                        'description' => 'Added '.$product->title.' to assets '.($this->record->purchase_request_id ? (" PRNO:".$this->record->purchaseRequest->purchase_number): ""." PONO:".$this->record->purchase_orders_number),
                         'company_id' => getCompany()->id,
                         'financial_period_id' => getPeriod()->id,
                         

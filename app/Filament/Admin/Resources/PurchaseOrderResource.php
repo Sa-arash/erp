@@ -6,6 +6,7 @@ use App\Filament\Admin\Resources\PurchaseOrderResource\Pages;
 use App\Filament\Admin\Resources\PurchaseOrderResource\RelationManagers;
 use App\Models\Account;
 use App\Models\FinancialPeriod;
+use App\Models\Parties;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseRequest;
 use App\Models\PurchaseRequestItem;
@@ -27,10 +28,13 @@ use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Support\RawJs;
 use Filament\Tables;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Validation\Rules\Unique;
+use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class PurchaseOrderResource extends Resource
 {
@@ -49,63 +53,8 @@ class PurchaseOrderResource extends Resource
                 Wizard::make([
                     Wizard\Step::make('Order')
                         ->schema([
-                            Section::make('Payment')->schema([
+                            Section::make('Order Info')->schema([
 
-                                Forms\Components\Select::make('vendor_id')->label('Vendor')
-
-                                    ->options((getCompany()->parties->where('type', 'vendor')->pluck('info', 'id')))
-
-                                    ->searchable()
-                                    ->preload()
-                                    ->required(),
-                                Forms\Components\Select::make('currency')
-                                    ->default(getCompany()->currency)
-                                    ->required()->required()->options(getCurrency())->searchable()->preload(),
-                                Forms\Components\TextInput::make('exchange_rate')
-                                    ->required()->default(1)
-                                    ->numeric(),
-                            ])->columns(3),
-                            Section::make('Request')->schema([
-                                Forms\Components\Select::make('prepared_by')->live()
-                                    ->searchable()
-                                    ->preload()
-                                    ->required()
-                                    ->options(getCompany()->employees->pluck('fullName', 'id'))
-                                    ->default(fn() => auth()->user()->employee->id),
-
-                                Forms\Components\TextInput::make('purchase_orders_number')->default(function () {
-                                    $puncher = PurchaseOrder::query()->where('company_id', getCompany()->id)->latest()->first();
-                                    if ($puncher) {
-                                        return  generateNextCodePO($puncher->purchase_orders_number);
-                                    } else {
-                                        return "0001";
-                                    }
-                                })->label('PO NO')
-                                    ->required()
-                                    ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
-                                        return $rule->where('company_id', getCompany()->id);
-                                    })
-                                    ->maxLength(50),
-
-
-
-                                Forms\Components\DatePicker::make('date_of_delivery')
-                                    ->default(now())
-                                    ->required(),
-                                Forms\Components\TextInput::make('location_of_delivery')
-                                    ->maxLength(255),
-
-
-
-                                Forms\Components\DatePicker::make('date_of_po')->default(now())
-                                    ->label('Date of PO')
-                                    ->required(),
-                                // Forms\Components\Select::make('bid_id')
-                                // ->relationship('bid', 'id')
-                                // ->required(),
-                                // Forms\Components\Select::make('quotation_id')
-                                // ->relationship('quotation', 'id')
-                                // ->required(),
                                 Forms\Components\Select::make('purchase_request_id')->live()
                                     ->label('PR NO')
                                     ->searchable()
@@ -140,6 +89,63 @@ class PurchaseOrderResource extends Resource
                                     })
                                     ->options(getCompany()->purchaseRequests->pluck('purchase_number', 'id')),
 
+                                Forms\Components\DatePicker::make('date_of_po')->default(now())
+                                    ->label('Date of PO')
+                                    ->required(),
+
+                                Forms\Components\Select::make('vendor_id')->label('Vendor')
+
+                                    ->options((getCompany()->parties->where('type', 'vendor')->pluck('info', 'id')))
+
+                                    ->searchable()
+                                    ->preload()
+                                    ->required(),
+                                Forms\Components\Select::make('currency')
+                                    ->default(getCompany()->currency)
+                                    ->required()->required()->options(getCurrency())->searchable()->preload(),
+                                Forms\Components\TextInput::make('exchange_rate')
+                                    ->required()->default(1)
+                                    ->numeric(),
+                                Forms\Components\Select::make('prepared_by')->live()
+                                    ->searchable()
+                                    ->preload()
+                                    ->required()
+                                    ->options(getCompany()->employees->pluck('fullName', 'id'))
+                                    ->default(fn() => auth()->user()->employee->id),
+
+                                Forms\Components\TextInput::make('purchase_orders_number')->default(function () {
+                                    $puncher = PurchaseOrder::query()->where('company_id', getCompany()->id)->latest()->first();
+                                    if ($puncher) {
+                                        return  generateNextCodePO($puncher->purchase_orders_number);
+                                    } else {
+                                        return "0001";
+                                    }
+                                })->label('PO NO')
+                                    ->required()
+                                    ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
+                                        return $rule->where('company_id', getCompany()->id);
+                                    })
+                                    ->maxLength(50),
+
+
+
+
+                                Forms\Components\TextInput::make('location_of_delivery')
+                                    ->maxLength(255),
+
+
+
+                                Forms\Components\DatePicker::make('date_of_delivery')
+                                    ->default(now())
+                                    ->required(),
+                                // Forms\Components\Select::make('bid_id')
+                                // ->relationship('bid', 'id')
+                                // ->required(),
+                                // Forms\Components\Select::make('quotation_id')
+                                // ->relationship('quotation', 'id')
+                                // ->required(),
+
+
 
                                 Forms\Components\Hidden::make('company_id')
                                     ->default(getCompany()->id)
@@ -152,7 +158,7 @@ class PurchaseOrderResource extends Resource
                                     ->schema([
                                         Forms\Components\Select::make('product_id')
                                             ->label('Product')->options(function ($state) {
-                                                $products = getCompany()->products->where('id', $state);
+                                                $products = getCompany()->products;
                                                 $data = [];
                                                 foreach ($products as $product) {
                                                     $data[$product->id] = $product->info;
@@ -207,17 +213,14 @@ class PurchaseOrderResource extends Resource
                                             ->mask(RawJs::make('$money($input)'))
                                             ->stripCharacters(','),
 
-                                        Forms\Components\Select::make('project_id')
-                                            ->searchable()
-                                            ->preload()
-                                            ->disabled()
-                                            ->label('Project')
-                                            ->options(getCompany()->projects->pluck('name', 'id')),
+                                        Forms\Components\Hidden::make('project_id')
+
+                                            ->label('Project'),
 
                                         TextInput::make('total')->readOnly(),
 
                                     ])
-                                    ->columns(9)
+                                    ->columns(8)
                                     ->columnSpanFull(),
                             ])->columns(3),
                         ]),
@@ -242,6 +245,22 @@ class PurchaseOrderResource extends Resource
                                         ->required()->default(now()),
                                     Forms\Components\FileUpload::make('document')->placeholder('Browse')->extraInputAttributes(['style' => 'height:30px!important;'])
                                         ->nullable(),
+                                    Placeholder::make('total :')->live()->content(function (Get $get) {
+                                        if ($get->getData()['RequestedItems']) {
+                                            $produtTotal = array_map(function ($item) {
+                                                // dd($item);
+                                                try {
+                                                    //code...
+                                                    return (($item['quantity'] * str_replace(',', '', $item['unit_price'])) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['taxes']) / 100) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['freights']) / 100));
+                                                } catch (\Throwable $th) {
+                                                    //throw $th;
+                                                    return null;
+                                                }
+                                            }, $get->getData()['RequestedItems']);
+
+                                            return  collect($produtTotal)->sum() ? number_format(collect($produtTotal)->sum()) : '?';
+                                        }
+                                    })->inlineLabel()
                                 ])->columns(8),
 
                                 Forms\Components\Section::make([
@@ -250,7 +269,7 @@ class PurchaseOrderResource extends Resource
                                         Forms\Components\TextInput::make('description')->required(),
 
                                         Forms\Components\Hidden::make('company_id')->default(Filament::getTenant()->id)->required(),
-                                        Forms\Components\TextInput::make('debtor')->default(0) ->mask(RawJs::make('$money($input)'))->stripCharacters(',')->readOnly(),
+                                        Forms\Components\TextInput::make('debtor')->default(0)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->readOnly(),
                                         Forms\Components\TextInput::make('creditor')
                                             ->afterStateUpdated(function ($state, Forms\Set $set) {
                                                 $set('cheque.amount', $state);
@@ -336,38 +355,101 @@ class PurchaseOrderResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('account.name'),
-                Tables\Columns\TextColumn::make('date_of_delivery')
-                    ->date()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('location_of_delivery')
+                Tables\Columns\TextColumn::make('purchase_orders_number')
+                    ->label('PO NO')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('po_no')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('currency')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('exchange_rate')
-                    ->numeric()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('date_of_po')
                     ->label('Date Of PO')
                     ->date()
                     ->sortable(),
-                Tables\Columns\Textcolumn::make('status')
-                    ->label('Status'),
 
-
-                Tables\Columns\TextColumn::make('purchase_request_id')
+                Tables\Columns\TextColumn::make('vendor.name')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('vendor_id')
-                    ->numeric()
+
+                Tables\Columns\TextColumn::make('total')
+                    ->label(fn($record) => "Total(" . "$" . ")")
+                    ->state(fn($record) => number_format($record->items->map(fn($item) => (($item['quantity'] * str_replace(',', '', $item['unit_price'])) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['taxes']) / 100) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['freights']) / 100)))?->sum()))
+                    ->searchable(),
+                // Tables\Columns\TextColumn::make('currency')
+                // ->searchable(),
+                // Tables\Columns\TextColumn::make('exchange_rate')
+                // ->numeric()
+                // ->sortable(),
+
+
+                Tables\Columns\TextColumn::make('purchaseRequest.purchase_number')
+                    ->label("PR NO")
+                    ->badge()
+                    ->url(fn($record)=> PurchaseRequestResource::getUrl('index')."?tableFilters[purchase_number][value]=".$record->purchaseRequest?->id)
                     ->sortable(),
+
+                Tables\Columns\TextColumn::make('date_of_delivery')
+                    ->date()
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->searchable()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('location_of_delivery')
+                    ->toggleable(isToggledHiddenByDefault: true)
+                    ->searchable(),
+                // Tables\Columns\Textcolumn::make('status')
+                // ->label('Status'),
 
             ])
             ->filters([
-                //
-            ])
+                // Filter::make('created_at')
+                //     ->form([DatePicker::make('date')])
+                //     // ...
+                //     ->indicateUsing(function (array $data): ?string {
+                //         if (! $data['date']) {
+                //             return null;
+                //         }
+
+                //         return 'Created at ' . Carbon::parse($data['date'])->toFormattedDateString();
+                //     })
+                SelectFilter::make('purchase_request_id')->searchable()->preload()->options(PurchaseRequest::where('company_id', getCompany()->id)->get()->pluck('purchase_number', 'id'))
+                ->label("PR NO"),
+                SelectFilter::make('vendor_id')->searchable()->preload()->options(Parties::where('company_id', getCompany()->id)->where('account_code_vendor','!=',null)->get()->pluck('name', 'id'))
+                ->label("Vendor"),
+                DateRangeFilter::make('date_of_po'),
+
+                // SelectFilter::make('position_id')->searchable()->preload()->options(Position::where('company_id', getCompany()->id)->get()->pluck('title', 'id'))
+                //     ->label('Designation'),
+
+
+                // SelectFilter::make('duty_id')->searchable()->preload()->options(Duty::where('company_id', getCompany()->id)->get()->pluck('title', 'id'))
+                //     ->label('duty'),
+
+                // TernaryFilter::make('gender')->searchable()->preload()->trueLabel('Man')->falseLabel('Woman'),
+
+                // DateRangeFilter::make('joining_date'),
+                // DateRangeFilter::make('leave_date'),
+                // Filter::make('base_salary')
+                //     ->form([
+                //         Forms\Components\Section::make([
+                //             TextInput::make('min')->label('Min Base Salary')
+                //                 ->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)
+                //                 ->numeric(),
+
+                //             TextInput::make('max')->label('Max Base Salary')
+                //                 ->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)
+                //                 ->numeric(),
+                //         ])->columns()
+                //     ])->columnSpanFull()
+                //     ->query(function (Builder $query, array $data): Builder {
+                //         return $query
+                //             ->when(
+                //                 $data['min'],
+                //                 fn(Builder $query, $date): Builder => $query->where('base_salary', '>=', str_replace(',', '', $date)),
+                //             )
+                //             ->when(
+                //                 $data['max'],
+                //                 fn(Builder $query, $date): Builder => $query->where('base_salary', '<=', str_replace(',', '', $date)),
+                //             );
+                //     }),
+
+
+            ], getModelFilter())
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('registration')->label('Registration assets')->url(fn($record) => AssetResource::getUrl('create', ['po' => $record->id]))
