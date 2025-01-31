@@ -38,13 +38,13 @@ class CreatePurchaseOrder extends CreateRecord
             $data = $this->mutateFormDataBeforeCreate($data);
             
            
-            
+            // dd($data, $this->data);
             // $total = 0;
             // foreach ($this->form->getLivewire()->data['RequestedItems'] as $item) {
             //     $total += str_replace(',', '', $item['total']);
             // }
 
-            // dd($data, $total, $this->form->getLivewire()->data['invoice']);
+            // dd($data, $total,   $this->form->getLivewire()->data['invoice']);
             
             // $datainvoice =$this->form->getLivewire()->data['invoice'];
             // $data['status'] = 'approved';
