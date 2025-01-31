@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\PurchaseOrderResource\Pages;
 use App\Filament\Admin\Resources\PurchaseOrderResource;
 use App\Models\Account;
 use App\Models\Invoice;
+use App\Models\Parties;
 use App\Models\Product;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
@@ -185,7 +186,7 @@ class CreatePurchaseOrder extends CreateRecord
 
        
             #fix
-            $vendorAccount = Account::find($data['vendor_id']);
+            $vendorAccount = Parties::find($data['vendor_id'])->accountVendor;
             
             //Giving money to Vendor
              $savedTransaction = $this->record->invoice->transactions()->create([
