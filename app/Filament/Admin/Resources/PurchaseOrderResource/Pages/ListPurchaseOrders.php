@@ -14,9 +14,12 @@ class ListPurchaseOrders extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [
-            Actions\CreateAction::make()
-            ->url(getPeriod()?PurchaseOrderResource::getUrl('create'):FinancialPeriodResource::getUrl('index'))->label('New Purchase Order '),
-        ];
+        if (getPeriod()) {
+
+            return [
+                Actions\CreateAction::make()
+                    ->url(getPeriod() ? PurchaseOrderResource::getUrl('create') : FinancialPeriodResource::getUrl('index'))->label('New Purchase Order '),
+            ];
+        }
     }
 }
