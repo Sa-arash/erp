@@ -248,7 +248,7 @@ class PurchaseOrderResource extends Resource
                                         SelectTree::make('account_id')->defaultOpenLevel(3)->live()->label('Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('company_id', getCompany()->id))->searchable(),
                                         Forms\Components\TextInput::make('description')->required(),
 
-
+                                        Forms\Components\Hidden::make('company_id')->default(Filament::getTenant()->id)->required(),
                                         Forms\Components\TextInput::make('creditor')
                                             ->afterStateUpdated(function ($state, Forms\Set $set) {
                                                 $set('cheque.amount', $state);
@@ -309,7 +309,7 @@ class PurchaseOrderResource extends Resource
                                             ]),
                                         ])->collapsible()->persistCollapsed()->visible(fn(Forms\Get $get) => $get('Cheque')),
                                         Forms\Components\Hidden::make('financial_period_id')->required()->label('Financial Period')
-                                            ->default(FinancialPeriod::query()->where('company_id', getCompany()->id)->firstWhere('status', "During")?->id)
+                                            ->default(getPeriod()->id)
                                     ])->minItems(2)->columns(5)->defaultItems(2)
                                         ->mutateRelationshipDataBeforecreateUsing(function (array $data): array {
                                             $data['user_id'] = auth()->id();
