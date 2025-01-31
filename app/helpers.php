@@ -589,10 +589,10 @@ function getEmployee(){
 
 
 function getParents($record, $visited = []) {
-    $str = "/".$record->title;
+    $str = "/".$record?->title;
 
     // بررسی اینکه آیا والد موجود است و آیا قبلاً بازدید نشده
-    if ($record->parent && !in_array($record->parent->id, $visited)) {
+    if ($record?->parent && !in_array($record->parent->id, $visited)) {
         $visited[] = $record->id;
 
         $str .= getParents($record->parent, $visited);
