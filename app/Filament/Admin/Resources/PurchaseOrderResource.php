@@ -250,6 +250,7 @@ class PurchaseOrderResource extends Resource
                                         Forms\Components\TextInput::make('description')->required(),
 
                                         Forms\Components\Hidden::make('company_id')->default(Filament::getTenant()->id)->required(),
+                                        Forms\Components\TextInput::make('debtor')->readOnly(),
                                         Forms\Components\TextInput::make('creditor')
                                             ->afterStateUpdated(function ($state, Forms\Set $set) {
                                                 $set('cheque.amount', $state);

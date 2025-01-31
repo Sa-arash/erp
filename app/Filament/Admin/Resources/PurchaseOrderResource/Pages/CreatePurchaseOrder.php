@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\PurchaseOrderResource\Pages;
 use App\Filament\Admin\Resources\PurchaseOrderResource;
 use App\Models\Account;
 use App\Models\Invoice;
+use App\Models\Product;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Support\Exceptions\Halt;
@@ -73,21 +74,7 @@ class CreatePurchaseOrder extends CreateRecord
             //     ]);
             // }
 
-            // // CREDITOR
-            // $vendorAccount = Account::find($data['vendor_id']);
-
-
-            // $invoice->transactions()->create([
-            //     'account_id' => $vendorAccount->id,
-            //     'creditor' => 0,
-            //     'debtor' => $total,
-            //     'description' => ' ',
-
-            //     'invoice_id' => $invoice->id,
-            //     'financial_period_id' => getPeriod()->id,
-            //     'company_id' => getCompany()->id,
-            //     'user_id' => auth()->user(),
-            // ]);
+           
 
             // ##each item
             // $invoice->transactions()->create([
@@ -190,9 +177,84 @@ class CreatePurchaseOrder extends CreateRecord
                 // return response()->json(['message' => 'Error occurred', 'error' => $e->getMessage()], 500);
             }
 
-            // $this->record->update([
-            //     'invoice_id'=>$this->record->invoice->id,
-            // ]);
+
+            $total = 0;
+            foreach ($this->form->getLivewire()->data['RequestedItems'] as $item) {
+                $total += str_replace(',', '', $item['total']);
+            }
+
+       
+            
+            $vendorAccount = Account::find($data['vendor_id']);
+            
+            //Giving money to Vendor
+             $savedTransaction = $this->record->invoice->transactions()->create([
+           
+                'account_id' => $vendorAccount->id,
+                'user_id' => auth()->user()->id,
+                'creditor' => 0,
+                'debtor' => $total,
+                'description' => 'Giving money to Vendor',
+                'company_id' => getCompany()->id,
+                'financial_period_id' => getPeriod()->id,
+                //  'invoice_id' => $invoice->id,
+                
+            
+             ]);
+
+                  // Giving assets by vendor
+                  $savedTransaction = $this->record->invoice->transactions()->create([
+           
+                    'account_id' => $vendorAccount->id,
+                    'user_id' => auth()->user()->id,
+                    'debtor' => 0,
+                    'creditor' => $total,
+                    'description' => 'Giving assets by vendor '.$this->record->purchase_order_id,
+                    'company_id' => getCompany()->id,
+                    'financial_period_id' => getPeriod()->id,
+                    //  'invoice_id' => $invoice->id,
+                    
+                
+                 ]);
+
+                //Added each product to asset 
+               
+                foreach ($this->form->getLivewire()->data['RequestedItems'] as $item) {
+
+                    $product = Product::find($item['product_id']);
+                    $savedTransaction = $this->record->invoice->transactions()->create([
+           
+                        
+
+                        'account_id' => $product->sub_account_id,
+                        'user_id' => auth()->user()->id,
+                        'creditor' => 0,
+                        'debtor' => (($item['quantity'] * str_replace(',', '', $item['unit_price'])) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['taxes']) / 100) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['freights']) / 100)),
+
+                        'description' => 'Added '.$product->title.' to assets by po '.$this->record->purchase_order_id,
+                        'company_id' => getCompany()->id,
+                        'financial_period_id' => getPeriod()->id,
+                        
+                    
+                     ]);
+
+                    // $invoice->transactions()->create([
+                    //     'account_id' => $item['product_id'],
+                    //     'creditor' => 0,
+                    //     'debtor' => str_replace(',', '', $item['total']),
+                    //     'description' => 'item buy from ' . $item['purchase_request_id'] ?? '',
+
+                    //     'invoice_id' => $invoice->id,
+                    //     'financial_period_id' => getPeriod()->id,
+                    //     'company_id' => getCompany()->id,
+                    //     'user_id' => auth()->user(),
+                    // ]);
+                }
+
+
+                // $this->record->update([
+                //     'invoice_id'=>$this->record->invoice->id,
+                // ]);
 
 
 
