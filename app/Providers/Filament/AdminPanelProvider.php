@@ -54,7 +54,7 @@ class AdminPanelProvider extends PanelProvider
                 NavigationItem::make()
                     ->icon('heroicon-o-document-text')
                     ->label('Journal')
-                    ->visible(fn()=>(auth()->user()->can('view_financial::period')))
+                    ->visible(fn() => isset($financialPeriod) && $financialPeriod != null && (auth()->user()->can('view_financial::period')))
                     ->url(fn() => route('pdf.jornal', [
                         'transactions' => implode('-',( Transaction::query()->where('company_id',getCompanyUrl())->where('financial_period_id',$financialPeriod )->pluck('id')->toArray())) !='' ?: 'test' ,
                     ]))
@@ -64,7 +64,7 @@ class AdminPanelProvider extends PanelProvider
                 NavigationItem::make()
                     ->icon('heroicon-o-document-text')
                     ->label('Subsidiary Leadger')
-                    ->visible(fn()=>(auth()->user()->can('view_financial::period')))
+                    ->visible(fn() => isset($financialPeriod) && $financialPeriod != null && (auth()->user()->can('view_financial::period')))
                     ->url(fn() => route('pdf.account', [
                         'period' => $financialPeriod ?? ' ',
                         'reportTitle' => 'Subsidiary Leadger',
@@ -76,41 +76,38 @@ class AdminPanelProvider extends PanelProvider
                 NavigationItem::make()
                     ->icon('heroicon-o-document-text')
                     ->label('General Leadger')
-                    ->visible(fn()=>(auth()->user()->can('view_financial::period')))
                     ->url(fn() => route('pdf.account', [
                         'period' => $financialPeriod ?? ' ',
                         'reportTitle' => 'General Leadger',
                         'account' => implode('-', getCompany()->accounts->where('level', 'group')->pluck('id')->toArray()),
-                    ]))
-                    ->group('Accounting Report')
+                        ]))
+                        ->group('Accounting Report')
+                        ->visible(fn() => isset($financialPeriod) && $financialPeriod != null && (auth()->user()->can('view_financial::period')))
                     ->sort(3),
 
                 NavigationItem::make()
                     ->icon('heroicon-o-document-text')
                     ->label('Trial Balance')
-                    ->visible(fn()=>(auth()->user()->can('view_financial::period')))
                     ->url(fn() => route('pdf.trialBalance', [
                         'period' => $financialPeriod->id,
                     ]))
                     ->group('Accounting Report')
-                    ->visible(fn() => isset($financialPeriod) && $financialPeriod != null)
+                    ->visible(fn() => isset($financialPeriod) && $financialPeriod != null && (auth()->user()->can('view_financial::period')))
                     ->sort(4),
 
                 NavigationItem::make()
                     ->icon('heroicon-o-document-text')
                     ->label('Balance Sheet')
-                    ->visible(fn()=>(auth()->user()->can('view_financial::period')))
                     ->url(fn() => route('pdf.balance', [
                         'period' => $financialPeriod->id,
                     ]))
-                    ->visible(fn() => isset($financialPeriod) && $financialPeriod != null)
+                    ->visible(fn() => isset($financialPeriod) && $financialPeriod != null &&(auth()->user()->can('view_financial::period')))
                     ->group('Accounting Report')
                     ->sort(5),
 
                 NavigationItem::make()
                     ->icon('heroicon-o-document-text')
                     ->label('Profit&Loss Report')
-                    ->visible(fn()=>(auth()->user()->can('view_financial::period')))
                     ->url(function () use ($financialPeriod) {
                         $accountsID = getCompany()->accounts->whereIn('stamp', ['Income', 'Expenses'])->pluck('id')->toArray();
                         $accounts = Account::query()->whereIn('id', $accountsID)->orWhereIn('parent_id', $accountsID)
@@ -130,7 +127,7 @@ class AdminPanelProvider extends PanelProvider
 
 
                     })
-                    ->visible(fn() => isset($financialPeriod) && $financialPeriod != null)
+                    ->visible(fn() => isset($financialPeriod) && $financialPeriod != null &&(auth()->user()->can('view_financial::period')))
                     ->group('Accounting Report')
                     ->sort(5),
 
