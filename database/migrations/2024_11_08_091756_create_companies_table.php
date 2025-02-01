@@ -30,6 +30,7 @@ return new class extends Migration
             $table->integer('customer_account')->nullable();
             $table->integer('category_account')->nullable();
             $table->text('product_accounts')->nullable();
+            $table->text('product_expence_accounts')->nullable();
 //          $table->text('company_type');
             $table->text('logo')->nullable();
             $table->timestamps();
