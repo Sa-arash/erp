@@ -158,7 +158,7 @@ class PurchaseRequestResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->defaultSort('id', 'desc')
+        return $table->defaultSort('request_date', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('purchase_number')->label('PR NO')->searchable(),

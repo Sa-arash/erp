@@ -423,7 +423,7 @@ class PurchaseOrderResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
+        return $table->defaultSort('date_of_po','desc')
             ->columns([
                 Tables\Columns\TextColumn::make('purchase_orders_number')
                     ->label('PO NO')
