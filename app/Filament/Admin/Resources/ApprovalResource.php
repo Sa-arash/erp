@@ -58,27 +58,66 @@ class ApprovalResource extends Resource
                 })->searchable()
             ], getModelFilter())
             ->actions([
-                Tables\Actions\Action::make('View')->visible(fn($record)=>substr($record->approvable_type, 11) === "TakeOut")->infolist(function ($record) {
-                        return [
-                            Fieldset::make('Take Out')->schema([
-                                    TextEntry::make('employee.info')->label('Employee'),
-                                    TextEntry::make('from')->label('From'),
-                                    TextEntry::make('to')->label('To'),
-                                    TextEntry::make('reason')->label('Reason'),
-                                    TextEntry::make('date')->label('Date'),
-                                    TextEntry::make('status')->label('Status'),
-                                    TextEntry::make('type')->label('Type'),
-                                    RepeatableEntry::make('items')->getStateUsing(function () use ($record) {
-                                        return $record->approvable->items;
-                                    })->schema([
-                                        TextEntry::make('asset.title'),
-                                        TextEntry::make('remarks'),
-                                    ])->columnSpanFull()->columns()
-                            ])->relationship('approvable')->columns()
-                        ];
-
+                Tables\Actions\Action::make('view')->visible(fn($record) => substr($record->approvable_type, 11) === "TakeOut")->infolist(function ($record) {
+                    return [
+                        Fieldset::make('Take Out')->schema([
+                            TextEntry::make('employee.info')->label('Employee'),
+                            TextEntry::make('from')->label('From'),
+                            TextEntry::make('to')->label('To'),
+                            TextEntry::make('reason')->label('Reason'),
+                            TextEntry::make('date')->label('Date'),
+                            TextEntry::make('status')->label('Status'),
+                            TextEntry::make('type')->label('Type'),
+                            RepeatableEntry::make('items')->getStateUsing(function () use ($record) {
+                                return $record->approvable->items;
+                            })->schema([
+                                TextEntry::make('asset.title'),
+                                TextEntry::make('remarks'),
+                            ])->columnSpanFull()->columns()
+                        ])->relationship('approvable')->columns()
+                    ];
                 }),
-                Action::make('view')->modalWidth(MaxWidth::Full)->infolist(function (){
+
+                Tables\Actions\Action::make('viewVisitRequest')->label('View')->visible(fn($record) => substr($record->approvable_type, 11) === "VisitorRequest")->infolist(function ($record) {
+                    return [
+                        Fieldset::make('Visitor Access')->schema([
+                            Section::make('Visitor Access Request')->schema([
+                                Section::make('Visit’s Details')->schema([
+                                    TextEntry::make('requested_by')->label('Requested By'),
+                                    TextEntry::make('visit_date')->label('Visit Date'),
+                                    TextEntry::make('arrival_time')->label('Arrival Time'),
+                                    TextEntry::make('departure_time')->label('Departure Time'),
+                                    TextEntry::make('purpose')->label('Purpose')->columnSpanFull(),
+                                ])->columns(4),
+
+                                RepeatableEntry::make('visitors_detail')
+                                    ->label('Visitors Detail')
+                                    ->schema([
+                                        TextEntry::make('name')->label('Full Name'),
+                                        TextEntry::make('id')->label('ID/Passport'),
+                                        TextEntry::make('phone')->label('Phone'),
+                                        TextEntry::make('organization')->label('Organization'),
+                                        TextEntry::make('type')->label('Type'),
+                                        TextEntry::make('remarks')->label('Remarks'),
+                                    ])->columns(6)->columnSpanFull(),
+
+                                RepeatableEntry::make('driver_vehicle_detail')
+                                    ->label('Drivers/Vehicles Detail')
+                                    ->schema([
+                                        TextEntry::make('name')->label('Full Name'),
+                                        TextEntry::make('id')->label('ID/Passport'),
+                                        TextEntry::make('phone')->label('Phone'),
+                                        TextEntry::make('model')->label('Model'),
+                                        TextEntry::make('color')->label('Color'),
+                                        TextEntry::make('Registration_Plate')->label('Registration Plate'),
+                                    ])->columns(6)->columnSpanFull(),
+
+                            ])->columns(2)
+                        ])->relationship('approvable')->columns()
+                    ];
+                }),
+
+                Action::make('view')->modalWidth(MaxWidth::Full)->infolist(function () {
                     return [
                         Fieldset::make('PR')->relationship('approvable')->schema([
                             TextEntry::make('employee.info'),
@@ -93,9 +132,9 @@ class ApprovalResource extends Resource
                                 TextEntry::make('project.name')->badge(),
                                 TextEntry::make('description')->columnSpanFull(),
                                 TextEntry::make('head_decision')->badge()->label('Head Of Department Decision'),
-                                TextEntry::make('head_comment')->tooltip(fn($record)=>$record->head_comment)->label('Head Of Department Comment')->badge(),
+                                TextEntry::make('head_comment')->tooltip(fn($record) => $record->head_comment)->label('Head Of Department Comment')->badge(),
                                 TextEntry::make('ceo_decision')->badge()->label('CEO Decision'),
-                                TextEntry::make('ceo_comment')->tooltip(fn($record)=>$record->ceo_comment)->badge()->label('CEO Comment'),
+                                TextEntry::make('ceo_comment')->tooltip(fn($record) => $record->ceo_comment)->badge()->label('CEO Comment'),
                             ])->columns(5)->columnSpanFull(),
                             RepeatableEntry::make('approvals')->schema([
                                 TextEntry::make('employee.fullName'),
@@ -107,15 +146,16 @@ class ApprovalResource extends Resource
                         ])->columns(3),
 
                     ];
-                })->visible(fn($record)=>substr($record->approvable_type, 11) === "PurchaseRequest"),
+                })->visible(fn($record) => substr($record->approvable_type, 11) === "PurchaseRequest"),
+
                 Tables\Actions\Action::make('ApprovePurchaseRequest')->tooltip('ApprovePurchaseRequest')->label('Approve')->icon('heroicon-o-check-badge')->iconSize(IconSize::Large)->color('success')->form([
                     Forms\Components\Section::make([
-                   Forms\Components\Section::make([
-                       Select::make('employee')->disabled()->default(fn($record) => $record->approvable?->employee_id)->options(fn($record) => Employee::query()->where('id', $record->approvable?->employee_id)->get()->pluck('info', 'id'))->searchable(),
-                       Forms\Components\ToggleButtons::make('status')->default('Approve')->colors(['Approve' => 'success', 'NotApprove' => 'danger', 'Pending' => 'primary'])->options(['Approve' => 'Approve', 'Pending' => 'Pending', 'NotApprove' => 'NotApprove'])->grouped(),
-                       Forms\Components\ToggleButtons::make('is_quotation')->required()->label('Need Quotation')->boolean(' With Quotation', 'With out Quotation')->grouped()->inline(),
-                       Forms\Components\Textarea::make('comment')->nullable()->columnSpanFull(),
-                   ])->columns(3),
+                        Forms\Components\Section::make([
+                            Select::make('employee')->disabled()->default(fn($record) => $record->approvable?->employee_id)->options(fn($record) => Employee::query()->where('id', $record->approvable?->employee_id)->get()->pluck('info', 'id'))->searchable(),
+                            Forms\Components\ToggleButtons::make('status')->default('Approve')->colors(['Approve' => 'success', 'NotApprove' => 'danger', 'Pending' => 'primary'])->options(['Approve' => 'Approve', 'Pending' => 'Pending', 'NotApprove' => 'NotApprove'])->grouped(),
+                            Forms\Components\ToggleButtons::make('is_quotation')->required()->label('Need Quotation')->boolean(' With Quotation', 'With out Quotation')->grouped()->inline(),
+                            Forms\Components\Textarea::make('comment')->nullable()->columnSpanFull(),
+                        ])->columns(3),
                         Forms\Components\Repeater::make('items')->formatStateUsing(fn($record) => $record->approvable?->items?->toArray())->schema([
                             Select::make('product_id')
                                 ->label('Product')->options(function () {
@@ -151,7 +191,7 @@ class ApprovalResource extends Resource
                         $record->approvable->update(['is_quotation' => $data['is_quotation'], 'status' => 'FinishedHead']);
                     }
                     foreach ($data['items'] as $item) {
-                        $item['status']=$item['decision']==="reject"? "rejected":"approve";
+                        $item['status'] = $item['decision'] === "reject" ? "rejected" : "approve";
                         if ($record->position === "CEO") {
                             $item['ceo_comment'] = $item['comment'];
                             $item['ceo_decision'] = $item['decision'];
@@ -162,7 +202,7 @@ class ApprovalResource extends Resource
                         $prItem = PurchaseRequestItem::query()->firstWhere('id', $item['id']);
                         $prItem->update($item);
                     }
-                    if ($data['status']==="Approve"){
+                    if ($data['status'] === "Approve") {
                         $CEO = Employee::query()->firstWhere('user_id', getCompany()->user_id);
                         if ($record->position !== "CEO") {
                             $record->approvable->approvals()->create([
