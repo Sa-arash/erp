@@ -13,6 +13,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\IconSize;
 use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -143,7 +144,7 @@ class InvoiceResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
+        return $table->defaultSort('id','desc')
             ->columns([
 
                 Tables\Columns\TextColumn::make('')->rowIndex(),
@@ -168,7 +169,7 @@ class InvoiceResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('print')
-                    ->label('')
+                    ->label('')->iconSize(IconSize::Large)
                     ->icon('heroicon-o-printer')
                     ->url(fn($record) => route('pdf.document', ['document' => $record->id])),
             ])

@@ -705,7 +705,7 @@ class PayrollResource extends Resource
                         return;
                     }
                     $period = FinancialPeriod::query()->firstWhere('status', "During");
-                    if ($period) {
+                    if (!$period) {
                         Notification::make('warning')->title('Financial Period Not Find')->warning()->send();
                         return;
                     }
