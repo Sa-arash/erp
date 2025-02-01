@@ -6,7 +6,6 @@ use App\Filament\Admin\Resources\AssetResource\Pages;
 use App\Filament\Admin\Resources\AssetResource\RelationManagers;
 use App\Models\Asset;
 use App\Models\Brand;
-use App\Models\Product;
 use App\Models\PurchaseOrder;
 use App\Models\Structure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
@@ -20,7 +19,6 @@ use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class AssetResource extends Resource
@@ -106,18 +104,20 @@ class AssetResource extends Resource
                         $assets = [];
                         if ($PO) {
                             foreach ($PO->items as $item) {
-                                for ($i = 0; $i <= $item->quantity; $i++) {
-                                    $data = [];
-                                    $freights = $item->freights === null ? 0 : (float) $item->freights;
-                                    $q = 1;
-                                    $tax = $item->taxes === null ? 0 : (float)$item->taxes;
-                                    $price = $item->unit_price;
-                                    $data['product_id'] = $item->product_id;
-                                    $data['buy_date'] =  $PO->date_of_po;
-                                    $data['number'] = $number;
-                                    $data['price'] = number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100));
-                                    $assets[] = $data;
-                                    $number = generateNextCodeAsset($number);
+                                if ($item->product->product_type === "consumable") {
+                                    for ($i = 0; $i <= $item->quantity; $i++) {
+                                        $data = [];
+                                        $freights = $item->freights === null ? 0 : (float)$item->freights;
+                                        $q = 1;
+                                        $tax = $item->taxes === null ? 0 : (float)$item->taxes;
+                                        $price = $item->unit_price;
+                                        $data['product_id'] = $item->product_id;
+                                        $data['buy_date'] = $PO->date_of_po;
+                                        $data['number'] = $number;
+                                        $data['price'] = number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100));
+                                        $assets[] = $data;
+                                        $number = generateNextCodeAsset($number);
+                                    }
                                 }
                             }
                             return $assets;

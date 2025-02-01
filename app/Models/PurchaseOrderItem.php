@@ -13,7 +13,12 @@ class PurchaseOrderItem extends Model
         return $this->belongsTo(Company::class);
     }
 
-    public function purchaseOrder(){
-        return $this(PurchaseOrder::class , 'purchase_order_id');
+    public function purchaseOrder(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(PurchaseOrder::class , 'purchase_order_id');
+    }
+    public function product(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Product::class);
     }
 }
