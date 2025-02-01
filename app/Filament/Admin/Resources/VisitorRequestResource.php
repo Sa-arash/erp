@@ -102,7 +102,7 @@ class VisitorRequestResource extends Resource
             ->columns([
 
                 Tables\Columns\TextColumn::make('')->rowIndex(),
-                Tables\Columns\TextColumn::make('requested.fullName')
+                Tables\Columns\TextColumn::make('employee.fullName')
                 ->label('Requestor')
                     ->numeric()
                     ->sortable(),
