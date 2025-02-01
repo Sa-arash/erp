@@ -58,7 +58,7 @@ class ApprovalResource extends Resource
                 })->searchable()
             ], getModelFilter())
             ->actions([
-                Tables\Actions\Action::make('view')->visible(fn($record) => substr($record->approvable_type, 11) === "TakeOut")->infolist(function ($record) {
+                Tables\Actions\Action::make('viewTakeOut')->visible(fn($record) => substr($record->approvable_type, 11) === "TakeOut")->infolist(function ($record) {
                     return [
                         Fieldset::make('Take Out')->schema([
                             TextEntry::make('employee.info')->label('Employee'),
@@ -78,7 +78,7 @@ class ApprovalResource extends Resource
                     ];
                 }),
 
-                Tables\Actions\Action::make('viewVisitRequest')->label('View')->visible(fn($record) => substr($record->approvable_type, 11) === "VisitorRequest")->infolist(function ($record) {
+                Tables\Actions\Action::make('viewVisitorRequest')->label('View')->visible(fn($record) => substr($record->approvable_type, 11) === "VisitorRequest")->infolist(function ($record) {
                     return [
                         Fieldset::make('Visitor Access')->schema([
                             Section::make('Visitor Access Request')->schema([
@@ -117,7 +117,7 @@ class ApprovalResource extends Resource
                     ];
                 }),
 
-                Action::make('view')->modalWidth(MaxWidth::Full)->infolist(function () {
+                Action::make('viewPurchaseRequest')->label('View')->modalWidth(MaxWidth::Full)->infolist(function () {
                     return [
                         Fieldset::make('PR')->relationship('approvable')->schema([
                             TextEntry::make('employee.info'),
