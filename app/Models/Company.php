@@ -26,6 +26,8 @@ class Company extends Model implements HasAvatar, HasName
     protected $casts = [
         'weekend_days' => 'array',
         'product_accounts' => 'array',
+        'product_expence_accounts' => 'array',
+        
     ];
 
     public function getFilamentAvatarUrl(): ?string
