@@ -20,7 +20,7 @@ class BankResource extends Resource
 {
     protected static ?string $model = Bank::class;
     protected static ?string $cluster = FinanceSettings::class;
-    protected static ?string $label='Bank/Cash';
+    protected static ?string $label='Bank';
     protected static ?string $navigationIcon = 'heroicon-o-building-library';
     protected static ?int $navigationSort=1;
     protected static ?string $navigationGroup = 'Finance Management';
@@ -46,7 +46,6 @@ class BankResource extends Resource
                     } else {
                         return "001";
                     }
-
                 })->prefix(fn(Get $get) => Account::query()->firstWhere('id', getCompany()->account_bank)?->code)->required()->maxLength(255),
                 Forms\Components\TextInput::make('account_holder')->required()->maxLength(255),
                 Forms\Components\TextInput::make('account_type')->maxLength(255),
@@ -61,11 +60,11 @@ class BankResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->headerActions([
+        return $table->query(Bank::query()->where('company_id',getCompany()->id)->where('type',0))->headerActions([
         ])
             ->columns([
-                Tables\Columns\TextColumn::make('bank_name')->label('Bank/Cash Name')
-                ->state(fn($record)=>$record->bank_name.$record->name."\n".$record->account->code)
+                Tables\Columns\TextColumn::make('bank_name')->label('Bank')
+                ->state(fn($record)=>$record->bank_name."\n".$record->account->code)
                 ->searchable(),
                 Tables\Columns\TextColumn::make('branch_name')->searchable(),
                 Tables\Columns\TextColumn::make('account_number')->searchable(),
@@ -81,11 +80,10 @@ class BankResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make()->url(fn($record)=>$record->type?BankResource::getUrl('editCash',['record'=>$record->id]):BankResource::getUrl('edit',['record'=>$record->id])),
+                Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()->hidden(fn($record)=>$record->account->transactions->count())->action(function ($record){
                     $record->account()->delete();
                     $record->delete();
-
                 }),
                 Tables\Actions\Action::make('print')
                 ->label('')
@@ -93,7 +91,7 @@ class BankResource extends Resource
                 ->url(
                 function($record){
                     if (FinancialPeriod::query()->where('company_id', getCompany()->id)->first()){
-                        route('pdf.account', [
+                        return route('pdf.account', [
                             'period' => FinancialPeriod::query()->where('company_id', getCompany()->id)->first()?->id,
                             'account' =>$record->account->id,
                         ]);
@@ -120,8 +118,7 @@ class BankResource extends Resource
             'index' => Pages\ListBanks::route('/'),
             'create' => Pages\CreateBank::route('/create'),
             'edit' => Pages\EditBank::route('/{record}/edit'),
-            'createCash' => Pages\CreateCash::route('/create-cash'),
-            'editCash' => Pages\EditCash::route('/{record}/edit-cash'),
+
         ];
     }
 }
