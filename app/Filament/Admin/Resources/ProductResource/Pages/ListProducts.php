@@ -31,8 +31,9 @@ class ListProducts extends ListRecords
 
                 getCompany()->update(['product_accounts'=>$data['accounts']]);
                 
-                Notification::make('success')->success()->title('Set accounts successfull')->send();
+                Notification::make('accountssuccess')->success()->title('Set accounts successfull')->send();
             }),
+
             Actions\Action::make('Set Expence')->form([
                 Select::make('expence')->default(getCompany()->product_expence_accounts)->options(function (){
                     $data=[];
@@ -47,7 +48,7 @@ class ListProducts extends ListRecords
 
                 getCompany()->update(['product_expence_accounts'=>$data['expence']]);
                 
-                Notification::make('success')->success()->title('Set expence accounts successfull')->send();
+                Notification::make('successexpence')->success()->title('Set expence accounts successfull')->send();
             })
         ];
     }
