@@ -39,7 +39,7 @@ use Malzariey\FilamentDaterangepickerFilter\Fields\DateRangePicker;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 
-class   PayrollResource extends Resource
+class PayrollResource extends Resource
 {
     protected static ?string $model = Payroll::class;
     protected static ?int $navigationSort = 2;
@@ -126,8 +126,12 @@ class   PayrollResource extends Resource
                                     return $query->where('is_payroll', 0);
                                 })->where('status', 'accepted')->where('employee_id', $employee->id)->whereBetween('start_leave', [$startDate, $endDate])->whereBetween('end_leave', [$get('start_date'), $get('end_date')])->get();
                                 $overtimes = Overtime::query()->where('status', 'accepted')->where('employee_id', $employee->id)->whereBetween('overtime_date', [$startDate, $endDate])->sum('hours');
-
-                                $hoursPay = $employee->daily_salary / $company->daily_working_hours;
+                                $dailySalary=$employee->daily_salary;
+                                if (!$employee->daily_salary){
+                                    $dayCount = Carbon::create($startDate)->daysInMonth;
+                                    $dailySalary =$employee->base_salary /$dayCount ;
+                                }
+                                $hoursPay = $dailySalary / $company->daily_working_hours;
                                 $totalAllowance = number_format(($overtimes * $hoursPay) * $company->overtime_rate, 2) . $company->currency;
                                 $contentOvertime = "
                                 <div style='color: green; display: flex; border: 1px solid whitesmoke; text-align: center; width: 48%;'>
@@ -439,8 +443,19 @@ class   PayrollResource extends Resource
                                 ->whereBetween('overtime_date', [$startDate, $endDate])
                                 ->sum('hours');
 
-                            $hoursPay = $employee->daily_salary / $company->daily_working_hours;
-                            $totalOvertime = ($overtimes * $hoursPay) * $company->overtime_rate;
+                            if ($company->daily_working_hours ){
+                                $dailySalary=$employee->daily_salary;
+                                if (!$employee->daily_salary){
+                                    $dayCount = Carbon::create($data['year'], $data['month'] + 1, 1)->daysInMonth;
+                                    $dailySalary =$employee->base_salary /$dayCount ;
+                                }
+                                $hoursPay = $dailySalary / $company->daily_working_hours;
+                                $totalOvertime = ($overtimes * $hoursPay) * $company->overtime_rate;
+                            }else{
+
+                                Notification::make('error')->danger()->title('Daily Salary  Or Company Daily Working Hours Is 0' )->send();
+                                return ;
+                            }
 
                             // افزودن اضافه‌کاری به مزایا و مرخصی به کسورات
                             $totalAllowances += $totalOvertime;

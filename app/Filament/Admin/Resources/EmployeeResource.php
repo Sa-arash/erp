@@ -182,7 +182,7 @@ class EmployeeResource extends Resource
                             }),
                             Forms\Components\DatePicker::make('joining_date')->required(),
                             Forms\Components\DatePicker::make('leave_date')->label('Ending Date'),
-                            Forms\Components\TextInput::make('base_salary')->label('Base Salary' . '(' . getCompany()->currency . ")")->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->default(0)->numeric(),
+                            Forms\Components\TextInput::make('base_salary')->required()->label('Base Salary' . '(' . getCompany()->currency . ")")->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->default(0)->numeric(),
                             Forms\Components\TextInput::make('daily_salary')->label('Daily Salary' . '(' . getCompany()->currency . ")")->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0),
 
                             Forms\Components\Select::make('benefits')->relationship('benefits', 'title')->label('Allowance')
@@ -398,7 +398,7 @@ class EmployeeResource extends Resource
                     }),
                     Forms\Components\DatePicker::make('joining_date')->required(),
                     Forms\Components\DatePicker::make('leave_date')->label('Ending Date'),
-                    Forms\Components\TextInput::make('base_salary')->label('Base Salary' . '(' . getCompany()->currency . ")")->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0),
+                    Forms\Components\TextInput::make('base_salary')->required()->label('Base Salary' . '(' . getCompany()->currency . ")")->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0),
                     Forms\Components\TextInput::make('daily_salary')->label('Daily Salary' . '(' . getCompany()->currency . ")")->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)
                         ->default(0)
                         ->numeric(),
