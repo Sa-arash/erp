@@ -278,6 +278,7 @@ class PurchaseOrderResource extends Resource
                                         })->live(true)
                                             // ->readOnly(fn(Get $get)=>$record=PurchaseRequest::query()->with('bid')->firstWhere('id',$state);)
                                             ->numeric()
+                                            ->required()
                                             ->mask(RawJs::make('$money($input)'))
                                             ->stripCharacters(',')->label('Final Price'),
                                         Forms\Components\TextInput::make('taxes')->afterStateUpdated(function ($state, Set $set, Get $get) {
