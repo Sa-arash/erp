@@ -31,7 +31,23 @@ class ListProducts extends ListRecords
 
                 getCompany()->update(['product_accounts'=>$data['accounts']]);
                 
-                Notification::make('success')->success()->title('Set Accounts')->send();
+                Notification::make('success')->success()->title('Set accounts successfull')->send();
+            }),
+            Actions\Action::make('Set Expence')->form([
+                Select::make('Expence Accounts')->default(getCompany()->product_expence_accounts)->options(function (){
+                    $data=[];
+                    $accounts=Account::query()->where('company_id',getCompany()->id)->where('group','Expense')->orderBy('code')->get();
+                    foreach ( $accounts as $account){
+                        $data[$account->id]=$account->name." (".$account->code .")";
+                    }
+                    return $data;
+                })->searchable()->preload()->multiple()
+
+            ])->action(function ($data){
+
+                getCompany()->update(['product_expence_accounts'=>$data['accounts']]);
+                
+                Notification::make('success')->success()->title('Set expence accounts successfull')->send();
             })
         ];
     }

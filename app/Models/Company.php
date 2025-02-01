@@ -21,7 +21,7 @@ class Company extends Model implements HasAvatar, HasName
         return $this->title;
     }
 
-    protected $fillable = ['account_cash','product_accounts','category_account','customer_account', 'vendor_account', 'account_bank', 'weekend_days', 'daily_working_hours', 'overtime_rate', 'title', 'logo', 'description', 'user_id', 'country', 'address', 'contact_information', 'company_registration_document', 'currency'];
+    protected $fillable = ['product_expence_accounts','account_cash','product_accounts','category_account','customer_account', 'vendor_account', 'account_bank', 'weekend_days', 'daily_working_hours', 'overtime_rate', 'title', 'logo', 'description', 'user_id', 'country', 'address', 'contact_information', 'company_registration_document', 'currency'];
 
     protected $casts = [
         'weekend_days' => 'array',
