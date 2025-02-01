@@ -13,7 +13,7 @@ class VisitorRequest extends Model
         'visitors_detail' => 'array',
         'driver_vehicle_detail' => 'array',
     ];
-    public function requested()
+    public function employee()
     {
         return $this->belongsTo(Employee::class, 'requested_by');
     }

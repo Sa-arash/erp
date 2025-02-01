@@ -33,10 +33,7 @@ class VisitRequest extends BaseWidget
             )
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
-                Tables\Columns\TextColumn::make('requested.fullName')
-                    ->label('Requestor')
-                    ->numeric()
-                    ->sortable(),
+               
                 Tables\Columns\TextColumn::make('visitors_detail')
                     ->label('Visitors')
                     ->state(fn($record) => implode(', ', (array_map(fn($item) => $item['name'], $record->visitors_detail))))
@@ -45,11 +42,16 @@ class VisitRequest extends BaseWidget
                 Tables\Columns\TextColumn::make('visit_date')
                     ->date()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('arrival_time'),
-                Tables\Columns\TextColumn::make('departure_time'),
+                Tables\Columns\TextColumn::make('arrival_time')->time('H:m'),
+                Tables\Columns\TextColumn::make('departure_time')->time('H:m'),
 
                 Tables\Columns\TextColumn::make('status'),
 
+                Tables\Columns\TextColumn::make('employee.fullName')
+                ->label('Requestor')
+                ->numeric()
+                ->toggleable(isToggledHiddenByDefault: true)
+                ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

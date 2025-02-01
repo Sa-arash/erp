@@ -29,4 +29,5 @@ class ListAssets extends ListRecords
             'loaned Out'=>  Tab::make()->query(fn($query) => $query->where('status','loanedOut')),
         ];
     }
+    
 }

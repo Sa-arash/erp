@@ -39,13 +39,13 @@ class ApprovalResource extends Resource
         return $table->query(Approval::query()->where('employee_id', getEmployee()->id)->orderBy('id', 'desc'))
             ->columns([
                 Tables\Columns\TextColumn::make('approvable.employee.info')->label('Employee')->searchable()->badge(),
+                Tables\Columns\TextColumn::make('created_at')->label('Request Date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('approvable_type')->label('Request Type')->state(function ($record) {
                     return substr($record->approvable_type, 11);
                 })->searchable()->badge(),
-                Tables\Columns\TextColumn::make('comment')->sortable(),
-                Tables\Columns\TextColumn::make('created_at')->label('Request Date')->date()->sortable(),
-                Tables\Columns\TextColumn::make('status')->badge(),
                 Tables\Columns\TextColumn::make('approve_date')->date()->sortable(),
+                Tables\Columns\TextColumn::make('status')->badge(),
+                Tables\Columns\TextColumn::make('comment')->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('approvable_type')->label('Request Type')->options(function () {

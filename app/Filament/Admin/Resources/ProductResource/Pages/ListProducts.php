@@ -26,9 +26,11 @@ class ListProducts extends ListRecords
                     }
                     return $data;
                 })->searchable()->preload()->multiple()
+
             ])->action(function ($data){
 
                 getCompany()->update(['product_accounts'=>$data['accounts']]);
+                
                 Notification::make('success')->success()->title('Set Accounts')->send();
             })
         ];

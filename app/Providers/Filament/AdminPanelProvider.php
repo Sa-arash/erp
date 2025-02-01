@@ -54,6 +54,7 @@ class AdminPanelProvider extends PanelProvider
                 NavigationItem::make()
                     ->icon('heroicon-o-document-text')
                     ->label('Journal')
+                    ->visible(fn() => isset($financialPeriod) && $financialPeriod != null && (auth()->user()->can('view_financial::period')))
                     ->url(fn() => route('pdf.jornal', [
                         'transactions' => implode('-',( Transaction::query()->where('company_id',getCompanyUrl())->where('financial_period_id',$financialPeriod )->pluck('id')->toArray())) !='' ?: 'test' ,
                     ]))
@@ -63,6 +64,7 @@ class AdminPanelProvider extends PanelProvider
                 NavigationItem::make()
                     ->icon('heroicon-o-document-text')
                     ->label('Subsidiary Leadger')
+                    ->visible(fn() => isset($financialPeriod) && $financialPeriod != null && (auth()->user()->can('view_financial::period')))
                     ->url(fn() => route('pdf.account', [
                         'period' => $financialPeriod ?? ' ',
                         'reportTitle' => 'Subsidiary Leadger',
@@ -78,8 +80,9 @@ class AdminPanelProvider extends PanelProvider
                         'period' => $financialPeriod ?? ' ',
                         'reportTitle' => 'General Leadger',
                         'account' => implode('-', getCompany()->accounts->where('level', 'group')->pluck('id')->toArray()),
-                    ]))
-                    ->group('Accounting Report')
+                        ]))
+                        ->group('Accounting Report')
+                        ->visible(fn() => isset($financialPeriod) && $financialPeriod != null && (auth()->user()->can('view_financial::period')))
                     ->sort(3),
 
                 NavigationItem::make()
@@ -89,7 +92,7 @@ class AdminPanelProvider extends PanelProvider
                         'period' => $financialPeriod->id,
                     ]))
                     ->group('Accounting Report')
-                    ->visible(fn() => isset($financialPeriod) && $financialPeriod != null)
+                    ->visible(fn() => isset($financialPeriod) && $financialPeriod != null && (auth()->user()->can('view_financial::period')))
                     ->sort(4),
 
                 NavigationItem::make()
@@ -98,7 +101,7 @@ class AdminPanelProvider extends PanelProvider
                     ->url(fn() => route('pdf.balance', [
                         'period' => $financialPeriod->id,
                     ]))
-                    ->visible(fn() => isset($financialPeriod) && $financialPeriod != null)
+                    ->visible(fn() => isset($financialPeriod) && $financialPeriod != null &&(auth()->user()->can('view_financial::period')))
                     ->group('Accounting Report')
                     ->sort(5),
 
@@ -124,7 +127,7 @@ class AdminPanelProvider extends PanelProvider
 
 
                     })
-                    ->visible(fn() => isset($financialPeriod) && $financialPeriod != null)
+                    ->visible(fn() => isset($financialPeriod) && $financialPeriod != null &&(auth()->user()->can('view_financial::period')))
                     ->group('Accounting Report')
                     ->sort(5),
 

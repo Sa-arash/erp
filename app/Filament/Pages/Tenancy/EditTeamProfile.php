@@ -15,6 +15,7 @@ use Filament\Forms\Form;
 use Filament\Forms\Set;
 use Filament\Navigation\NavigationItem;
 use Filament\Pages\Tenancy\EditTenantProfile;
+use Illuminate\Database\Eloquent\Model;
 
 class EditTeamProfile extends EditTenantProfile
 {
@@ -25,7 +26,11 @@ class EditTeamProfile extends EditTenantProfile
     }
     public static $url;
 
-
+    public static function canView(Model $tenant): bool
+    {
+       return (getCompany()->user_id == auth()->user()->id);
+    }
+    
 
     public static function getNavigationItems(): array
     {

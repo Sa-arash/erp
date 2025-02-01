@@ -38,14 +38,13 @@ class InvoiceResource extends Resource
         return false;
     }
 
-    public static function canAccess(): bool
-    {
-        $period = FinancialPeriod::query()->where('company_id', getCompanyUrl())->where('status', 'During')->first();
-        if ($period) {
-            return true;
-        }
-        return false;
-    }
+    // public static function canAccess(): bool
+    // {
+    //     $period = FinancialPeriod::query()->where('company_id', getCompanyUrl())->where('status', 'During')->first();
+    //     if (!$period) {
+    //         return false;
+    //     }
+    // }
 
     public static function form(Form $form): Form
     {

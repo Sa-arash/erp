@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\Bank_category;
 use App\Models\Benefit;
 use App\Models\BenefitEmployee;
+use App\Models\Brand;
 use App\Models\Company;
 use App\Models\CompanyUser;
 use App\Models\Contract;
@@ -21,6 +22,7 @@ use App\Models\Loan;
 use App\Models\LoanPay;
 use App\Models\Payroll;
 use App\Models\Position;
+use App\Models\Product;
 use App\Models\Structure;
 use App\Models\Typeleave;
 use App\Models\Unit;
@@ -183,8 +185,19 @@ class DatabaseSeeder extends Seeder
 
 
 
+        $brands = [
+            'Apple', 'Samsung', 'Sony', 'LG', 'Nike',
+            'Adidas', 'Puma', 'Reebok', 'Microsoft', 'Google'
+        ];
 
-
+        foreach ($brands as $brand) {
+            Brand::create([
+                'title' => $brand,
+                'company_id'=>1,
+            ]);
+        }
+       
+        
 
         // User::factory()->create([
         //     'id' => 1,
@@ -550,7 +563,7 @@ class DatabaseSeeder extends Seeder
             DB::table('accounts')->insert($account);
         }
 
-
+        Product::factory(10)->create();
 
         //     Contract::factory(10)->create();
         //     User::factory(10)->create();

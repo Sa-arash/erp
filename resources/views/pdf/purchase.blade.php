@@ -48,15 +48,14 @@
 
 
     <tr>
-        <td style="text-align: left">Date of
-            Request: {{\Illuminate\Support\Carbon::create($pr->request_date)->format('Y/m/d')}}</td>
+        <td style="text-align: left">PR Date: {{\Illuminate\Support\Carbon::create($pr->request_date)->format('Y/m/d')}}</td>
         <td style="text-align: left">PR No: {{$pr->purchase_number}}</td>
     </tr>
     <tr>
         <td style="text-align: left">Employee name: {{$pr->employee?->fullName}}</td>
         <td style="text-align: left">Employee
-            <Posit></Posit>
-            ion: {{$pr->employee?->position?->title}}</td>
+           
+             Position: {{$pr->employee?->position?->title}}</td>
     </tr>
     <tr>
         <td style="text-align: left">Department: {{$pr->employee->department?->title}}</td>
@@ -88,7 +87,7 @@
             $totalBudget+=$item->quantity *$item->estimated_unit_cost;
         @endphp
         <tr>
-            <td>{{$item->product?->sku}}</td>
+            <td>{{$item->product."-".$item->product?->sku}}</td>
             <td>{{$item->description}}</td>
             <td>{{$item->unit->title}}</td>
             <td>{{$item->quantity}}</td>
@@ -155,6 +154,7 @@
     <tr>
         <td style="text-align: start">
             <p>Attested by: {{$pr->employee?->department?->employee?->fullName}} </p>
+           
         </td>
         <td style="text-align: start">
             @if($pr->employee->department?->employee?->signature_pic)
@@ -162,22 +162,22 @@
             @endif
         </td>
     </tr>
-    <tr>
-        <td style="text-align: start;background: #ffffff !important">
-            <p>Verified by: (Government/Stock) </p>
-        </td>
-        <td style="text-align: start;background: #ffffff !important">
-            <img src="{!!   public_path('img/images (1).png')!!}" style="border-radius: 50px ; width: 80px;" alt="">
-        </td>
-    </tr>
+  
+    @foreach ($pr?->approvals as $approve)
+            
     <tr>
         <td style="text-align: start">
-            <p>Approved by: _____</p>
+            <p>Approved by: {{$approve->employee?->fullName}}</p>
         </td>
         <td style="text-align: start">
-            <img src="{!!   public_path('img/images (1).png')!!}" style="border-radius: 50px ; width: 80px;" alt="">
+            @if ($approve?->employee?->signature_pic)
+            <img src="{!!   public_path('images/'.$approve?->employee?->signature_pic)!!}" style="border-radius: 50px ; width: 80px;" alt="">
+            @else
+            
+            @endif
         </td>
     </tr>
+    @endforeach
 </table>
 </body>
 </html>

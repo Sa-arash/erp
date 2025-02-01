@@ -19,8 +19,8 @@ return new class extends Migration
             $table->decimal('price', 20, 2)->nullable();
             $table->date('buy_date')->nullable();
             $table->date('garanry_date')->nullable();
-            $table->date('varanty_date')->nullable();
-
+            $table->unsignedTinyInteger('depreciation_years')->default(1);
+            $table->decimal('depreciation_amount', 15, 2)->nullable();
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete()->cascadeOnUpdate();
             $table->enum('status',['inuse','inStorageUsable','storageUnUsable','outForRepair','loanedOut'])->default('inStorageUsable');
             $table->text('attributes')->nullable();
