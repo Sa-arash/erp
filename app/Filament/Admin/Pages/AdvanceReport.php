@@ -43,7 +43,7 @@ class AdvanceReport extends Page
                     ->columnSpan(1),
                 Select::make('financial_period')->searchable()
                     ->label('Financial Period')
-                    ->default(getCompany()->financialPeriods()->where('status', "During")?->first()?->id)
+                    ->default(getPeriod()?->id)
                     ->options(getCompany()->financialPeriods->pluck('name', 'id'))
                     ->required(),
             ])
@@ -71,7 +71,7 @@ class AdvanceReport extends Page
                 DateRangePicker::make('date'),
                 Select::make('financial_period')->searchable()
                     ->label('Financial Period')
-                    ->default(getCompany()->financialPeriods()->where('status', "During")?->first()->id)
+                    ->default(getPeriod()?->first()->id)
                     ->options(getCompany()->financialPeriods->pluck('name', 'id'))
                     ->required(),
                 Select::make('accounts_id')->multiple()
@@ -103,7 +103,7 @@ class AdvanceReport extends Page
                 DateRangePicker::make('date'),
                 Select::make('financial_period')->searchable()
                     ->label('Financial Period')
-                    ->default(getCompany()->financialPeriods()->where('status', "During")?->first()->id)
+                    ->default(getPeriod()?->first()->id)
                     ->options(getCompany()->financialPeriods->pluck('name', 'id'))
                     ->required(),
                 Select::make('accounts_id')->multiple()
@@ -135,7 +135,7 @@ class AdvanceReport extends Page
                 DateRangePicker::make('date'),
                 Select::make('financial_period')->searchable()
                     ->label('Financial Period')
-                    ->default(getCompany()->financialPeriods()->where('status', "During")?->first()->id)
+                    ->default(getPeriod()?->first()->id)
                     ->options(getCompany()->financialPeriods->pluck('name', 'id'))
                     ->required(),
                 Select::make('accounts_id')->multiple()
@@ -181,7 +181,7 @@ class AdvanceReport extends Page
                 Select::make('financial_period')
                     ->searchable()
                     ->label('Financial Period')
-                    ->default(getCompany()->financialPeriods()->where('status', "During")?->first()?->id)
+                    ->default(getPeriod()?->first()?->id)
                     ->options(getCompany()->financialPeriods->pluck('name', 'id'))
                     ->required(),
             ])
@@ -204,7 +204,7 @@ class AdvanceReport extends Page
                     ->label('Until Date'),
                 Select::make('financial_period')->searchable()
                     ->label('Financial Period')
-                    ->default(getCompany()->financialPeriods()->where('status', "During")?->first()->id)
+                    ->default(getPeriod()?->first()->id)
                     ->options(getCompany()->financialPeriods->pluck('name', 'id'))
                     ->required(),
 
