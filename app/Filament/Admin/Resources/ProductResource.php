@@ -34,7 +34,7 @@ class ProductResource extends Resource
                 Section::make([
                     Forms\Components\TextInput::make('title')->label('Product Name')->required()->maxLength(255),
                     Forms\Components\TextInput::make('sku')->label(' SKU')
-                        ->unique(modifyRuleUsing: function (Unique $rule) {
+                        ->unique(ignoreRecord:true ,modifyRuleUsing: function (Unique $rule) {
                             return $rule->where('company_id', getCompany()->id);
                         })->default(function () {
                             $product = Product::query()->where('company_id',getCompany()->id)->latest()->first();
