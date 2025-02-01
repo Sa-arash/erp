@@ -392,7 +392,7 @@ class PurchaseRequestResource extends Resource
                                         $rate = number_format($quotationItem->unit_rate);
                                         $tr .= "<td style='border: 1px solid black;padding: 8px;text-align: center'>  {$rate} Per Unit  |  {$total} Total</td>";
                                     }
-                                    $tr .= "<td style='border: 1px solid black;padding: 8px;text-align: center'>AFS</td>";
+                                    $tr .= "<td style='border: 1px solid black;padding: 8px;text-align: center'></td>";
                                     $tr .= "</tr>";
                                     $trs .= $tr;
                                 }
