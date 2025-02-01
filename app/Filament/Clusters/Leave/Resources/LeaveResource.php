@@ -91,7 +91,7 @@ class LeaveResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->searchable()->defaultSort('created_at','desc')
+        return $table->searchable()->defaultSort('id','desc')
             ->columns([
                 Tables\Columns\TextColumn::make('employee.fullName')->alignLeft()->sortable(),
                 Tables\Columns\TextColumn::make('typeLeave.title')->alignLeft()->sortable(),
@@ -136,7 +136,7 @@ class LeaveResource extends Resource
 
             ], getModelFilter())
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->hidden(fn($record)=>$record->status->name!=="Pending"),
                 Tables\Actions\Action::make('approve')->iconSize(IconSize::Medium)->color('success')
                 ->icon(fn($record)=>($record->status->value) === 'accepted'?'heroicon-m-cog-8-tooth':'heroicon-o-check-badge')->label(fn($record)=>($record->status->value) === 'accepted'?'Change Status':'Approve')
                 ->form(function ($record) {
@@ -152,7 +152,7 @@ class LeaveResource extends Resource
                         ])->columns(3),
                         Forms\Components\Section::make([
                             Forms\Components\Placeholder::make('Total Leave('.now()->format('Y').")")->content(function ()use($record){
-                                $leaves= ModelLeave::query()->where('employee_id',$record->employee_id)->whereBetween('created_at', [now()->startOfYear(), now()->endOfYear()])->where('status','accepted')->sum('days');
+                                $leaves= ModelLeave::query()->where('employee_id',$record->employee_id)->whereBetween('start_leave', [now()->startOfYear(), now()->endOfYear()])->whereBetween('end_leave', [now()->startOfYear(), now()->endOfYear()])->where('status','accepted')->sum('days');
                                 return new HtmlString("<div style='font-size: 25px !important;'>  <span style='color: red;font-size: 25px !important;'>$leaves</span> Days </div>");
                             }),
                             Forms\Components\ToggleButtons::make('status')->default($record->status)->options(LeaveStatus::class)->inline()->required(),

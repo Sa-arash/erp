@@ -39,7 +39,7 @@ use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class PurchaseOrderResource extends Resource
 {
- 
+
     public static function canCreate(): bool
     {
         return getPeriod()!=null;
@@ -68,7 +68,7 @@ class PurchaseOrderResource extends Resource
                                 ->afterStateHydrated(function (Set $set,Get $get, $state){
                                     if ($state) {
                                         $record = PurchaseRequest::query()->with('bid')->firstWhere('id', $state);
-                                     
+
                                         if ($record->bid) {
                                             $data = [];
                                             foreach ($record->bid->quotation?->quotationItems->toArray() as $item) {
@@ -90,7 +90,7 @@ class PurchaseOrderResource extends Resource
                                             $set('RequestedItems', $data);
                                             $set('vendor_id', $record->bid->quotation->party_id);
                                         } else {
-                                        
+
 
                                             $set('RequestedItems', $record->items->where('status', 'approve')->toArray());
                                             // dd($get('RequestedItems'),$record->items->where('status', 'approve')->toArray());
@@ -196,9 +196,9 @@ class PurchaseOrderResource extends Resource
 
 
                                 Repeater::make('RequestedItems')->defaultItems(1)->required()
-                                ->default(function(Request $request){
+                                ->default(function(Request $request,Set $set){
                                     $record = (PurchaseRequest::query()->with('bid')->firstWhere('id', $request->prno));
-                                    if ($record->bid) {
+                                    if ($record?->bid) {
                                         $data = [];
                                         foreach ($record->bid->quotation?->quotationItems->toArray() as $item) {
                                             $prItem = PurchaseRequestItem::query()->firstWhere('id', $item['purchase_request_item_id']);
@@ -219,39 +219,7 @@ class PurchaseOrderResource extends Resource
                                         $set('vendor_id', $record->bid->quotation->party_id);
                                       return  $data;
                                     } else {
-                                       return $record->items->where('status', 'approve')->toArray();
-                                    }
-                                })
-                                ->afterStateHydrated(function (Set $set,Get $get, $state){
-                                    dd(1);
-                                    if ($state) {
-                                        $record = PurchaseRequest::query()->with('bid')->firstWhere('id', $state);
-                                        if ($record->bid) {
-                                            $data = [];
-                                            foreach ($record->bid->quotation?->quotationItems->toArray() as $item) {
-                                                $prItem = PurchaseRequestItem::query()->firstWhere('id', $item['purchase_request_item_id']);
-                                                $item['quantity'] = $prItem->quantity;
-                                                $item['unit_id'] = $prItem->unit_id;
-                                                $item['description'] = $prItem->description;
-                                                $item['product_id'] = $prItem->product_id;
-                                                $item['project_id'] = $prItem->project_id;
-                                                $q = $prItem->quantity;
-                                                $item['unit_price'] = number_format($item['unit_rate']);
-                                                $price = $item['unit_rate'];
-                                                $tax = $item['taxes'];
-                                                $freights = $item['freights'];
-
-                                                $item['total'] = number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100));
-                                                $data[] = $item;
-                                            }
-                                            $set('RequestedItems', $data);
-                                            $set('vendor_id', $record->bid->quotation->party_id);
-                                        } else {
-                                        
-
-                                            $set('RequestedItems', $record->items->where('status', 'approve')->toArray());
-                                            // dd($get('RequestedItems'),$record->items->where('status', 'approve')->toArray());
-                                        }
+                                       return $record?->items->where('status', 'approve')->toArray();
                                     }
                                 })
                                 ->relationship('items')

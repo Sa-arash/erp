@@ -45,7 +45,7 @@ class OvertimeResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
+        return $table->defaultSort('id','desc')
             ->columns([
                 Tables\Columns\TextColumn::make('employee.fullName')->sortable(),
                 Tables\Columns\TextColumn::make('title')->label('description')->searchable(),
@@ -59,7 +59,7 @@ class OvertimeResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->hidden(fn($record)=>$record->status->name!=="Pending"),
                 Tables\Actions\Action::make('approve')->iconSize(IconSize::Medium)->color('success')
                 ->icon(fn($record)=>($record->status->value) === 'accepted'?'heroicon-m-cog-8-tooth':'heroicon-o-check-badge')->label(fn($record)=>($record->status->value) === 'accepted'?'Change Status':'Approve')
                 ->form(function ($record) {

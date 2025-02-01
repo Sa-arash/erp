@@ -30,7 +30,7 @@ class EditCash extends EditRecord
                     } else {
                         return "001";
                     }
-                })->prefix(fn(Get $get) => Account::query()->firstWhere('id', getCompany()->account_bank)?->code)->required()->maxLength(255),
+                })->prefix(fn(Get $get) => Account::query()->firstWhere('id', $this->record?->account?->parent_id)?->code)->required()->maxLength(255),
                 Select::make('currency')->required()->required()->options(getCurrency())->searchable(),
             ])->columns(3),
             Textarea::make('description')->columnSpanFull(),

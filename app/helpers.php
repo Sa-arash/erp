@@ -2,7 +2,6 @@
 
 
 use App\Models\FinancialPeriod;
-use Illuminate\Support\Facades\Request;
 
 function getCompany(): ?\Illuminate\Database\Eloquent\Model
 {
@@ -475,14 +474,17 @@ function getDaysBetweenDates($start_date, $end_date, $target_days)
 
 function getCompanyUrl()
 {
-    $url = Request::url();
-    $segments = explode('/', $url);
-    $id = $segments[4] ?? 1;
-    if (isset($segments[4]) != true) {
-        // dd(2);
+    $url =  \Illuminate\Support\Facades\Request::url();
+    $path = parse_url($url, PHP_URL_PATH);
+    $parts = explode('/', $path);
+    $index = array_search('admin', $parts);
+    if ($index !== false && isset($parts[$index + 1])) {
+        return $parts[$index + 1];
+    }else{
+        return  1;
     }
-    return 1;
 }
+
 
 function generateNextCode($code): string
 {

@@ -99,9 +99,12 @@
     <h2>{{$payroll->company->title}}</h2>
     <div style="width: 100%;display: flex">
         <div style="display: inline;">
+            @if($payroll->employee?->pic )
             <img src="{!! public_path('images/' . $payroll->employee?->pic) !!}" style="width: 95px;">
+            @endif
+            @if($payroll->company?->logo)
             <img src="{!! public_path('images/' . $payroll->company?->logo) !!}" style="width: 95px;padding-left: 440px">
-
+                @endif
         </div>
 
     </div>
