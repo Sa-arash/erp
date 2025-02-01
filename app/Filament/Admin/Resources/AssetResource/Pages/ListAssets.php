@@ -14,7 +14,7 @@ class ListAssets extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()->hidden(fn()=>getPeriod()?->id),
         ];
     }
 
@@ -29,5 +29,5 @@ class ListAssets extends ListRecords
             'loaned Out'=>  Tab::make()->query(fn($query) => $query->where('status','loanedOut')),
         ];
     }
-    
+
 }

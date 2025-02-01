@@ -69,8 +69,8 @@ class AssetResource extends Resource
                     SelectTree::make('structure_id')->searchable()->label('Location')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id', modifyQueryUsing: function ($query, Forms\Get $get) {
                         return $query->where('warehouse_id', $get('warehouse_id'));
                     })->required(),
-                    DatePicker::make('buy_date')->default(now()),
-                    DatePicker::make('garanry_date')->default(now()),
+                    DatePicker::make('buy_date')->label('Porches Date')->default(now()),
+                    DatePicker::make('garanry_date')->label('garanry_date')->default(now()),
                     Forms\Components\Select::make('depreciation_years')
                         ->label('Depreciation Years')
                         ->options([
@@ -155,12 +155,12 @@ class AssetResource extends Resource
                 Tables\Columns\TextColumn::make('depreciation_amount')->money()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
-                Tables\Columns\TextColumn::make('buy_date')
-                ->dateTime('Y-m-d')
+                Tables\Columns\TextColumn::make('buy_date')->label('Porches Date')
+                ->date('Y-m-d')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
-                Tables\Columns\TextColumn::make('garanry_date')
-                    ->dateTime('Y-m-d')
+                Tables\Columns\TextColumn::make('guaranty_date')
+                    ->date('Y-m-d')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('status')->badge(),
@@ -174,7 +174,7 @@ class AssetResource extends Resource
 
 
                 Tables\Filters\SelectFilter::make('status')->searchable()->options(['inuse' => "Inuse", 'inStorageUsable' => "InStorageUsable", 'storageUnUsable' => "StorageUnUsable", 'outForRepair' => 'OutForRepair', 'loanedOut' => "LoanedOut"]),
-                DateRangeFilter::make('buy_date'),
+                DateRangeFilter::make('buy_date')->label('Porches Date'),
                 DateRangeFilter::make('garanry_data'),
                 DateRangeFilter::make('created_at'),
                 Tables\Filters\Filter::make('employee')
