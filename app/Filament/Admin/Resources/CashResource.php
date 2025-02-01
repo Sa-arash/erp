@@ -25,7 +25,7 @@ class CashResource extends Resource
     protected static ?string $pluralLabel='Cash';
     protected static ?string $cluster = FinanceSettings::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-building-library';
+    protected static ?string $navigationIcon = 'heroicon-s-banknotes';
     protected static ?int $navigationSort=1;
     protected static ?string $navigationGroup = 'Finance Management';
 

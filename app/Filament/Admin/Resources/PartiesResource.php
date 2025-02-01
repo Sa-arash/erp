@@ -70,7 +70,7 @@ class PartiesResource extends Resource
                     }
 
                 })->disabledOptions(function () {
-                    return Account::query()->where('level', 'detail')->where('company_id', getCompany()->id)->pluck('id')->toArray();
+                    return Account::query()->where('level', 'detail')->where('company_id', getCompany()->id)->orWhereHas('transactions',function ($query){})->pluck('id')->toArray();
                 })->hidden(fn($operation) => (bool)$operation === "edit")->default(getCompany()?->vendor_account)->enableBranchNode()->model(Transaction::class)->defaultOpenLevel(3)->live()->label('Parent Vendor Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('stamp', "Liabilities")->where('company_id', getCompany()->id)),
 
                 SelectTree::make('parent_customer')->visible(function (Forms\Get $get) {
@@ -86,7 +86,7 @@ class PartiesResource extends Resource
                         return false;
                     }
                 })->default(getCompany()?->customer_account)->disabledOptions(function ($state, SelectTree $component) {
-                    return Account::query()->where('level', 'detail')->where('company_id', getCompany()->id)->pluck('id')->toArray();
+                    return Account::query()->where('level', 'detail')->where('company_id', getCompany()->id)->orWhereHas('transactions',function ($query){})->pluck('id')->toArray();
                 })->enableBranchNode()->model(Transaction::class)->defaultOpenLevel(3)->live()->label('Parent Customer Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('stamp', "Assets")->where('company_id', getCompany()->id)),
                 Forms\Components\TextInput::make('account_code_vendor')
                 ->prefix(fn(Get $get)=>Account::find($get('parent_vendor'))?->code)
@@ -138,7 +138,7 @@ class PartiesResource extends Resource
                 Forms\Components\Fieldset::make('Account Vendor')->visible(fn($state)=>isset($state['id']))->relationship('accountVendor')->schema([
                     Forms\Components\TextInput::make('name')->required()->maxLength(255),
                     SelectTree::make('parent_id')->live()->label('Parent')->disabledOptions(function ($state, SelectTree $component) {
-                        return Account::query()->where('level', 'detail')->pluck('id')->toArray();
+                        return Account::query()->where('level', 'detail')->pluck('id')->orWhereHas('transactions',function ($query){})->toArray();
                     })->defaultOpenLevel(1)->searchable()->enableBranchNode()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('stamp', "Liabilities")->where('company_id', getCompany()->id))
                         ->afterStateUpdated(function ($state, callable $set) {
                             $set('type', Account::query()->firstWhere('id', $state)->type);
@@ -159,7 +159,7 @@ class PartiesResource extends Resource
                 Forms\Components\Fieldset::make('Account Customer')->visible(fn($state)=>isset($state['id']))->relationship('accountCustomer')->schema([
                     Forms\Components\TextInput::make('name')->required()->maxLength(255),
                     SelectTree::make('parent_id')->live()->label('Parent')->disabledOptions(function ($state, SelectTree $component) {
-                        return Account::query()->where('level', 'detail')->pluck('id')->toArray();
+                        return Account::query()->where('level', 'detail')->orWhereHas('transactions',function ($query){})->pluck('id')->toArray();
                     })->defaultOpenLevel(1)->searchable()->enableBranchNode()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('stamp', "Assets")->where('company_id', getCompany()->id))
                         ->afterStateUpdated(function ($state, callable $set) {
                             $set('type', Account::query()->firstWhere('id', $state)->type);
