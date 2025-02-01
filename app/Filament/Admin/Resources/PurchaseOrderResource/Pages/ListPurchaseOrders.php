@@ -15,7 +15,7 @@ class ListPurchaseOrders extends ListRecords
 
     public function mount(): void
     {
-        if (getPeriod()!==null) {
+        if (getPeriod()==null) {
         Notification::make('financialErors')->seconds(5)->color('danger')->danger()->title('There is no financial period.')->send()->sendToDatabase(auth()->user());
         }
         $this->authorizeAccess();

@@ -100,16 +100,16 @@ class PurchaseRequestResource extends Resource
                         ->schema([
                             Forms\Components\Select::make('product_id')
                                 ->label('Product')->options(function () {
-                                    return getCompany()->products->pluck('info','id');
+                                    return getCompany()->products->pluck('info', 'id');
                                 })->required()->searchable()->preload(),
                             Forms\Components\Select::make('unit_id')->createOptionForm([
-                                Forms\Components\TextInput::make('title')->label('Unit Name')->unique('units','title')->required()->maxLength(255),
+                                Forms\Components\TextInput::make('title')->label('Unit Name')->unique('units', 'title')->required()->maxLength(255),
                                 Forms\Components\Toggle::make('is_package')->live()->required(),
-                                Forms\Components\TextInput::make('items_per_package')->numeric()->visible(fn(Get $get)=>$get('is_package'))->default(null),
-                            ])->createOptionUsing(function ($data){
-                                $data['company_id']=getCompany()->id;
+                                Forms\Components\TextInput::make('items_per_package')->numeric()->visible(fn(Get $get) => $get('is_package'))->default(null),
+                            ])->createOptionUsing(function ($data) {
+                                $data['company_id'] = getCompany()->id;
                                 Notification::make('success')->success()->title('Create Unit')->send();
-                             return  Unit::query()->create($data)->getKey();
+                                return  Unit::query()->create($data)->getKey();
                             })->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id'))->required(),
                             Forms\Components\TextInput::make('quantity')->required()->live()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
 
@@ -180,16 +180,16 @@ class PurchaseRequestResource extends Resource
                     })->numeric(),
 
             ])
-         
+
             ->filters([
-             
+
                 SelectFilter::make('purchase_number')->searchable()->preload()->options(PurchaseRequest::where('company_id', getCompany()->id)->get()->pluck('purchase_number', 'id'))
-                ->label("PR NO"),
-                SelectFilter::make('vendor_id')->searchable()->preload()->options(Parties::where('company_id', getCompany()->id)->where('account_code_vendor','!=',null)->get()->pluck('name', 'id'))
-                ->label("Vendor"),
+                    ->label("PR NO"),
+                SelectFilter::make('vendor_id')->searchable()->preload()->options(Parties::where('company_id', getCompany()->id)->where('account_code_vendor', '!=', null)->get()->pluck('name', 'id'))
+                    ->label("Vendor"),
                 DateRangeFilter::make('request_date'),
 
-              
+
 
 
             ], getModelFilter())
@@ -197,242 +197,9 @@ class PurchaseRequestResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('Order')
-                ->icon('heroicon-s-shopping-cart')
-                    ->modalWidth(MaxWidth::FitContent)->form([
-                        Section::make('Payment')->schema([
-                            Forms\Components\Select::make('account_id')
-                                ->label('Payment Account')
-                                ->options(
-                                    function () {
-                                        $accounts = getCompany()->accounts->whereIn('stamp', ['Bank', 'Cash'])->pluck('id')->toArray();
-                                        return Account::query()->whereIn('id', $accounts)
-                                            ->orWhereIn('parent_id', $accounts)
-                                            ->orWhereHas('account', function ($query) use ($accounts) {
-                                                return $query->whereIn('parent_id', $accounts)->orWhereHas('account', function ($query) use ($accounts) {
-                                                    return $query->whereIn('parent_id', $accounts);
-                                                });
-                                            })
-                                            ->get()->pluck('name', 'id')->toArray();
-                                    }
-                                )
-                                ->searchable()
-                                ->preload()
-                                ->required(),
-
-                            Forms\Components\Select::make('vendor_id')->default(function ($record){
-                               if ($record->bid){
-                                   return $record->bid?->quotation?->party_id;
-                               }
-                            }) ->label('Vendor')
-
-                                ->options((getCompany()->parties->where('type', 'vendor')->pluck('info', 'id')))
-
-                                ->searchable()
-                                ->preload()
-                                ->required(),
-                            Forms\Components\Select::make('currency')->required()->required()->options(getCurrency())->searchable()->preload()->default(getCompany()->currency),
-                            Forms\Components\TextInput::make('exchange_rate')
-                                ->required()->default(1)
-                                ->numeric(),
-                        ])->columns(4),
-                        Section::make('')->schema([
-                            Section::make([
-                                Forms\Components\Select::make('prepared_by')->live()
-                                    ->searchable()
-                                    ->preload()
-                                    ->required()
-                                    ->options(getCompany()->employees->pluck('fullName', 'id'))
-                                    ->default(fn() => auth()->user()->employee->id),
-
-                                Forms\Components\TextInput::make('purchase_orders_number')->default(function () {
-                                    $puncher = PurchaseOrder::query()->where('company_id', getCompany()->id)->latest()->first();
-                                    if ($puncher) {
-                                        return  generateNextCodePO($puncher?->purchase_orders_number);
-                                    } else {
-                                        return "0001";
-                                    }
-                                })->label('Po Number')
-                                    ->required()
-
-                                    ->maxLength(50),
-
-
-
-                                Forms\Components\DatePicker::make('date_of_delivery')
-                                    ->default(now())
-                                    ->required(),
-                                Forms\Components\TextInput::make('location_of_delivery')
-
-                                    ->maxLength(255),
-
-
-
-                                Forms\Components\DatePicker::make('date_of_po')->default(now())
-                                    ->label('Date of PO')
-                                    ->required(),
-                                // Forms\Components\Select::make('bid_id')
-                                // ->relationship('bid', 'id')
-                                // ->required(),
-                                // Forms\Components\Select::make('quotation_id')
-                                // ->relationship('quotation', 'id')
-                                // ->required(),
-
-
-                                Forms\Components\Hidden::make('company_id')
-                                    ->default(getCompany()->id)
-                                    ->required(),
-
-                            ])->columns(5),
-
-
-                            Repeater::make('RequestedItems')->defaultItems(0)->required()
-                                ->default(function ($record){
-                                    if ($record->bid){
-                                        $data=[];
-                                        foreach ($record->bid->quotation?->quotationItems->toArray() as $item){
-
-                                            $prItem= PurchaseRequestItem::query()->firstWhere('id',$item['purchase_request_item_id']);
-                                            $item['quantity']=$prItem->quantity;
-                                            $item['unit_id']=$prItem->unit_id;
-                                            $item['description']=$prItem->description;
-                                            $item['project_id']=$prItem->project_id;
-                                            $item['product_id']=$prItem->product_id;
-                                            $q=$prItem->quantity;
-                                            $item['unit_price']=number_format($item['unit_rate']);
-                                            $price=$item['unit_rate'];
-                                            $tax=$item['taxes'];
-                                            $freights=$item['freights'];
-                                            $item['total']=number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100));
-                                            $data[]=$item;
-                                        }
-                                        return  $data;
-                                    }
-                                    return $record->items->where('status','approve')->toArray();
-                                })
-                                // ->formatStateUsing(fn(Get $get) => dd($get('purchase_request_id')):'')
-                                ->schema([
-                                    Forms\Components\Select::make('product_id')
-                                        ->label('Product')->options(function ($state) {
-                                            $products = getCompany()->products->where('id', $state);
-                                            $data = [];
-                                            foreach ($products as $product) {
-                                                $data[$product->id] = $product->info;
-                                            }
-                                            return $data;
-                                        })->required()->searchable()->preload(),
-                                    Forms\Components\TextInput::make('description')->readOnly()->label('Description')->required(),
-
-                                    Forms\Components\Select::make('unit_id')
-                                        ->searchable()
-                                        ->preload()
-                                        ->label('Unit')
-                                        ->options(getCompany()->units->pluck('title', 'id'))
-                                        ->required(),
-                                    Forms\Components\TextInput::make('quantity')
-                                        ->readOnly()
-                                        ->required()->live()
-                                        ->mask(RawJs::make('$money($input)'))
-                                        ->stripCharacters(','),
-
-                                    Forms\Components\TextInput::make('unit_price')->afterStateUpdated(function ($state,Set $set, Get $get){
-                                        $freights = $get('taxes') === null ? 0 : (float) $get('taxes');
-                                        $q = $get('quantity');
-                                        $tax = $get('taxes') === null ? 0 : (float)$get('taxes');
-                                        $price = $state !== null ? str_replace(',', '', $state) : 0;
-                                        $set('total', number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100)));
-                                    })->live(true)
-                                        ->readOnly()
-                                        ->numeric()
-                                        ->mask(RawJs::make('$money($input)'))
-                                        ->stripCharacters(',')->label('Final Price'),
-
-                                    Forms\Components\TextInput::make('taxes')->afterStateUpdated(function ($state,Set $set, Get $get){
-                                        $freights = $get('freights') === null ? 0 : (float)$get('freights');
-                                        $q = $get('quantity');
-                                        $tax = $state === null ? 0 : (float)$state;
-                                        $price = $get('unit_rate') !== null ? str_replace(',', '', $get('unit_rate')) : 0;
-                                        $set('total', number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100)));
-                                    })->live(true)
-                                        ->prefix('%')
-                                        ->numeric()
-                                        ->required()
-                                        ->rules([
-                                            fn(): Closure => function (string $attribute, $value, Closure $fail) {
-                                                if ($value < 0) {
-                                                    $fail('The :attribute must be greater than 0.');
-                                                }
-                                                if ($value > 100) {
-                                                    $fail('The :attribute must be less than 100.');
-                                                }
-                                            },
-                                        ])
-                                        ->mask(RawJs::make('$money($input)'))
-                                        ->stripCharacters(','),
-                                    Forms\Components\TextInput::make('freights')->afterStateUpdated(function ($state,Set $set, Get $get){
-                                        $freights = $state === null ? 0 : (float) $state;
-                                        $q = $get('quantity');
-                                        $tax = $get('taxes') === null ? 0 : (float)$get('taxes');
-                                        $price = $get('unit_rate') !== null ? str_replace(',', '', $get('unit_rate')) : 0;
-                                        $set('total', number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100)));
-                                    })->live(true)
-                                        ->required()
-                                        ->numeric()
-                                        ->mask(RawJs::make('$money($input)'))
-                                        ->stripCharacters(','),
-
-                                    Forms\Components\Select::make('project_id')
-                                        ->searchable()
-                                        ->preload()
-                                        ->disabled()
-                                        ->label('Project')
-                                        ->options(getCompany()->projects->pluck('name', 'id')),
-
-                                    TextInput::make('total')->readOnly(),
-
-                                ])
-                                ->columns(9)
-                                ->columnSpanFull()->addable(false),
-                        ])->columns(3)
-                    ])->action(function ($data, $record) {
-
-                        // dd($record);
-                        $id = getCompany()->id;
-
-
-                        $purchaseOrder = PurchaseOrder::query()->create([
-                            'account_id' => $data['account_id'],
-                            'vendor_id' => $data['vendor_id'],
-                            'currency' => $data['currency'],
-                            'exchange_rate' => $data['exchange_rate'],
-                            'prepared_by' => getEmployee()->id,
-
-                            'purchase_orders_number' => $data['purchase_orders_number'],
-                            'date_of_delivery' => $data['date_of_delivery'],
-                            'location_of_delivery' => $data['location_of_delivery'],
-                            'date_of_po' => $data['date_of_po'],
-                            'purchase_request_id' => $record->id,
-                            'company_id' => $id,
-                        ]);
-
-
-                        // RequestedItems
-
-                        foreach ($data['RequestedItems'] as $item) {
-                            $purchaseOrder->items()->create([
-                                'product_id' => $item['product_id'],
-                                'description' => $item['description'],
-                                'quantity' => $item['quantity'],
-                                'unit_price' => $item['unit_price'],
-                                'taxes' => $item['taxes'],
-                                'freights' => $item['freights'],
-                                'unit_id' => $item['unit_id'],
-                                'company_id' => $id,
-                            ]);
-                        }
-                        Notification::make('add Purchase Order')->success()->title('Purchase Order Added')->send()->sendToDatabase(auth()->user());
-                    }),
-
-                Tables\Actions\ActionGroup::make([
+                    ->icon('heroicon-s-shopping-cart')
+                    ->url(fn($record)=>PurchaseOrderResource::getUrl('create')."?prno=".$record->id),
+                Tables\Actions\ActionGroup::make([  
                     Tables\Actions\Action::make('prQuotation')->visible(fn($record) => $record->is_quotation)->color('warning')->label('Quotation ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.quotation', ['id' => $record->id])),
                     Tables\Actions\Action::make('insertQuotation')->modalWidth(MaxWidth::Full)->icon('heroicon-s-newspaper')->color('info')->label('InsertQuotation')->visible(fn($record) => $record->is_quotation)->form(function ($record) {
 
@@ -451,7 +218,7 @@ class PurchaseRequestResource extends Resource
                                     ]);
                                     $data['account_vendor'] = $account->id;
                                     $data['company_id'] = getCompany()->id;
-                                    $data['type']='vendor';
+                                    $data['type'] = 'vendor';
                                     return Parties::query()->create($data)->getKey();
                                 })->createOptionForm([
                                     Forms\Components\Section::make([
@@ -470,7 +237,7 @@ class PurchaseRequestResource extends Resource
                                             }
                                         })->required()->maxLength(255),
                                     ])->columns(3),
-                                ])->label('Vendor')->options(Parties::query()->where('company_id', getCompany()->id)->where('type','vendor')->get()->pluck('info', 'id'))->searchable()->preload()->required(),
+                                ])->label('Vendor')->options(Parties::query()->where('company_id', getCompany()->id)->where('type', 'vendor')->get()->pluck('info', 'id'))->searchable()->preload()->required(),
                                 Forms\Components\DatePicker::make('date')->default(now())->required(),
                                 Forms\Components\Select::make('employee_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Logistic'),
                                 Forms\Components\Select::make('employee_operation_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Operation'),
@@ -496,7 +263,7 @@ class PurchaseRequestResource extends Resource
                                             $q = $get('quantity');
                                             $tax = $get('taxes') === null ? 0 : (float)$get('taxes');
                                             $price = $state !== null ? str_replace(',', '', $state) : 0;
-                                            $set('total', number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100)));
+                                            $set('total', number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100)));
                                         }
                                     })->live(true)->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                                     Forms\Components\TextInput::make('taxes')->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
@@ -504,7 +271,7 @@ class PurchaseRequestResource extends Resource
                                         $q = $get('quantity');
                                         $tax = $state === null ? 0 : (float)$state;
                                         $price = $get('unit_rate') !== null ? str_replace(',', '', $get('unit_rate')) : 0;
-                                        $set('total', number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100)));
+                                        $set('total', number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100)));
                                     })->live(true)
                                         ->prefix('%')
                                         ->numeric()->maxValue(100)
@@ -526,7 +293,7 @@ class PurchaseRequestResource extends Resource
                                         $q = $get('quantity');
                                         $freights = $state === null ? 0 : (float)$state;
                                         $price = $get('unit_rate') !== null ? str_replace(',', '', $get('unit_rate')) : 0;
-                                        $set('total', number_format(($q * $price) + (($q * $price * $tax)/100) + (($q * $price * $freights)/100)));
+                                        $set('total', number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100)));
                                     })->live(true)
                                         ->required()
                                         ->numeric()
@@ -539,7 +306,7 @@ class PurchaseRequestResource extends Resource
                                 ])->formatStateUsing(function () use ($record) {
                                     $data = [];
                                     foreach ($record->items->where('status', 'approve') as $item) {
-                                        $data[] = ['purchase_request_item_id' => $item->id, 'description'=>$item->description,'quantity' => $item->quantity, 'unit_rate' => 0, 'taxes' => 0, 'freights' => 0];
+                                        $data[] = ['purchase_request_item_id' => $item->id, 'description' => $item->description, 'quantity' => $item->quantity, 'unit_rate' => 0, 'taxes' => 0, 'freights' => 0];
                                     }
                                     return $data;
                                 })
@@ -599,7 +366,7 @@ class PurchaseRequestResource extends Resource
                                 $vendors = '';
                                 $ths = '';
                                 foreach ($record->quotations as $quotation) {
-                                    $vendor = $quotation->party->name ."'s Quotation";
+                                    $vendor = $quotation->party->name . "'s Quotation";
                                     $vendors .= "<th style='border: 1px solid black;padding: 8px;text-align: center;background-color: #f2f2f2'>{$vendor}</th>";
                                     $totalSum = 0;
                                     foreach ($quotation->quotationItems as $quotationItem) {

@@ -33,6 +33,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Unique;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
@@ -60,7 +61,43 @@ class PurchaseOrderResource extends Resource
                         ->schema([
                             Section::make('Order Info')->schema([
 
-                                Forms\Components\Select::make('purchase_request_id')->live()
+                                Forms\Components\Select::make('purchase_request_id')
+                                ->default(function(Request $request){
+                                    return $request?->prno;
+                                })
+                                ->afterStateHydrated(function (Set $set,Get $get, $state){
+                                    if ($state) {
+                                        $record = PurchaseRequest::query()->with('bid')->firstWhere('id', $state);
+                                     
+                                        if ($record->bid) {
+                                            $data = [];
+                                            foreach ($record->bid->quotation?->quotationItems->toArray() as $item) {
+                                                $prItem = PurchaseRequestItem::query()->firstWhere('id', $item['purchase_request_item_id']);
+                                                $item['quantity'] = $prItem->quantity;
+                                                $item['unit_id'] = $prItem->unit_id;
+                                                $item['description'] = $prItem->description;
+                                                $item['product_id'] = $prItem->product_id;
+                                                $item['project_id'] = $prItem->project_id;
+                                                $q = $prItem->quantity;
+                                                $item['unit_price'] = number_format($item['unit_rate']);
+                                                $price = $item['unit_rate'];
+                                                $tax = $item['taxes'];
+                                                $freights = $item['freights'];
+
+                                                $item['total'] = number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100));
+                                                $data[] = $item;
+                                            }
+                                            $set('RequestedItems', $data);
+                                            $set('vendor_id', $record->bid->quotation->party_id);
+                                        } else {
+                                        
+
+                                            $set('RequestedItems', $record->items->where('status', 'approve')->toArray());
+                                            // dd($get('RequestedItems'),$record->items->where('status', 'approve')->toArray());
+                                        }
+                                    }
+                                })
+                                ->live()
                                     ->label('PR NO')
                                     ->searchable()
                                     ->preload()
@@ -158,7 +195,66 @@ class PurchaseOrderResource extends Resource
 
 
 
-                                Repeater::make('RequestedItems')->defaultItems(0)->required()->relationship('items')
+                                Repeater::make('RequestedItems')->defaultItems(1)->required()
+                                ->default(function(Request $request){
+                                    $record = (PurchaseRequest::query()->with('bid')->firstWhere('id', $request->prno));
+                                    if ($record->bid) {
+                                        $data = [];
+                                        foreach ($record->bid->quotation?->quotationItems->toArray() as $item) {
+                                            $prItem = PurchaseRequestItem::query()->firstWhere('id', $item['purchase_request_item_id']);
+                                            $item['quantity'] = $prItem->quantity;
+                                            $item['unit_id'] = $prItem->unit_id;
+                                            $item['description'] = $prItem->description;
+                                            $item['product_id'] = $prItem->product_id;
+                                            $item['project_id'] = $prItem->project_id;
+                                            $q = $prItem->quantity;
+                                            $item['unit_price'] = number_format($item['unit_rate']);
+                                            $price = $item['unit_rate'];
+                                            $tax = $item['taxes'];
+                                            $freights = $item['freights'];
+
+                                            $item['total'] = number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100));
+                                            $data[] = $item;
+                                        }
+                                        $set('vendor_id', $record->bid->quotation->party_id);
+                                      return  $data;
+                                    } else {
+                                       return $record->items->where('status', 'approve')->toArray();
+                                    }
+                                })
+                                ->afterStateHydrated(function (Set $set,Get $get, $state){
+                                    dd(1);
+                                    if ($state) {
+                                        $record = PurchaseRequest::query()->with('bid')->firstWhere('id', $state);
+                                        if ($record->bid) {
+                                            $data = [];
+                                            foreach ($record->bid->quotation?->quotationItems->toArray() as $item) {
+                                                $prItem = PurchaseRequestItem::query()->firstWhere('id', $item['purchase_request_item_id']);
+                                                $item['quantity'] = $prItem->quantity;
+                                                $item['unit_id'] = $prItem->unit_id;
+                                                $item['description'] = $prItem->description;
+                                                $item['product_id'] = $prItem->product_id;
+                                                $item['project_id'] = $prItem->project_id;
+                                                $q = $prItem->quantity;
+                                                $item['unit_price'] = number_format($item['unit_rate']);
+                                                $price = $item['unit_rate'];
+                                                $tax = $item['taxes'];
+                                                $freights = $item['freights'];
+
+                                                $item['total'] = number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100));
+                                                $data[] = $item;
+                                            }
+                                            $set('RequestedItems', $data);
+                                            $set('vendor_id', $record->bid->quotation->party_id);
+                                        } else {
+                                        
+
+                                            $set('RequestedItems', $record->items->where('status', 'approve')->toArray());
+                                            // dd($get('RequestedItems'),$record->items->where('status', 'approve')->toArray());
+                                        }
+                                    }
+                                })
+                                ->relationship('items')
                                     // ->formatStateUsing(fn(Get $get) => dd($get('purchase_request_id')):'')
                                     ->schema([
                                         Forms\Components\Select::make('product_id')
