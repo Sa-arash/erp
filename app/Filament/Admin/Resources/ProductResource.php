@@ -13,6 +13,7 @@ use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -42,9 +43,16 @@ class ProductResource extends Resource
                             }
                         })
                     ->required()->maxLength(255),
-                    Select::make('product_type')->searchable()->options(['consumable' => 'consumable', 'unConsumable' => 'unConsumable'])->default('consumable'),
+                    Select::make('product_type')->searchable()->options(['consumable' => 'consumable', 'unConsumable' => 'unConsumable'])->default('consumable')
+                    ->live()->afterStateUpdated(function(Set $set){
+                        $set('account_id',null);
+                    }),
                 ])->columns(3),
-                Select::make('account_id')->options(function () {
+                Select::make('account_id')->options(function (Get $get) {
+                   
+                   if($get('product_type')=='unConsumable')
+                   {
+                
                     $data=[];
                     if (getCompany()->product_accounts){
                         $accounts= Account::query()
@@ -58,6 +66,21 @@ class ProductResource extends Resource
                         $data[$account->id]=$account->name." (".$account->code .")";
                     }
                     return $data;
+                }elseif($get('product_type')=='consumable'){
+                    $data=[];
+                    if (getCompany()->product_expence_accounts){
+                        $accounts= Account::query()
+                            ->whereIn('id', getCompany()->product_expence_accounts)
+                            ->where('company_id', getCompany()->id)->get();
+                    }else{
+                        $accounts= Account::query()
+                            ->where('company_id', getCompany()->id)->get();
+                    }
+                    foreach ( $accounts as $account){
+                        $data[$account->id]=$account->name." (".$account->code .")";
+                    }
+                    return $data;
+                }
 
                 })->required()->model(Transaction::class)->searchable()->label('Categoy'),
 
