@@ -33,7 +33,7 @@ class ListPurchaseOrders extends ListRecords
         }else{
             return [
 
-                Actions\Action::make('financialEror')->label('There is no financial period. Click to create')->url(fn()=>FinancialPeriodResource::getUrl('index'))->color('danger')
+                Actions\Action::make('financialEror')->label('There Is No Financial Period. Click To Create')->url(fn()=>FinancialPeriodResource::getUrl('index'))->color('danger')
             ];
         }
     }

@@ -100,10 +100,10 @@ class ItemsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('estimated_unit_cost')->numeric(),
                 Tables\Columns\TextColumn::make('total')->state(fn ($record) => $record->estimated_unit_cost * $record->quantity)->numeric(),
                 Tables\Columns\TextColumn::make('project.name'),
-                Tables\Columns\TextColumn::make('ceo_decision')->label('CEO Decision')->badge(),
-                Tables\Columns\TextColumn::make('ceo_comment')->label('CEO Comment')->badge(),
                 Tables\Columns\TextColumn::make('head_decision')->badge(),
                 Tables\Columns\TextColumn::make('head_comment')->badge(),
+                Tables\Columns\TextColumn::make('ceo_decision')->label('CEO Decision')->badge(),
+                Tables\Columns\TextColumn::make('ceo_comment')->label('CEO Comment')->badge(),
                 Tables\Columns\TextColumn::make('status')->badge(),
 
             ])
