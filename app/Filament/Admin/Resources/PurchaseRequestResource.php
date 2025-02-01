@@ -199,7 +199,7 @@ class PurchaseRequestResource extends Resource
                 Tables\Actions\Action::make('Order')
                     ->icon('heroicon-s-shopping-cart')
                     ->url(fn($record)=>PurchaseOrderResource::getUrl('create')."?prno=".$record->id),
-                Tables\Actions\ActionGroup::make([  
+                Tables\Actions\ActionGroup::make([
                     Tables\Actions\Action::make('prQuotation')->visible(fn($record) => $record->is_quotation)->color('warning')->label('Quotation ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.quotation', ['id' => $record->id])),
                     Tables\Actions\Action::make('insertQuotation')->modalWidth(MaxWidth::Full)->icon('heroicon-s-newspaper')->color('info')->label('InsertQuotation')->visible(fn($record) => $record->is_quotation)->form(function ($record) {
 
@@ -227,7 +227,7 @@ class PurchaseRequestResource extends Resource
                                         Forms\Components\TextInput::make('email')->email()->maxLength(255),
                                         Forms\Components\Textarea::make('address')->columnSpanFull(),
                                         SelectTree::make('parent_vendor')->disabledOptions(function () {
-                                            return Account::query()->where('level', 'detail')->where('company_id', getCompany()->id)->pluck('id')->toArray();
+                                            return Account::query()->where('level', 'detail')->where('company_id', getCompany()->id)->orWhereHas('transactions',function ($query){})->pluck('id')->toArray();
                                         })->default(getCompany()?->vendor_account)->enableBranchNode()->model(Transaction::class)->defaultOpenLevel(3)->live()->label('Parent Vendor Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('stamp', "Liabilities")->where('company_id', getCompany()->id)),
                                         Forms\Components\TextInput::make('account_code_vendor')->prefix(fn(Get $get) => Account::find($get('parent_vendor'))?->code)->default(function () {
                                             if (Parties::query()->where('company_id', getCompany()->id)->where('type', 'vendor')->latest()->first()) {

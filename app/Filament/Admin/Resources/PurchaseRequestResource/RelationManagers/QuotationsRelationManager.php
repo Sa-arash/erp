@@ -59,7 +59,7 @@ class QuotationsRelationManager extends RelationManager
                             Forms\Components\TextInput::make('email')->email()->maxLength(255),
                             Forms\Components\Textarea::make('address')->columnSpanFull(),
                             SelectTree::make('parent_vendor')->disabledOptions(function () {
-                                return Account::query()->where('level', 'detail')->where('company_id', getCompany()->id)->pluck('id')->toArray();
+                                return Account::query()->where('level', 'detail')->where('company_id', getCompany()->id)->orWhereHas('transactions',function ($query){})->pluck('id')->toArray();
                             })->default(getCompany()?->vendor_account)->enableBranchNode()->model(Transaction::class)->defaultOpenLevel(3)->live()->label('Parent Vendor Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('stamp', "Liabilities")->where('company_id', getCompany()->id)),
                             Forms\Components\TextInput::make('account_code_vendor')->prefix(fn(Get $get) => Account::find($get('parent_vendor'))?->code)->default(function () {
                                 if (Parties::query()->where('company_id', getCompany()->id)->where('type', 'vendor')->latest()->first()) {
