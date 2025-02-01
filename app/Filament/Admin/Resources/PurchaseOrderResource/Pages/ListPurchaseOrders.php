@@ -15,8 +15,8 @@ class ListPurchaseOrders extends ListRecords
 
     public function mount(): void
     {
-        if (getPeriod()) {
-        Notification::make('financialErors')->seconds(5)->danger()->title('There is no financial period.')->send()->sendToDatabase(auth()->user());
+        if (getPeriod()!==null) {
+        Notification::make('financialErors')->seconds(5)->color('danger')->danger()->title('There is no financial period.')->send()->sendToDatabase(auth()->user());
         }
         $this->authorizeAccess();
 
@@ -24,11 +24,11 @@ class ListPurchaseOrders extends ListRecords
     }
     protected function getHeaderActions(): array
     {
-        if (!getPeriod()) {
+        if (getPeriod()!==null) {
 
             return [
                 Actions\CreateAction::make()
-                    ->url(getPeriod() ? PurchaseOrderResource::getUrl('create') : FinancialPeriodResource::getUrl('index'))->label('New Purchase Order '),
+                    ->url(getPeriod()!==null ? PurchaseOrderResource::getUrl('create') : FinancialPeriodResource::getUrl('index'))->label('New Purchase Order '),
             ];
         }else{
             return [
