@@ -70,7 +70,7 @@ class AssetResource extends Resource
                         return $query->where('warehouse_id', $get('warehouse_id'));
                     })->required(),
                     DatePicker::make('buy_date')->label('Purchase Date')->default(now()),
-                    DatePicker::make('guaranty_date')->label('Guaranty Date')->default(now()),
+                    DatePicker::make('guarantee_date')->label('Guarantee Date')->default(now()),
                     Forms\Components\Select::make('depreciation_years')
                         ->label('Depreciation Years')
                         ->options([
@@ -159,7 +159,7 @@ class AssetResource extends Resource
                 ->date('Y-m-d')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
-                Tables\Columns\TextColumn::make('guaranty_date')
+                Tables\Columns\TextColumn::make('guarantee_date')
                     ->date('Y-m-d')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
@@ -175,7 +175,7 @@ class AssetResource extends Resource
 
                 Tables\Filters\SelectFilter::make('status')->searchable()->options(['inuse' => "Inuse", 'inStorageUsable' => "InStorageUsable", 'storageUnUsable' => "StorageUnUsable", 'outForRepair' => 'OutForRepair', 'loanedOut' => "LoanedOut"]),
                 DateRangeFilter::make('buy_date')->label('Purchase Date'),
-                DateRangeFilter::make('guaranty_data'),
+                DateRangeFilter::make('guarantee_data'),
                 Tables\Filters\Filter::make('employee')
                     ->form([
                         Forms\Components\Select::make('employee_id')
@@ -250,7 +250,7 @@ class AssetResource extends Resource
                         SelectTree::make('structure_id')->searchable()->label('Location')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id', modifyQueryUsing: function ($query, Forms\Get $get) {
                             return $query->where('warehouse_id', $get('warehouse_id'));
                         })->required(),
-                        DatePicker::make('garanry_date')->default(now()),
+                        DatePicker::make('guarantee_date')->default(now()),
                         DatePicker::make('buy_date')->default(now()),
                         Forms\Components\Select::make('depreciation_years')
                             ->label('Depreciation Years')

@@ -142,7 +142,7 @@ class AssetEmployeeResource extends Resource
                     TextEntry::make('approve_date')->label('Approve Return Date')->date(),
                     TextEntry::make('description'),
                     RepeatableEntry::make('assetEmployeeItem')->label('Returned Assets')->schema([
-                        TextEntry::make('asset.product.title'),
+                        TextEntry::make('asset.titlen'),
                         TextEntry::make('warehouse.title')->label('Location'),
                         TextEntry::make('structure.title')->label('Address'),
                     ])->columns(3)->columnSpanFull()
@@ -154,7 +154,7 @@ class AssetEmployeeResource extends Resource
                     TextEntry::make('date')->date(),
                     TextEntry::make('description'),
                     RepeatableEntry::make('assetEmployeeItem')->schema([
-                        TextEntry::make('asset.product.title'),
+                        TextEntry::make('asset.titlen'),
                         TextEntry::make('warehouse.title')->label('Location'),
                         TextEntry::make('structure.title')->label('Address'),
                         TextEntry::make('due_date')->date(),
