@@ -140,7 +140,7 @@ class ServiceResource extends Resource
                         'answer_date' => $data['answer_date'],
                         'status' => 'In Progress',
                     ]);
-                    $record->asset()->update(['status' => 'undeRrepair']);
+                    $record->asset()->update(['status' => 'underRepair']);
                 }),
                 Tables\Actions\Action::make('finish')->visible(fn($record) => $record->status == 'In Progress')->form([
                     Group::make()->schema([
@@ -158,7 +158,7 @@ class ServiceResource extends Resource
                         'reply' => $data['reply'],
                         'status' => $data['status'],
                     ]);
-                    $record->asset()->update(['status' => 'undeRrepair']);
+                    $record->asset()->update(['status' => 'underRepair']);
                 }),
 
             ])
