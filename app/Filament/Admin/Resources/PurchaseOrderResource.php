@@ -438,7 +438,7 @@ class PurchaseOrderResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('total')
-                ->label(fn($record) => "Total(" . $record->id . ")")
+                ->label('Total(' . getCompany()->currency . ")")
                     ->state(fn($record) => number_format($record->items->map(fn($item) => (($item['quantity'] * str_replace(',', '', $item['unit_price'])) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['taxes']) / 100) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['freights']) / 100)))?->sum()))
                     ->searchable(),
                 // Tables\Columns\TextColumn::make('currency')
