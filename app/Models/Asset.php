@@ -7,14 +7,18 @@ use Illuminate\Database\Eloquent\Model;
 class Asset extends Model
 {
     protected $guarded = ['id'];
- 
+
     protected $casts = [
         'attributes' => 'array',
     ];
-    
+
     public function getTitleAttribute()
     {
-        return  $this->product?->title." (sku:".$this->product?->sku.") ".$this->brand?->title." ".$this->model;
+        return  $this->product?->title." (SKU:".$this->product?->sku.") ".$this->brand?->title." ".$this->model ." SN:".$this->serial_number;
+    }
+    public function getTitlenAttribute()
+    {
+        return  $this->product?->title."-".$this->brand?->title." ".$this->model." SN:".$this->serial_number;
     }
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

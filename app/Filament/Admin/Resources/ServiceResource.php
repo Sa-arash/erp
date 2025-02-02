@@ -24,6 +24,7 @@ class ServiceResource extends Resource
     protected static ?string $model = Service::class;
     protected static ?string $navigationGroup = 'Logistic Management';
     protected static ?int $navigationSort = 9;
+    protected static ?string $label='Maintenance';
 
   protected static ?string $navigationIcon = 'heroicon-o-wrench';
 
@@ -63,7 +64,7 @@ class ServiceResource extends Resource
                         ->required(),
                         ToggleButtons::make('type')->options(['On-site Service' => 'On-site Service', 'Purchase Order' => 'Purchase Order', 'TakeOut For Reaper' => 'TakeOut For Reaper',])->inline(),
                         ToggleButtons::make('status')->options(['Complete' => 'Complete', 'Canceled' => 'Canceled' ])->default('Complete')->inline(),
-                       
+
                     Forms\Components\FileUpload::make('images'),
                     Forms\Components\DatePicker::make('answer_date'),
                     Forms\Components\DatePicker::make('service_date'),
