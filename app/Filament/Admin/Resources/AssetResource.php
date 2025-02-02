@@ -105,7 +105,7 @@ class AssetResource extends Resource
                         if ($PO) {
                             foreach ($PO->items as $item) {
                                 if ($item->product->product_type === "consumable") {
-                                    for ($i = 0; $i <= $item->quantity; $i++) {
+                                    for ($i = 1; $i <= $item->quantity; $i++) {
                                         $data = [];
                                         $freights = $item->freights === null ? 0 : (float)$item->freights;
                                         $q = 1;
