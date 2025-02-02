@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Service extends Model
 {
     protected $guarded=['id'];
+    protected $casts=['images'=>'array'];
 
     public function employee(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

@@ -6,9 +6,11 @@ use App\Models\Asset;
 use App\Models\AssetEmployee;
 use App\Models\AssetEmployeeItem;
 use App\Models\Employee;
+use App\Models\Service;
 use App\Models\Structure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -52,16 +54,36 @@ class MyAsset extends BaseWidget
                 Tables\Columns\TextColumn::make('assetEmployee.approve_date')->label('Distribution Date')->date(),
                 Tables\Columns\TextColumn::make('return_date')->label('Return Date')->date(),
             ])
-            // ->actions([
-            //     Action::make('view')->infolist([
-            //         TextEntry::make('request_date')->date(),
-            //         TextEntry::make('purchase_number')->badge(),
-            //         TextEntry::make('employee.department.title')->label('Department'),
-            //         TextEntry::make('employee.fullName'),
-            //         TextEntry::make('employee.structure.title')->label('Location'),
-            //         TextEntry::make('comment')->label('Location'),
-            //     ])
-            // ])
+             ->actions([
+//                 Action::make('view')->infolist([
+//                     TextEntry::make('request_date')->date(),
+//                     TextEntry::make('purchase_number')->badge(),
+//                     TextEntry::make('employee.department.title')->label('Department'),
+//                     TextEntry::make('employee.fullName'),
+//                     TextEntry::make('employee.structure.title')->label('Location'),
+//                     TextEntry::make('comment')->label('Location'),
+//                 ])
+                 Tables\Actions\Action::make('Service')->fillForm(function ($record){
+                        return [
+                            'asset_id'=>$record->asset_id,
+                            'request_date'=>now()
+                            ];
+                 })->form(function ($record){
+                     return [
+                         Section::make([
+                             DatePicker::make('request_date')->required()->label('Request Date'),
+                             Select::make('asset_id')->required()->label('Asset')->searchable()->preload()->options(Asset::query()->where('id',$record->asset_id)->get()->pluck('title','id')),
+                             Textarea::make('note')->nullable()->columnSpanFull(),
+                             FileUpload::make('images')->columnSpanFull()->image()->multiple()->nullable()
+                         ])->columns()
+                     ];
+                 })->action(function ($data){
+                     $data['company_id']=getCompany()->id;
+                     $data['employee_id']=getEmployee()->id;
+                     Service::query()->create($data);
+                     Notification::make('success')->title('Service Request Is Sent')->color('success')->success()->send();
+                 })
+             ])
             ->bulkActions([
                 Tables\Actions\BulkAction::make('return')->label('Return To Warehouse')
                     ->modalHeading('Return Asset')
@@ -203,7 +225,8 @@ class MyAsset extends BaseWidget
                     }
 
                     Notification::make('success')->success()->title('Request  Sent')->send()->sendToDatabase(auth()->user());
-                })
+                }),
+
             ]);
     }
 }
