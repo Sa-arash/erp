@@ -18,11 +18,11 @@ return new class extends Migration
             $table->string('model', 250)->nullable();
             $table->decimal('price', 20, 2)->nullable();
             $table->date('buy_date')->nullable();
-            $table->date('garanry_date')->nullable();
+            $table->date('guaranty_date')->nullable();
             $table->unsignedTinyInteger('depreciation_years')->default(1);
             $table->decimal('depreciation_amount', 15, 2)->nullable();
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->enum('status',['inuse','inStorageUsable','storageUnUsable','undeRrepair','outForRepair','loanedOut'])->default('inStorageUsable');
+            $table->enum('status',['inuse','inStorageUsable','storageUnUsable','underRepair','outForRepair','loanedOut'])->default('inStorageUsable');
             $table->text('attributes')->nullable();
             $table->foreignId('brand_id')->nullable()->constrained('brands')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('warehouse_id')->constrained('warehouses')->cascadeOnDelete()->cascadeOnUpdate();

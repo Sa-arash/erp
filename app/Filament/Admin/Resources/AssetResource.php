@@ -69,8 +69,8 @@ class AssetResource extends Resource
                     SelectTree::make('structure_id')->searchable()->label('Location')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id', modifyQueryUsing: function ($query, Forms\Get $get) {
                         return $query->where('warehouse_id', $get('warehouse_id'));
                     })->required(),
-                    DatePicker::make('buy_date')->label('Porches Date')->default(now()),
-                    DatePicker::make('garanry_date')->label('garanry_date')->default(now()),
+                    DatePicker::make('buy_date')->label('Purchase Date')->default(now()),
+                    DatePicker::make('guaranty_date')->label('Guaranty Date')->default(now()),
                     Forms\Components\Select::make('depreciation_years')
                         ->label('Depreciation Years')
                         ->options([
@@ -133,7 +133,7 @@ class AssetResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('product.sku')->label('SKU')->searchable(),
-                Tables\Columns\TextColumn::make('title')->label('Asset Name')->searchable(),
+                Tables\Columns\TextColumn::make('titlen')->label('Asset Name')->searchable(),
                 Tables\Columns\TextColumn::make('price')->label('Purchase Price')->sortable()->numeric(),
 
                 Tables\Columns\TextColumn::make('warehouse.title')->label('Warehouse/Building')->sortable(),
@@ -155,7 +155,7 @@ class AssetResource extends Resource
                 Tables\Columns\TextColumn::make('depreciation_amount')->money()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
-                Tables\Columns\TextColumn::make('buy_date')->label('Porches Date')
+                Tables\Columns\TextColumn::make('buy_date')->label('Purchase Date')
                 ->date('Y-m-d')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
@@ -174,9 +174,8 @@ class AssetResource extends Resource
 
 
                 Tables\Filters\SelectFilter::make('status')->searchable()->options(['inuse' => "Inuse", 'inStorageUsable' => "InStorageUsable", 'storageUnUsable' => "StorageUnUsable", 'outForRepair' => 'OutForRepair', 'loanedOut' => "LoanedOut"]),
-                DateRangeFilter::make('buy_date')->label('Porches Date'),
-                DateRangeFilter::make('garanry_data'),
-                DateRangeFilter::make('created_at'),
+                DateRangeFilter::make('buy_date')->label('Purchase Date'),
+                DateRangeFilter::make('guaranty_data'),
                 Tables\Filters\Filter::make('employee')
                     ->form([
                         Forms\Components\Select::make('employee_id')

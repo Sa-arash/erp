@@ -14,11 +14,19 @@ class Asset extends Model
 
     public function getTitleAttribute()
     {
-        return  $this->product?->title." (SKU:".$this->product?->sku.") ".$this->brand?->title." ".$this->model ." SN:".$this->serial_number;
+        if ($this->serial_number){
+            return  $this->product?->title." (SKU:".$this->product?->sku.") ".$this->brand?->title." ".$this->model ." SN:".$this->serial_number;
+        }
+        return  $this->product?->title." (SKU:".$this->product?->sku.") ".$this->brand?->title." ".$this->model ;
+
     }
     public function getTitlenAttribute()
     {
-        return  $this->product?->title."-".$this->brand?->title." ".$this->model." SN:".$this->serial_number;
+        if ($this->serial_number){
+            return  $this->product?->title."-".$this->brand?->title." ".$this->model." SN:".$this->serial_number;
+        }
+        return  $this->product?->title."-".$this->brand?->title." ".$this->model;
+
     }
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
