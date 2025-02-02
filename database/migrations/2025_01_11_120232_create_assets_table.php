@@ -22,7 +22,7 @@ return new class extends Migration
             $table->unsignedTinyInteger('depreciation_years')->default(1);
             $table->decimal('depreciation_amount', 15, 2)->nullable();
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->enum('status',['inuse','inStorageUsable','storageUnUsable','outForRepair','loanedOut'])->default('inStorageUsable');
+            $table->enum('status',['inuse','inStorageUsable','storageUnUsable','undeRrepair','outForRepair','loanedOut'])->default('inStorageUsable');
             $table->text('attributes')->nullable();
             $table->foreignId('brand_id')->nullable()->constrained('brands')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('warehouse_id')->constrained('warehouses')->cascadeOnDelete()->cascadeOnUpdate();

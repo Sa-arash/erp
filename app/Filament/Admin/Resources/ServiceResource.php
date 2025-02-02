@@ -7,8 +7,10 @@ use App\Filament\Admin\Resources\ServiceResource\RelationManagers;
 use App\Models\Asset;
 use App\Models\Service;
 use Filament\Forms;
+use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Resources\Resource;
@@ -20,8 +22,10 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class ServiceResource extends Resource
 {
     protected static ?string $model = Service::class;
+    protected static ?string $navigationGroup = 'Logistic Management';
+    protected static ?int $navigationSort = 9;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+  protected static ?string $navigationIcon = 'heroicon-o-wrench';
 
     public static function form(Form $form): Form
     {
@@ -29,54 +33,53 @@ class ServiceResource extends Resource
             ->schema([
                 Section::make('Service Request')->schema([
                     Forms\Components\Select::make('employee_id')->live()
-                            ->searchable()
-                            ->preload()
-                            ->required()
-                            ->options(getCompany()->employees->pluck('fullName', 'id'))
-                            ->default(fn() => auth()->user()->employee->id),
+                        ->searchable()
+                        ->preload()
+                        ->required()
+                        ->options(getCompany()->employees->pluck('fullName', 'id'))
+                        ->default(fn() => auth()->user()->employee->id),
 
 
-                            Select::make('asset_id')
-                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
-                            ->live()->label('Asset')->options(function (Get $get) {
-                                if($get('employee_id'))
-                                {
+                    Select::make('asset_id')
+                        ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                        ->live()->label('Asset')->options(function (Get $get) {
+                            if ($get('employee_id')) {
 
-                                    $employeeID=$get('employee_id');
-                                    $data = [];
-                                    $assets = Asset::query()->with('product')->whereHas('employees', function ($query) use($employeeID) {
-                                        return $query->where('return_date', null)->where('return_approval_date', null)->whereHas('assetEmployee', function ($query)use($employeeID) {
-                                            return $query->where('employee_id',$employeeID );
-                                        });
-                                    })->where('company_id', getCompany()->id)->get();
-                                    foreach ($assets as $asset) {
-                                        $data[$asset->id] = $asset->product?->title . " ( SKU #" . $asset->product?->sku . " )";
-                                    }
-                                    return $data;
+                                $employeeID = $get('employee_id');
+                                $data = [];
+                                $assets = Asset::query()->with('product')->whereHas('employees', function ($query) use ($employeeID) {
+                                    return $query->where('return_date', null)->where('return_approval_date', null)->whereHas('assetEmployee', function ($query) use ($employeeID) {
+                                        return $query->where('employee_id', $employeeID);
+                                    });
+                                })->where('company_id', getCompany()->id)->get();
+                                foreach ($assets as $asset) {
+                                    $data[$asset->id] = $asset->product?->title . " ( SKU #" . $asset->product?->sku . " )";
                                 }
-                            })->required()->searchable()->preload(),
+                                return $data;
+                            }
+                        })->required()->searchable()->preload(),
 
-                Forms\Components\DatePicker::make('request_date')
-                    ->required(),
-                // Forms\Components\Select::make('type')->options(['On-site Service','Purchase Order','TakeOut For Reaper'])
-                // Forms\Components\Select::make('status')
-                    // ->required(),
-                Forms\Components\FileUpload::make('images'),
-                Forms\Components\DatePicker::make('answer_date'),
-                Forms\Components\DatePicker::make('service_date'),
-                Forms\Components\Textarea::make('note')
-                    ->columnSpanFull(),
-                Forms\Components\Textarea::make('reply')
-                    ->columnSpanFull(),
-                
-                Forms\Components\TextInput::make('PO_number')
-                    ->maxLength(255),
-                Forms\Components\Hidden::make('company_id')
-                   ->default(getCompany()->id)
-                    ->required(),
+                    Forms\Components\DatePicker::make('request_date')
+                        ->required(),
+                        ToggleButtons::make('type')->options(['On-site Service' => 'On-site Service', 'Purchase Order' => 'Purchase Order', 'TakeOut For Reaper' => 'TakeOut For Reaper',])->inline(),
+                        ToggleButtons::make('status')->options(['Complete' => 'Complete', 'Canceled' => 'Canceled' ])->default('Complete')->inline(),
+                       
+                    Forms\Components\FileUpload::make('images'),
+                    Forms\Components\DatePicker::make('answer_date'),
+                    Forms\Components\DatePicker::make('service_date'),
+                    Forms\Components\Textarea::make('note')
+                        ->columnSpanFull(),
+                    Forms\Components\Textarea::make('reply')
+                        ->columnSpanFull(),
+
+                    Forms\Components\TextInput::make('PO_number')
+                        ->maxLength(255),
+                    Forms\Components\Hidden::make('company_id')
+                        ->default(getCompany()->id)
+                        ->required(),
 
                 ])->columns(3),
-                
+
             ]);
     }
 
@@ -84,28 +87,32 @@ class ServiceResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('employee.id')
+                Tables\Columns\TextColumn::make('employee.fullName')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('request_date')
                     ->date()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('type'),
+                Tables\Columns\TextColumn::make('asset.title')
+                    ->numeric()
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('status'),
                 Tables\Columns\TextColumn::make('answer_date')
                     ->date()
                     ->sortable(),
+                Tables\Columns\TextColumn::make('type')->label('Type Of Service'),
                 Tables\Columns\TextColumn::make('service_date')
                     ->date()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('asset.id')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('PO_number')
+                Tables\Columns\TextColumn::make('PO_number')->label('PONO')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('company.title')
-                    ->numeric()
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('reply')->limit(20)->tooltip(fn($record) => $record->reply)
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
@@ -119,7 +126,40 @@ class ServiceResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\Action::make('set type')->visible(fn($record) => $record->status == 'Pending')->form([
+                    Group::make()->schema([
+                    ToggleButtons::make('type')->options(['On-site Service' => 'On-site Service', 'Purchase Order' => 'Purchase Order', 'TakeOut For Reaper' => 'TakeOut For Reaper',])->inline()->required(),
+                    Forms\Components\DatePicker::make('answer_date')->default(now())->required(),
+                    ])->columns(2)
+
+                ])->action(function ($data, $record) {
+                    $record->update([
+                        'type' => $data['type'],
+                        'answer_date' => $data['answer_date'],
+                        'status' => 'In Progress',
+                    ]);
+                    $record->asset()->update(['status' => 'undeRrepair']);
+                }),
+                Tables\Actions\Action::make('finish')->visible(fn($record) => $record->status == 'In Progress')->form([
+                    Group::make()->schema([
+                        ToggleButtons::make('status')->options(['Complete' => 'Complete', 'Canceled' => 'Canceled' ])->default('Complete')->inline()->required(),
+                        Forms\Components\DatePicker::make('service_date')->default(now()),
+                        Forms\Components\TextInput::make('PO_number')->label('PONO')
+                        ->maxLength(255),
+                        Forms\Components\Textarea::make('reply')
+                        ->columnSpanFull(),
+                    ])->columns(3)
+                ])->action(function ($data, $record) {
+                    $record->update([
+                        'service_date' => $data['service_date'],
+                        'PO_number' => $data['PO_number'],
+                        'reply' => $data['reply'],
+                        'status' => $data['status'],
+                    ]);
+                    $record->asset()->update(['status' => 'undeRrepair']);
+                }),
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

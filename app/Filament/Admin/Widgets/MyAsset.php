@@ -63,7 +63,9 @@ class MyAsset extends BaseWidget
 //                     TextEntry::make('employee.structure.title')->label('Location'),
 //                     TextEntry::make('comment')->label('Location'),
 //                 ])
-                 Tables\Actions\Action::make('Service')->fillForm(function ($record){
+                 Tables\Actions\Action::make('Service')
+                 ->hidden(fn($record)=>($record->asset->status == 'undeRrepair'))
+                 ->fillForm(function ($record){
                         return [
                             'asset_id'=>$record->asset_id,
                             'request_date'=>now()
