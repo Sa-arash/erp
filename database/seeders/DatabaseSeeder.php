@@ -426,7 +426,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'id' => 18,
-                'name' => 'Equities',
+                'name' => 'Equity',
                 'type' => 'creditor',
                 'code' => '30',
                 'level' => 'main',
@@ -462,7 +462,7 @@ class DatabaseSeeder extends Seeder
             ],
             [
                 'id' => 21,
-                'name' => 'Incomes',
+                'name' => 'Income',
                 'type' => 'creditor',
                 'code' => '40',
                 'level' => 'main',
