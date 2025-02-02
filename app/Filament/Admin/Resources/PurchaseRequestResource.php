@@ -168,16 +168,16 @@ class PurchaseRequestResource extends Resource
                 // Tables\Columns\TextColumn::make('location')->state(fn($record) => $record->employee?->structure?->title)->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('status'),
                 Tables\Columns\TextColumn::make('bid.quotation.party.name')->label('Vendor'),
-                Tables\Columns\TextColumn::make('bid.total_cost')->label('Total Bid')->numeric(),
-                Tables\Columns\TextColumn::make('total')
-                    ->label('Total(' . getCompany()->currency . ")")
-                    ->state(function ($record) {
-                        $total = 0;
-                        foreach ($record->items as $item) {
-                            $total += $item->quantity * $item->estimated_unit_cost;
-                        }
-                        return $total;
-                    })->numeric(),
+                Tables\Columns\TextColumn::make('total')->label('Total Estimated')
+                ->label('Total(' . getCompany()->currency . ")")
+                ->state(function ($record) {
+                    $total = 0;
+                    foreach ($record->items as $item) {
+                        $total += $item->quantity * $item->estimated_unit_cost;
+                    }
+                    return $total;
+                })->numeric(),
+                Tables\Columns\TextColumn::make('bid.total_cost')->label('Total Price')->numeric(),
 
             ])
 
