@@ -184,10 +184,11 @@ class QuotationsRelationManager extends RelationManager
                             'date' => $data['date'],
                             'freights' => $item['freights'],
                             'taxes' => $item['taxes'],
-                            'company_id' => $id
+                            'company_id' => $id,
+                            'total'=>$item['total']
                         ]);
                     }
-                    Notification::make('add quotation')->success()->title('Quotation Added')->send()->sendToDatabase(auth()->user());
+                    Notification::make('add quotation')->success()->color('success')->title('Quotation Added')->send()->sendToDatabase(auth()->user());
 
                 }),
             ])
@@ -214,7 +215,7 @@ class QuotationsRelationManager extends RelationManager
                                TextEntry::make('item.quantity')->label('Quantity')->numeric(),
                                TextEntry::make('taxes')->label('Taxes')->numeric(),
                                TextEntry::make('freights')->label('Freights')->numeric(),
-                               TextEntry::make('total')->state(fn($record)=>$record->unit_rate*$record->item->quantity)->numeric(),
+                               TextEntry::make('total')->numeric(),
                            ])->columns(6)->columnSpanFull()
                        ])->columns()
                    ];

@@ -334,7 +334,9 @@ class PurchaseRequestResource extends Resource
                                 'date' => $data['date'],
                                 'freights' => $item['freights'],
                                 'taxes' => $item['taxes'],
-                                'company_id' => $id
+                                'company_id' => $id,
+                                'total'=>$item['total']
+
                             ]);
                         }
                         Notification::make('add quotation')->success()->title('Quotation Added')->send()->sendToDatabase(auth()->user());
@@ -370,8 +372,9 @@ class PurchaseRequestResource extends Resource
                                     $vendor = $quotation->party->name . "'s Quotation";
                                     $vendors .= "<th style='border: 1px solid black;padding: 8px;text-align: center;background-color: #f2f2f2'>{$vendor}</th>";
                                     $totalSum = 0;
+
                                     foreach ($quotation->quotationItems as $quotationItem) {
-                                        $totalSum += $quotationItem->item->quantity * $quotationItem->unit_rate;
+                                        $totalSum += $quotationItem->total;
                                     }
                                     $totalSum = number_format($totalSum);
                                     $totalTrs .= "<td style='border: 1px solid black;padding: 8px;text-align: center'> Total {$totalSum}</td>";

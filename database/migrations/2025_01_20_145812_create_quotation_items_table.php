@@ -18,6 +18,7 @@ return new class extends Migration
             $table->float('unit_rate')->nullable();
             $table->decimal('taxes', 10, 2)->nullable();
             $table->decimal('freights', 10, 2)->nullable();
+            $table->decimal('total', 20, 2)->nullable();
             $table->timestamp('date')->default(now());
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();
