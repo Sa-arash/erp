@@ -173,31 +173,31 @@ class MyAsset extends BaseWidget
                         ])->columns(3)
                     ];
                 })->action(function ($data) {
-                    $id=getCompany()->id;
+                    $id = getCompany()->id;
                     $data['company_id'] = $id;
-                    $employee=getEmployee();
+                    $employee = getEmployee();
 
                     $data['employee_id'] = $employee->id;
                     $items = $data['items'];
                     unset($data['items']);
                     $takeOut = \App\Models\TakeOut::query()->create($data);
-                    foreach ($items as $item){
-                        $item['company_id']=$id;
+                    foreach ($items as $item) {
+                        $item['company_id'] = $id;
                         $takeOut->items()->create($item);
                     }
-                    if ($employee->department->employee_id){
-                        if ($employee->department->employee_id ===$employee->id){
+                    if ($employee->department->employee_id) {
+                        if ($employee->department->employee_id === $employee->id) {
                             $takeOut->approvals()->create([
-                                'employee_id'=>$employee->department->employee_id,
-                                'company_id'=>$id,
-                                'position'=>'Head Department',
-                                'status'=>"Approve"
+                                'employee_id' => $employee->department->employee_id,
+                                'company_id' => $id,
+                                'position' => 'Head Department',
+                                'status' => "Approve"
                             ]);
-                        }else{
+                        } else {
                             $takeOut->approvals()->create([
-                                'employee_id'=>$employee->department->employee_id,
-                                'company_id'=>$id,
-                                'position'=>'Head Department'
+                                'employee_id' => $employee->department->employee_id,
+                                'company_id' => $id,
+                                'position' => 'Head Department'
                             ]);
                         }
                     }
