@@ -86,7 +86,7 @@
 
 
                     <li style="font-weight: bold">
-                        ProfitOrLoss: {{ number_format($incomes - $Expenses) }}
+                        Profit or Loss: {{ number_format($incomes - $Expenses) }}
                     </li>
                 </ul>
             </td>

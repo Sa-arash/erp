@@ -351,8 +351,8 @@ class PurchaseRequestResource extends Resource
                                     }
                                     return $data;
                                 })->required()->label('Quotation Selected')->preload()->searchable(),
-                                Select::make('position_procurement_controller')->multiple()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->preload()->searchable(),
-                                Select::make('procurement_committee_members')->multiple()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->preload()->searchable(),
+                                Select::make('position_procurement_controller')->label(' Procurement Controller')->multiple()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->preload()->searchable(),
+                                Select::make('procurement_committee_members')->label(' Committee Members')->multiple()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->preload()->searchable(),
 
                             ])->columns(4),
                             Placeholder::make('content')->content(function () use ($record) {
