@@ -255,6 +255,12 @@ class CreatePurchaseOrder extends CreateRecord
                     // ]);
                 }
 
+                if($this->record->purchase_request_id)
+                {
+                    $this->record->purchaseRequest()->update([
+                        'status'=>"Finished"
+                    ]);
+                }
 
                 // $this->record->update([
                 //     'invoice_id'=>$this->record->invoice->id,

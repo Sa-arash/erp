@@ -197,6 +197,7 @@ class PurchaseRequestResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('Order')
+                ->visible(fn($record)=>$record->status == 'FinishedCeo')
                     ->icon('heroicon-s-shopping-cart')
                     ->url(fn($record)=>PurchaseOrderResource::getUrl('create')."?prno=".$record->id),
                 Tables\Actions\ActionGroup::make([

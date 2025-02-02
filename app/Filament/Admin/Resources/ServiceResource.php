@@ -127,7 +127,7 @@ class ServiceResource extends Resource
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\Action::make('set type')->visible(fn($record) => $record->status == 'Pending')->form([
+                Tables\Actions\Action::make('Action')->visible(fn($record) => $record->status == 'Pending')->form([
                     Group::make()->schema([
                     ToggleButtons::make('type')->options(['On-site Service' => 'On-site Service', 'Purchase Order' => 'Purchase Order', 'TakeOut For Reaper' => 'TakeOut For Reaper',])->inline()->required(),
                     Forms\Components\DatePicker::make('answer_date')->default(now())->required(),
@@ -141,7 +141,7 @@ class ServiceResource extends Resource
                     ]);
                     $record->asset()->update(['status' => 'undeRrepair']);
                 }),
-                Tables\Actions\Action::make('finish')->visible(fn($record) => $record->status == 'In Progress')->form([
+                Tables\Actions\Action::make('Finish')->visible(fn($record) => $record->status == 'In Progress')->form([
                     Group::make()->schema([
                         ToggleButtons::make('status')->options(['Complete' => 'Complete', 'Canceled' => 'Canceled' ])->default('Complete')->inline()->required(),
                         Forms\Components\DatePicker::make('service_date')->default(now()),
