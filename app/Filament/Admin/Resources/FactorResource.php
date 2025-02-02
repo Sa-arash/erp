@@ -22,8 +22,8 @@ class FactorResource extends Resource
     protected static ?string $model = Factor::class;
     protected static ?string $label = 'Invoice';
     protected static ?string $pluralLabel = 'Invoices';
-
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationGroup = 'Finance Management';
+    protected static ?string $navigationIcon = 'heroicon-s-document-currency-dollar';
 
     public static function form(Form $form): Form
     {
