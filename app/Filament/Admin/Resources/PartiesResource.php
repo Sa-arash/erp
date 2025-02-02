@@ -97,7 +97,7 @@ class PartiesResource extends Resource
                         return "001";
                     }
 
-                })->visible(function (Forms\Get $get) {
+                })->unique('accounts','code',ignoreRecord: true)->visible(function (Forms\Get $get) {
 
                     if ($get('type') == "both") {
                         if ($get("account_vendor") === null) {
@@ -112,7 +112,7 @@ class PartiesResource extends Resource
                     }
 
                 })->required()->tel()->maxLength(255),
-                Forms\Components\TextInput::make('account_code_customer')
+                Forms\Components\TextInput::make('account_code_customer')->unique('accounts','code',ignoreRecord: true)
                 ->prefix(fn(Get $get)=>Account::find($get('parent_customer'))?->code)
                 ->default(function () {
                     if (Parties::query()->where('company_id', getCompany()->id)->where('type', 'customer')->latest()->first()) {
@@ -122,11 +122,11 @@ class PartiesResource extends Resource
                     }
 
                 })->visible(function (Forms\Get $get) {
-                    if ($get('type') == "both") {
+                    if ($get('type') === "both") {
                         if ($get("account_customer") === null) {
                             return true;
                         }
-                    } elseif ($get('type') == "customer") {
+                    } elseif ($get('type') === "customer") {
                         if ($get("account_customer") === null) {
                             return true;
                         }
@@ -138,7 +138,7 @@ class PartiesResource extends Resource
                 Forms\Components\Fieldset::make('Account Vendor')->visible(fn($state)=>isset($state['id']))->relationship('accountVendor')->schema([
                     Forms\Components\TextInput::make('name')->required()->maxLength(255),
                     SelectTree::make('parent_id')->live()->label('Parent')->disabledOptions(function ($state, SelectTree $component) {
-                        return Account::query()->where('level', 'detail')->pluck('id')->orWhereHas('transactions',function ($query){})->toArray();
+                        return Account::query()->where('level', 'detail')->orWhereHas('transactions',function ($query){})->pluck('id')->toArray();
                     })->defaultOpenLevel(1)->searchable()->enableBranchNode()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('stamp', "Liabilities")->where('company_id', getCompany()->id))
                         ->afterStateUpdated(function ($state, callable $set) {
                             $set('type', Account::query()->firstWhere('id', $state)->type);
@@ -150,8 +150,7 @@ class PartiesResource extends Resource
                         }
 
                         return $state;
-                    })->prefix(fn(Get $get) => Account::query()->firstWhere('id', $get('parent_id'))?->code)->required()->maxLength(255),
-                    Forms\Components\Select::make('level')->disabled()->required()->options(['general' => 'General Ledger Account', 'subsidiary' => 'Subsidiary Ledger Account', 'detail' => 'Detail Account'])->searchable()->preload(),
+                    })->unique('accounts','code',ignoreRecord: true)->prefix(fn(Get $get) => Account::query()->firstWhere('id', $get('parent_id'))?->code)->required()->maxLength(255),
 
                     Forms\Components\ToggleButtons::make('type')->grouped()->inline()->options(['creditor' => 'Creditor', 'debtor' => 'Debtor'])->required(),
                     Forms\Components\Textarea::make('description')->maxLength(255)->columnSpanFull(),
@@ -170,9 +169,8 @@ class PartiesResource extends Resource
                             $state= str_replace($account?->code,'',$state);
                         }
                         return $state;
-                    })->required()->maxLength(255)
+                    })->unique('accounts','code',ignoreRecord: true)->required()->maxLength(255)
                         ->prefix(fn(Get $get) => Account::query()->firstWhere('id', $get('parent_id'))?->code),
-                    Forms\Components\Select::make('level')->disabled()->required()->options(['general' => 'General Ledger Account', 'subsidiary' => 'Subsidiary Ledger Account', 'detail' => 'Detail Account'])->searchable()->preload(),
 
                     Forms\Components\ToggleButtons::make('type')->grouped()->inline()->options(['creditor' => 'Creditor', 'debtor' => 'Debtor'])->required(),
                     Forms\Components\Textarea::make('description')->maxLength(255)->columnSpanFull(),
@@ -205,13 +203,13 @@ class PartiesResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('balance')->badge()
                     ->state(function ($record) {
-                        if($record->type == 'customer'){
+                        if($record->type === 'customer'){
                            return ''.number_format($record->accountCustomer->transactions->sum('debtor')-$record->accountCustomer->transactions->sum('creditor'));
 
-                        } elseif ($record->type == 'vendor') {
+                        } elseif ($record->type === 'vendor') {
                             return $record->accountVendor->transactions->sum('creditor') - $record->accountVendor->transactions->sum('debtor');
 
-                        } elseif ($record->type == 'both') {
+                        } elseif ($record->type === 'both') {
                             return ($record->accountVendor->transactions->sum('creditor') - $record->accountVendor->transactions->sum('debtor'))
                                 -
                                 ($record->accountCustomer->transactions->sum('debtor') - $record->accountCustomer->transactions->sum('creditor'));

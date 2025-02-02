@@ -19,5 +19,9 @@ class Factor extends Model
     {
         return $this->belongsTo(Parties::class);
     }
+    public function items(): \Illuminate\Database\Eloquent\Relations\hasMany
+    {
+        return $this->hasMany(FactorItem::class);
+    }
 
 }

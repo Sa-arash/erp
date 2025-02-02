@@ -65,6 +65,7 @@ class CreateParties extends CreateRecord
                     'parent_id' => $parentAccount->id,
                     'built_in' => false,
                     'company_id' => getCompany()->id,
+                    'Group'=>'Liabilitie'
                 ]);
                 $data['account_vendor']=$account->id;
 
@@ -77,6 +78,7 @@ class CreateParties extends CreateRecord
                     'parent_id' => $parentAccount->id,
                     'built_in' => false,
                     'company_id' => getCompany()->id,
+                    'Group'=>'Asset'
                 ]);
                 $data['account_customer']=$account->id;
 
