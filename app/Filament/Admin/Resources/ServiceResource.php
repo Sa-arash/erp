@@ -94,7 +94,7 @@ class ServiceResource extends Resource
                 Tables\Columns\TextColumn::make('request_date')
                     ->date()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('asset.title')
+                Tables\Columns\TextColumn::make('asset.titlen')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('status'),
