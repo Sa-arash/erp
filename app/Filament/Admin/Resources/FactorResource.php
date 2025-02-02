@@ -71,18 +71,15 @@ class FactorResource extends Resource
                            })->default(0)->required()->label('Discount'),
                            Forms\Components\TextInput::make('total')->live()->readOnly()->default(0)->required()->label('Total'),
                        ])->columnSpanFull()->columns(6),
-                   ])->columns(2)->afterStateUpdated(function (Forms\Get $get,Forms\Set $set){
-                       $total=0;
-                       foreach ($get->getData()['items'] as $item){
-                           $total+=str_replace(',','',$item['total']);
-                       }
-
-                       $set('total',number_format($total));
-                   }),
+                   ])->columns(2),
                    Forms\Components\Wizard\Step::make('journal')->label('Journal Entry')->schema([
-                       Forms\Components\TextInput::make('total')->afterStateUpdated(function (Forms\Get $get){
-                           dd($get->getData('items'));
-                       })->required()->numeric()->columnSpanFull(),
+                       Forms\Components\Placeholder::make('total')->content(function (Forms\Get $get){
+                           $total=0;
+                           foreach ($get->getData()['items'] as $item){
+                               $total+=str_replace(',','',$item['total']);
+                           }
+                          return number_format($total);
+                       }),
 
                    ])
                ])->columnSpanFull(),
