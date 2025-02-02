@@ -22,7 +22,11 @@ class Parties extends Model
 
     public function getInfoAttribute()
     {
-        return $this->name . "(" . $this->accountVendor?->code . ")";
+        if ($this->type==="vendor"){
+            return $this->name . "(" . $this->accountVendor?->code  . ")";
+        }
+
+        return $this->name . "(" .$this->accountCustomer?->code . ")";
     }
 
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo

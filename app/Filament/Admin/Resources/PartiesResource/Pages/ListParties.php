@@ -37,8 +37,8 @@ class ListParties extends ListRecords
     {
 
         return [
-            "Vendor"=> Tab::make()->query(fn(\Illuminate\Database\Eloquent\Builder $query)=>$query->where('type','vendor')),
-            "Customer"=> Tab::make()->query(fn(\Illuminate\Database\Eloquent\Builder $query)=>$query->where('type','customer')),
+            "Vendor"=> Tab::make()->query(fn(\Illuminate\Database\Eloquent\Builder $query)=>$query->whereIn('type',['vendor','both'])),
+            "Customer"=> Tab::make()->query(fn(\Illuminate\Database\Eloquent\Builder $query)=>$query->whereIn('type',['customer','both'])),
         ];
     }
 }
