@@ -114,23 +114,16 @@ class ServiceResource extends Resource
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+
             ])
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\Action::make('Action')->visible(fn($record) => $record->status == 'Pending')->form([
+                Tables\Actions\Action::make('Action')->visible(fn($record) => $record->status === 'Pending')->form([
                     Group::make()->schema([
-                    ToggleButtons::make('type')->options(['On-site Service' => 'On-site Service', 'Purchase Order' => 'Purchase Order', 'TakeOut For Reaper' => 'TakeOut For Reaper',])->inline()->required(),
+                    ToggleButtons::make('type')->options(['On-site Service' => 'On-site Service', 'Purchase Order' => 'Purchase Order', 'TakeOut For Repair' => 'TakeOut For Repair',])->inline()->required(),
                     Forms\Components\DatePicker::make('answer_date')->default(now())->required(),
                     ])->columns(2)
 
@@ -142,7 +135,7 @@ class ServiceResource extends Resource
                     ]);
                     $record->asset()->update(['status' => 'underRepair']);
                 }),
-                Tables\Actions\Action::make('Finish')->visible(fn($record) => $record->status == 'In Progress')->form([
+                Tables\Actions\Action::make('Finish')->visible(fn($record) => $record->status === 'In Progress')->form([
                     Group::make()->schema([
                         ToggleButtons::make('status')->options(['Complete' => 'Complete', 'Canceled' => 'Canceled' ])->default('Complete')->inline()->required(),
                         Forms\Components\DatePicker::make('service_date')->default(now()),

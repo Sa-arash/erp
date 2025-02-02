@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('employee_id')->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
             $table->date('request_date');
-            $table->enum('type',['On-site Service','Purchase Order','TakeOut For Reaper'])->nullable();
+            $table->enum('type',['On-site Service','Purchase Order','TakeOut For Repair'])->nullable();
             $table->enum('status',['Pending','Complete','In Progress','Canceled'])->default('Pending');
             $table->text('images')->nullable();
             $table->date('answer_date')->nullable();
