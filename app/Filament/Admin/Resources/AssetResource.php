@@ -133,7 +133,7 @@ class AssetResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('product.sku')->label('SKU')->searchable(),
-                Tables\Columns\TextColumn::make('title')->label('Asset Name')->searchable(),
+                Tables\Columns\TextColumn::make('titlen')->label('Asset Name')->searchable(),
                 Tables\Columns\TextColumn::make('price')->label('Purchase Price')->sortable()->numeric(),
 
                 Tables\Columns\TextColumn::make('warehouse.title')->label('Warehouse/Building')->sortable(),
