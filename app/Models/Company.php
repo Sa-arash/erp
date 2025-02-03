@@ -44,6 +44,13 @@ class Company extends Model implements HasAvatar, HasName
     }
 
 
+
+    public function getAccountTitleAttribute()
+    {
+            return  $this?->title."-".$this?->address;
+    }
+
+
     public function departments(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Department::class);
