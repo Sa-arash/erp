@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 
 class ItemsRelationManager extends RelationManager
 {
+    protected static ?string $label = 'Item';
     protected static string $relationship = 'items';
 
     public function form(Form $form): Form

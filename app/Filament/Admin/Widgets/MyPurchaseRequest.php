@@ -134,6 +134,7 @@ class MyPurchaseRequest extends BaseWidget
                         DatePicker::make('request_date')->default(now())->label('Request Date')->required(),
                         Textarea::make('description')->columnSpanFull()->label('Description'),
                         Repeater::make('Requested Items')
+                        ->addActionLabel('Add Item')
                             ->schema([
                                 Select::make('product_id')->searchable()->preload()->label('Product')->options(function (){
                                     $data=[];
@@ -146,7 +147,7 @@ class MyPurchaseRequest extends BaseWidget
                                 TextInput::make('quantity')->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                                 TextInput::make('estimated_unit_cost')->label('Estimated Unit Cost')->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required(),
                                 Select::make('project_id')->searchable()->preload()->label('Project')->options(getCompany()->projects->pluck('name', 'id')),
-                                Textarea::make('description')->columnSpan(5)->label('Product Name And Description ')->required(),
+                                Textarea::make('description')->columnSpan(5)->label('Product Name and Description ')->required(),
 
                             ])
                             ->columns(5)

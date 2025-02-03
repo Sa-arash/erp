@@ -96,6 +96,7 @@ class PurchaseRequestResource extends Resource
                         ->required(),
 
                     Repeater::make('Requested Items')
+                    ->addActionLabel('Add')
                         ->relationship('items')
                         ->schema([
                             Forms\Components\Select::make('product_id')
@@ -169,14 +170,14 @@ class PurchaseRequestResource extends Resource
                 Tables\Columns\TextColumn::make('status'),
                 Tables\Columns\TextColumn::make('bid.quotation.party.name')->label('Vendor'),
                 Tables\Columns\TextColumn::make('total')->label('Total Estimated')
-                ->label('Total(' . getCompany()->currency . ")")
-                ->state(function ($record) {
-                    $total = 0;
-                    foreach ($record->items as $item) {
-                        $total += $item->quantity * $item->estimated_unit_cost;
-                    }
-                    return $total;
-                })->numeric(),
+                    ->label('Total(' . getCompany()->currency . ")")
+                    ->state(function ($record) {
+                        $total = 0;
+                        foreach ($record->items as $item) {
+                            $total += $item->quantity * $item->estimated_unit_cost;
+                        }
+                        return $total;
+                    })->numeric(),
                 Tables\Columns\TextColumn::make('bid.total_cost')->label('Total Price')->numeric(),
 
             ])
@@ -197,9 +198,9 @@ class PurchaseRequestResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('Order')
-                ->visible(fn($record)=>$record->status == 'FinishedCeo')
+                    ->visible(fn($record) => $record->status->value == 'FinishedCeo')
                     ->icon('heroicon-s-shopping-cart')
-                    ->url(fn($record)=>PurchaseOrderResource::getUrl('create')."?prno=".$record->id),
+                    ->url(fn($record) => PurchaseOrderResource::getUrl('create') . "?prno=" . $record->id),
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\Action::make('prQuotation')->visible(fn($record) => $record->is_quotation)->color('warning')->label('Quotation ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.quotation', ['id' => $record->id])),
                     Tables\Actions\Action::make('insertQuotation')->modalWidth(MaxWidth::Full)->icon('heroicon-s-newspaper')->color('info')->label('InsertQuotation')->visible(fn($record) => $record->is_quotation)->form(function ($record) {
@@ -228,7 +229,7 @@ class PurchaseRequestResource extends Resource
                                         Forms\Components\TextInput::make('email')->email()->maxLength(255),
                                         Forms\Components\Textarea::make('address')->columnSpanFull(),
                                         SelectTree::make('parent_vendor')->disabledOptions(function () {
-                                            return Account::query()->where('level', 'detail')->where('company_id', getCompany()->id)->orWhereHas('transactions',function ($query){})->pluck('id')->toArray();
+                                            return Account::query()->where('level', 'detail')->where('company_id', getCompany()->id)->orWhereHas('transactions', function ($query) {})->pluck('id')->toArray();
                                         })->default(getCompany()?->vendor_account)->enableBranchNode()->model(Transaction::class)->defaultOpenLevel(3)->live()->label('Parent Vendor Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('stamp', "Liabilities")->where('company_id', getCompany()->id)),
                                         Forms\Components\TextInput::make('account_code_vendor')->prefix(fn(Get $get) => Account::find($get('parent_vendor'))?->code)->default(function () {
                                             if (Parties::query()->where('company_id', getCompany()->id)->where('type', 'vendor')->latest()->first()) {
@@ -247,6 +248,7 @@ class PurchaseRequestResource extends Resource
                                 Forms\Components\Textarea::make('description')->columnSpanFull()->nullable()
                             ])->columns(5),
                             Repeater::make('Requested Items')->required()
+                            ->addActionLabel('Add')
                                 ->schema([
                                     Forms\Components\Select::make('purchase_request_item_id')->disableOptionsWhenSelectedInSiblingRepeaterItems()
                                         ->label('Product')->options(function () use ($record) {
@@ -335,7 +337,7 @@ class PurchaseRequestResource extends Resource
                                 'freights' => $item['freights'],
                                 'taxes' => $item['taxes'],
                                 'company_id' => $id,
-                                'total'=>$item['total']
+                                'total' => $item['total']
 
                             ]);
                         }
@@ -370,7 +372,7 @@ class PurchaseRequestResource extends Resource
                                 $ths = '';
                                 foreach ($record->quotations as $quotation) {
                                     $vendor = $quotation->party->name . "'s Quotation";
-                                    $vendors .= "<th style='border: 1px solid black;padding: 8px;text-align: center;background-color: #f2f2f2'>{$vendor}</th>";
+                                    $vendors .= "<th style='border: 1px solid black;padding: 8px;text-align: center;background-color:rgb(90, 86, 86)'>123123{$vendor}</th>";
                                     $totalSum = 0;
 
                                     foreach ($quotation->quotationItems as $quotationItem) {
@@ -405,12 +407,12 @@ class PurchaseRequestResource extends Resource
 <table style='border-collapse: collapse;width: 100%'>
     <thead>
         <tr>
-            <th style='border: 1px solid black;padding: 8px;text-align: center;background-color: #f2f2f2'>Item</th>
-            <th style='border: 1px solid black;padding: 8px;text-align: center;background-color: #f2f2f2'>Item Description</th>
-            <th style='border: 1px solid black;padding: 8px;text-align: center;background-color: #f2f2f2'>Unit</th>
-            <th style='border: 1px solid black;padding: 8px;text-align: center;background-color: #f2f2f2'>Qty</th>
+            <th style='border: 1px solid black;padding: 8px;text-align: center;background-color:rgb(90, 86, 86)'>Item</th>
+            <th style='border: 1px solid black;padding: 8px;text-align: center;background-color:rgb(90, 86, 86)'>Item Description</th>
+            <th style='border: 1px solid black;padding: 8px;text-align: center;background-color:rgb(90, 86, 86)'>Unit</th>
+            <th style='border: 1px solid black;padding: 8px;text-align: center;background-color:rgb(90, 86, 86)'>Qty</th>
             $vendors
-            <th style='border: 1px solid black;padding: 8px;text-align: center;background-color: #f2f2f2'>Remarks</th>
+            <th style='border: 1px solid black;padding: 8px;text-align: center;background-color:rgb(90, 86, 86)'>Remarks</th>
         </tr>
 
     </thead>

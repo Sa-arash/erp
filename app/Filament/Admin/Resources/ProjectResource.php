@@ -35,7 +35,7 @@ class ProjectResource extends Resource
                ])->columns(5),
                 Forms\Components\Section::make([
                     Forms\Components\Select::make('employee_id')->label('Project Manager')->options(getCompany()->employees()->pluck('fullName','id'))->searchable()->required(),
-                    Forms\Components\Select::make('members')->label('Team Members')->options(getCompany()->employees()->pluck('fullName','id'))->searchable()->preload(),
+                    Forms\Components\Select::make('members')->label('Team Members')->multiple()->options(getCompany()->employees()->pluck('fullName','id'))->searchable()->preload(),
                     Forms\Components\Select::make('priority_level')->label('Priority Level')->searchable()->options(['High'=>'High','Medium'=>'Medium','Low'=>'Low']),
                     Forms\Components\TextInput::make('budget')->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->numeric(),
                 ])->columns(4),

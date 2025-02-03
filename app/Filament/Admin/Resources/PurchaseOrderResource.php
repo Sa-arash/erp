@@ -46,7 +46,7 @@ class PurchaseOrderResource extends Resource
     }
     protected static ?string $model = PurchaseOrder::class;
     protected static ?string $navigationGroup = 'Finance Management';
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort =0;
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
 
@@ -251,12 +251,12 @@ class PurchaseOrderResource extends Resource
                                             ->stripCharacters(',')->label('Final Price'),
                                         Forms\Components\TextInput::make('taxes')->afterStateUpdated(function ($state, Set $set, Get $get) {
 
-                                            $freights = $get('freights') === null ? 0 : (float)$get('freights');
+                                            $freights = intval($get('freights') == null ? 0 : (float)$get('freights'));
 
-                                            $q = $get('quantity');
+                                            $q = intval($get('quantity'));
 
-                                            $tax = $state === null ? 0 : (float)$state;
-                                            $price = $get('unit_price') !== null ? str_replace(',', '', $get('unit_price')) : 0;
+                                            $tax = intval($state === null ? 0 : (float)$state);
+                                            $price = intval($get('unit_price') != null ? str_replace(',', '', $get('unit_price')) : 0);
 
 
 
@@ -279,9 +279,10 @@ class PurchaseOrderResource extends Resource
                                             ->stripCharacters(','),
                                         Forms\Components\TextInput::make('freights')->afterStateUpdated(function ($state, Set $set, Get $get) {
                                             $freights = $state === null ? 0 : (float) $state;
-                                            $q = $get('quantity');
-                                            $tax = $get('taxes') === null ? 0 : (float)$get('taxes');
-                                            $price = $get('unit_price') !== null ? str_replace(',', '', $get('unit_price')) : 0;
+                                            $q = intval($get('quantity'));
+                                            $tax = intval($get('taxes') === null ? 0 : (float)$get('taxes'));
+                                            $price = intval($get('unit_price') !== null ? str_replace(',', '', $get('unit_price')) : 0);
+                                           
                                             $set('total', number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100)));
                                         })->live(true)
                                             ->required()

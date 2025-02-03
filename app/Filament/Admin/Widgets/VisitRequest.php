@@ -9,6 +9,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
 use Filament\Support\Enums\MaxWidth;
@@ -109,10 +110,10 @@ class VisitRequest extends BaseWidget
                                             'International' => 'International',
                                             'De-facto Security Forces' => 'De-facto Security Forces',
                                         ]),
-                                    TextInput::make('remarks')
+                                    Textarea::make('remarks')->columnSpanFull()
                                         ->label('Remarks'),
 
-                                ])->columns(6)->columnSpanFull(),
+                                ])->columns(5)->columnSpanFull(),
 
 
 

@@ -36,7 +36,7 @@ class PdfController extends Controller
         // dd($transactions);
 
         $pdf = Pdf::loadView('pdf.jornal', compact('transactions', 'company'));
-        return $pdf->stream('pdf.jornal');
+        return $pdf->stream('jornal.pdf');
     }
 
 
@@ -80,7 +80,7 @@ class PdfController extends Controller
             'pdf.account',
             compact('accountTitle', 'accounts', 'period', 'transactions', 'startDate', 'endDate', 'company')
         );
-        return $pdf->stream('pdf.account');
+        return $pdf->stream('account.pdf');
     }
 
     public function balance($period, Request $request)
@@ -256,7 +256,7 @@ class PdfController extends Controller
             'pdf.balance',
             compact('accounts', 'company', 'endDate')
         );
-        return $pdf->stream('pdf.balance');
+        return $pdf->stream('balance.pdf');
     }
 
     public function document($document)
@@ -267,7 +267,7 @@ class PdfController extends Controller
             'pdf.document',
             compact('document', 'company')
         );
-        return $pdf->stream('pdf.document');
+        return $pdf->stream('document.pdf');
     }
 
     public function trialBalance($period, Request $request)
@@ -323,7 +323,7 @@ class PdfController extends Controller
             'pdf.trialBalance',
             compact('accounts', 'company', 'endDate')
         );
-        return $pdf->stream('pdf.trialBalance');
+        return $pdf->stream('trialBalance.pdf');
     }
 
     public function employee($id)
@@ -333,7 +333,7 @@ class PdfController extends Controller
             'pdf.employee',
             compact('employee')
         );
-        return $pdf->stream('pdf.employee');
+        return $pdf->stream('employee.pdf');
     }
     public function payrolls($ids)
     {
@@ -344,7 +344,7 @@ class PdfController extends Controller
             'pdf.payrolls',
             compact('payrolls', 'company')
         );
-        return $pdf->stream('pdf.payrolls');
+        return $pdf->stream('payrolls.pdf');
     }
 
     public function purchase($id)
@@ -356,7 +356,7 @@ class PdfController extends Controller
             'pdf.purchase',
             compact('company','pr')
         );
-        return $pdf->stream('pdf.purchase');
+        return $pdf->stream('purchase.pdf');
     }
     public function quotation($id)
     {
@@ -368,7 +368,7 @@ class PdfController extends Controller
             'pdf.quotation',
             compact('company','pr')
         );
-        return $pdf->stream('pdf.quotation');
+        return $pdf->stream('quotation.pdf');
     }
     public function bid($id)
     {
@@ -381,7 +381,7 @@ class PdfController extends Controller
             'pdf.bid',
             compact('company','bid','PR')
         );
-        return $pdf->stream('pdf.bid');
+        return $pdf->stream('bid.pdf');
     }
     public function separation($id)
     {
@@ -393,7 +393,7 @@ class PdfController extends Controller
             'pdf.separation',
             compact('company','employee')
         );
-        return $pdf->stream('pdf.separation');
+        return $pdf->stream('separation.pdf');
     }
     public function takeOut($id)
     {
@@ -405,7 +405,7 @@ class PdfController extends Controller
             'pdf.takeOut',
             compact('company','takeOut')
         );
-        return $pdf->stream('pdf.takeOut');
+        return $pdf->stream('takeOut.pdf');
     }
      public function requestVisit($id)
     {
@@ -417,6 +417,6 @@ class PdfController extends Controller
             'pdf.requestVisit',
             compact('company','requestVisit')
         );
-        return $pdf->stream('pdf.requestVisit');
+        return $pdf->stream('requestVisit.pdf');
     }
 }

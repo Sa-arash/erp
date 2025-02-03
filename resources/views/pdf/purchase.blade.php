@@ -87,7 +87,7 @@
             $totalBudget+=$item->quantity *$item->estimated_unit_cost;
         @endphp
         <tr>
-            <td>{{$item->product."-".$item->product?->sku}}</td>
+            <td>{{$item->product->title."-".$item->product?->sku}}</td>
             <td>{{$item->description}}</td>
             <td>{{$item->unit->title}}</td>
             <td>{{$item->quantity}}</td>
