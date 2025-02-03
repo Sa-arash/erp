@@ -10,6 +10,8 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Support\Exceptions\Halt;
 use Filament\Support\Facades\FilamentView;
+use Throwable;
+
 use function Filament\Support\is_app_url;
 
 class CreateInvoice extends CreateRecord
@@ -27,6 +29,7 @@ class CreateInvoice extends CreateRecord
 
         $this->previousUrl = url()->previous();
     }
+    
     public function create(bool $another = false): void
     {
         $this->authorizeAccess();

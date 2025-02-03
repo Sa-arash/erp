@@ -28,7 +28,7 @@ class ListPurchaseOrders extends ListRecords
 
             return [
                 Actions\CreateAction::make()
-                    ->url(getPeriod()!==null ? PurchaseOrderResource::getUrl('create') : FinancialPeriodResource::getUrl('index'))->label('New Purchase Order '),
+                    ->label('New Purchase Order '),
             ];
         }else{
             return [

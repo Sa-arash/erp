@@ -11,6 +11,7 @@ use App\Models\Unit;
 use Closure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
+use Filament\Forms\Components\Component;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Form;
@@ -38,13 +39,13 @@ class FactorResource extends Resource
                 Forms\Components\Wizard::make([
                     Forms\Components\Wizard\Step::make('Invoice')->schema([
                         Forms\Components\Section::make([
-                            Forms\Components\TextInput::make('title')->required()->maxLength(255),
-                            Forms\Components\ToggleButtons::make('type')->live()->afterStateUpdated(function (Forms\Set $set) {
-                                $set('party_id', null);
-                                $set('account_id', null);
-                                $set('to', null);
-                                $set('from', null);
-                                
+                            Forms\Components\TextInput::make('title')->default('خرید از دیجیکالا')->required()->maxLength(255),
+                            Forms\Components\ToggleButtons::make('type')->live()->afterStateUpdated(function (Forms\Set $set, Component $component) {
+                                // $set('party_id', null);
+                                // $set('account_id', null);
+                                // $set('to', null);
+                                // $set('from', null);
+                                $set('invoice.transactions', []);
                                 // dd($set);
                                 // debtor
                                 // creditor
@@ -79,7 +80,7 @@ class FactorResource extends Resource
                         Forms\Components\TextInput::make('from')->required()->maxLength(255),
                         Forms\Components\TextInput::make('to')->required()->maxLength(255),
                         Forms\Components\Repeater::make('items')->required()->relationship('items')->schema([
-                            Forms\Components\TextInput::make('title')->required()->label('Invoice Item')->columnSpan(2),
+                            Forms\Components\TextInput::make('title')->default('test')->required()->label('Invoice Item')->columnSpan(2),
                             Forms\Components\TextInput::make('quantity')->default(1)->live(true)->required()->label('Quantity')->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
                                 $count = $get('quantity') === null ? 0 : (int)$get('quantity');
                                 $unitPrice = $get('unit_price') === null ?  0 : (int)str_replace(',', '', $get('unit_price'));
@@ -87,7 +88,7 @@ class FactorResource extends Resource
                                 $set('total', number_format(($count * $unitPrice) - (($count * $unitPrice) * $discount) / 100));
                             }),
                             Forms\Components\Select::make('unit_id')->label('Unit')->required()->options(Unit::query()->where('company_id', getCompany()->id)->pluck('title', 'id'))->searchable()->preload(),
-                            Forms\Components\TextInput::make('unit_price')->mask(RawJs::make('$money($input)'))->stripCharacters(',')->live(true)->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
+                            Forms\Components\TextInput::make('unit_price')->default(100000)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->live(true)->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
                                 $count = $get('quantity') === null ? 0 : (int)$get('quantity');
                                 $unitPrice = $get('unit_price') === null ?  0 : (int)str_replace(',', '', $get('unit_price'));
                                 $discount = $get('discount') === null ?  0 : (int)$get('discount');
@@ -148,8 +149,42 @@ class FactorResource extends Resource
                                     Forms\Components\TextInput::make('description')->required(),
 
                                     Forms\Components\Hidden::make('company_id')->default(getCompany()->id)->required(),
-                                    Forms\Components\TextInput::make('debtor')->default(0)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->readOnly(fn(Get $get) => $get->getData()['type'] === "1"),
-                                    Forms\Components\TextInput::make('creditor')->default(0)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->readOnly(fn(Get $get) => $get->getData()['type'] !== "1")
+                                    Forms\Components\TextInput::make('debtor')->default(0)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->readOnly(fn(Get $get) => $get->getData()['type'] !== "1")
+                                        ->rules([
+                                            fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+
+                                                if ($get->getData()['type'] === "1") {
+
+
+                                                    if ($get('debtor') == 0) {
+                                                        $fail('The debtor field must be not zero.');
+                                                    } else {
+
+                                                        // dd(()));
+                                                        $produtTotal = array_map(function ($item) {
+                                                            // dd($item);
+                                                            return (($item['quantity'] * str_replace(',', '', $item['unit_price'])) - (($item['quantity'] * str_replace(',', '', $item['unit_price'])) * $item['discount']) / 100);
+                                                        }, $get->getData()['items']);
+
+                                                        $invoiceTotal = array_map(function ($item) {
+                                                            // dd($item);
+                                                            return (str_replace(',', '', $item['debtor']));
+                                                        }, $get->getData()['invoice']['transactions']);
+
+                                                        $productSum = collect($produtTotal)->sum();
+                                                        $invoiceSum = collect($invoiceTotal)->sum();
+
+                                                        if ($invoiceSum != $productSum) {
+                                                            $remainingAmount = $productSum - $invoiceSum;
+                                                            $fail("The paid amount does not match the total price. Total amount:" . number_format($productSum) . ", Remaining amount: " . number_format($remainingAmount));
+                                                        }
+                                                    }
+                                                } elseif ($get('debtor') != 0) {
+                                                    $fail('The debtor field must be zero.');
+                                                }
+                                            },
+                                        ]),
+                                    Forms\Components\TextInput::make('creditor')->default(0)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->readOnly(fn(Get $get) => $get->getData()['type'] === "1")
                                         ->afterStateUpdated(function ($state, Forms\Set $set) {
                                             $set('cheque.amount', $state);
                                         })
@@ -159,28 +194,34 @@ class FactorResource extends Resource
                                         ->rules([
                                             fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
 
-                                                if ($get('creditor') == 0) {
-                                                    $fail('The creditor field must be not zero.');
-                                                } else {
+                                                if ($get->getData()['type'] !== "1") {
 
-                                                    // dd(()));
-                                                    $produtTotal = array_map(function ($item) {
-                                                        // dd($item);
-                                                        return (($item['quantity'] * str_replace(',', '', $item['unit_price'])) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['taxes']) / 100) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['freights']) / 100));
-                                                    }, $get->getData()['items']);
 
-                                                    $invoiceTotal = array_map(function ($item) {
-                                                        // dd($item);
-                                                        return (str_replace(',', '', $item['creditor']));
-                                                    }, $get->getData()['invoice']['transactions']);
+                                                    if ($get('creditor') == 0) {
+                                                        $fail('The creditor field must be not zero.');
+                                                    } else {
 
-                                                    $productSum = collect($produtTotal)->sum();
-                                                    $invoiceSum = collect($invoiceTotal)->sum();
+                                                        // dd(()));
+                                                        $produtTotal = array_map(function ($item) {
+                                                            // dd($item);
+                                                            return (($item['quantity'] * str_replace(',', '', $item['unit_price'])) - (($item['quantity'] * str_replace(',', '', $item['unit_price'])) * $item['discount']) / 100);
+                                                        }, $get->getData()['items']);
 
-                                                    if ($invoiceSum != $productSum) {
-                                                        $remainingAmount = $productSum - $invoiceSum;
-                                                        $fail("The paid amount does not match the total price. Total amount:" . number_format($productSum) . ", Remaining amount: " . number_format($remainingAmount));
+                                                        $invoiceTotal = array_map(function ($item) {
+                                                            // dd($item);
+                                                            return (str_replace(',', '', $item['creditor']));
+                                                        }, $get->getData()['invoice']['transactions']);
+
+                                                        $productSum = collect($produtTotal)->sum();
+                                                        $invoiceSum = collect($invoiceTotal)->sum();
+
+                                                        if ($invoiceSum != $productSum) {
+                                                            $remainingAmount = $productSum - $invoiceSum;
+                                                            $fail("The paid amount does not match the total price. Total amount:" . number_format($productSum) . ", Remaining amount: " . number_format($remainingAmount));
+                                                        }
                                                     }
+                                                } elseif ($get('creditor') != 0) {
+                                                    $fail('The creditor field must be zero.');
                                                 }
                                             },
                                         ]),
