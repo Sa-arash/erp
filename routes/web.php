@@ -45,6 +45,7 @@ Route::get('login',function (){
 Route::get('/',function (){
     return redirect('/admin');
 });
+Route::middleware('auth')->group(function(){
 
 Route::get('/pdf/payroll/{id}',[\App\Http\Controllers\PdfController::class,'payroll'])->name('pdf.payroll');
 Route::get('/pdf/jornal/{transactions}',[\App\Http\Controllers\PdfController::class,'jornal'])->name('pdf.jornal');
@@ -61,6 +62,7 @@ Route::get('/pdf/separation/{id}',[\App\Http\Controllers\PdfController::class,'s
 Route::get('/pdf/takeOut/{id}',[\App\Http\Controllers\PdfController::class,'takeOut'])->name('pdf.takeOut');
 Route::get('/pdf/requestVisit/{id}',[\App\Http\Controllers\PdfController::class,'requestVisit'])->name('pdf.requestVisit');
 
+});
 
 Route::get('account',function (){
     $accounts = [
