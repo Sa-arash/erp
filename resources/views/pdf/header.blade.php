@@ -15,7 +15,7 @@
             padding: 0;
             direction: ltr;
             background-color: #ffffff;
-            font: 20px
+            font-size: 12px
         }
 
         h1 {
