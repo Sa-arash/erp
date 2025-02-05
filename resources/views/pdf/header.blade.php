@@ -10,7 +10,7 @@
     @if($css??true)
     <style>
         body {
-            font-family: vazir, sans-serif;
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
             direction: ltr;
@@ -100,15 +100,6 @@
 
         }
 
-        body {
-            font-family: vazir, sans-serif;
-            margin: 0;
-            padding: 0;
-            direction: ltr;
-            background-color: #ffffff;
-            font-size: 14px;
-            /* کوچک‌تر کردن فونت اصلی صفحه */
-        }
 
         h1 {
             text-align: center;

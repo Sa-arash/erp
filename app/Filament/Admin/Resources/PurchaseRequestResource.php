@@ -437,14 +437,12 @@ class PurchaseRequestResource extends Resource
                         Notification::make('make bid')->success()->title('Created Successfully')->send()->sendToDatabase(auth()->user());
                     })->modalWidth(MaxWidth::Full)->visible(fn($record) => $record->quotations->count() > 0),
                     Tables\Actions\Action::make('prPDF')->label('PR ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.purchase', ['id' => $record->id])),
-
                 ]),
 
 
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

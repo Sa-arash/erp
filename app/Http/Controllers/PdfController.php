@@ -42,19 +42,6 @@ class PdfController extends Controller
 
     public function account($period, $account, Request $request)
     {
-
-        // dd( auth()->user()->can('view_financial::period'));
-        
-        // if (
-        //     auth()->user() !== null
-        //     &&
-        //     getEmployee()->company_id === FinancialPeriod::findOrFail($period)->company_id
-        //     &&
-        //     auth()->user()->can('view_financial::period')
-        // ) {
-
-
-
             $company = auth()->user()->employee->company;
             $startDate = null;
             $endDate = null;
@@ -71,8 +58,6 @@ class PdfController extends Controller
                 ->get()->pluck('id')->toArray();
 
             if (isset($request->date)) {
-
-
                 $dateRange = $request->date;
                 [$startDate, $endDate] = explode(' - ', $dateRange);
                 $startDate = Carbon::createFromFormat('d-m-Y', $startDate);
@@ -94,9 +79,6 @@ class PdfController extends Controller
                 compact('accountTitle', 'accounts', 'period', 'transactions', 'startDate', 'endDate', 'company')
             );
             return $pdf->stream('account.pdf');
-        }else{
-            return 'no';
-        }
     }
 
     public function balance($period, Request $request)

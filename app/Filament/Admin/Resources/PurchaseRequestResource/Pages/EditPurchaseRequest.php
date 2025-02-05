@@ -10,10 +10,4 @@ class EditPurchaseRequest extends EditRecord
 {
     protected static string $resource = PurchaseRequestResource::class;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\DeleteAction::make(),
-        ];
-    }
 }

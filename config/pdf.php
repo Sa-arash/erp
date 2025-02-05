@@ -18,6 +18,14 @@ return [
             'BI' => 'IRANSansWeb_Bold.ttf', // optional: bold-italic font
             'useOTL' => 0xFF, // required for complicated langs like Persian, Arabic and Chinese
             'useKashida' => 75, // required for complicated langs like Persian, Arabic and Chinese
-        ] // ...add as many as you want.
+        ], // ...add as many as you want.
+        'Arial' => [
+            'R' => 'Arial.otf', // regular font
+            'B' => 'Arial.otf', // optional: bold font
+            'I' => 'Arial.otf', // optional: italic font
+            'BI' => 'Arial.otf', // optional: bold-italic font
+            'useOTL' => 0xFF, // required for complicated langs like Persian, Arabic and Chinese
+            'useKashida' => 75, // required for complicated langs like Persian, Arabic and Chinese
+        ], // ...add as many as you want.
     ]
 ];
