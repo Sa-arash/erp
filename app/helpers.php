@@ -1,6 +1,7 @@
 <?php
 
 
+use App\Models\Employee;
 use App\Models\FinancialPeriod;
 
 function getCompany(): ?\Illuminate\Database\Eloquent\Model
@@ -601,4 +602,40 @@ function getParents($record, $visited = []) {
     }
 
     return $str;
+}
+
+function sendAR($employee, $record,$company)
+{
+
+    if ($employee?->department?->employee_id) {
+        if ($employee->department->employee_id === $employee->id) {
+            $record->approvals()->create([
+                'employee_id' => $employee->department?->employee_id,
+                'company_id' => $company->id,
+                'position' => 'Head Department',
+                'status' => "Approve",
+                'approve_date'=>now()
+            ]);
+            $CEO=Employee::query()->firstWhere('user_id',$company->user_id);
+            $record->approvals()->create([
+                'employee_id'=>$CEO->id,
+                'company_id'=>$company->id,
+                'position'=>'CEO',
+                'status'=>"Pending"
+            ]);
+        } else {
+            $record->approvals()->create([
+                'employee_id' => $employee->department->employee_id,
+                'company_id' => $company->id,
+                'position' => 'Head Department'
+            ]);
+        }
+    }else{
+        $CEO=Employee::query()->firstWhere('user_id',$company->user_id);
+        $record->approvals()->create([
+            'employee_id' => $CEO->id,
+            'company_id' => $company->user_id,
+            'position' => 'CEO'
+        ]);
+    }
 }
