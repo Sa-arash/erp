@@ -1,9 +1,6 @@
-<!DOCTYPE html>
-<html lang="fa">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Staff Clearance/Separation Form</title>
+@include('pdf.header', ['titles' => ['Separation'], 'css'=>false] )
+
+<title>Staff Clearance/Separation Form</title>
     <style>
         body {
             font-family: Vazir, sans-serif;

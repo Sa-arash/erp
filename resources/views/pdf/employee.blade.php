@@ -8,8 +8,9 @@
     )
 
 <style>
-
-
+    body{
+        font-family: Arial, sans-serif;
+    }
     h1 {
         text-align: center;
         margin-bottom: 20px;
@@ -31,7 +32,7 @@
         padding: 12px;
         text-align: left;
         vertical-align: top;
-        font-size: 14px;
+        font-size: 12px;
     }
 
     th {
@@ -52,7 +53,7 @@
         text-align: left;
         margin-top: 20px;
         border-radius: 5px;
-        font-size: 16px;
+        font-size: 15px;
         border: 1px solid #dcdcdc;
     }
 

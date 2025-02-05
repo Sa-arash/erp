@@ -24,8 +24,9 @@ class PdfController extends Controller
     {
 
         $payroll = Payroll::query()->with('employee', 'itemAllowances', 'itemDeductions', 'benefits')->findOrFail($id);
+        $company=$payroll->company;
 
-        $pdf = Pdf::loadView('pdf.payroll', compact('payroll'));
+        $pdf = Pdf::loadView('pdf.payroll', compact('payroll','company'));
         return $pdf->stream('pdf.payroll');
     }
 

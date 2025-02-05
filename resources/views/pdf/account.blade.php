@@ -1,6 +1,6 @@
 
     @include('pdf.header',
-    ['titles'=>[$accountTitle??'Account Report']])
+    ['titles'=>[$accountTitle??'Account Report'],'css'=>true])
 
     <br>
 
@@ -14,7 +14,7 @@
         <th>Date</th>
         <th>Account Name</th>
         <th>Account Code</th>
-        <th>Document Desctiption</th>
+        <th>Document Description</th>
         <th>Debit</th>
         <th>Credit</th>
         @if(count($accounts) === 1)

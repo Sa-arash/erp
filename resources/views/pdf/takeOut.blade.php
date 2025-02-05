@@ -1,4 +1,3 @@
-
 <title>Gate Pass</title>
 @include('pdf.header',
    ['titles'=>['Gate Pass']])
@@ -23,13 +22,13 @@
 
         .header h1 {
             margin: 0;
-            font-size: 24px;
+            font-size: 15px;
             text-transform: uppercase;
         }
 
         .header p {
             margin: 5px 0 0;
-            font-size: 14px;
+            font-size: 12px;
         }
 
         .details {
@@ -180,9 +179,8 @@
 
     <div class="footer">
         <p></p>
-        <p>Security Officer - UNC</p>
+        <p>Security Officer - {{$company->title}}</p>
     </div>
 
 </div>
 </body>
-</html>
