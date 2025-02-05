@@ -91,7 +91,7 @@ class FactorResource extends Resource
                                 $set('total', number_format(($count * $unitPrice) - (($count * $unitPrice) * $discount) / 100));
                             }),
                             Forms\Components\Select::make('unit_id')->label('Unit')->required()->options(Unit::query()->where('company_id', getCompany()->id)->pluck('title', 'id'))->searchable()->preload(),
-                            Forms\Components\TextInput::make('unit_price')->rules([
+                            Forms\Components\TextInput::make('unit_price')->default(0)->rules([
                                 fn (): Closure => function (string $attribute, $value, Closure $fail) {
                                     if ($value <=0) {
                                         $fail('The :attribute is invalid.');
