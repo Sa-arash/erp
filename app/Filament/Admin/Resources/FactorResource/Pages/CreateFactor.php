@@ -45,6 +45,7 @@ class CreateFactor extends CreateRecord
             }
 
 
+            dd($this->record);
 
 
             DB::beginTransaction(); // شروع تراکنش

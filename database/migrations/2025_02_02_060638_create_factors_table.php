@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('to');
             $table->foreignId('invoice_id')->nullable()->constrained('invoices')->cascadeOnDelete()->cascadeOnUpdate();
            
-            $table->boolean('type')->default(0);
+            $table->boolean('type');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
         });

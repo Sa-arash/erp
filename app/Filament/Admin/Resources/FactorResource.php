@@ -278,28 +278,27 @@ class FactorResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('title')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('party.name')
+                Tables\Columns\TextColumn::make('party.name')->label('Vendor/Customer')
+                    ->numeric()
+                    ->sortable(),
+                    Tables\Columns\TextColumn::make('account.name')->label('Expence/Icnome')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('from')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('to')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('invoice.name')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\IconColumn::make('type')
-                    ->boolean(),
+                Tables\Columns\TextColumn::make('type')
+                ->state(fn($record)=>$record->type == "1" ? "Income" : "Expense")
+                ->badge()->color(fn($record)=>$record->type == "1" ? "success" : "danger"),
                 Tables\Columns\TextColumn::make('total')
+                ->state(fn($record) => number_format($record->items->map(fn($item) => (($item['quantity'] * str_replace(',', '', $item['unit_price'])) - (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['discount']) / 100) ))?->sum()))
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('company.title')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
+                Tables\Columns\TextColumn::make('created_at')->label('Date')
                     ->dateTime()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->dateTime()
                     ->sortable()
