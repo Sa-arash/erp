@@ -28,6 +28,15 @@ class TakeOut extends BaseWidget
                 Tables\Columns\TextColumn::make('from'),
                 Tables\Columns\TextColumn::make('to'),
                 Tables\Columns\TextColumn::make('date')->date(),
+                Tables\Columns\TextColumn::make('mood')->color(function ($record){
+                    if ($record->mood==="Approved" ){
+                        return 'success';
+                    }elseif ($record->mood==="NotApproved"){
+                        return 'danger';
+                    }else{
+                        return 'primary';
+                    }
+                })->label('Request Status')->badge(),
                 Tables\Columns\TextColumn::make('status')->badge(),
                 Tables\Columns\TextColumn::make('type')->badge(),
             ])->actions([
