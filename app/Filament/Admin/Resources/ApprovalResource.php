@@ -256,6 +256,10 @@ class ApprovalResource extends Resource
                                     'status' => 'approve'
                                 ]);
                             }
+                        }else{
+                            $record->approvable->update([
+                                'status' => 'notApproved'
+                            ]);
                         }
                     }elseif (substr($record->approvable_type, 11) === "TakeOut"){
                         if ($data['status'] === "Approve") {
