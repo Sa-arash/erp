@@ -39,7 +39,7 @@ class FactorResource extends Resource
                 Forms\Components\Wizard::make([
                     Forms\Components\Wizard\Step::make('Invoice')->schema([
                         Forms\Components\Section::make([
-                            Forms\Components\TextInput::make('title')->default('خرید از دیجیکالا')->required()->maxLength(255),
+                            Forms\Components\TextInput::make('title')->required()->maxLength(255),
                             Forms\Components\ToggleButtons::make('type')->live()->afterStateUpdated(function (Forms\Set $set, string $operation) {
                                 // $set('party_id', null);
                                 // $set('account_id', null);
@@ -83,21 +83,27 @@ class FactorResource extends Resource
                         Forms\Components\TextInput::make('from')->required()->maxLength(255),
                         Forms\Components\TextInput::make('to')->required()->maxLength(255),
                         Forms\Components\Repeater::make('items')->required()->relationship('items')->schema([
-                            Forms\Components\TextInput::make('title')->default('test')->required()->label('Invoice Item')->columnSpan(2),
-                            Forms\Components\TextInput::make('quantity')->default(1)->live(true)->required()->label('Quantity')->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
+                            Forms\Components\TextInput::make('title')->required()->label('Invoice Item')->columnSpan(2),
+                            Forms\Components\TextInput::make('quantity')->default(1)->numeric()->live(true)->required()->label('Quantity')->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
                                 $count = $get('quantity') === null ? 0 : (int)$get('quantity');
                                 $unitPrice = $get('unit_price') === null ?  0 : (int)str_replace(',', '', $get('unit_price'));
                                 $discount = $get('discount') === null ?  0 : (int)$get('discount');
                                 $set('total', number_format(($count * $unitPrice) - (($count * $unitPrice) * $discount) / 100));
                             }),
                             Forms\Components\Select::make('unit_id')->label('Unit')->required()->options(Unit::query()->where('company_id', getCompany()->id)->pluck('title', 'id'))->searchable()->preload(),
-                            Forms\Components\TextInput::make('unit_price')->default(100000)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->live(true)->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
+                            Forms\Components\TextInput::make('unit_price')->default(100)->rules([
+                                fn (): Closure => function (string $attribute, $value, Closure $fail) {
+                                    if ($value <=0) {
+                                        $fail('The :attribute is invalid.');
+                                    }
+                                },
+                            ])->mask(RawJs::make('$money($input)'))->stripCharacters(',')->live(true)->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
                                 $count = $get('quantity') === null ? 0 : (int)$get('quantity');
                                 $unitPrice = $get('unit_price') === null ?  0 : (int)str_replace(',', '', $get('unit_price'));
                                 $discount = $get('discount') === null ?  0 : (int)$get('discount');
                                 $set('total', number_format(($count * $unitPrice) - (($count * $unitPrice) * $discount) / 100));
                             })->required()->label('Unit Price'),
-                            Forms\Components\TextInput::make('discount')->live(true)->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
+                            Forms\Components\TextInput::make('discount')->numeric()->live(true)->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
                                 $count = $get('quantity') === null ? 0 : (int)$get('quantity');
                                 $unitPrice = $get('unit_price') === null ?  0 : (int)str_replace(',', '', $get('unit_price'));
                                 $discount = $get('discount') === null ?  0 : (int)$get('discount');
