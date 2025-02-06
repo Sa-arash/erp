@@ -46,7 +46,7 @@ class PurchaseOrderResource extends Resource
     }
     protected static ?string $model = PurchaseOrder::class;
     protected static ?string $navigationGroup = 'Finance Management';
-    protected static ?int $navigationSort = 6;
+    protected static ?int $navigationSort = 4;
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
 
@@ -258,7 +258,7 @@ class PurchaseOrderResource extends Resource
                                             $tax = $state === null ? 0 : (float)$state;
                                             $price = $get('unit_price') !== null ? str_replace(',', '', $get('unit_price')) : 0;
 
-                               
+
 
                                             $set('total', number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100)));
 
@@ -449,7 +449,7 @@ class PurchaseOrderResource extends Resource
                 ->label('Total(' . getCompany()->currency . ")")
                     ->state(fn($record) => number_format($record->items->map(fn($item) => (($item['quantity'] * str_replace(',', '', $item['unit_price'])) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['taxes']) / 100) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['freights']) / 100)))?->sum()))
                     ->searchable(),
-                    
+
                 // Tables\Columns\TextColumn::make('currency')
                 // ->searchable(),
                 // Tables\Columns\TextColumn::make('exchange_rate')
