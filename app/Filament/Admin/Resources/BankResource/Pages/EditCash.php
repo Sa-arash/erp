@@ -6,6 +6,7 @@ use App\Filament\Admin\Resources\BankResource;
 use App\Filament\Admin\Resources\CashResource;
 use App\Models\Account;
 use App\Models\Bank;
+use App\Models\Currency;
 use Filament\Actions;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Section;
@@ -14,6 +15,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
 use Illuminate\Validation\Rules\Unique;
 
@@ -32,8 +34,18 @@ class EditCash extends EditRecord
                         return "001";
                     }
                 })->prefix(fn(Get $get) => Account::query()->firstWhere('id', $this->record?->account?->parent_id)?->code)->required()->maxLength(255),
-                Select::make('currency')->required()->required()->options(getCurrency())->searchable(),
-            ])->columns(3),
+                Select::make('currency_id')->label('Currency')->default(getCompany()->currencies->where('is_company_currency',1)->first()?->id)->required()->options(getCompany()->currencies->pluck('name','id'))->searchable()->createOptionForm([
+                    Section::make([
+                        TextInput::make('name')->required()->maxLength(255),
+                        TextInput::make('symbol')->required()->maxLength(255),
+                        TextInput::make('exchange_rate')->required()->numeric(),
+                    ])->columns(3)
+                ])->createOptionUsing(function ($data){
+                    $data['company_id']=getCompany()->id;
+                    Notification::make('success')->title('success')->success()->send();
+                    return  Currency::query()->create($data)->getKey();
+                }),
+                ])->columns(3),
             Textarea::make('description')->columnSpanFull(),
             Hidden::make('type')->default(1),
         ]);

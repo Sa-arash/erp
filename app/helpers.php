@@ -496,6 +496,9 @@ function generateNextCode($code): string
 
     return str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
 }
+function defaultCurrency(){
+    return getCompany()->currencies->where('is_company_currency',1)->first();
+}
 
 function generateNextCodePO($code): string
 {

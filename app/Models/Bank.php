@@ -22,7 +22,8 @@ class Bank extends Model
         'company_id',
         'account_id',
         'account_code',
-        'type'
+        'type',
+        'currency_id'
     ];
 
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -32,5 +33,9 @@ class Bank extends Model
     public function account(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Account::class);
+    }
+    public function currency(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Currency::class);
     }
 }

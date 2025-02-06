@@ -6,6 +6,7 @@ use App\Filament\Admin\Resources\BankResource;
 use App\Filament\Admin\Resources\CashResource;
 use App\Models\Account;
 use App\Models\Bank;
+use App\Models\Currency;
 use Filament\Actions;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Section;
@@ -47,7 +48,17 @@ class CreateCash extends CreateRecord
                     }
                     return $rule->where('code', $parentAccount . $state)->where('company_id', getCompany()->id);
                 })->model(Account::class),
-                Select::make('currency')->required()->required()->options(getCurrency())->searchable(),
+                Select::make('currency_id')->label('Currency')->default(defaultCurrency()?->id)->required()->options(getCompany()->currencies->pluck('name','id'))->searchable()->createOptionForm([
+                    Section::make([
+                        TextInput::make('name')->required()->maxLength(255),
+                        TextInput::make('symbol')->required()->maxLength(255),
+                        TextInput::make('exchange_rate')->required()->numeric(),
+                    ])->columns(3)
+                ])->createOptionUsing(function ($data){
+                    $data['company_id']=getCompany()->id;
+                    Notification::make('success')->title('success')->success()->send();
+                    return  Currency::query()->create($data)->getKey();
+                }),
             ])->columns(3),
             Textarea::make('description')->columnSpanFull(),
             Hidden::make('type')->default(1),
@@ -91,6 +102,7 @@ class CreateCash extends CreateRecord
                 'parent_id' => $parentAccount->id,
                 'built_in' => false,
                 'company_id' => getCompany()->id,
+                'currency_id'=>$data['currency_id']
             ]);
             $data['account_id'] = $account->id;
 

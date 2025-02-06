@@ -24,20 +24,10 @@ class CashResource extends Resource
     protected static ?string $label='Cash';
     protected static ?string $pluralLabel='Cash';
     protected static ?string $cluster = FinanceSettings::class;
-
-    protected static ?string $navigationIcon = 'heroicon-s-banknotes';
     protected static ?int $navigationSort=1;
+    protected static ?string $navigationIcon = 'heroicon-s-banknotes';
     protected static ?string $navigationGroup = 'Finance Management';
 
-
-
-    public static function form(Form $form): Form
-    {
-        return $form
-            ->schema([
-                //
-            ]);
-    }
     public static function getCluster(): ?string
     {
         $period = FinancialPeriod::query()->where('company_id', getCompanyUrl())->where('status', 'During')->first();
@@ -54,7 +44,7 @@ class CashResource extends Resource
                 Tables\Columns\TextColumn::make('bank_name')->label('Cash Name')
                     ->state(fn($record)=>$record->name."\n".$record->account->code)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('currency')->searchable(),
+                Tables\Columns\TextColumn::make('currency.symbol')->searchable(),
                 Tables\Columns\TextColumn::make('Balance')
                     ->state(fn($record)=> number_format($record->account->transactions->sum('debtor')-$record->account->transactions->sum('creditor')))
                     ->Color(fn($state)=>$state>=0?'success':'danger')

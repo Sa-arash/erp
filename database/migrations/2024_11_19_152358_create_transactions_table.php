@@ -14,12 +14,12 @@ return new class extends Migration
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('account_id')->constrained('accounts')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->decimal('creditor', 18, 8)->default(0);
-            $table->decimal('debtor', 18, 8)->default(0);
+            $table->decimal('creditor', 50, 8)->default(0);
+            $table->decimal('debtor', 50, 8)->default(0);
             $table->foreignId('currency_id')->constrained('currencies')->cascadeOnDelete()->cascadeOnUpdate();
             $table->decimal('exchange_rate', 50, 8)->default(1);
-            $table->decimal('creditor_foreign', 18, 2)->default(0);
-            $table->decimal('debtor_foreign', 18, 2)->default(0);
+            $table->decimal('creditor_foreign', 50, 2)->default(0);
+            $table->decimal('debtor_foreign', 50, 2)->default(0);
             $table->text('description')->nullable();
             $table->string('reference')->nullable();
             $table->foreignId('financial_period_id')->constrained('financial_periods')->cascadeOnDelete()->cascadeOnUpdate();

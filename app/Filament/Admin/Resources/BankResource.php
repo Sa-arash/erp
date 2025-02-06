@@ -7,11 +7,16 @@ use App\Filament\Admin\Resources\BankResource\RelationManagers;
 use App\Filament\Clusters\FinanceSettings;
 use App\Models\Account;
 use App\Models\Bank;
+use App\Models\Currency;
 use App\Models\FinancialPeriod;
 use App\Models\Parties;
 use Filament\Forms;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -50,7 +55,17 @@ class BankResource extends Resource
                 Forms\Components\TextInput::make('account_holder')->required()->maxLength(255),
                 Forms\Components\TextInput::make('account_type')->maxLength(255),
                 Forms\Components\Section::make([
-                    Forms\Components\Select::make('currency')->required()->required()->options(getCurrency())->searchable(),
+                    Select::make('currency_id')->label('Currency')->default(getCompany()->currencies->where('is_company_currency',1)->first()?->id)->required()->options(getCompany()->currencies->pluck('name','id'))->searchable()->createOptionForm([
+                        Section::make([
+                            TextInput::make('name')->required()->maxLength(255),
+                            TextInput::make('symbol')->required()->maxLength(255),
+                            TextInput::make('exchange_rate')->required()->numeric(),
+                        ])->columns(3)
+                    ])->createOptionUsing(function ($data){
+                        $data['company_id']=getCompany()->id;
+                        Notification::make('success')->title('success')->success()->send();
+                        return  Currency::query()->create($data)->getKey();
+                    }),
                     Forms\Components\TextInput::make('iban')->maxLength(255),
                     Forms\Components\TextInput::make('swift_code')->maxLength(255),
                 ])->columns(3),
@@ -70,7 +85,7 @@ class BankResource extends Resource
                 Tables\Columns\TextColumn::make('account_number')->searchable(),
                 Tables\Columns\TextColumn::make('account_holder')->searchable(),
                 Tables\Columns\TextColumn::make('account_type')->searchable(),
-                Tables\Columns\TextColumn::make('currency')->searchable(),
+                Tables\Columns\TextColumn::make('currency.symbol')->searchable(),
                 Tables\Columns\TextColumn::make('Balance')
                 ->state(fn($record)=> number_format($record->account->transactions->sum('debtor')-$record->account->transactions->sum('creditor')))
                 ->Color(fn($state)=>$state>=0?'success':'danger')

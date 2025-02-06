@@ -36,6 +36,7 @@ class CreateBank extends CreateRecord
                 $parent="Bank";
                 $parentAccount=Account::query()->where('stamp',$parent)->where('company_id',getCompany()->id)->first();
             }
+
             $account = Account::query()->create([
                 'name' => $data['bank_name'] ,
                 'type' => 'debtor',
@@ -44,6 +45,7 @@ class CreateBank extends CreateRecord
                 'parent_id' => $parentAccount->id,
                 'built_in' => false,
                 'company_id' => getCompany()->id,
+                'currency_id'=>$data['currency_id']
             ]);
             $data['account_id'] = $account->id;
 

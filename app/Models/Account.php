@@ -22,6 +22,7 @@ class Account extends Model
         'description',
         'company_id',
         'closed_at',
+        'currency_id',
     ];
     public function getTitleAttribute(){
         return $this->name." (".$this->code." )";
@@ -30,6 +31,10 @@ class Account extends Model
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);
+    }
+    public function currency(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Currency::class);
     }
     public function account(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

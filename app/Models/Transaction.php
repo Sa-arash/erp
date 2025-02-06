@@ -16,7 +16,12 @@ class Transaction extends Model
         'company_id',
         'user_id',
         'invoice_id',
-        'financial_period_id'
+        'financial_period_id',
+        'creditor_foreign',
+        'debtor_foreign',
+        'currency_id',
+        'exchange_rate',
+
     ];
 
     protected $casts = [
@@ -52,6 +57,11 @@ class Transaction extends Model
     {
         return $this->belongsTo(Company::class);
     }
+    public function currency(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Currency::class);
+    }
+
 
 
 }

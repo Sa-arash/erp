@@ -2,17 +2,21 @@
 
 namespace App\Filament\Admin\Resources;
 
-use App\Enums\ChequeStatus;
 use App\Filament\Admin\Resources\InvoiceResource\Pages;
 use App\Filament\Admin\Resources\InvoiceResource\RelationManagers;
-use App\Filament\Clusters\FinanceSettings;
+use App\Models\Account;
+use App\Models\Currency;
 use App\Models\FinancialPeriod;
 use App\Models\Invoice;
 use Closure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
 use Filament\Support\RawJs;
@@ -20,7 +24,6 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
-use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class InvoiceResource extends Resource
 {
@@ -77,30 +80,40 @@ class InvoiceResource extends Resource
 
                 Forms\Components\Section::make([
                     Forms\Components\Repeater::make('transactions')->label('')->relationship('transactions')->schema([
-                        SelectTree::make('account_id')->defaultOpenLevel(3)->live()->label('Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('company_id', getCompany()->id))->searchable(),
+                        SelectTree::make('account_id')->afterStateUpdated(function ($state, Forms\Set $set) {
+                            $account = Account::query()->where('id', $state)->whereNot('currency_id', defaultCurrency()?->id)->first();
+                            if ($account) {
+                                $set('currency_id', $account->currency_id);
+                                $set('exchange_rate', $account->currency->exchange_rate);
+                                return $set('isCurrency', 1);
+                            }
+                            return $set('isCurrency', 0);
+                        })->live()->defaultOpenLevel(3)->live()->label('Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('company_id', getCompany()->id))->searchable(),
                         Forms\Components\TextInput::make('description')->required(),
-
-                        Forms\Components\TextInput::make('debtor')->afterStateUpdated(function ($state, Forms\Set $set) {
-                            $set('cheque.amount', $state);
-                        })
-                            ->mask(RawJs::make('$money($input)'))->stripCharacters(',')
-                            ->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)
-                            ->rules([
-                                fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
-                                    if ($get('debtor') == 0 && $get('creditor') == 0) {
-                                        $fail('Only one of these values can be zero.');
-                                    } elseif ($get('debtor') != 0 && $get('creditor') != 0) {
-                                        $fail('At least one of the values must be zero.');
-                                    }
-                                },
-                            ]),
-
-                        Forms\Components\TextInput::make('creditor')
-                            ->afterStateUpdated(function ($state, Forms\Set $set) {
+                        Forms\Components\TextInput::make('debtor')->live(true)->afterStateUpdated(function ($state, Forms\Set $set,Get $get) {
+                            if ($get('Cheque')) {
                                 $set('cheque.amount', $state);
+                            }
+                        })->mask(RawJs::make('$money($input)'))->readOnly(function (Get $get) {
+                            return $get('isCurrency');
+                        })->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)->rules([
+                            fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                                if ($get('debtor') == 0 && $get('creditor') == 0) {
+                                    $fail('Only one of these values can be zero.');
+                                } elseif ($get('debtor') != 0 && $get('creditor') != 0) {
+                                    $fail('At least one of the values must be zero.');
+                                }
+                            },
+                        ]),
+                        Forms\Components\TextInput::make('creditor')->readOnly(function (Get $get) {
+                            return $get('isCurrency');
+                        })->live(true)
+                            ->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
+                                if ($get('Cheque')) {
+                                    $set('cheque.amount', $state);
+                                }
                             })
                             ->mask(RawJs::make('$money($input)'))->stripCharacters(',')
-                            ->mask(RawJs::make('$money($input)'))->stripCharacters(',')
                             ->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)
                             ->rules([
                                 fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
@@ -111,12 +124,69 @@ class InvoiceResource extends Resource
                                     }
                                 },
                             ]),
+                        Forms\Components\Hidden::make('isCurrency'),
+                        Forms\Components\Hidden::make('currency_id')->default(defaultCurrency()?->id)->hidden(function (Get $get) {
+                            return $get('isCurrency');
+                        }),
+                        Section::make([
+                            Select::make('currency_id')->live()->label('Currency')->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([
+                                Section::make([
+                                    TextInput::make('name')->required()->maxLength(255),
+                                    TextInput::make('symbol')->required()->maxLength(255),
+                                    TextInput::make('exchange_rate')->required()->numeric(),
+                                ])->columns(3)
+                            ])->createOptionUsing(function ($data) {
+                                $data['company_id'] = getCompany()->id;
+                                Notification::make('success')->title('success')->success()->send();
+                                return Currency::query()->create($data)->getKey();
+                            })->editOptionForm([
+                                Section::make([
+                                    TextInput::make('name')->required()->maxLength(255),
+                                    TextInput::make('symbol')->required()->maxLength(255),
+                                    TextInput::make('exchange_rate')->required()->numeric(),
+                                ])->columns(3)
+                            ])->afterStateUpdated(function ($state, Forms\Set $set) {
+                                $currency = Currency::query()->firstWhere('id', $state);
+                                if ($currency) {
+                                    $set('exchange_rate', $currency->exchange_rate);
+                                }
+                            })->editOptionAction(function ($state, Forms\Set $set) {
+                                $currency = Currency::query()->firstWhere('id', $state);
+                                if ($currency) {
+                                    $set('exchange_rate', $currency->exchange_rate);
+                                }
+                            }),
+                            TextInput::make('exchange_rate')->required(),
+                            Forms\Components\TextInput::make('debtor_foreign')->live(true)->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
+                                $set('debtor', number_format(str_replace(',', '', $state) * $get('exchange_rate')));
+                            })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)->rules([
+                                fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                                    if ($get('debtor_foreign') == 0 && $get('creditor_foreign') == 0) {
+                                        $fail('Only one of these values can be zero.');
+                                    } elseif ($get('debtor_foreign') != 0 && $get('creditor_foreign') != 0) {
+                                        $fail('At least one of the values must be zero.');
+                                    }
+                                },
+                            ]),
+                            Forms\Components\TextInput::make('creditor_foreign')->live(true)->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
+                                $set('creditor', number_format(str_replace(',', '', $state) * $get('exchange_rate')));
+                            })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)->rules([
+                                fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                                    if ($get('debtor_foreign') == 0 && $get('creditor_foreign') == 0) {
+                                        $fail('Only one of these values can be zero.');
+                                    } elseif ($get('debtor_foreign') != 0 && $get('creditor_foreign') != 0) {
+                                        $fail('At least one of the values must be zero.');
+                                    }
+                                },
+                            ]),
+                        ])->columns(4)->visible(function (Get $get) {
+                            return $get('isCurrency');
+                        }),
                         Forms\Components\Checkbox::make('Cheque')->inline()->live(),
                         Forms\Components\Section::make([
                             Forms\Components\Fieldset::make('cheque')->relationship('cheque')->schema([
                                 Forms\Components\TextInput::make('cheque_number')->required()->maxLength(255),
                                 Forms\Components\TextInput::make('amount')->default(function (Get $get) {
-
                                     if ($get('debtor') > 0) {
                                         return $get('debtor');
                                     }
@@ -135,8 +205,7 @@ class InvoiceResource extends Resource
                                 Forms\Components\Hidden::make('company_id')->default(getCompany()->id)
                             ]),
                         ])->collapsible()->persistCollapsed()->visible(fn(Forms\Get $get) => $get('Cheque')),
-                        Forms\Components\Hidden::make('financial_period_id')->required()->label('Financial Period')
-                            ->default(FinancialPeriod::query()->where('company_id', getCompany()->id)->firstWhere('status', "During")?->id)
+                        Forms\Components\Hidden::make('financial_period_id')->required()->label('Financial Period')->default(getPeriod()?->id)
                     ])->minItems(2)->columns(5)->defaultItems(2)
                         ->mutateRelationshipDataBeforecreateUsing(function (array $data): array {
                             $data['user_id'] = auth()->id();
