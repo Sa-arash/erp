@@ -85,10 +85,10 @@ class FactorResource extends Resource
                         Forms\Components\Repeater::make('items')->required()->relationship('items')->schema([
                             Forms\Components\TextInput::make('title')->required()->label('Invoice Item')->columnSpan(2),
                             Forms\Components\TextInput::make('quantity')->default(1)->numeric()->live(true)->required()->label('Quantity')->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
-                                $count = $get('quantity') === null ? 0 : (int)$get('quantity');
-                                $unitPrice = $get('unit_price') === null ?  0 : (int)str_replace(',', '', $get('unit_price'));
-                                $discount = $get('discount') === null ?  0 : (int)$get('discount');
-                                $set('total', number_format(($count * $unitPrice) - (($count * $unitPrice) * $discount) / 100));
+                                $count = $get('quantity') === null ? 0 : (float)$get('quantity');
+                                $unitPrice = $get('unit_price') === null ?  0 : (float)str_replace(',', '', $get('unit_price'));
+                                $discount = $get('discount') === null ?  0 : (float)$get('discount');
+                                $set('total', number_format(($count * $unitPrice) - (($count * $unitPrice) * $discount) / 100,2));
                             }),
                             Forms\Components\Select::make('unit_id')->label('Unit')->required()->options(Unit::query()->where('company_id', getCompany()->id)->pluck('title', 'id'))->searchable()->preload(),
                             Forms\Components\TextInput::make('unit_price')->default(0)->rules([
@@ -98,16 +98,16 @@ class FactorResource extends Resource
                                     }
                                 },
                             ])->mask(RawJs::make('$money($input)'))->stripCharacters(',')->live(true)->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
-                                $count = $get('quantity') === null ? 0 : (int)$get('quantity');
-                                $unitPrice = $get('unit_price') === null ?  0 : (int)str_replace(',', '', $get('unit_price'));
-                                $discount = $get('discount') === null ?  0 : (int)$get('discount');
-                                $set('total', number_format(($count * $unitPrice) - (($count * $unitPrice) * $discount) / 100));
+                                $count = $get('quantity') === null ? 0 : (float)$get('quantity');
+                                $unitPrice = $get('unit_price') === null ?  0 : (float)str_replace(',', '', $get('unit_price'));
+                                $discount = $get('discount') === null ?  0 : (float)$get('discount');
+                                $set('total', number_format(($count * $unitPrice) - (($count * $unitPrice) * $discount) / 100,2));
                             })->required()->label('Unit Price'),
                             Forms\Components\TextInput::make('discount')->numeric()->live(true)->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
-                                $count = $get('quantity') === null ? 0 : (int)$get('quantity');
-                                $unitPrice = $get('unit_price') === null ?  0 : (int)str_replace(',', '', $get('unit_price'));
-                                $discount = $get('discount') === null ?  0 : (int)$get('discount');
-                                $set('total', number_format(($count * $unitPrice) - (($count * $unitPrice) * $discount) / 100));
+                                $count = $get('quantity') === null ? 0 : (float)$get('quantity');
+                                $unitPrice = $get('unit_price') === null ?  0 : (float)str_replace(',', '', $get('unit_price'));
+                                $discount = $get('discount') === null ?  0 : (float)$get('discount');
+                                $set('total', number_format(($count * $unitPrice) - (($count * $unitPrice) * $discount) / 100,2));
                             })->default(0)->required()->label('Discount'),
                             Forms\Components\TextInput::make('total')->live()->readOnly()->default(0)->required()->label('Total'),
                         ])->columnSpanFull()->columns(7),
@@ -139,7 +139,7 @@ class FactorResource extends Resource
                                             // dd($item);
                                             try {
                                                 //code...
-                                                // return (($item['quantity'] * str_replace(',', '', $item['unit_price'])) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['taxes']) / 100) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['freights']) / 100));
+                                                // return (($item['quantity'] * str_replace(',', '', $item['unit_price'])) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['taxes']) / 100,2) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['freights']) / 100,2));
                                                 return (($item['quantity'] * str_replace(',', '', $item['unit_price'])) - (($item['quantity'] * str_replace(',', '', $item['unit_price'])) * $item['discount']) / 100);
                                             } catch (\Throwable $th) {
                                                 //throw $th;
@@ -147,7 +147,7 @@ class FactorResource extends Resource
                                             }
                                         }, $get->getData()['items']);
 
-                                        return  collect($produtTotal)->sum() ? number_format(collect($produtTotal)->sum()) : '?';
+                                        return  collect($produtTotal)->sum() ? number_format(collect($produtTotal)->sum(),2) : '?';
                                     }
                                 })->inlineLabel()
                             ])->columns(8),
@@ -185,7 +185,7 @@ class FactorResource extends Resource
 
                                                         if ($invoiceSum != $productSum) {
                                                             $remainingAmount = $productSum - $invoiceSum;
-                                                            $fail("The paid amount does not match the total price. Total amount:" . number_format($productSum) . ", Remaining amount: " . number_format($remainingAmount));
+                                                            $fail("The paid amount does not match the total price. Total amount:" . number_format($productSum,2) . ", Remaining amount: " . number_format($remainingAmount,2));
                                                         }
                                                     }
                                                 } elseif ($get('debtor') != 0) {
@@ -226,7 +226,7 @@ class FactorResource extends Resource
 
                                                         if ($invoiceSum != $productSum) {
                                                             $remainingAmount = $productSum - $invoiceSum;
-                                                            $fail("The paid amount does not match the total price. Total amount:" . number_format($productSum) . ", Remaining amount: " . number_format($remainingAmount));
+                                                            $fail("The paid amount does not match the total price. Total amount:" . number_format($productSum,2) . ", Remaining amount: " . number_format($remainingAmount,2));
                                                         }
                                                     }
                                                 } elseif ($get('creditor') != 0) {
@@ -298,7 +298,7 @@ class FactorResource extends Resource
                 ->state(fn($record)=>$record->type == "1" ? "Income" : "Expense")
                 ->badge()->color(fn($record)=>$record->type == "1" ? "success" : "danger"),
                 Tables\Columns\TextColumn::make('total')
-                ->state(fn($record) => number_format($record->items->map(fn($item) => (($item['quantity'] * str_replace(',', '', $item['unit_price'])) - (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['discount']) / 100) ))?->sum()))
+                ->state(fn($record) => number_format($record->items->map(fn($item) => (($item['quantity'] * str_replace(',', '', $item['unit_price'])) - (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['discount']) / 100) ))?->sum(),2))
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')->label('Date')
