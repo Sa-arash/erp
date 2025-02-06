@@ -46,6 +46,7 @@ class PurchaseOrderResource extends Resource
     }
     protected static ?string $model = PurchaseOrder::class;
     protected static ?string $navigationGroup = 'Finance Management';
+
     protected static ?int $navigationSort =0;
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
@@ -282,7 +283,7 @@ class PurchaseOrderResource extends Resource
                                             $q = intval($get('quantity'));
                                             $tax = intval($get('taxes') === null ? 0 : (float)$get('taxes'));
                                             $price = intval($get('unit_price') !== null ? str_replace(',', '', $get('unit_price')) : 0);
-                                           
+
                                             $set('total', number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100)));
                                         })->live(true)
                                             ->required()
