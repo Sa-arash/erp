@@ -10,6 +10,7 @@ use App\Models\Brand;
 use App\Models\Company;
 use App\Models\CompanyUser;
 use App\Models\Contract;
+use App\Models\Currency;
 use App\Models\Customer;
 use App\Models\Department;
 use App\Models\Documentation;
@@ -32,7 +33,7 @@ use App\Models\Warehouse;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
-class DatabaseSeeder extends Seeder
+class  DatabaseSeeder extends Seeder
 {
     /**
      * Seed the application's database.
@@ -196,8 +197,8 @@ class DatabaseSeeder extends Seeder
                 'company_id'=>1,
             ]);
         }
-       
-        
+
+
 
         // User::factory()->create([
         //     'id' => 1,
@@ -218,6 +219,7 @@ class DatabaseSeeder extends Seeder
         //     'position_id' => 1,
         // ]);
 
+        Currency::factory(1)->create();
         $accounts = [
             [
                 'id' => 1,
@@ -560,6 +562,7 @@ class DatabaseSeeder extends Seeder
 
         foreach ($accounts as $account) {
             $account['stamp'] = $account['name'];
+            $account['currency_id'] = 1;
             DB::table('accounts')->insert($account);
         }
 
