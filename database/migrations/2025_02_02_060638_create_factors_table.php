@@ -15,11 +15,12 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->foreignId('party_id')->constrained('parties')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('account_id')->constrained('accounts')->cascadeOnUpdate()->cascadeOnDelete();
             $table->string('from');
             $table->string('to');
-            $table->foreignId('invoice_id')->constrained('invoices')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->boolean('type')->default(0);
-            $table->bigInteger('total');
+            $table->foreignId('invoice_id')->nullable()->constrained('invoices')->cascadeOnDelete()->cascadeOnUpdate();
+           
+            $table->boolean('type');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
         });

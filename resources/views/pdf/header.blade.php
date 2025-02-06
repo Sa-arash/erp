@@ -7,15 +7,16 @@
     <link rel="icon" type="image/x-icon" href="{!! public_path('images/' . $company?->logo) !!}">
 
     <title>Report</title>
+
     @if($css??true)
     <style>
         body {
-            font-family: vazir, sans-serif;
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
             direction: ltr;
             background-color: #ffffff;
-            font: 20px
+            font-size: 12px
         }
 
         h1 {
@@ -72,7 +73,7 @@
         @media print {
             body {
                 background-color: white;
-                font-size: 12pt;
+                font-size: 12px;
             }
 
             table {
@@ -100,20 +101,11 @@
 
         }
 
-        body {
-            font-family: vazir, sans-serif;
-            margin: 0;
-            padding: 0;
-            direction: ltr;
-            background-color: #ffffff;
-            font-size: 14px;
-            /* کوچک‌تر کردن فونت اصلی صفحه */
-        }
 
         h1 {
             text-align: center;
             margin-bottom: 30px;
-            font-size: 20px;
+            font-size: 15px;
             /* کوچک‌تر کردن اندازه فونت تیتر اصلی */
         }
 
@@ -152,7 +144,7 @@
         .totals div {
             margin-left: 20px;
             font-weight: bold;
-            font-size: 13px;
+            font-size: 12px;
             /* کوچک‌تر کردن فونت قسمت مجموع‌ها */
         }
 
@@ -160,7 +152,7 @@
         @media print {
             body {
                 background-color: white;
-                font-size: 10pt;
+                font-size: 12pt;
             }
 
             table {
@@ -176,7 +168,7 @@
             th {
                 background-color: #333 !important;
                 color: #fff !important;
-                font-size: 11pt;
+                font-size: 10pt;
             }
 
             tr:nth-child(even) td {
@@ -196,8 +188,8 @@
 
 
 
-        <table style="border: ">
-            <tr style="border: ;">
+        <table >
+            <tr >
                 <td style="border: none;width: 33%; text-align: left; padding-left: 10px;">
                     @if ($customImage??false)
                         <img src="{!! public_path('images/' . $customImage??null) !!}" style="width: 70px;">
@@ -220,12 +212,4 @@
                 </td>
             </tr>
         </table>
-
-
-
-
-
-
-
-
     </div>

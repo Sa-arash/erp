@@ -42,11 +42,12 @@ class PurchaseOrderResource extends Resource
 
     public static function canCreate(): bool
     {
-        return getPeriod()!=null;
+        return getPeriod() != null;
     }
     protected static ?string $model = PurchaseOrder::class;
     protected static ?string $navigationGroup = 'Finance Management';
-    protected static ?int $navigationSort = 4;
+
+    protected static ?int $navigationSort =0;
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
 
@@ -62,42 +63,42 @@ class PurchaseOrderResource extends Resource
                             Section::make('Order Info')->schema([
 
                                 Forms\Components\Select::make('purchase_request_id')
-                                ->default(function(Request $request){
-                                    return $request?->prno;
-                                })
-                                ->afterStateHydrated(function (Set $set,Get $get, $state){
-                                    if ($state) {
-                                        $record = PurchaseRequest::query()->with('bid')->firstWhere('id', $state);
+                                    ->default(function (Request $request) {
+                                        return $request?->prno;
+                                    })
+                                    ->afterStateHydrated(function (Set $set, Get $get, $state) {
+                                        if ($state) {
+                                            $record = PurchaseRequest::query()->with('bid')->firstWhere('id', $state);
 
-                                        if ($record->bid) {
-                                            $data = [];
-                                            foreach ($record->bid->quotation?->quotationItems->toArray() as $item) {
-                                                $prItem = PurchaseRequestItem::query()->firstWhere('id', $item['purchase_request_item_id']);
-                                                $item['quantity'] = $prItem->quantity;
-                                                $item['unit_id'] = $prItem->unit_id;
-                                                $item['description'] = $prItem->description;
-                                                $item['product_id'] = $prItem->product_id;
-                                                $item['project_id'] = $prItem->project_id;
-                                                $q = $prItem->quantity;
-                                                $item['unit_price'] = number_format($item['unit_rate']);
-                                                $price = $item['unit_rate'];
-                                                $tax = $item['taxes'];
-                                                $freights = $item['freights'];
+                                            if ($record->bid) {
+                                                $data = [];
+                                                foreach ($record->bid->quotation?->quotationItems->toArray() as $item) {
+                                                    $prItem = PurchaseRequestItem::query()->firstWhere('id', $item['purchase_request_item_id']);
+                                                    $item['quantity'] = $prItem->quantity;
+                                                    $item['unit_id'] = $prItem->unit_id;
+                                                    $item['description'] = $prItem->description;
+                                                    $item['product_id'] = $prItem->product_id;
+                                                    $item['project_id'] = $prItem->project_id;
+                                                    $q = $prItem->quantity;
+                                                    $item['unit_price'] = number_format($item['unit_rate']);
+                                                    $price = $item['unit_rate'];
+                                                    $tax = $item['taxes'];
+                                                    $freights = $item['freights'];
 
-                                                $item['total'] = number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100));
-                                                $data[] = $item;
+                                                    $item['total'] = number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100));
+                                                    $data[] = $item;
+                                                }
+                                                $set('RequestedItems', $data);
+                                                $set('vendor_id', $record->bid->quotation->party_id);
+                                            } else {
+
+
+                                                $set('RequestedItems', $record->items->where('status', 'approve')->toArray());
+                                                // dd($get('RequestedItems'),$record->items->where('status', 'approve')->toArray());
                                             }
-                                            $set('RequestedItems', $data);
-                                            $set('vendor_id', $record->bid->quotation->party_id);
-                                        } else {
-
-
-                                            $set('RequestedItems', $record->items->where('status', 'approve')->toArray());
-                                            // dd($get('RequestedItems'),$record->items->where('status', 'approve')->toArray());
                                         }
-                                    }
-                                })
-                                ->live()
+                                    })
+                                    ->live()
                                     ->label('PR NO')
                                     ->searchable()
                                     ->preload()
@@ -196,33 +197,33 @@ class PurchaseOrderResource extends Resource
 
 
                                 Repeater::make('RequestedItems')->defaultItems(1)->required()
-                                ->default(function(Request $request,Set $set){
-                                    $record = (PurchaseRequest::query()->with('bid')->firstWhere('id', $request->prno));
-                                    if ($record?->bid) {
-                                        $data = [];
-                                        foreach ($record->bid->quotation?->quotationItems->toArray() as $item) {
-                                            $prItem = PurchaseRequestItem::query()->firstWhere('id', $item['purchase_request_item_id']);
-                                            $item['quantity'] = $prItem->quantity;
-                                            $item['unit_id'] = $prItem->unit_id;
-                                            $item['description'] = $prItem->description;
-                                            $item['product_id'] = $prItem->product_id;
-                                            $item['project_id'] = $prItem->project_id;
-                                            $q = $prItem->quantity;
-                                            $item['unit_price'] = number_format($item['unit_rate']);
-                                            $price = $item['unit_rate'];
-                                            $tax = $item['taxes'];
-                                            $freights = $item['freights'];
+                                    ->default(function (Request $request, Set $set) {
+                                        $record = (PurchaseRequest::query()->with('bid')->firstWhere('id', $request->prno));
+                                        if ($record?->bid) {
+                                            $data = [];
+                                            foreach ($record->bid->quotation?->quotationItems->toArray() as $item) {
+                                                $prItem = PurchaseRequestItem::query()->firstWhere('id', $item['purchase_request_item_id']);
+                                                $item['quantity'] = $prItem->quantity;
+                                                $item['unit_id'] = $prItem->unit_id;
+                                                $item['description'] = $prItem->description;
+                                                $item['product_id'] = $prItem->product_id;
+                                                $item['project_id'] = $prItem->project_id;
+                                                $q = $prItem->quantity;
+                                                $item['unit_price'] = number_format($item['unit_rate']);
+                                                $price = $item['unit_rate'];
+                                                $tax = $item['taxes'];
+                                                $freights = $item['freights'];
 
-                                            $item['total'] = number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100));
-                                            $data[] = $item;
+                                                $item['total'] = number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100));
+                                                $data[] = $item;
+                                            }
+                                            $set('vendor_id', $record->bid->quotation->party_id);
+                                            return  $data;
+                                        } else {
+                                            return $record?->items->where('status', 'approve')->toArray();
                                         }
-                                        $set('vendor_id', $record->bid->quotation->party_id);
-                                      return  $data;
-                                    } else {
-                                       return $record?->items->where('status', 'approve')->toArray();
-                                    }
-                                })
-                                ->relationship('items')
+                                    })
+                                    ->relationship('items')
                                     // ->formatStateUsing(fn(Get $get) => dd($get('purchase_request_id')):'')
                                     ->schema([
                                         Forms\Components\Select::make('product_id')
@@ -251,18 +252,16 @@ class PurchaseOrderResource extends Resource
                                             ->stripCharacters(',')->label('Final Price'),
                                         Forms\Components\TextInput::make('taxes')->afterStateUpdated(function ($state, Set $set, Get $get) {
 
-                                            $freights = $get('freights') === null ? 0 : (float)$get('freights');
+                                            $freights = intval($get('freights') == null ? 0 : (float)$get('freights'));
 
-                                            $q = $get('quantity');
+                                            $q = intval($get('quantity'));
 
-                                            $tax = $state === null ? 0 : (float)$state;
-                                            $price = $get('unit_price') !== null ? str_replace(',', '', $get('unit_price')) : 0;
+                                            $tax = intval($state === null ? 0 : (float)$state);
+                                            $price = intval($get('unit_price') != null ? str_replace(',', '', $get('unit_price')) : 0);
 
 
 
                                             $set('total', number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100)));
-
-
                                         })->live(true)
                                             ->prefix('%')
                                             ->numeric()
@@ -281,9 +280,10 @@ class PurchaseOrderResource extends Resource
                                             ->stripCharacters(','),
                                         Forms\Components\TextInput::make('freights')->afterStateUpdated(function ($state, Set $set, Get $get) {
                                             $freights = $state === null ? 0 : (float) $state;
-                                            $q = $get('quantity');
-                                            $tax = $get('taxes') === null ? 0 : (float)$get('taxes');
-                                            $price = $get('unit_price') !== null ? str_replace(',', '', $get('unit_price')) : 0;
+                                            $q = intval($get('quantity'));
+                                            $tax = intval($get('taxes') === null ? 0 : (float)$get('taxes'));
+                                            $price = intval($get('unit_price') !== null ? str_replace(',', '', $get('unit_price')) : 0);
+
                                             $set('total', number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100)));
                                         })->live(true)
                                             ->required()
@@ -431,7 +431,7 @@ class PurchaseOrderResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->defaultSort('date_of_po','desc')
+        return $table->defaultSort('date_of_po', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('purchase_orders_number')
                     ->label('PO NO')
@@ -446,7 +446,7 @@ class PurchaseOrderResource extends Resource
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('total')
-                ->label('Total(' . getCompany()->currency . ")")
+                    ->label('Total(' . getCompany()->currency . ")")
                     ->state(fn($record) => number_format($record->items->map(fn($item) => (($item['quantity'] * str_replace(',', '', $item['unit_price'])) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['taxes']) / 100) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['freights']) / 100)))?->sum()))
                     ->searchable(),
 
@@ -460,7 +460,7 @@ class PurchaseOrderResource extends Resource
                 Tables\Columns\TextColumn::make('purchaseRequest.purchase_number')
                     ->label("PR NO")
                     ->badge()
-                    ->url(fn($record)=> PurchaseRequestResource::getUrl('index')."?tableFilters[purchase_number][value]=".$record->purchaseRequest?->id)
+                    ->url(fn($record) => PurchaseRequestResource::getUrl('index') . "?tableFilters[purchase_number][value]=" . $record->purchaseRequest?->id)
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('date_of_delivery')
@@ -487,9 +487,9 @@ class PurchaseOrderResource extends Resource
                 //         return 'Created at ' . Carbon::parse($data['date'])->toFormattedDateString();
                 //     })
                 SelectFilter::make('purchase_request_id')->searchable()->preload()->options(PurchaseRequest::where('company_id', getCompany()->id)->get()->pluck('purchase_number', 'id'))
-                ->label("PR NO"),
-                SelectFilter::make('vendor_id')->searchable()->preload()->options(Parties::where('company_id', getCompany()->id)->where('account_code_vendor','!=',null)->get()->pluck('name', 'id'))
-                ->label("Vendor"),
+                    ->label("PR NO"),
+                SelectFilter::make('vendor_id')->searchable()->preload()->options(Parties::where('company_id', getCompany()->id)->where('account_code_vendor', '!=', null)->get()->pluck('name', 'id'))
+                    ->label("Vendor"),
                 DateRangeFilter::make('date_of_po'),
 
                 // SelectFilter::make('position_id')->searchable()->preload()->options(Position::where('company_id', getCompany()->id)->get()->pluck('title', 'id'))

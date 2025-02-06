@@ -9,8 +9,10 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
+use Filament\Notifications\Notification;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
@@ -33,7 +35,7 @@ class VisitRequest extends BaseWidget
             )
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
-               
+
                 Tables\Columns\TextColumn::make('visitors_detail')
                     ->label('Visitors')
                     ->state(fn($record) => implode(', ', (array_map(fn($item) => $item['name'], $record->visitors_detail))))
@@ -48,7 +50,7 @@ class VisitRequest extends BaseWidget
                 Tables\Columns\TextColumn::make('status'),
 
                 Tables\Columns\TextColumn::make('employee.fullName')
-                ->label('Requestor')
+                ->label('Requester')
                 ->numeric()
                 ->toggleable(isToggledHiddenByDefault: true)
                 ->sortable(),
@@ -109,10 +111,10 @@ class VisitRequest extends BaseWidget
                                             'International' => 'International',
                                             'De-facto Security Forces' => 'De-facto Security Forces',
                                         ]),
-                                    TextInput::make('remarks')
+                                    Textarea::make('remarks')->columnSpanFull()
                                         ->label('Remarks'),
 
-                                ])->columns(6)->columnSpanFull(),
+                                ])->columns(5)->columnSpanFull(),
 
 
 
@@ -137,23 +139,11 @@ class VisitRequest extends BaseWidget
 
                                 ])->columns(3)->columnSpanFull(),
 
-
-
-
-
-
-
-
-
-
-
-
-
                         ])->columns(2)
 
                     ]
 
-                )->action(function (array $data, $record): void {
+                )->action(function (array $data): void {
                    $visitorRequest = VisitorRequest::query()->create([
                         'visit_date'=>$data['visit_date'],
                         'arrival_time'=>$data['arrival_time'],
@@ -165,24 +155,9 @@ class VisitRequest extends BaseWidget
                         'company_id'=>getCompany()->id,
                     ]);
 
+                    sendAR(getEmployee(),$visitorRequest,getCompany());
+                    Notification::make('success')->color('success')->success()->title('Request  Sent')->send()->sendToDatabase(auth()->user());
 
-
-                    if (getEmployee()->department->employee_id){
-                        if (getEmployee()->department->employee_id ===getEmployee()->id){
-                            $visitorRequest->approvals()->create([
-                                'employee_id'=>getEmployee()->department->employee_id,
-                                'company_id'=>getCompany()->id,
-                                'position'=>'Head Department',
-                                'status'=>"Approve"
-                            ]);
-                        }else{
-                            $visitorRequest->approvals()->create([
-                                'employee_id'=>getEmployee()->department->employee_id,
-                                'company_id'=>getCompany()->id,
-                                'position'=>'Head Department'
-                            ]);
-                        }
-                    }
                 })
             ])
             ->bulkActions([])

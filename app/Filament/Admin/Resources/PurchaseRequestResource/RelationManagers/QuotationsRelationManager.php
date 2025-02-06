@@ -30,7 +30,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class QuotationsRelationManager extends RelationManager
 {
     protected static string $relationship = 'quotations';
-
+    protected static ?string $label = 'Quotations';
     public function form(Form $form): Form
     {
 

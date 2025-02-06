@@ -209,24 +209,9 @@ class MyAsset extends BaseWidget
                         $item['company_id'] = $id;
                         $takeOut->items()->create($item);
                     }
-                    if ($employee->department->employee_id) {
-                        if ($employee->department->employee_id === $employee->id) {
-                            $takeOut->approvals()->create([
-                                'employee_id' => $employee->department->employee_id,
-                                'company_id' => $id,
-                                'position' => 'Head Department',
-                                'status' => "Approve"
-                            ]);
-                        } else {
-                            $takeOut->approvals()->create([
-                                'employee_id' => $employee->department->employee_id,
-                                'company_id' => $id,
-                                'position' => 'Head Department'
-                            ]);
-                        }
-                    }
+                    sendAR($employee,$takeOut,getCompany());
 
-                    Notification::make('success')->success()->title('Request  Sent')->send()->sendToDatabase(auth()->user());
+                    Notification::make('success')->color('success')->success()->title('Request  Sent')->send()->sendToDatabase(auth()->user());
                 }),
 
             ]);

@@ -1,11 +1,5 @@
 
-
-
    @include('pdf.header', ['titles' => ['Visitor Request Details'], 'css'=>false] )
-   
-  
-    
-
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -23,7 +17,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-        
+
         }
         table, th, td {
             border: 1px solid #ccc;
@@ -36,7 +30,7 @@
             background-color: #f2f2f2;
         }
         .section-title {
-            font-size: 1.2em;
+            font-size: 12px;
             margin-top: 20px;
             margin-bottom: 10px;
             color: #007bff;
@@ -52,24 +46,15 @@
             <table>
                 <tr>
                     <th>Full Name</th>
-              
-              
-        
-            
                     <th>Cell Phone</th>
-                
-           
                     <th>Email</th>
-                
                 </tr>
-                {{-- @dd($requestVisit); --}}
-                <tr> 
-                    <td>{{$requestVisit->requested->fullName}}</td>
-                 
+                <tr>
+                    <td>{{$requestVisit->employee->fullName}}</td>
                     <td>+1234567890</td>
-                    <td>johndoe@unagency.org</td>    
+                    <td>johndoe@unagency.org</td>
                 </tr>
-                    
+
             </table>
         </div>
 
@@ -77,24 +62,15 @@
             <div class="section-title">Specific Visit Details</div>
             <table>
                 <tr>
-            
-                
-           
                     <th>Date of Visit</th>
-                
-               
                     <th>Time of Arrival</th>
-             
                     <th>Time of Departure</th>
-               
-             
                     <th>Purpose of Visit</th>
-               
                 </tr>
                 <tr>
                     <td>{{\Illuminate\Support\Carbon::create($requestVisit->visit_date)->format('Y/m/d')}}</td>
-                    <td>{{$requestVisit->arrival_time}}</td> 
-                     <td>{{$requestVisit->departure_time}}</td> 
+                    <td>{{$requestVisit->arrival_time}}</td>
+                     <td>{{$requestVisit->departure_time}}</td>
                      <td>{{$requestVisit->purpose}}</td>
              </tr>
             </table>
@@ -103,8 +79,6 @@
         <div class="section">
             <div class="section-title">Visitor(s) Details</div>
             <table>
-                
-                
                 <tr>
                     <th>Full Name</th>
                     <th>ID/Passport</th>
@@ -126,7 +100,6 @@
                 @endforeach
             </table>
         </div>
-
         <div class="section">
             <div class="section-title">Driver and Vehicle Details</div>
             <table style="">
@@ -136,7 +109,7 @@
                 </tr>
                 <tr style="padding: 0px 0px ;margin:0px">
                     <td style="padding: 0px 0px ;margin:0px">
-                           <table>  
+                           <table>
                             <tr>
                                 <th>Full Name</th>
                                 <th>ID/Passport</th>
@@ -147,13 +120,12 @@
                                 <td>{{$driver['name']??'---'}}</td>
                                 <td>{{$driver['id']??'---'}}</td>
                                 <td>{{$driver['phone']??'---'}}</td>
-                            
                             </tr>
                             @endforeach
                              </table>
                     </td>
                     <td style="padding: 0px 0px;margin :0px">
-                           <table> 
+                           <table>
                             <tr>
                                 <th>Model</th>
                                 <th>Color</th>
@@ -164,15 +136,14 @@
                                 <td>{{$vehicle['model']??'---'}}</td>
                                 <td>{{$vehicle['color']??'---'}}</td>
                                 <td>{{$vehicle['Registration_Plate']??'---'}}</td>
-
                             </tr>
                             @endforeach
                              </table>
                     </td>
                 </tr>
-             
 
-           
+
+
             </table>
         </div>
 
@@ -190,8 +161,6 @@
             </table>
             <table>
                 <tr>
-                   
-                   
                     <th>Status : </th>
                     <th>Approval Date: </th>
                 </tr>
@@ -202,7 +171,7 @@
             </table>
         </div>
     </div>
-    
-  
-    
-@include('pdf.footer') 
+
+
+
+@include('pdf.footer')

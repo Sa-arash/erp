@@ -21,7 +21,7 @@ class CreatePurchaseOrder extends CreateRecord
 {
     protected static string $resource = PurchaseOrderResource::class;
 
-   
+
     //     protected function onValidationError(ValidationException $exception): void
     // {
     //     dd($exception->getMessage() , $exception);
@@ -77,7 +77,7 @@ class CreatePurchaseOrder extends CreateRecord
             //     ]);
             // }
 
-           
+
 
             // ##each item
             // $invoice->transactions()->create([
@@ -139,13 +139,13 @@ class CreatePurchaseOrder extends CreateRecord
                 //     // ذخیره فاکتور (Invoice)
 
                 $this->record->invoice->update([
-                    'name'=>$this->record->invoice->name."(Total:".number_format($total).")",
+                    'name' => $this->record->invoice->name . "(Total:" . number_format($total) . ")",
                 ]);
                 //     // ذخیره تراکنش‌های فاکتور (Transactions)
                 foreach ($this->data['invoice']['transactions'] as $transaction) {
                     $savedTransaction = $this->record->invoice->transactions()->create([
                         'account_id' => $transaction['account_id'],
-                        'description' => $transaction['description']." PONO:".$this->record->purchase_orders_number.($this->record->purchase_request_id ? (" PRNO:".$this->record->purchaseRequest->purchase_number): ""),
+                        'description' => $transaction['description'] . " PONO:" . $this->record->purchase_orders_number . ($this->record->purchase_request_id ? (" PRNO:" . $this->record->purchaseRequest->purchase_number) : ""),
                         'company_id' => $transaction['company_id'],
                         'user_id' => auth()->user()->id,
                         'creditor' => str_replace(',', '', $transaction['creditor']),
@@ -153,7 +153,7 @@ class CreatePurchaseOrder extends CreateRecord
                         'Cheque' => $transaction['Cheque'],
                         'financial_period_id' => $transaction['financial_period_id'],
                     ]);
-// dd($transaction ,!empty($transaction['cheque']) && isset($transaction['cheque']['amount']) );
+                    // dd($transaction ,!empty($transaction['cheque']) && isset($transaction['cheque']['amount']) );
                     // چک 
                     if ($transaction['Cheque']) {
                         $savedTransaction->cheque()->create([
@@ -169,7 +169,7 @@ class CreatePurchaseOrder extends CreateRecord
                             'payee_name' => $transaction['cheque']['payee_name'] ?? null,
                             'description' => $transaction['cheque']['description'] ?? null,
                             'company_id' => $transaction['cheque']['company_id'] ?? null,
-                            'status'=>'pending',
+                            'status' => 'pending',
                             'cheque_number' => $transaction['cheque']['cheque_number'] ?? null,
                             'transaction_id' => $savedTransaction->id, // اتصال چک به تراکنش
                         ]);
@@ -187,84 +187,83 @@ class CreatePurchaseOrder extends CreateRecord
             }
 
 
-         
-       
+
+
             #fix
             $vendorAccount = Parties::find($data['vendor_id']);
-            
+
             //Giving money to Vendor
-             $savedTransaction = $this->record->invoice->transactions()->create([
-           
+            $savedTransaction = $this->record->invoice->transactions()->create([
+
                 'account_id' => $vendorAccount->accountVendor->id,
                 'user_id' => auth()->user()->id,
                 'creditor' => 0,
                 'debtor' => $total,
-                'description' => 'Giving money to '.$vendorAccount->name.($this->record->purchase_request_id ? (" PRNO:".$this->record->purchaseRequest->purchase_number): ""." PONO:".$this->record->purchase_orders_number),
+                'description' => 'Giving money to ' . $vendorAccount->name . ($this->record->purchase_request_id ? (" PRNO:" . $this->record->purchaseRequest->purchase_number) : "" . " PONO:" . $this->record->purchase_orders_number),
                 'company_id' => getCompany()->id,
                 'financial_period_id' => getPeriod()->id,
                 //  'invoice_id' => $invoice->id,
-                
-            
-             ]);
 
-                  // Giving assets by vendor
-                  $savedTransaction = $this->record->invoice->transactions()->create([
-           
-                    'account_id' => $vendorAccount->accountVendor->id,
+
+            ]);
+
+            // Giving assets by vendor
+            $savedTransaction = $this->record->invoice->transactions()->create([
+
+                'account_id' => $vendorAccount->accountVendor->id,
+                'user_id' => auth()->user()->id,
+                'debtor' => 0,
+                'creditor' => $total,
+                'description' => 'Get assets from ' . $vendorAccount->name . ($this->record->purchase_request_id ? (" PRNO:" . $this->record->purchaseRequest->purchase_number) : "" . " PONO:" . $this->record->purchase_orders_number),
+                'company_id' => getCompany()->id,
+                'financial_period_id' => getPeriod()->id,
+                //  'invoice_id' => $invoice->id,
+
+
+            ]);
+
+            //Added each product to asset 
+
+            foreach ($this->form->getLivewire()->data['RequestedItems'] as $item) {
+
+                $product = Product::find($item['product_id']);
+                $savedTransaction = $this->record->invoice->transactions()->create([
+
+
+
+                    'account_id' => $product->sub_account_id,
                     'user_id' => auth()->user()->id,
-                    'debtor' => 0,
-                    'creditor' => $total,
-                    'description' => 'Get assets from '.$vendorAccount->name.($this->record->purchase_request_id ? (" PRNO:".$this->record->purchaseRequest->purchase_number): ""." PONO:".$this->record->purchase_orders_number),
+                    'creditor' => 0,
+                    'debtor' => (($item['quantity'] * str_replace(',', '', $item['unit_price'])) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['taxes']) / 100) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['freights']) / 100)),
+                    'description' => 'Added ' . $product->title . ' to assets ' . ($this->record->purchase_request_id ? (" PRNO:" . $this->record->purchaseRequest->purchase_number) : "" . " PONO:" . $this->record->purchase_orders_number),
                     'company_id' => getCompany()->id,
                     'financial_period_id' => getPeriod()->id,
-                    //  'invoice_id' => $invoice->id,
-                    
-                
-                 ]);
 
-                //Added each product to asset 
-               
-                foreach ($this->form->getLivewire()->data['RequestedItems'] as $item) {
 
-                    $product = Product::find($item['product_id']);
-                    $savedTransaction = $this->record->invoice->transactions()->create([
-           
-                        
+                ]);
 
-                        'account_id' => $product->sub_account_id,
-                        'user_id' => auth()->user()->id,
-                        'creditor' => 0,
-                        'debtor' => (($item['quantity'] * str_replace(',', '', $item['unit_price'])) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['taxes']) / 100) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['freights']) / 100)),
-                        'description' => 'Added '.$product->title.' to assets '.($this->record->purchase_request_id ? (" PRNO:".$this->record->purchaseRequest->purchase_number): ""." PONO:".$this->record->purchase_orders_number),
-                        'company_id' => getCompany()->id,
-                        'financial_period_id' => getPeriod()->id,
-                        
-                    
-                     ]);
+                // $invoice->transactions()->create([
+                //     'account_id' => $item['product_id'],
+                //     'creditor' => 0,
+                //     'debtor' => str_replace(',', '', $item['total']),
+                //     'description' => 'item buy from ' . $item['purchase_request_id'] ?? '',
 
-                    // $invoice->transactions()->create([
-                    //     'account_id' => $item['product_id'],
-                    //     'creditor' => 0,
-                    //     'debtor' => str_replace(',', '', $item['total']),
-                    //     'description' => 'item buy from ' . $item['purchase_request_id'] ?? '',
-
-                    //     'invoice_id' => $invoice->id,
-                    //     'financial_period_id' => getPeriod()->id,
-                    //     'company_id' => getCompany()->id,
-                    //     'user_id' => auth()->user(),
-                    // ]);
-                }
-
-                if($this->record->purchase_request_id)
-                {
-                    $this->record->purchaseRequest()->update([
-                        'status'=>"Finished"
-                    ]);
-                }
-
-                // $this->record->update([
-                //     'invoice_id'=>$this->record->invoice->id,
+                //     'invoice_id' => $invoice->id,
+                //     'financial_period_id' => getPeriod()->id,
+                //     'company_id' => getCompany()->id,
+                //     'user_id' => auth()->user(),
                 // ]);
+            }
+
+            if ($this->record->purchase_request_id) {
+                $this->record->purchaseRequest()->update([
+                    'status' => "Finished"
+                ]);
+            }
+
+            // $this->record->update([
+            //     'invoice_id'=>$this->record->invoice->id,
+            // ]);
 
 
 

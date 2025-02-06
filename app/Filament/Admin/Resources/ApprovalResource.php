@@ -78,7 +78,7 @@ class ApprovalResource extends Resource
                     ];
                 }),
 
-                Tables\Actions\Action::make('viewVisitorRequest')->label('View')->visible(fn($record) => substr($record->approvable_type, 11) === "VisitorRequest")->infolist(function ($record) {
+                Tables\Actions\Action::make('viewVisitorRequest')->label('View')->visible(fn($record) => substr($record->approvable_type, 11) === "VisitorRequest")->infolist(function () {
                     return [
                         Fieldset::make('Visitor Access')->schema([
                             Section::make('Visitor Access Request')->schema([
@@ -115,7 +115,7 @@ class ApprovalResource extends Resource
                             ])->columns(2)
                         ])->relationship('approvable')->columns()
                     ];
-                }),
+                })->modalWidth(MaxWidth::SevenExtraLarge),
 
                 Action::make('viewPurchaseRequest')->label('View')->modalWidth(MaxWidth::Full)->infolist(function () {
                     return [
@@ -132,15 +132,15 @@ class ApprovalResource extends Resource
                                 TextEntry::make('project.name')->badge(),
                                 TextEntry::make('description')->columnSpanFull(),
                                 TextEntry::make('head_decision')->badge()->label('Head Of Department Decision'),
-                                TextEntry::make('head_comment')->tooltip(fn($record) => $record->head_comment)->label('Head Of Department Comment')->badge(),
+                                TextEntry::make('head_comment')->limit(50)->tooltip(fn($record) => $record->head_comment)->label('Head Of Department Comment'),
                                 TextEntry::make('ceo_decision')->badge()->label('CEO Decision'),
-                                TextEntry::make('ceo_comment')->tooltip(fn($record) => $record->ceo_comment)->badge()->label('CEO Comment'),
+                                TextEntry::make('ceo_comment')->tooltip(fn($record) => $record->ceo_comment)->label('CEO Comment'),
                             ])->columns(5)->columnSpanFull(),
                             RepeatableEntry::make('approvals')->schema([
                                 TextEntry::make('employee.fullName'),
                                 TextEntry::make('created_at')->label('Request Date')->date(),
                                 TextEntry::make('status')->badge(),
-                                TextEntry::make('comment')->badge(),
+                                TextEntry::make('comment')->tooltip(fn($record) => $record->comment)->limit(50),
                                 TextEntry::make('approve_date')->date(),
                             ])->columns(5)->columnSpanFull()
                         ])->columns(3),
@@ -152,7 +152,7 @@ class ApprovalResource extends Resource
                     Forms\Components\Section::make([
                         Forms\Components\Section::make([
                             Select::make('employee')->disabled()->default(fn($record) => $record->approvable?->employee_id)->options(fn($record) => Employee::query()->where('id', $record->approvable?->employee_id)->get()->pluck('info', 'id'))->searchable(),
-                            Forms\Components\ToggleButtons::make('status')->default('Approve')->colors(['Approve' => 'success', 'NotApprove' => 'danger', 'Pending' => 'primary'])->options(['Approve' => 'Approve', 'Pending' => 'Pending', 'NotApprove' => 'NotApprove'])->grouped(),
+                            Forms\Components\ToggleButtons::make('status')->default('Approve')->colors(['Approve' => 'success', 'NotApprove' => 'danger'])->options(['Approve' => 'Approve', 'NotApprove' => 'NotApprove'])->grouped(),
                             Forms\Components\ToggleButtons::make('is_quotation')->required()->label('Need Quotation')->boolean(' With Quotation', 'With out Quotation')->grouped()->inline(),
                             Forms\Components\Textarea::make('comment')->nullable()->columnSpanFull(),
                         ])->columns(3),
@@ -184,34 +184,43 @@ class ApprovalResource extends Resource
                 ])->modalWidth(MaxWidth::Full)->action(function ($data, $record) {
 
                     $record->update(['comment' => $data['comment'], 'status' => $data['status'], 'approve_date' => now()]);
-
-                    if ($record->position === "CEO") {
-                        $record->approvable->update(['is_quotation' => $data['is_quotation'], 'status' => "FinishedCeo"]);
-                    } else {
-                        $record->approvable->update(['is_quotation' => $data['is_quotation'], 'status' => 'FinishedHead']);
-                    }
-                    foreach ($data['items'] as $item) {
-                        $item['status'] = $item['decision'] === "reject" ? "rejected" : "approve";
+                    $PR = $record->approvable;
+                    if ($data['status'] === "NotApprove") {
                         if ($record->position === "CEO") {
-                            $item['ceo_comment'] = $item['comment'];
-                            $item['ceo_decision'] = $item['decision'];
+                            $PR->update(['is_quotation' => $data['is_quotation'], 'status' => "Rejected"]);
                         } else {
-                            $item['head_comment'] = $item['comment'];
-                            $item['head_decision'] = $item['decision'];
+                            $PR->update(['is_quotation' => $data['is_quotation'], 'status' => 'Rejected']);
                         }
-                        $prItem = PurchaseRequestItem::query()->firstWhere('id', $item['id']);
-                        $prItem->update($item);
+
+                    } else {
+                        if ($record->position === "CEO") {
+                            $PR->update(['is_quotation' => $data['is_quotation'], 'status' => 'FinishedCeo']);
+                        } else {
+                            $PR->update(['is_quotation' => $data['is_quotation'], 'status' => 'FinishedHead']);
+                        }
                     }
-                    if ($data['status'] === "Approve") {
-                        $CEO = Employee::query()->firstWhere('user_id', getCompany()->user_id);
-                        if ($record->position !== "CEO") {
-                            $record->approvable->approvals()->create([
-                                'employee_id' => $CEO->id,
-                                'company_id' => getCompany()->id,
-                                'position' => 'CEO',
-                                'status' => "Pending"
-                            ]);
+                        foreach ($data['items'] as $item) {
+                            $item['status'] = $item['decision'] === "reject" ? "rejected" : "approve";
+                            if ($record->position === "CEO") {
+                                $item['ceo_comment'] = $item['comment'];
+                                $item['ceo_decision'] = $item['decision'];
+                            } else {
+                                $item['head_comment'] = $item['comment'];
+                                $item['head_decision'] = $item['decision'];
+                            }
+                            $prItem = PurchaseRequestItem::query()->firstWhere('id', $item['id']);
+                            $prItem->update($item);
                         }
+                        if ($data['status'] === "Approve") {
+                            if ($record->position !== "CEO") {
+                                $CEO = Employee::query()->firstWhere('user_id', getCompany()->user_id);
+                                $PR->approvals()->create([
+                                    'employee_id' => $CEO->id,
+                                    'company_id' => getCompany()->id,
+                                    'position' => 'CEO',
+                                    'status' => "Pending"
+                                ]);
+                            }
                     }
                 })->visible(function ($record) {
                     if ($record->status->name !== "Approve") {
@@ -229,23 +238,47 @@ class ApprovalResource extends Resource
                     Forms\Components\ToggleButtons::make('status')->default('Approve')->colors(['Approve' => 'success', 'NotApprove' => 'danger', 'Pending' => 'primary'])->options(['Approve' => 'Approve', 'Pending' => 'Pending', 'NotApprove' => 'NotApprove'])->grouped(),
                     Forms\Components\Textarea::make('comment')->nullable()
                 ])->action(function ($data, $record) {
+
                     $record->update(['comment' => $data['comment'], 'status' => $data['status'], 'approve_date' => now()]);
                     $company = getCompany();
-                    if (substr($record->approvable_type, 11) === "PurchaseRequest") {
-                        if ($record->position === "Head Department") {
-                            $CEO = Employee::query()->firstWhere('user_id', $company->user_id);
-                            $record->approvals()->create([
-                                'employee_id' => $CEO->id,
-                                'company_id' => $company->id,
-                                'position' => 'CEO',
-                                'status' => "Pending"
-                            ]);
+                    if (substr($record->approvable_type, 11) === "VisitorRequest") {
+                        if ($data['status'] === "Approve") {
+                            if ($record->position === "Head Department") {
+                                $CEO = Employee::query()->firstWhere('user_id', $company->user_id);
+                                $record->approvals()->create([
+                                    'employee_id' => $CEO->id,
+                                    'company_id' => $company->id,
+                                    'position' => 'CEO',
+                                    'status' => "Pending"
+                                ]);
+                            } else {
+                                $record->approvable->update([
+                                    'status' => 'approve'
+                                ]);
+                            }
+                        }else{
                             $record->approvable->update([
-                                'status' => 'FinishedHead'
+                                'status' => 'notApproved'
                             ]);
-                        } else {
+                        }
+                    }elseif (substr($record->approvable_type, 11) === "TakeOut"){
+                        if ($data['status'] === "Approve") {
+                            if ($record->position === "Head Department") {
+                                $CEO = Employee::query()->firstWhere('user_id', $company->user_id);
+                                $record->approvals()->create([
+                                    'employee_id' => $CEO->id,
+                                    'company_id' => $company->id,
+                                    'position' => 'CEO',
+                                    'status' => "Pending"
+                                ]);
+                            } else {
+                                $record->approvable->update([
+                                    'mood' => 'Approved'
+                                ]);
+                            }
+                        }else{
                             $record->approvable->update([
-                                'status' => 'FinishedCeo'
+                                'mood' => 'NotApproved'
                             ]);
                         }
                     }

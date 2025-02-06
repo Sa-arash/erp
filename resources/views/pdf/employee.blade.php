@@ -8,14 +8,9 @@
     )
 
 <style>
-    body {
+    body{
         font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 20px;
-        background: #f5f5f5;
-        color: #333;
     }
-
     h1 {
         text-align: center;
         margin-bottom: 20px;
@@ -25,7 +20,6 @@
 
     table {
         width: 100%;
-
         border-collapse: collapse;
         margin-bottom: 20px;
         background-color: #ffffff;
@@ -38,7 +32,7 @@
         padding: 12px;
         text-align: left;
         vertical-align: top;
-        font-size: 14px;
+        font-size: 12px;
     }
 
     th {
@@ -59,7 +53,7 @@
         text-align: left;
         margin-top: 20px;
         border-radius: 5px;
-        font-size: 16px;
+        font-size: 15px;
         border: 1px solid #dcdcdc;
     }
 

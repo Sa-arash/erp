@@ -11,9 +11,11 @@ class Approval extends Model
     protected $guarded = ['id'];
     protected $casts = ['status' => ApprovalStatus::class];
 
+    public $count=0;
 
     public function approvable(): MorphTo
     {
+
         return $this->morphTo();
     }
 

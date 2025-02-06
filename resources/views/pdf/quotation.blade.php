@@ -1,19 +1,10 @@
 @include('pdf.header',
-   ['titles'=>['']])
-    <!DOCTYPE html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
-    <style>
-        body {
-            font-family: Vazir, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f9f9f9;
-        }
+  ['titles'=>[''],
+  'css'=>true
+  ])
+
+<style>
+
         .container {
             width: 210mm;
             margin: 0 auto;
@@ -27,11 +18,11 @@
         }
         .header h1 {
             margin: 0;
-            font-size: 20px;
+            font-size: 13px;
         }
         .header p {
             margin: 0;
-            font-size: 14px;
+            font-size: 12px;
         }
         table {
             width: 100%;
@@ -54,11 +45,11 @@
         }
         .terms {
             margin-top: 20px;
-            font-size: 14px;
+            font-size: 12px;
         }
         .footer {
             margin-top: 20px;
-            font-size: 14px;
+            font-size: 12px;
             display: flex;
             justify-content: space-between;
         }
@@ -78,7 +69,6 @@
             }
         }
     </style>
-</head>
 <body>
 <div style="border: 0!important;">
     <table style="border: 0!important;">

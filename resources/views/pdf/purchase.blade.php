@@ -1,14 +1,10 @@
 @include('pdf.header',
    ['titles'=>['']])
-    <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title></title>
+
+
     <style>
-        body {
-            font-family: Vazir, sans-serif;
+        body{
+            font-family: Arial, sans-serif;
         }
 
         table {
@@ -41,7 +37,7 @@
 
 
     </style>
-</head>
+
 <body>
 <h1>Purchase Request Form</h1>
 <table>
@@ -54,7 +50,7 @@
     <tr>
         <td style="text-align: left">Employee name: {{$pr->employee?->fullName}}</td>
         <td style="text-align: left">Employee
-           
+
              Position: {{$pr->employee?->position?->title}}</td>
     </tr>
     <tr>
@@ -87,7 +83,7 @@
             $totalBudget+=$item->quantity *$item->estimated_unit_cost;
         @endphp
         <tr>
-            <td>{{$item->product."-".$item->product?->sku}}</td>
+            <td>{{$item->product->title."-".$item->product?->sku}}</td>
             <td>{{$item->description}}</td>
             <td>{{$item->unit->title}}</td>
             <td>{{$item->quantity}}</td>
@@ -154,7 +150,7 @@
     <tr>
         <td style="text-align: start">
             <p>Attested by: {{$pr->employee?->department?->employee?->fullName}} </p>
-           
+
         </td>
         <td style="text-align: start">
             @if($pr->employee->department?->employee?->signature_pic)
@@ -162,9 +158,9 @@
             @endif
         </td>
     </tr>
-  
+
     @foreach ($pr?->approvals as $approve)
-            
+
     <tr>
         <td style="text-align: start">
             <p>Approved by: {{$approve->employee?->fullName}}</p>
@@ -173,7 +169,7 @@
             @if ($approve?->employee?->signature_pic)
             <img src="{!!   public_path('images/'.$approve?->employee?->signature_pic)!!}" style="border-radius: 50px ; width: 80px;" alt="">
             @else
-            
+
             @endif
         </td>
     </tr>

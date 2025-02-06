@@ -1,4 +1,9 @@
-<!DOCTYPE html>
+
+@include('pdf.header',
+    ['titles'=>[$accountTitle??'Account Report'],    'css'=>false,
+])
+
+
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -11,7 +16,7 @@
         }
 
         body {
-            font-family: 'Vazir', sans-serif;
+            font-family: 'Arial', sans-serif;
             background-color: #fff !important;
             margin: 0;
             padding: 0;
@@ -20,6 +25,8 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            font-size: 12px;
+
         }
 
         .pay-slip {
@@ -31,14 +38,14 @@
         }
 
         .pay-slip h1 {
-            font-size: 24px;
+            font-size: 15px;
             text-align: center;
             margin-bottom: 10px;
             color: #333;
         }
 
         .pay-slip h2 {
-            font-size: 20px;
+            font-size: 14px;
             margin-bottom: 10px;
             color: #555;
             text-align: center;
@@ -49,7 +56,7 @@
         }
 
         .pay-slip .section h3 {
-            font-size: 18px;
+            font-size: 13px;
             color: #666;
             margin-bottom: 5px;
             border-bottom: 1px solid #ddd;
@@ -74,7 +81,7 @@
         }
 
         .pay-slip .total {
-            font-size: 18px;
+            font-size: 12px;
             font-weight: bold;
             text-align: right;
             color: #333;
@@ -160,7 +167,7 @@
 
             <tr class="">
                 <td style="font-size: 18px">Total Earnings</td>
-                <td style="color: #1cc6b9;font-size: 20px" >{{ number_format($payroll->employee?->base_salary+$payroll->total_allowance ) }}</td>
+                <td style="color: #1cc6b9;font-size: 15px" >{{ number_format($payroll->employee?->base_salary+$payroll->total_allowance ) }}</td>
             </tr>
 
         </table>
@@ -181,7 +188,7 @@
             @endforeach
             <tr>
                 <td >Total Deductions</td>
-                <td style="color: #1cc6b9;font-size: 20px">{{number_format($payroll->total_deduction    )}}</td>
+                <td style="color: #1cc6b9;font-size: 15px">{{number_format($payroll->total_deduction    )}}</td>
             </tr>
         </table>
     </div>
@@ -199,7 +206,7 @@
             </tr>
             <tr>
                 <td >Net Pay </td>
-                <td   style="color: #1cc6b9;font-size: 20px"  >{{ number_format($payroll->amount_pay ).$payroll->company?->currency }}</td>
+                <td   style="color: #1cc6b9;font-size: 15px"  >{{ number_format($payroll->amount_pay ).$payroll->company?->currency }}</td>
             </tr>
         </table>
     </div>
