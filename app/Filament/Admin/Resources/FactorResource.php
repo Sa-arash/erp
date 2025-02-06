@@ -41,10 +41,10 @@ class FactorResource extends Resource
                         Forms\Components\Section::make([
                             Forms\Components\TextInput::make('title')->required()->maxLength(255),
                             Forms\Components\ToggleButtons::make('type')->live()->afterStateUpdated(function (Forms\Set $set, string $operation) {
-                                // $set('party_id', null);
-                                // $set('account_id', null);
-                                // $set('to', null);
-                                // $set('from', null);
+                                $set('party_id', null);
+                                $set('account_id', null);
+                                $set('to', null);
+                                $set('from', null);
                                 if($operation =="create")
                                 {
                                     $set('invoice.transactions', []);
