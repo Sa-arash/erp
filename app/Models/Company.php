@@ -52,6 +52,7 @@ class Company extends Model implements HasAvatar, HasName
     }
 
 
+
     public function departments(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Department::class);
@@ -309,8 +310,12 @@ class Company extends Model implements HasAvatar, HasName
     {
         return $this->hasMany(Service::class);
     }
-    public function factors()
+    public function factors(): HasMany
     {
         return $this->hasMany(Factor::class);
+    }
+    public function currencies(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Currency::class);
     }
 }

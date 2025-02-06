@@ -21,6 +21,7 @@ return new class extends Migration
             $table->enum('group',['Asset','Liabilitie','Equity','Income','Expense']);
             $table->foreignId('parent_id')->nullable()->constrained('accounts')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('currency_id')->constrained('currencies')->cascadeOnDelete()->cascadeOnUpdate();
             $table->boolean('built_in')->default(0);
             $table->text('description')->nullable();
             $table->timestamp('closed_at')->nullable();

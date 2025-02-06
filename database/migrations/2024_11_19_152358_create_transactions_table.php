@@ -16,8 +16,8 @@ return new class extends Migration
             $table->foreignId('account_id')->constrained('accounts')->cascadeOnDelete()->cascadeOnUpdate();
             $table->decimal('creditor', 18, 8)->default(0);
             $table->decimal('debtor', 18, 8)->default(0);
-            $table->string('currency', 10)->default('IRR');
-            $table->decimal('exchange_rate', 18, 8)->default(1);
+            $table->foreignId('currency_id')->constrained('currencies')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->decimal('exchange_rate', 50, 8)->default(1);
             $table->decimal('creditor_foreign', 18, 2)->default(0);
             $table->decimal('debtor_foreign', 18, 2)->default(0);
             $table->text('description')->nullable();

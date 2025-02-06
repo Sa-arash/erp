@@ -14,26 +14,26 @@ return new class extends Migration
         Schema::create('purchase_orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('invoice_id')->nullable()->constrained('accounts')->cascadeOnDelete()->cascadeOnUpdate();
-            
-            $table->date('date_of_delivery'); 
-            $table->string('location_of_delivery', 255)->nullable(); 
+
+            $table->date('date_of_delivery');
+            $table->string('location_of_delivery', 255)->nullable();
             $table->string('purchase_orders_number')->unique();
-            $table->string('currency', 10);
-            $table->decimal('exchange_rate', 10, 2)->nullable(); 
+            $table->foreignId('currency_id')->constrained('currencies')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->decimal('exchange_rate', 50, 8)->nullable();
             $table->date('date_of_po');
             $table->enum('status', [
                 'pending',
                 'approved',
             ])->default('pending');
-            
+
             $table->foreignId('prepared_by')->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
-           
+
             $table->foreignId('bid_id')->nullable()->constrained('bids')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('quotation_id')->nullable()->constrained('quotations')->cascadeOnDelete()->cascadeOnUpdate();
 
-            // $table->boolean('quotations')->default(false); 
+            // $table->boolean('quotations')->default(false);
             // $table->boolean('bid_summary')->default(false);
-            // $table->boolean('request_form')->default(false); 
+            // $table->boolean('request_form')->default(false);
 
 
 

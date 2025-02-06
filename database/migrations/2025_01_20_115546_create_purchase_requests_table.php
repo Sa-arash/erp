@@ -17,7 +17,7 @@ return new class extends Migration
         $table->string('purchase_number')->unique();
         $table->text('description')->nullable();
         $table->boolean('is_quotation')->default(0);
-        $table->text('currency')->nullable();
+        $table->foreignId('currency_id')->constrained('currencies')->cascadeOnDelete()->cascadeOnUpdate();
 
         $table->enum('status', [
             'Requested',

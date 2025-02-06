@@ -20,13 +20,13 @@ return new class extends Migration
             $table->string('account_code')->nullable();
             $table->string('account_holder')->nullable();
             $table->string('account_type')->nullable();
-            $table->string('currency')->nullable();
             $table->string('iban')->nullable();
             $table->string('swift_code')->nullable();
             $table->decimal('opening_balance', 15, 2)->default(0);
             $table->decimal('current_balance', 15, 2)->default(0);
             $table->text('description')->nullable();
             $table->boolean('type')->default(0);
+            $table->foreignId('currency_id')->constrained('currencies')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('account_id')->constrained('accounts')->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();

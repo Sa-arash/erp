@@ -24,6 +24,7 @@ return new class extends Migration
             $table->foreignId('account_vendor')->nullable()->constrained('accounts')->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('account_customer')->nullable()->constrained('accounts')->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('company_id')->constrained('companies')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('currency_id')->constrained('currencies')->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();
         });
     }
