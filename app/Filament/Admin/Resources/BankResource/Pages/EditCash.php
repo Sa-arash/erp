@@ -6,15 +6,22 @@ use App\Filament\Admin\Resources\BankResource;
 use App\Filament\Admin\Resources\CashResource;
 use App\Models\Account;
 use App\Models\Bank;
+use App\Models\Currency;
+use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Actions;
+use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Forms\Set;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Support\Facades\Request;
 use Illuminate\Validation\Rules\Unique;
 
 class EditCash extends EditRecord
@@ -24,7 +31,9 @@ class EditCash extends EditRecord
     {
         return $form->schema([
             Section::make([
-                TextInput::make('name')->required()->maxLength(254),
+                TextInput::make('name')->live(true)->afterStateUpdated(function (Set $set,$state){
+                    $set('account.name',$state);
+                })->required()->maxLength(254),
                 TextInput::make('account_code')->default(function () {
                     if (Bank::query()->where('company_id', getCompany()->id)->where('type', 1)->latest()->first()) {
                         return generateNextCode(Bank::query()->where('company_id', getCompany()->id)->latest()->first()->account_code);
@@ -32,10 +41,32 @@ class EditCash extends EditRecord
                         return "001";
                     }
                 })->prefix(fn(Get $get) => Account::query()->firstWhere('id', $this->record?->account?->parent_id)?->code)->required()->maxLength(255),
-                Select::make('currency')->required()->required()->options(getCurrency())->searchable(),
-            ])->columns(3),
+                Select::make('currency_id')->label('Currency')->default(getCompany()->currencies->where('is_company_currency',1)->first()?->id)->required()->options(getCompany()->currencies->pluck('name','id'))->searchable()->createOptionForm([
+                    Section::make([
+                        TextInput::make('name')->required()->maxLength(255),
+                        TextInput::make('symbol')->required()->maxLength(255),
+                        TextInput::make('exchange_rate')->required()->numeric(),
+                    ])->columns(3)
+                ])->createOptionUsing(function ($data){
+                    $data['company_id']=getCompany()->id;
+                    Notification::make('success')->title('success')->success()->send();
+                    return  Currency::query()->create($data)->getKey();
+                }),
+                ])->columns(3),
             Textarea::make('description')->columnSpanFull(),
-            Hidden::make('type')->default(1),
+            Fieldset::make('Account')->visible(fn($state)=>isset($state['id']))->relationship('account')->schema([
+                TextInput::make('name')->required()->maxLength(255),
+                SelectTree::make('parent_id')->required()->live()->label('Parent')->disabledOptions(function ($state, SelectTree $component) {
+                    return Account::query()->where('level', 'detail')->orWhereHas('transactions',function ($query){})->pluck('id')->toArray();
+                })->defaultOpenLevel(3)->searchable()->enableBranchNode()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('stamp', "Assets")->where('company_id', getCompany()->id))
+                    ->afterStateUpdated(function ($state, callable $set) {
+                        $set('type', Account::query()->firstWhere('id', $state)->type);
+                    }),
+                TextInput::make('code')->unique('accounts','code',ignoreRecord: true)->required()->maxLength(255),
+                ToggleButtons::make('type')->disabled()->grouped()->inline()->options(['creditor' => 'Creditor', 'debtor' => 'Debtor'])->required(),
+                ToggleButtons::make('group')->disabled()->grouped()->options(['Asset'=>'Asset','Liabilitie'=>'Liabilitie','Equity'=>'Equity','Income'=>'Income','Expense'=>'Expense'])->inline(),
+                Textarea::make('description')->maxLength(255)->columnSpanFull(),
+            ]),
         ]);
     }
     protected function getRedirectUrl(): string

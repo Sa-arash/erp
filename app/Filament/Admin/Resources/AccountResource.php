@@ -24,7 +24,6 @@ use Illuminate\Validation\Rules\Unique;
 
 class AccountResource extends Resource
 {
-
     protected static ?string $model = Account::class;
     protected static ?int $navigationSort = 0;
     protected static ?string $cluster = FinanceSettings::class;
@@ -33,7 +32,6 @@ class AccountResource extends Resource
 
     public static function getCluster(): ?string
     {
-        //        dd(getCompanyUrl());
         $period = FinancialPeriod::query()->where('company_id', getCompanyUrl())->where('status', 'During')->first();
         if ($period) {
             return parent::getCluster();

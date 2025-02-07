@@ -6,9 +6,11 @@ use App\Filament\Admin\Resources\CurrencyResource\Pages;
 use App\Filament\Admin\Resources\CurrencyResource\RelationManagers;
 use App\Filament\Clusters\FinanceSettings;
 use App\Models\Currency;
+use App\Models\FinancialPeriod;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -22,13 +24,22 @@ class CurrencyResource extends Resource
     protected static ?int $navigationSort=4;
     protected static ?string $navigationIcon = 'heroicon-c-currency-dollar';
 
+    public static function getCluster(): ?string
+    {
+        $period = FinancialPeriod::query()->where('company_id', getCompanyUrl())->where('status', 'During')->first();
+        if ($period) {
+            return parent::getCluster();
+        }
+        return '';
+    }
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')->required()->maxLength(255),
                 Forms\Components\TextInput::make('symbol')->required()->maxLength(255),
-                Forms\Components\TextInput::make('exchange_rate')->required()->numeric(),
+                Forms\Components\TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                 Forms\Components\ToggleButtons::make('is_company_currency')->grouped()->label('Base Currency')->default(0)->boolean('Yes','No')->required(),
             ]);
     }

@@ -7,11 +7,20 @@ use App\Filament\Admin\Resources\BankResource\RelationManagers;
 use App\Filament\Clusters\FinanceSettings;
 use App\Models\Account;
 use App\Models\Bank;
+use App\Models\Currency;
 use App\Models\FinancialPeriod;
 use App\Models\Parties;
+use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
+use Filament\Forms\Components\Fieldset;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -37,7 +46,9 @@ class BankResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('bank_name')->required()->maxLength(255),
+                Forms\Components\TextInput::make('bank_name')->live(true)->afterStateUpdated(function (Forms\Set $set,$state){
+                    $set('account.name',$state);
+                })->required()->maxLength(255),
                 Forms\Components\TextInput::make('branch_name')->maxLength(255),
                 Forms\Components\TextInput::make('account_number')->required()->maxLength(255),
                 Forms\Components\TextInput::make('account_code')->default(function () {
@@ -46,15 +57,38 @@ class BankResource extends Resource
                     } else {
                         return "001";
                     }
-                })->prefix(fn(Get $get) => Account::query()->firstWhere('id', getCompany()->account_bank)?->code)->required()->maxLength(255),
+                })->prefix(fn() =>  Account::query()->firstWhere('id', getCompany()->account_bank)?->code)->required()->maxLength(255),
                 Forms\Components\TextInput::make('account_holder')->required()->maxLength(255),
                 Forms\Components\TextInput::make('account_type')->maxLength(255),
                 Forms\Components\Section::make([
-                    Forms\Components\Select::make('currency')->required()->required()->options(getCurrency())->searchable(),
+                    Select::make('currency_id')->label('Currency')->default(getCompany()->currencies->where('is_company_currency',1)->first()?->id)->required()->options(getCompany()->currencies->pluck('name','id'))->searchable()->createOptionForm([
+                        Section::make([
+                            TextInput::make('name')->required()->maxLength(255),
+                            TextInput::make('symbol')->required()->maxLength(255),
+                            TextInput::make('exchange_rate')->required()->numeric(),
+                        ])->columns(3)
+                    ])->createOptionUsing(function ($data){
+                        $data['company_id']=getCompany()->id;
+                        Notification::make('success')->title('success')->success()->send();
+                        return  Currency::query()->create($data)->getKey();
+                    }),
                     Forms\Components\TextInput::make('iban')->maxLength(255),
                     Forms\Components\TextInput::make('swift_code')->maxLength(255),
                 ])->columns(3),
                 Forms\Components\Textarea::make('description')->columnSpanFull(),
+                Fieldset::make('Account')->visible(fn($state)=>isset($state['id']))->relationship('account')->schema([
+                    TextInput::make('name')->required()->maxLength(255),
+                    SelectTree::make('parent_id')->required()->live()->label('Parent')->disabledOptions(function ($state, SelectTree $component) {
+                        return Account::query()->where('level', 'detail')->orWhereHas('transactions',function ($query){})->pluck('id')->toArray();
+                    })->defaultOpenLevel(3)->searchable()->enableBranchNode()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('stamp', "Assets")->where('company_id', getCompany()->id))
+                        ->afterStateUpdated(function ($state, callable $set) {
+                            $set('type', Account::query()->firstWhere('id', $state)->type);
+                        }),
+                    TextInput::make('code')->unique('accounts','code',ignoreRecord: true)->required()->maxLength(255),
+                    ToggleButtons::make('type')->disabled()->grouped()->inline()->options(['creditor' => 'Creditor', 'debtor' => 'Debtor'])->required(),
+                    ToggleButtons::make('group')->disabled()->grouped()->options(['Asset'=>'Asset','Liabilitie'=>'Liabilitie','Equity'=>'Equity','Income'=>'Income','Expense'=>'Expense'])->inline(),
+                    Textarea::make('description')->maxLength(255)->columnSpanFull(),
+                ]),
             ]);
     }
 
@@ -70,7 +104,7 @@ class BankResource extends Resource
                 Tables\Columns\TextColumn::make('account_number')->searchable(),
                 Tables\Columns\TextColumn::make('account_holder')->searchable(),
                 Tables\Columns\TextColumn::make('account_type')->searchable(),
-                Tables\Columns\TextColumn::make('currency')->searchable(),
+                Tables\Columns\TextColumn::make('currency.symbol')->searchable(),
                 Tables\Columns\TextColumn::make('Balance')
                 ->state(fn($record)=> number_format($record->account->transactions->sum('debtor')-$record->account->transactions->sum('creditor')))
                 ->Color(fn($state)=>$state>=0?'success':'danger')

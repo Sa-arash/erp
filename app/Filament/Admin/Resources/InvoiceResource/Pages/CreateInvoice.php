@@ -2,10 +2,12 @@
 
 namespace App\Filament\Admin\Resources\InvoiceResource\Pages;
 
+use App\Filament\Admin\Resources\CurrencyResource;
 use App\Filament\Admin\Resources\FinancialPeriodResource;
 use App\Filament\Admin\Resources\InvoiceResource;
 use App\Models\FinancialPeriod;
 use Filament\Actions;
+use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Support\Exceptions\Halt;
@@ -29,7 +31,7 @@ class CreateInvoice extends CreateRecord
 
         $this->previousUrl = url()->previous();
     }
-    
+
     public function create(bool $another = false): void
     {
         $this->authorizeAccess();
@@ -44,19 +46,24 @@ class CreateInvoice extends CreateRecord
             $this->callHook('afterValidate');
             $debtor=0;
             $creditor=0;
+            $currency=defaultCurrency();
+            if ($currency?->id===null){
+                Notification::make('warning')->title('Base Currency Not set')->actions([Action::make('set')->url(CurrencyResource::getUrl('index'))])->warning()->send();
+                return;
+            }
+
             foreach ($this->data['transactions'] as $transaction){
+
                 if ($transaction['creditor'] >0){
                     $creditor+=str_replace(',','',$transaction['creditor']);
                 }else{
                     $debtor+=str_replace(',','',$transaction['debtor']);
-
                 }
             }
             if ($debtor !== $creditor){
                  Notification::make('warning')->title('Creditor and Debtor not equal')->warning()->send();
                 return;
             }
-
 
             $data = $this->mutateFormDataBeforeCreate($data);
 
