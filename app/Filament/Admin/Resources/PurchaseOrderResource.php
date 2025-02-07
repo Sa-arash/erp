@@ -137,12 +137,8 @@ class PurchaseOrderResource extends Resource
                                     ->required(),
 
                                 Forms\Components\Select::make('vendor_id')->label('Vendor')
-
                                     ->options((getCompany()->parties->where('type', 'vendor')->pluck('info', 'id')))
-
-                                    ->searchable()
-                                    ->preload()
-                                    ->required(),
+                                    ->searchable()->preload()->required(),
                                 getSelectCurrency(),
                                 Forms\Components\TextInput::make('exchange_rate')
                                     ->required()->default(1)
@@ -165,35 +161,14 @@ class PurchaseOrderResource extends Resource
                                     ->required()
                                     ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
                                         return $rule->where('company_id', getCompany()->id);
-                                    })
-                                    ->maxLength(50),
-
-
-
-
-                                Forms\Components\TextInput::make('location_of_delivery')
-                                    ->maxLength(255),
-
-
-
+                                    })->maxLength(50),
+                                Forms\Components\TextInput::make('location_of_delivery')->maxLength(255),
                                 Forms\Components\DatePicker::make('date_of_delivery')
                                     ->default(now())
                                     ->required(),
-                                // Forms\Components\Select::make('bid_id')
-                                // ->relationship('bid', 'id')
-                                // ->required(),
-                                // Forms\Components\Select::make('quotation_id')
-                                // ->relationship('quotation', 'id')
-                                // ->required(),
-
-
-
                                 Forms\Components\Hidden::make('company_id')
                                     ->default(getCompany()->id)
                                     ->required(),
-
-
-
                                 Repeater::make('RequestedItems')->defaultItems(1)->required()
                                     ->default(function (Request $request, Set $set) {
                                         $record = (PurchaseRequest::query()->with('bid')->firstWhere('id', $request->prno));
@@ -235,8 +210,8 @@ class PurchaseOrderResource extends Resource
                                             })->required()->searchable()->preload(),
                                         Forms\Components\TextInput::make('description')->label('Description')->required(),
                                         Forms\Components\Select::make('unit_id')->required()->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id')),
-                                        Forms\Components\TextInput::make('quantity')->required()->live(true),
-                                        Forms\Components\TextInput::make('unit_price')->afterStateUpdated(function ($state, Set $set, Get $get) {
+                                        Forms\Components\TextInput::make('quantity')->numeric()->required()->live(true),
+                                        Forms\Components\TextInput::make('unit_price')->prefix(defaultCurrency()?->symbol)->afterStateUpdated(function ($state, Set $set, Get $get) {
                                             $freights = $get('taxes') === null ? 0 : (float) $get('taxes');
                                             $q = $get('quantity');
                                             $tax = $get('taxes') === null ? 0 : (float)$get('taxes');
