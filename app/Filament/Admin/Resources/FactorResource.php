@@ -262,7 +262,7 @@ class FactorResource extends Resource
                                                 Forms\Components\TextInput::make('bank_name')->maxLength(255),
                                                 Forms\Components\TextInput::make('branch_name')->maxLength(255),
                                                 Forms\Components\Textarea::make('description')->columnSpanFull(),
-                                                Forms\Components\ToggleButtons::make('type')->options([0 => 'Receivable', 1 => 'Payable'])->inline()->grouped()->required(),
+                                                Forms\Components\ToggleButtons::make('type')->options([0 => 'Receivable', 1 => 'Payable'])->default(fn(Get $get)=>(!$get->getData()['type'])??null)->readonl->inline()->grouped()->required(),
                                                 Forms\Components\Hidden::make('company_id')->default(getCompany()->id)
                                             ])->columns(2),
                                     ])->collapsible()->persistCollapsed()->visible(fn(Forms\Get $get) => $get('Cheque')),
