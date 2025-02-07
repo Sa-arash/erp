@@ -17,7 +17,7 @@ class CreateFactor extends CreateRecord
     public function create(bool $another = false): void
     {
         $this->authorizeAccess();
-
+        // dd($this->data);
         try {
             $this->beginDatabaseTransaction();
 
@@ -61,12 +61,16 @@ class CreateFactor extends CreateRecord
                 foreach ($this->data['invoice']['transactions'] as $transaction) {
                     $savedTransaction = $this->record->invoice->transactions()->create([
                         'account_id' => $transaction['account_id'],
-                        'description' => $transaction['description'] ,
+                        'description' => $transaction['description'],
                         'company_id' => $transaction['company_id'],
                         'user_id' => auth()->user()->id,
                         'creditor' => str_replace(',', '', $transaction['creditor']),
                         'debtor' => str_replace(',', '', $transaction['debtor']),
                         'Cheque' => $transaction['Cheque'],
+                        "currency_id" =>$transaction['currency_id'],
+                        "exchange_rate" => str_replace(',', '', $transaction['exchange_rate']),
+                        "debtor_foreign" =>str_replace(',', '', $transaction['debtor_foreign']),
+                        "creditor_foreign" => str_replace(',', '', $transaction['creditor_foreign']),
                         'financial_period_id' => $transaction['financial_period_id'],
                     ]);
                     // dd($transaction ,!empty($transaction['cheque']) && isset($transaction['cheque']['amount']) );
@@ -222,8 +226,8 @@ class CreateFactor extends CreateRecord
             } else {
                 //Income Sell
 
-                 // customer Creditro 
-                 $savedTransaction = $this->record->invoice->transactions()->create([
+                // customer Creditro 
+                $savedTransaction = $this->record->invoice->transactions()->create([
 
                     'account_id' => $party->accountCustomer->id,
                     'user_id' => auth()->user()->id,
@@ -251,7 +255,7 @@ class CreateFactor extends CreateRecord
 
 
                 ]);
-               
+
 
                 // Income Creditor
                 $savedTransaction = $this->record->invoice->transactions()->create([

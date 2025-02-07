@@ -49,6 +49,7 @@ class InvoiceResource extends Resource
         return false;
     }
 
+
     // public static function canAccess(): bool
     // {
     //     $period = FinancialPeriod::query()->where('company_id', getCompanyUrl())->where('status', 'During')->first();
@@ -100,6 +101,7 @@ class InvoiceResource extends Resource
                             return $set('isCurrency', 0);
                         })->live()->defaultOpenLevel(3)->live()->label('Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('company_id', getCompany()->id))->searchable(),
                         Forms\Components\TextInput::make('description')->required(),
+                        
                         Forms\Components\TextInput::make('debtor')->prefix(defaultCurrency()->symbol)->live(true)->afterStateUpdated(function ($state, Forms\Set $set,Get $get) {
                             if ($get('Cheque')) {
                                 $set('cheque.amount', $state);
