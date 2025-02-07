@@ -97,7 +97,7 @@ class FactorResource extends Resource
                                 $set('total', number_format(($count * $unitPrice) - (($count * $unitPrice) * $discount) / 100,2));
                             }),
                             Forms\Components\Select::make('unit_id')->label('Unit')->required()->options(Unit::query()->where('company_id', getCompany()->id)->pluck('title', 'id'))->searchable()->preload(),
-                            Forms\Components\TextInput::make('unit_price')->default(0)->rules([
+                            Forms\Components\TextInput::make('unit_price')->prefix(defaultCurrency()?->symbol)->default(0)->rules([
                                 fn (): Closure => function (string $attribute, $value, Closure $fail) {
                                     if ($value <=0) {
                                         $fail('The :attribute is invalid.');
@@ -115,7 +115,7 @@ class FactorResource extends Resource
                                 $discount = $get('discount') === null ?  0 : (float)$get('discount');
                                 $set('total', number_format(($count * $unitPrice) - (($count * $unitPrice) * $discount) / 100,2));
                             })->default(0)->required()->label('Discount'),
-                            Forms\Components\TextInput::make('total')->live()->readOnly()->default(0)->required()->label('Total'),
+                            Forms\Components\TextInput::make('total')->prefix(defaultCurrency()?->symbol)->live()->readOnly()->default(0)->required()->label('Total'),
                         ])->columnSpanFull()->columns(7),
                     ])->columns(2),
                     Forms\Components\Wizard\Step::make('journal')->label('Journal Entry')->schema([
