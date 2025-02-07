@@ -10,6 +10,7 @@ use App\Models\Parties;
 use App\Models\Transaction;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Resources\Resource;
@@ -134,6 +135,7 @@ class PartiesResource extends Resource
                         return false;
                     }
                 })->required()->tel()->maxLength(255),
+                Select::make('currency_id')->label('Currency')->options(getCompany()->currencies->pluck('name','id'))->required()->visible(fn(Get $get)=>$get('type')),
 
                 Forms\Components\Fieldset::make('Account Vendor')->visible(fn($state)=>isset($state['id']))->relationship('accountVendor')->schema([
                     Forms\Components\TextInput::make('name')->required()->maxLength(255),

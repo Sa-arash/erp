@@ -16,6 +16,7 @@ class Parties extends Model
         'account_vendor',
         'account_customer',
         'company_id',
+        'currency_id',
         'account_code_vendor',
         'account_code_customer',
     ];
