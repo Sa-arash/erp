@@ -85,16 +85,10 @@ class PurchaseRequestResource extends Resource
                         })
                         ->required()
                         ->numeric(),
-
                     Forms\Components\DatePicker::make('request_date')->default(now())->label('Request Date')->required(),
                     Forms\Components\Hidden::make('status')->label('Status')->default('Requested')->required(),
-                    Forms\Components\TextInput::make('description')
-                        ->label('Description')->columnSpanFull(),
-
-                    Forms\Components\Hidden::make('company_id')
-                        ->default(getCompany()->id)
-                        ->required(),
-
+                    getSelectCurrency(),
+                    Forms\Components\TextInput::make('description')->label('Description')->columnSpanFull(),
                     Repeater::make('Requested Items')
                     ->addActionLabel('Add')
                         ->relationship('items')
@@ -151,7 +145,7 @@ class PurchaseRequestResource extends Resource
                     //         return $sum;
                     //     } )
                     // ])
-                ])->columns(3)
+                ])->columns(4)
 
 
             ]);

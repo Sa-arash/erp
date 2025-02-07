@@ -650,7 +650,7 @@ function sendAR($employee, $record,$company)
 }
 
 function getSelectCurrency(){
-   return Select::make('currency_id')->live()->label('Currency')->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([
+   return Select::make('currency_id')->live()->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([
         \Filament\Forms\Components\Section::make([
             TextInput::make('name')->required()->maxLength(255),
             TextInput::make('symbol')->required()->maxLength(255),
