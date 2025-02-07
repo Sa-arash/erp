@@ -14,6 +14,10 @@ class PurchaseOrder extends Model
     {
         return $this->belongsTo(Company::class);
     }
+    public function currency(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Currency::class);
+    }
     public function account(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Account::class, 'account_id');

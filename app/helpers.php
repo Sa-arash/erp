@@ -1,8 +1,14 @@
 <?php
 
 
+use App\Models\Currency;
 use App\Models\Employee;
 use App\Models\FinancialPeriod;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\Section;
+use Filament\Notifications\Notification;
+use Filament\Support\RawJs;
 
 function getCompany(): ?\Illuminate\Database\Eloquent\Model
 {
@@ -641,4 +647,24 @@ function sendAR($employee, $record,$company)
             'position' => 'CEO'
         ]);
     }
+}
+
+function getSelectCurrency(){
+   return Select::make('currency_id')->live()->label('Currency')->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([
+        \Filament\Forms\Components\Section::make([
+            TextInput::make('name')->required()->maxLength(255),
+            TextInput::make('symbol')->required()->maxLength(255),
+            TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+        ])->columns(3)
+    ])->createOptionUsing(function ($data) {
+        $data['company_id'] = getCompany()->id;
+        Notification::make('success')->title('success')->success()->send();
+        return Currency::query()->create($data)->getKey();
+    })->editOptionForm([
+        Section::make([
+            TextInput::make('name')->required()->maxLength(255),
+            TextInput::make('symbol')->required()->maxLength(255),
+            TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+        ])->columns(3)
+    ]);
 }

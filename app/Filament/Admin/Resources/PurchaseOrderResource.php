@@ -143,9 +143,7 @@ class PurchaseOrderResource extends Resource
                                     ->searchable()
                                     ->preload()
                                     ->required(),
-                                Forms\Components\Select::make('currency')
-                                    ->default(getCompany()->currency)
-                                    ->required()->required()->options(getCurrency())->searchable()->preload(),
+                                getSelectCurrency(),
                                 Forms\Components\TextInput::make('exchange_rate')
                                     ->required()->default(1)
                                     ->numeric(),
