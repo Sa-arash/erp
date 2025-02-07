@@ -80,17 +80,27 @@ class InvoiceResource extends Resource
 
                 Forms\Components\Section::make([
                     Forms\Components\Repeater::make('transactions')->label('')->relationship('transactions')->schema([
-                        SelectTree::make('account_id')->afterStateUpdated(function ($state, Forms\Set $set) {
+                        SelectTree::make('account_id')->formatStateUsing(function ($state, Forms\Set $set) {
                             $account = Account::query()->where('id', $state)->whereNot('currency_id', defaultCurrency()?->id)->first();
                             if ($account) {
                                 $set('currency_id', $account->currency_id);
-                                $set('exchange_rate', $account->currency->exchange_rate);
+                                $set('exchange_rate', number_format($account->currency->exchange_rate));
+                                $set('isCurrency', 1);
+                                return $state;
+                            }
+                            $set('isCurrency', 0);
+                            return $state;
+                        })->afterStateUpdated(function ($state, Forms\Set $set) {
+                            $account = Account::query()->where('id', $state)->whereNot('currency_id', defaultCurrency()?->id)->first();
+                            if ($account) {
+                                $set('currency_id', $account->currency_id);
+                                $set('exchange_rate', number_format($account->currency->exchange_rate));
                                 return $set('isCurrency', 1);
                             }
                             return $set('isCurrency', 0);
                         })->live()->defaultOpenLevel(3)->live()->label('Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('company_id', getCompany()->id))->searchable(),
                         Forms\Components\TextInput::make('description')->required(),
-                        Forms\Components\TextInput::make('debtor')->live(true)->afterStateUpdated(function ($state, Forms\Set $set,Get $get) {
+                        Forms\Components\TextInput::make('debtor')->prefix(defaultCurrency()->symbol)->live(true)->afterStateUpdated(function ($state, Forms\Set $set,Get $get) {
                             if ($get('Cheque')) {
                                 $set('cheque.amount', $state);
                             }
@@ -105,7 +115,7 @@ class InvoiceResource extends Resource
                                 }
                             },
                         ]),
-                        Forms\Components\TextInput::make('creditor')->readOnly(function (Get $get) {
+                        Forms\Components\TextInput::make('creditor')->prefix(defaultCurrency()->symbol)->readOnly(function (Get $get) {
                             return $get('isCurrency');
                         })->live(true)
                             ->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
@@ -133,7 +143,7 @@ class InvoiceResource extends Resource
                                 Section::make([
                                     TextInput::make('name')->required()->maxLength(255),
                                     TextInput::make('symbol')->required()->maxLength(255),
-                                    TextInput::make('exchange_rate')->required()->numeric(),
+                                    TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                                 ])->columns(3)
                             ])->createOptionUsing(function ($data) {
                                 $data['company_id'] = getCompany()->id;
@@ -143,7 +153,7 @@ class InvoiceResource extends Resource
                                 Section::make([
                                     TextInput::make('name')->required()->maxLength(255),
                                     TextInput::make('symbol')->required()->maxLength(255),
-                                    TextInput::make('exchange_rate')->required()->numeric(),
+                                    TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                                 ])->columns(3)
                             ])->afterStateUpdated(function ($state, Forms\Set $set) {
                                 $currency = Currency::query()->firstWhere('id', $state);
@@ -156,9 +166,9 @@ class InvoiceResource extends Resource
                                     $set('exchange_rate', $currency->exchange_rate);
                                 }
                             }),
-                            TextInput::make('exchange_rate')->required(),
+                            TextInput::make('exchange_rate')->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                             Forms\Components\TextInput::make('debtor_foreign')->live(true)->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
-                                $set('debtor', number_format(str_replace(',', '', $state) * $get('exchange_rate')));
+                                $set('debtor', number_format((float) str_replace(',', '', $state) * (float) str_replace(',','',$get('exchange_rate'))));
                             })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)->rules([
                                 fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
                                     if ($get('debtor_foreign') == 0 && $get('creditor_foreign') == 0) {
@@ -169,7 +179,7 @@ class InvoiceResource extends Resource
                                 },
                             ]),
                             Forms\Components\TextInput::make('creditor_foreign')->live(true)->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
-                                $set('creditor', number_format(str_replace(',', '', $state) * $get('exchange_rate')));
+                                $set('creditor',number_format((float) str_replace(',', '', $state) * (float) str_replace(',','',$get('exchange_rate'))));
                             })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)->rules([
                                 fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
                                     if ($get('debtor_foreign') == 0 && $get('creditor_foreign') == 0) {

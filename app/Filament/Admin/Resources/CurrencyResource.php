@@ -10,6 +10,7 @@ use App\Models\FinancialPeriod;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
+use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -38,7 +39,7 @@ class CurrencyResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('name')->required()->maxLength(255),
                 Forms\Components\TextInput::make('symbol')->required()->maxLength(255),
-                Forms\Components\TextInput::make('exchange_rate')->required()->numeric(),
+                Forms\Components\TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                 Forms\Components\ToggleButtons::make('is_company_currency')->grouped()->label('Base Currency')->default(0)->boolean('Yes','No')->required(),
             ]);
     }
