@@ -34,6 +34,10 @@ class Parties extends Model
     {
         return $this->belongsTo(Company::class);
     }
+    public function currency(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Currency::class);
+    }
 
     public function accountVendor(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

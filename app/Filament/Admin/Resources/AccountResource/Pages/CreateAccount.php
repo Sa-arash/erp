@@ -43,7 +43,7 @@ class CreateAccount extends CreateRecord
             if ($account) {
                 $data['code'] = $account->code . $data['code'];
 
-                
+
                 $level = "group";
                 switch ($account->level) {
                     case "main":

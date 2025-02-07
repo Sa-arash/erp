@@ -5,15 +5,20 @@ namespace App\Filament\Admin\Resources;
 use App\Filament\Admin\Resources\PartiesResource\Pages;
 use App\Filament\Admin\Resources\PartiesResource\RelationManagers;
 use App\Models\Account;
+use App\Models\Currency;
 use App\Models\FinancialPeriod;
 use App\Models\Parties;
 use App\Models\Transaction;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Infolists\Components\Section;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -55,7 +60,34 @@ class PartiesResource extends Resource
 //                })->model(Transaction::class)->defaultOpenLevel(3)->live()->label('Customer Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('stamp', "Liabilities")->where('company_id', getCompany()->id))->required(),
 
 
-                Forms\Components\ToggleButtons::make('type')->columnSpanFull()->visible(fn($operation) => $operation === "create")->live()->grouped()->options(['vendor' => 'Vendor', 'customer' => 'Customer', 'both' => 'Both'])->inline()->required(),
+                Forms\Components\ToggleButtons::make('type')->visible(fn($operation) => $operation === "create")->live()->grouped()->options(['vendor' => 'Vendor', 'customer' => 'Customer', 'both' => 'Both'])->inline()->required(),
+                Select::make('currency_id')->live()->label('Currency')->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([
+                    \Filament\Forms\Components\Section::make([
+                        TextInput::make('name')->required()->maxLength(255),
+                        TextInput::make('symbol')->required()->maxLength(255),
+                        TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                    ])->columns(3)
+                ])->createOptionUsing(function ($data) {
+                    $data['company_id'] = getCompany()->id;
+                    Notification::make('success')->title('success')->success()->send();
+                    return Currency::query()->create($data)->getKey();
+                })->editOptionForm([
+                    Section::make([
+                        TextInput::make('name')->required()->maxLength(255),
+                        TextInput::make('symbol')->required()->maxLength(255),
+                        TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                    ])->columns(3)
+                ])->afterStateUpdated(function ($state, Forms\Set $set) {
+                    $currency = Currency::query()->firstWhere('id', $state);
+                    if ($currency) {
+                        $set('exchange_rate', $currency->exchange_rate);
+                    }
+                })->editOptionAction(function ($state, Forms\Set $set) {
+                    $currency = Currency::query()->firstWhere('id', $state);
+                    if ($currency) {
+                        $set('exchange_rate', $currency->exchange_rate);
+                    }
+                }),
                 SelectTree::make('parent_vendor')->visible(function (Forms\Get $get) {
 
                     if ($get('type') == "both") {
@@ -135,7 +167,6 @@ class PartiesResource extends Resource
                         return false;
                     }
                 })->required()->tel()->maxLength(255),
-                Select::make('currency_id')->label('Currency')->options(getCompany()->currencies->pluck('name','id'))->required()->visible(fn(Get $get)=>$get('type')),
 
                 Forms\Components\Fieldset::make('Account Vendor')->visible(fn($state)=>isset($state['id']))->relationship('accountVendor')->schema([
                     Forms\Components\TextInput::make('name')->required()->maxLength(255),
