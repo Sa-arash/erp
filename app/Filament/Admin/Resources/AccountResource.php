@@ -6,15 +6,20 @@ use App\Filament\Admin\Resources\AccountResource\Pages;
 use App\Filament\Admin\Resources\AccountResource\RelationManagers;
 use App\Filament\Clusters\FinanceSettings;
 use App\Models\Account;
+use App\Models\Currency;
 use App\Models\FinancialPeriod;
 use App\Models\Transaction;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\ActionGroup;
@@ -80,6 +85,33 @@ class AccountResource extends Resource
                     $parent = Account::query()->firstWhere('id', $get('parent_id'));
                     return $rule->where('code', $parent . $state)->where('company_id', getCompany()->id);
                 })->required()->maxLength(255)->prefix(fn(Get $get) => Account::query()->firstWhere('id', $get('parent_id'))?->code),
+                Select::make('currency_id')->live()->label('Currency')->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([
+                    \Filament\Forms\Components\Section::make([
+                        TextInput::make('name')->required()->maxLength(255),
+                        TextInput::make('symbol')->required()->maxLength(255),
+                        TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                    ])->columns(3)
+                ])->createOptionUsing(function ($data) {
+                    $data['company_id'] = getCompany()->id;
+                    Notification::make('success')->title('success')->success()->send();
+                    return Currency::query()->create($data)->getKey();
+                })->editOptionForm([
+                    Section::make([
+                        TextInput::make('name')->required()->maxLength(255),
+                        TextInput::make('symbol')->required()->maxLength(255),
+                        TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                    ])->columns(3)
+                ])->afterStateUpdated(function ($state, Forms\Set $set) {
+                    $currency = Currency::query()->firstWhere('id', $state);
+                    if ($currency) {
+                        $set('exchange_rate', $currency->exchange_rate);
+                    }
+                })->editOptionAction(function ($state, Forms\Set $set) {
+                    $currency = Currency::query()->firstWhere('id', $state);
+                    if ($currency) {
+                        $set('exchange_rate', $currency->exchange_rate);
+                    }
+                }),
                 Forms\Components\ToggleButtons::make('type')->disabled()->formatStateUsing(function ($state) {
                     if ((int)Request::query('parent')){
                         return Account::query()->where('id', (int)Request::query('parent'))->first()?->type;
@@ -87,6 +119,7 @@ class AccountResource extends Resource
                         return  $state;
                     }
                 })->grouped()->inline()->options(['creditor' => 'Creditor', 'debtor' => 'Debtor'])->required(),
+
                 Forms\Components\ToggleButtons::make('group')->disabled()->grouped()
                 ->formatStateUsing(function ($state) {
                     if ((int)Request::query('parent')){
@@ -97,6 +130,7 @@ class AccountResource extends Resource
                 })
                 ->options(['Asset'=>'Asset','Liabilitie'=>'Liabilitie','Equity'=>'Equity','Income'=>'Income','Expense'=>'Expense'])->inline(),
                 Forms\Components\Textarea::make('description')->maxLength(255)->columnSpanFull(),
+
             ]);
     }
 
@@ -222,16 +256,24 @@ class AccountResource extends Resource
                 ActionGroup::make([
                     Action::make('Report')
                         ->url(function ($record) {
-                            // dd(getCompany()->id,FinancialPeriod::query()->first());
-                            $financial = FinancialPeriod::query()->where('status', 'During')->where('company_id', getCompany()->id)->first();
+                            $financial = getPeriod();
                             if ($financial) {
-
                                 return route('pdf.account', [
                                     'period' => FinancialPeriod::query()->where('status', 'During')->where('company_id', getCompany()->id)->first()->id,
                                     'account' => $record->id,
                                 ]);
                             }
                         })->icon('heroicon-s-printer')->color('primary'),
+                    Action::make('CurrencyReport')->label('CurrencyReport')
+                        ->url(function ($record) {
+                            $financial = getPeriod();
+                            if ($financial) {
+                                return route('pdf.accountCurrency', [
+                                    'period' => FinancialPeriod::query()->where('status', 'During')->where('company_id', getCompany()->id)->first()->id,
+                                    'account' => $record->id,
+                                ]);
+                            }
+                        })->icon('heroicon-s-printer')->color('warning')->visible(fn($record)=>$record->currency_id !== defaultCurrency()?->id),
                     Action::make('new')->icon('heroicon-o-document-chart-bar')->color('info')->label('New Account')->hidden(fn($record) => $record->level === "detail")
                         ->url(function ($record) {
                             return AccountResource::getUrl('create', ['parent' => $record->id]);

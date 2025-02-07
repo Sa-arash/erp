@@ -81,6 +81,46 @@ class PdfController extends Controller
             );
             return $pdf->stream('account.pdf');
     }
+    public function accountCurrency($period, $account, Request $request)
+    {
+        $company = auth()->user()->employee->company;
+        $startDate = null;
+        $endDate = null;
+        $accounts = explode('-', $account);
+        $accountTitle = $request->reportTitle ?? implode('-', Account::query()->whereIn('id', $accounts)->pluck('name')->toArray());
+
+        $Allaccounts =  Account::query()->whereIn('id', $accounts)
+            ->orWhereIn('parent_id', $accounts)
+            ->orWhereHas('account', function ($query) use ($accounts) {
+                return $query->whereIn('parent_id', $accounts)->orWhereHas('account', function ($query) use ($accounts) {
+                    return $query->whereIn('parent_id', $accounts);
+                });
+            })
+            ->get()->pluck('id')->toArray();
+
+        if (isset($request->date)) {
+            $dateRange = $request->date;
+            [$startDate, $endDate] = explode(' - ', $dateRange);
+            $startDate = Carbon::createFromFormat('d-m-Y', $startDate);
+            $endDate = Carbon::createFromFormat('d-m-Y', $endDate);
+
+            $transactions = Transaction::query()->where('financial_period_id', $period)->whereIn('account_id', $Allaccounts)->whereHas('invoice', function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()]);
+            })->get();
+        } else {
+            $transactions = Transaction::query()->where('financial_period_id', $period)->whereIn('account_id', $Allaccounts)->get();
+        }
+
+        $transactions = $transactions->sortBy(function ($transaction) {
+            return $transaction->invoce_id;
+        });
+        $period =  FinancialPeriod::query()->find($period);
+        $pdf = Pdf::loadView(
+            'pdf.accountCurrency',
+            compact('accountTitle', 'accounts', 'period', 'transactions', 'startDate', 'endDate', 'company')
+        );
+        return $pdf->stream('account.accountCurrency');
+    }
 
     public function balance($period, Request $request)
     {
