@@ -19,6 +19,7 @@ class PurchaseRequest extends Model
         'company_id',
         'employee_id',
         'is_quotation',
+        'currency_id'
     ];
     protected $casts = ['status' => POStatus::class];
 
@@ -56,6 +57,10 @@ class PurchaseRequest extends Model
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);
+    }
+    public function currency(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Currency::class);
     }
 
     public function quotations(): \Illuminate\Database\Eloquent\Relations\hasMany

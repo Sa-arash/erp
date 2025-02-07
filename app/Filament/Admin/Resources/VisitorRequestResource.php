@@ -19,7 +19,7 @@ class VisitorRequestResource extends Resource
     protected static ?string $navigationLabel = 'Visit Access Request';
     protected static ?string $navigationGroup = 'Security Management';
     protected static ?int $navigationSort = 100;
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-o-eye';
 
     public static function form(Form $form): Form
     {

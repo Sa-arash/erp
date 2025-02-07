@@ -43,7 +43,7 @@ class ChequeResource extends Resource
                     Forms\Components\DateTimePicker::make('due_date')->withoutSeconds()->withoutTime()->required(),
                 ])->columns(3),
                 Forms\Components\Section::make([
-                    Forms\Components\TextInput::make('amount')->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->numeric(),
+                    Forms\Components\TextInput::make('amount')->prefix(defaultCurrency()?->symbol)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->numeric(),
                     Forms\Components\TextInput::make('payer_name')->required()->maxLength(255),
                     Forms\Components\TextInput::make('payee_name')->required()->maxLength(255),
                 ])->columns(3),
