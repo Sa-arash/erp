@@ -218,8 +218,7 @@ class  DatabaseSeeder extends Seeder
         //     'company_id' => 1,
         //     'position_id' => 1,
         // ]);
-
-        Currency::factory(1)->create();
+        Currency::factory(3)->create();
         $accounts = [
             [
                 'id' => 1,
