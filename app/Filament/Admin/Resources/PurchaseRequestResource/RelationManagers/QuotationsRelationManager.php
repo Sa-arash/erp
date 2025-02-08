@@ -47,6 +47,7 @@ class QuotationsRelationManager extends RelationManager
                             'parent_id' => $parentAccount->id,
                             'built_in' => false,
                             'company_id' => getCompany()->id,
+                            'currency_id' => $data['currency_id'],
                         ]);
                         $data['account_vendor'] = $account->id;
                         $data['company_id'] = getCompany()->id;
@@ -68,12 +69,13 @@ class QuotationsRelationManager extends RelationManager
                                     return "001";
                                 }
                             })->required()->maxLength(255),
-                        ])->columns(3),
+                            getSelectCurrency(),
+                        ])->columns(3)->model(Parties::class),
                     ])->label('Vendor')->options(Parties::query()->where('company_id', getCompany()->id)->where('type','vendor')->get()->pluck('info', 'id'))->searchable()->preload()->required(),
                     Forms\Components\DatePicker::make('date')->default(now())->required(),
                     Forms\Components\Select::make('employee_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Logistic'),
                     Forms\Components\Select::make('employee_operation_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Operation'),
-                    Forms\Components\Select::make('currency')->required()->options(getCurrency())->searchable()->preload()->label('Currency'),
+                    getSelectCurrency(),
                     Forms\Components\FileUpload::make('file')->downloadable()->columnSpanFull(),
                     Forms\Components\Textarea::make('description')->columnSpanFull()->nullable()
                 ])->columns(5),
@@ -174,7 +176,7 @@ class QuotationsRelationManager extends RelationManager
                         'employee_id' => $data['employee_id'],
                         'employee_operation_id' => $data['employee_operation_id'],
                         'company_id' => $id,
-                        'currency' => $data['currency'],
+                        'currency_id' => $data['currency_id'],
                     ]);
 
                     foreach ($data['Requested Items'] as $item) {
