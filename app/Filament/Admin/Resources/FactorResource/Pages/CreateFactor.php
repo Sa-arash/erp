@@ -136,6 +136,8 @@ class CreateFactor extends CreateRecord
 
                     'account_id' => $this->form->getLivewire()->data['account_id'],
                     'user_id' => auth()->user()->id,
+                    "currency_id" =>$transaction['currency_id'],
+
                     'creditor' => 0,
                     'debtor' => $total,
                     'description' => 'Increas Expence ',
@@ -153,6 +155,8 @@ class CreateFactor extends CreateRecord
 
                     'account_id' => $party->accountVendor->id,
                     'user_id' => auth()->user()->id,
+                    "currency_id" =>$transaction['currency_id'],
+
                     'creditor' => $total,
                     'debtor' => 0,
                     'description' => 'Make '  . $party->name . ' creditor',
@@ -168,6 +172,8 @@ class CreateFactor extends CreateRecord
 
                     'account_id' => $party->accountVendor->id,
                     'user_id' => auth()->user()->id,
+                    "currency_id" =>$transaction['currency_id'],
+
                     'creditor' => 0,
                     'debtor' => $total,
                     'description' => 'Give mony to  '  . $party->name,
@@ -231,6 +237,7 @@ class CreateFactor extends CreateRecord
 
                     'account_id' => $party->accountCustomer->id,
                     'user_id' => auth()->user()->id,
+                    "currency_id" =>$transaction['currency_id'],
                     'creditor' => $total,
                     'debtor' => 0,
                     'description' => 'Make'  . $party->name . ' Creditor',
@@ -246,6 +253,7 @@ class CreateFactor extends CreateRecord
 
                     'account_id' => $party->accountCustomer->id,
                     'user_id' => auth()->user()->id,
+                    "currency_id" =>$transaction['currency_id'],
                     'creditor' => 0,
                     'debtor' => $total,
                     'description' => 'Give mony from  '  . $party->name,
@@ -262,6 +270,8 @@ class CreateFactor extends CreateRecord
 
                     'account_id' => $this->form->getLivewire()->data['account_id'],
                     'user_id' => auth()->user()->id,
+                    "currency_id" =>$transaction['currency_id'],
+
                     'creditor' => $total,
                     'debtor' => 0,
                     'description' => 'Increas Income ',
@@ -308,6 +318,6 @@ class CreateFactor extends CreateRecord
 
         $redirectUrl = $this->getRedirectUrl();
 
-        // $this->redirect($redirectUrl, navigate: FilamentView::hasSpaMode() && is_app_url($redirectUrl));
+        $this->redirect($redirectUrl, navigate: FilamentView::hasSpaMode() && is_app_url($redirectUrl));
     }
 }
