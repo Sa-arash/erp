@@ -194,7 +194,8 @@ class FactorResource extends Resource
                                         return $get('isCurrency') || $get->getData()['type'] !== "1";
                                     })->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)
                                         ->rules([
-                                            fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                                            fn(Get $get): Closure => function (string $attribute, $value, Closure $fail,$operation) use ($get) {
+                                                if ($operation == "create") {
 
                                                 if ($get->getData()['type'] === "1") {
 
@@ -225,7 +226,16 @@ class FactorResource extends Resource
                                                 } elseif ($get('debtor') != 0) {
                                                     $fail('The debtor field must be zero.');
                                                 }
-                                            },
+                                         
+                                        } else {
+                                            if ($get('debtor') == 0 && $get('creditor') == 0) {
+                                                $fail('Only one of these values can be zero.');
+                                            } elseif ($get('debtor') != 0 && $get('creditor') != 0) {
+                                                $fail('At least one of the values must be zero.');
+                                            }
+                                        }
+                                    }
+,
                                         ]),
                                     Forms\Components\TextInput::make('creditor')->prefix(defaultCurrency()->symbol)->readOnly(function (Get $get) {
                                         return $get('isCurrency') || $get->getData()['type'] === "1";
@@ -238,8 +248,10 @@ class FactorResource extends Resource
                                         ->mask(RawJs::make('$money($input)'))->stripCharacters(',')
                                         ->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)
                                         ->rules([
-                                            fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                                            fn(Get $get): Closure => function (string $attribute, $value, Closure $fail ,$operation ) use ($get) {
 
+                                                if ($operation == "create") {
+                                             
                                                 if ($get->getData()['type'] !== "1") {
 
 
@@ -269,6 +281,14 @@ class FactorResource extends Resource
                                                 } elseif ($get('creditor') != 0) {
                                                     $fail('The creditor field must be zero.');
                                                 }
+                                            } else {
+                                                if ($get('debtor') == 0 && $get('creditor') == 0) {
+                                                    $fail('Only one of these values can be zero.');
+                                                } elseif ($get('debtor') != 0 && $get('creditor') != 0) {
+                                                    $fail('At least one of the values must be zero.');
+                                                }
+                                            }
+
                                             },
                                         ]),
                                     Forms\Components\Hidden::make('isCurrency'),
@@ -305,31 +325,31 @@ class FactorResource extends Resource
                                         }),
                                         TextInput::make('exchange_rate')->default(defaultCurrency()->exchange_rate)->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                                         Forms\Components\TextInput::make('debtor_foreign')
-                                        ->readOnly(fn(Get $get) => $get->getData()['type'] !== "1")
-                                        ->live(true)->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
-                                            $set('debtor', number_format((float) str_replace(',', '', $state) * (float) str_replace(',', '', $get('exchange_rate'))));
-                                        })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)->rules([
-                                            fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
-                                                if ($get('debtor_foreign') == 0 && $get('creditor_foreign') == 0) {
-                                                    $fail('Only one of these values can be zero.');
-                                                } elseif ($get('debtor_foreign') != 0 && $get('creditor_foreign') != 0) {
-                                                    $fail('At least one of the values must be zero.');
-                                                }
-                                            },
-                                        ]),
+                                            ->readOnly(fn(Get $get) => $get->getData()['type'] !== "1")
+                                            ->live(true)->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
+                                                $set('debtor', number_format((float) str_replace(',', '', $state) * (float) str_replace(',', '', $get('exchange_rate'))));
+                                            })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)->rules([
+                                                fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                                                    if ($get('debtor_foreign') == 0 && $get('creditor_foreign') == 0) {
+                                                        $fail('Only one of these values can be zero.');
+                                                    } elseif ($get('debtor_foreign') != 0 && $get('creditor_foreign') != 0) {
+                                                        $fail('At least one of the values must be zero.');
+                                                    }
+                                                },
+                                            ]),
                                         Forms\Components\TextInput::make('creditor_foreign')
-                                        ->readOnly(fn(Get $get) => $get->getData()['type'] === "1")
-                                        ->live(true)->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
-                                            $set('creditor', number_format((float) str_replace(',', '', $state) * (float) str_replace(',', '', $get('exchange_rate'))));
-                                        })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)->rules([
-                                            fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
-                                                if ($get('debtor_foreign') == 0 && $get('creditor_foreign') == 0) {
-                                                    $fail('Only one of these values can be zero.');
-                                                } elseif ($get('debtor_foreign') != 0 && $get('creditor_foreign') != 0) {
-                                                    $fail('At least one of the values must be zero.');
-                                                }
-                                            },
-                                        ]),
+                                            ->readOnly(fn(Get $get) => $get->getData()['type'] === "1")
+                                            ->live(true)->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
+                                                $set('creditor', number_format((float) str_replace(',', '', $state) * (float) str_replace(',', '', $get('exchange_rate'))));
+                                            })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)->rules([
+                                                fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                                                    if ($get('debtor_foreign') == 0 && $get('creditor_foreign') == 0) {
+                                                        $fail('Only one of these values can be zero.');
+                                                    } elseif ($get('debtor_foreign') != 0 && $get('creditor_foreign') != 0) {
+                                                        $fail('At least one of the values must be zero.');
+                                                    }
+                                                },
+                                            ]),
                                     ])->columns(4)->visible(function (Get $get) {
                                         return $get('isCurrency');
                                     }),
