@@ -25,7 +25,6 @@ use function Filament\Support\is_app_url;
 class CreateCash extends CreateRecord
 {
     protected static string $resource = BankResource::class;
-
     public function form(Form $form): Form
     {
         return $form->schema([
@@ -91,7 +90,7 @@ class CreateCash extends CreateRecord
             }
             $check = Account::query()->where('code', $parentAccount->code . $data['account_code'])->where('company_id', getCompany()->id)->first();
             if ($check) {
-                Notification::make('error')->title('this Code Not unique')->warning()->send();
+                Notification::make('error')->title('this Account Code Exist')->warning()->send();
                 return;
             }
             $account = Account::query()->create([

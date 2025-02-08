@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\BankResource\Pages;
 use App\Filament\Admin\Resources\BankResource;
 use App\Models\Account;
 use Filament\Actions;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Support\Exceptions\Halt;
 use Filament\Support\Facades\FilamentView;
@@ -28,6 +29,7 @@ class CreateBank extends CreateRecord
             $this->callHook('afterValidate');
 
             $data = $this->mutateFormDataBeforeCreate($data);
+
             if (getCompany()->account_bank !==null){
                 $parent=getCompany()->account_bank;
                 $parentAccount=Account::query()->where('id',$parent)->where('company_id',getCompany()->id)->first();
@@ -35,6 +37,11 @@ class CreateBank extends CreateRecord
             }else{
                 $parent="Bank";
                 $parentAccount=Account::query()->where('stamp',$parent)->where('company_id',getCompany()->id)->first();
+            }
+            $check = Account::query()->where('code', $parentAccount->code . $data['account_code'])->where('company_id', getCompany()->id)->first();
+            if ($check) {
+                Notification::make('error')->title('this Account Code Exist')->warning()->send();
+                return;
             }
 
             $account = Account::query()->create([

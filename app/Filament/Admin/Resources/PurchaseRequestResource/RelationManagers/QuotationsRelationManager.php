@@ -44,6 +44,7 @@ class QuotationsRelationManager extends RelationManager
                             'type' => 'creditor',
                             'code' => $parentAccount->code . $data['account_code_vendor'],
                             'level' => 'detail',
+                            'group'=>'Liabilitie',
                             'parent_id' => $parentAccount->id,
                             'built_in' => false,
                             'company_id' => getCompany()->id,

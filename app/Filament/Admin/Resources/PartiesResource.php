@@ -13,6 +13,7 @@ use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Infolists\Components\Section;
@@ -176,16 +177,9 @@ class PartiesResource extends Resource
                         ->afterStateUpdated(function ($state, callable $set) {
                             $set('type', Account::query()->firstWhere('id', $state)->type);
                         }),
-                    Forms\Components\TextInput::make('code')->formatStateUsing(function ($state,Get $get){
-                        $account=Account::query()->firstWhere('id', $get('parent_id'));
-                        if ($account?->code){
-                           $state= str_replace($account?->code,'',$state);
-                        }
-
-                        return $state;
-                    })->unique('accounts','code',ignoreRecord: true)->prefix(fn(Get $get) => Account::query()->firstWhere('id', $get('parent_id'))?->code)->required()->maxLength(255),
-
-                    Forms\Components\ToggleButtons::make('type')->grouped()->inline()->options(['creditor' => 'Creditor', 'debtor' => 'Debtor'])->required(),
+                    Forms\Components\TextInput::make('code')->unique('accounts','code',ignoreRecord: true)->required()->maxLength(255),
+                    ToggleButtons::make('type')->disabled()->grouped()->inline()->options(['creditor' => 'Creditor', 'debtor' => 'Debtor'])->required(),
+                    ToggleButtons::make('group')->disabled()->grouped()->options(['Asset'=>'Asset','Liabilitie'=>'Liabilitie','Equity'=>'Equity','Income'=>'Income','Expense'=>'Expense'])->inline(),
                     Forms\Components\Textarea::make('description')->maxLength(255)->columnSpanFull(),
                 ]),
                 Forms\Components\Fieldset::make('Account Customer')->visible(fn($state)=>isset($state['id']))->relationship('accountCustomer')->schema([
@@ -196,16 +190,9 @@ class PartiesResource extends Resource
                         ->afterStateUpdated(function ($state, callable $set) {
                             $set('type', Account::query()->firstWhere('id', $state)->type);
                         }),
-                    Forms\Components\TextInput::make('code')->formatStateUsing(function ($state,Get $get){
-                        $account=Account::query()->firstWhere('id', $get('parent_id'));
-                        if ($account?->code){
-                            $state= str_replace($account?->code,'',$state);
-                        }
-                        return $state;
-                    })->unique('accounts','code',ignoreRecord: true)->required()->maxLength(255)
-                        ->prefix(fn(Get $get) => Account::query()->firstWhere('id', $get('parent_id'))?->code),
-
-                    Forms\Components\ToggleButtons::make('type')->grouped()->inline()->options(['creditor' => 'Creditor', 'debtor' => 'Debtor'])->required(),
+                    Forms\Components\TextInput::make('code')->unique('accounts','code',ignoreRecord: true)->required()->maxLength(255),
+                    ToggleButtons::make('type')->disabled()->grouped()->inline()->options(['creditor' => 'Creditor', 'debtor' => 'Debtor'])->required(),
+                    ToggleButtons::make('group')->disabled()->grouped()->options(['Asset'=>'Asset','Liabilitie'=>'Liabilitie','Equity'=>'Equity','Income'=>'Income','Expense'=>'Expense'])->inline(),
                     Forms\Components\Textarea::make('description')->maxLength(255)->columnSpanFull(),
                 ]),
 
