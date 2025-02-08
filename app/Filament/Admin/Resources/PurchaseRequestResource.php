@@ -150,7 +150,7 @@ class PurchaseRequestResource extends Resource
                 Tables\Columns\TextColumn::make('status'),
                 Tables\Columns\TextColumn::make('bid.quotation.party.name')->label('Vendor'),
                 Tables\Columns\TextColumn::make('total')->label('Total Estimated')
-                    ->label('Total(' . getCompany()->currency . ")")
+                    ->label('Total(' . defaultCurrency()?->symbol . ")")
                     ->state(function ($record) {
                         $total = 0;
                         foreach ($record->items as $item) {

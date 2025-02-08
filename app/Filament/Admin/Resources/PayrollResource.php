@@ -520,9 +520,9 @@ class PayrollResource extends Resource
                 Tables\Columns\TextColumn::make('year')->state(fn($record) => Carbon::parse($record->start_date)->year)->alignLeft()->sortable(),
                 //   Tables\Columns\TextColumn::make('payment_date')->alignCenter()->state(fn($record) => $record->payment_date ? Carbon::make($record->payment_date)->format('Y/m/d') : "Not Paid")->sortable(),
                 Tables\Columns\TextColumn::make('employee.base_salary')->label('Base Salary')->alignLeft()->numeric()->sortable(),
-                Tables\Columns\TextColumn::make('total_allowance')->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total Allowance'))->label('Total Allowance')->alignLeft()->numeric()->sortable(),
-                Tables\Columns\TextColumn::make('total_deduction')->summarize(Tables\Columns\Summarizers\Sum::make('total_deduction')->label('Total Deduction'))->label('Total Deduction')->alignLeft()->numeric()->sortable(),
-                Tables\Columns\TextColumn::make('amount_pay')->summarize(Tables\Columns\Summarizers\Sum::make('amount_pay')->label('Total Net Pay'))->label('Net Pay')->alignLeft()->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('total_allowance')->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total Allowance'))->label('Total Allowance'." ".defaultCurrency()?->symbol)->alignLeft()->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('total_deduction')->summarize(Tables\Columns\Summarizers\Sum::make('total_deduction')->label('Total Deduction'))->label('Total Deduction'." ".defaultCurrency()?->symbol)->alignLeft()->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('amount_pay')->summarize(Tables\Columns\Summarizers\Sum::make('amount_pay')->label('Total Net Pay'))->label('Net Pay'." ".defaultCurrency()?->symbol)->alignLeft()->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('status')->badge()->alignLeft(),
             ])
             ->filters([

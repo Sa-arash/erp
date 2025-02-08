@@ -15,8 +15,8 @@
         <th>Account Name</th>
         <th>Account Code</th>
         <th>Document Description</th>
-        <th>Debit</th>
-        <th>Credit</th>
+        <th>Debit({{ PDFdefaultCurrency($company)}})</th>
+        <th>Credit({{ PDFdefaultCurrency($company)}})</th>
         @if(count($accounts) === 1)
         <th>Balance</th>
         @endif

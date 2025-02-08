@@ -6,8 +6,8 @@
 <table>
     <thead>
         <tr>
-            <th>Assets ({{ $company->currency }})</th>
-            <th>Liabilities + Equity ({{ $company->currency }})</th>
+            <th>Assets ({{ PDFdefaultCurrency($company)}})</th>
+            <th>Liabilities + Equity ({{ PDFdefaultCurrency($company)}})</th>
         </tr>
     </thead>
     <tbody>
@@ -96,7 +96,7 @@
         <tr>
             <td>
                 <strong>Total :</strong>
-            
+
 
                 <!-- محاسبه مجموع برای Assets -->
                 {{-- @foreach ($accounts['Assets'] as $asset)
@@ -118,7 +118,7 @@
                     @php
                         $sumEq += $equity['sum']; // جمع مقادیر
                     @endphp
-                @endforeach --}} 
+                @endforeach --}}
 
                 {{ number_format($sumAsset) }}
             </td>

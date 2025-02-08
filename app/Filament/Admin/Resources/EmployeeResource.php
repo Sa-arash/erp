@@ -182,8 +182,8 @@ class EmployeeResource extends Resource
                             }),
                             Forms\Components\DatePicker::make('joining_date')->required(),
                             Forms\Components\DatePicker::make('leave_date')->label('Ending Date'),
-                            Forms\Components\TextInput::make('base_salary')->required()->label('Base Salary' . '(' . getCompany()->currency . ")")->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->default(0)->numeric(),
-                            Forms\Components\TextInput::make('daily_salary')->label('Daily Salary' . '(' . getCompany()->currency . ")")->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0),
+                            Forms\Components\TextInput::make('base_salary')->required()->label('Base Salary' . '(' .defaultCurrency()?->symbol . ")")->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->default(0)->numeric(),
+                            Forms\Components\TextInput::make('daily_salary')->label('Daily Salary' . '(' . defaultCurrency()?->symbol . ")")->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0),
 
                             Forms\Components\Select::make('benefits')->relationship('benefits', 'title')->label('Allowance')
                                 ->createOptionForm([
@@ -398,8 +398,8 @@ class EmployeeResource extends Resource
                     }),
                     Forms\Components\DatePicker::make('joining_date')->required(),
                     Forms\Components\DatePicker::make('leave_date')->label('Ending Date'),
-                    Forms\Components\TextInput::make('base_salary')->required()->label('Base Salary' . '(' . getCompany()->currency . ")")->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0),
-                    Forms\Components\TextInput::make('daily_salary')->label('Daily Salary' . '(' . getCompany()->currency . ")")->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)
+                    Forms\Components\TextInput::make('base_salary')->required()->label('Base Salary' . '(' . defaultCurrency()?->symbol . ")")->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0),
+                    Forms\Components\TextInput::make('daily_salary')->label('Daily Salary' . '(' . defaultCurrency()?->symbol . ")")->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)
                         ->default(0)
                         ->numeric(),
                     Forms\Components\Select::make('benefits')->relationship('benefits', 'title')->label('Allowance')
@@ -507,7 +507,7 @@ class EmployeeResource extends Resource
                 } )->alignLeft()->sortable(),
                 Tables\Columns\TextColumn::make('phone_number')->alignLeft()->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('duty.title')->alignLeft()->numeric()->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('base_salary')->label('Base Salary' . "(" . getCompany()->currency . ")")->alignLeft()->numeric()->sortable()->badge(),
+                Tables\Columns\TextColumn::make('base_salary')->label('Base Salary' . "(" . defaultCurrency()?->symbol . ")")->alignLeft()->numeric()->sortable()->badge(),
                 Tables\Columns\TextColumn::make('department.title')->alignLeft()->color('aColor')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('position.title')->alignLeft()->label('Position')->sortable(),
                 //                Tables\Columns\TextColumn::make('payrolls_count')->counts('payrolls')->badge()->url(fn($record): string => (PayrollResource::getUrl('index', ['tableFilters[employee_id][value]' => $record->id])))->sortable(),

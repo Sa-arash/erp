@@ -505,6 +505,9 @@ function generateNextCode($code): string
 function defaultCurrency(){
     return getCompany()->currencies->where('is_company_currency',1)->first();
 }
+function PDFdefaultCurrency($company){
+    return $company->currencies->where('is_company_currency',1)->first()?->symbol;
+}
 
 function generateNextCodePO($code): string
 {
