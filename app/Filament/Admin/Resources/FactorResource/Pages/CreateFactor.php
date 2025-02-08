@@ -38,14 +38,14 @@ class CreateFactor extends CreateRecord
             $this->form->model($this->getRecord())->saveRelationships();
 
             $this->callHook('afterCreate');
-
+            
             $total = 0;
             foreach ($this->form->getLivewire()->data['items'] as $item) {
                 $total += str_replace(',', '', $item['total']);
             }
 
-
-            // dd($this->record);
+            
+            // dd($this->data);
 
 
             DB::beginTransaction(); // شروع تراکنش
@@ -59,6 +59,7 @@ class CreateFactor extends CreateRecord
                 ]);
                 //     // ذخیره تراکنش‌های فاکتور (Transactions)
                 foreach ($this->data['invoice']['transactions'] as $transaction) {
+                    // dd(str_replace(',', '', $transaction['exchange_rate']));
                     $savedTransaction = $this->record->invoice->transactions()->create([
                         'account_id' => $transaction['account_id'],
                         'description' => $transaction['description'],
@@ -67,9 +68,9 @@ class CreateFactor extends CreateRecord
                         'creditor' => str_replace(',', '', $transaction['creditor']),
                         'debtor' => str_replace(',', '', $transaction['debtor']),
                         'Cheque' => $transaction['Cheque'],
-                        "currency_id" =>$transaction['currency_id'],
-                        "exchange_rate" => str_replace(',', '', $transaction['exchange_rate']),
-                        "debtor_foreign" =>str_replace(',', '', $transaction['debtor_foreign']),
+                        "currency_id" => $transaction['currency_id']??defaultCurrency()->id,
+                        "exchange_rate" => str_replace(',', '', $transaction['exchange_rate'])??defaultCurrency()->exchange_rate,
+                        "debtor_foreign" => str_replace(',', '', $transaction['debtor_foreign']),
                         "creditor_foreign" => str_replace(',', '', $transaction['creditor_foreign']),
                         'financial_period_id' => $transaction['financial_period_id'],
                     ]);
@@ -95,6 +96,7 @@ class CreateFactor extends CreateRecord
                         ]);
                     }
                 }
+                // dd(defaultCurrency()->exchange_rate);
 
                 DB::commit(); // تایید تراکنش
 
@@ -106,11 +108,11 @@ class CreateFactor extends CreateRecord
                 // return response()->json(['message' => 'Error occurred', 'error' => $e->getMessage()], 500);
             }
 
+            
 
+            
 
-
-
-
+            
 
 
 
@@ -136,8 +138,8 @@ class CreateFactor extends CreateRecord
 
                     'account_id' => $this->form->getLivewire()->data['account_id'],
                     'user_id' => auth()->user()->id,
-                    "currency_id" =>$transaction['currency_id'],
-
+                    "currency_id" => defaultCurrency()->id,
+                    "exchange_rate" => defaultCurrency()->exchange_rate,
                     'creditor' => 0,
                     'debtor' => $total,
                     'description' => 'Increas Expence ',
@@ -155,8 +157,8 @@ class CreateFactor extends CreateRecord
 
                     'account_id' => $party->accountVendor->id,
                     'user_id' => auth()->user()->id,
-                    "currency_id" =>$transaction['currency_id'],
-
+                    "currency_id" => defaultCurrency()->id,
+                    "exchange_rate" => defaultCurrency()->exchange_rate,
                     'creditor' => $total,
                     'debtor' => 0,
                     'description' => 'Make '  . $party->name . ' creditor',
@@ -172,8 +174,8 @@ class CreateFactor extends CreateRecord
 
                     'account_id' => $party->accountVendor->id,
                     'user_id' => auth()->user()->id,
-                    "currency_id" =>$transaction['currency_id'],
-
+                    "currency_id" => defaultCurrency()->id,
+                    "exchange_rate" => defaultCurrency()->exchange_rate,
                     'creditor' => 0,
                     'debtor' => $total,
                     'description' => 'Give mony to  '  . $party->name,
@@ -237,7 +239,8 @@ class CreateFactor extends CreateRecord
 
                     'account_id' => $party->accountCustomer->id,
                     'user_id' => auth()->user()->id,
-                    "currency_id" =>$transaction['currency_id'],
+                    "currency_id" => defaultCurrency()->id,
+                    "exchange_rate" => defaultCurrency()->exchange_rate,
                     'creditor' => $total,
                     'debtor' => 0,
                     'description' => 'Make'  . $party->name . ' Creditor',
@@ -253,7 +256,8 @@ class CreateFactor extends CreateRecord
 
                     'account_id' => $party->accountCustomer->id,
                     'user_id' => auth()->user()->id,
-                    "currency_id" =>$transaction['currency_id'],
+                    "currency_id" => defaultCurrency()->id,
+                    "exchange_rate" => defaultCurrency()->exchange_rate,
                     'creditor' => 0,
                     'debtor' => $total,
                     'description' => 'Give mony from  '  . $party->name,
@@ -264,13 +268,13 @@ class CreateFactor extends CreateRecord
 
                 ]);
 
-
                 // Income Creditor
                 $savedTransaction = $this->record->invoice->transactions()->create([
 
                     'account_id' => $this->form->getLivewire()->data['account_id'],
                     'user_id' => auth()->user()->id,
-                    "currency_id" =>$transaction['currency_id'],
+                    "currency_id" => defaultCurrency()->id,
+                    "exchange_rate" => defaultCurrency()->exchange_rate,
 
                     'creditor' => $total,
                     'debtor' => 0,

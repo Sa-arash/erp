@@ -303,7 +303,7 @@ class FactorResource extends Resource
                                                 $set('exchange_rate', $currency->exchange_rate);
                                             }
                                         }),
-                                        TextInput::make('exchange_rate')->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                                        TextInput::make('exchange_rate')->default(defaultCurrency()->exchange_rate)->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                                         Forms\Components\TextInput::make('debtor_foreign')
                                         ->readOnly(fn(Get $get) => $get->getData()['type'] !== "1")
                                         ->live(true)->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
