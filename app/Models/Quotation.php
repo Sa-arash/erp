@@ -32,4 +32,8 @@ class Quotation extends Model
     {
         return $this->hasMany(QuotationItem::class);
     }
+    public function currency(): \Illuminate\Database\Eloquent\Relations\belongsTo
+    {
+        return $this->belongsTo(Currency::class);
+    }
 }

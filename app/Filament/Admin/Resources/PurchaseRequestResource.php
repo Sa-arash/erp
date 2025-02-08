@@ -8,44 +8,30 @@ use App\Models\Account;
 use App\Models\Bid;
 use App\Models\Employee;
 use App\Models\Parties;
-use App\Models\Product;
-use App\Models\PurchaseOrder;
 use App\Models\PurchaseRequest;
-use App\Models\PurchaseRequestItem;
 use App\Models\Quotation;
-use App\Models\Structure;
 use App\Models\Transaction;
 use App\Models\Unit;
-use Closure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
-use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms;
-use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
-use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Support\RawJs;
 use Filament\Tables;
-use Filament\Tables\Columns\Summarizers\Sum;
-use Filament\Tables\Columns\Summarizers\Summarizer;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\HtmlString;
 use Illuminate\Validation\Rules\Unique;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
-use Nette\Utils\Html;
 
 class PurchaseRequestResource extends Resource
 {
@@ -198,7 +184,6 @@ class PurchaseRequestResource extends Resource
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\Action::make('prQuotation')->visible(fn($record) => $record->is_quotation)->color('warning')->label('Quotation ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.quotation', ['id' => $record->id])),
                     Tables\Actions\Action::make('insertQuotation')->modalWidth(MaxWidth::Full)->icon('heroicon-s-newspaper')->color('info')->label('InsertQuotation')->visible(fn($record) => $record->is_quotation)->form(function ($record) {
-
                         return [
                             Section::make([
                                 Forms\Components\Select::make('party_id')->createOptionUsing(function ($data) {
@@ -211,6 +196,7 @@ class PurchaseRequestResource extends Resource
                                         'parent_id' => $parentAccount->id,
                                         'built_in' => false,
                                         'company_id' => getCompany()->id,
+                                        'currency_id' => $data['currency_id']
                                     ]);
                                     $data['account_vendor'] = $account->id;
                                     $data['company_id'] = getCompany()->id;
@@ -223,7 +209,8 @@ class PurchaseRequestResource extends Resource
                                         Forms\Components\TextInput::make('email')->email()->maxLength(255),
                                         Forms\Components\Textarea::make('address')->columnSpanFull(),
                                         SelectTree::make('parent_vendor')->disabledOptions(function () {
-                                            return Account::query()->where('level', 'detail')->where('company_id', getCompany()->id)->orWhereHas('transactions', function ($query) {})->pluck('id')->toArray();
+                                            return Account::query()->where('level', 'detail')->where('company_id', getCompany()->id)->orWhereHas('transactions', function ($query) {
+                                            })->pluck('id')->toArray();
                                         })->default(getCompany()?->vendor_account)->enableBranchNode()->model(Transaction::class)->defaultOpenLevel(3)->live()->label('Parent Vendor Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('stamp', "Liabilities")->where('company_id', getCompany()->id)),
                                         Forms\Components\TextInput::make('account_code_vendor')->prefix(fn(Get $get) => Account::find($get('parent_vendor'))?->code)->default(function () {
                                             if (Parties::query()->where('company_id', getCompany()->id)->where('type', 'vendor')->latest()->first()) {
@@ -232,12 +219,13 @@ class PurchaseRequestResource extends Resource
                                                 return "001";
                                             }
                                         })->required()->maxLength(255),
-                                    ])->columns(3),
+                                        getSelectCurrency(),
+                                    ])->columns(3)->model(Parties::class),
                                 ])->label('Vendor')->options(Parties::query()->where('company_id', getCompany()->id)->where('type', 'vendor')->get()->pluck('info', 'id'))->searchable()->preload()->required(),
                                 Forms\Components\DatePicker::make('date')->default(now())->required(),
                                 Forms\Components\Select::make('employee_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Logistic'),
                                 Forms\Components\Select::make('employee_operation_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Operation'),
-                                Forms\Components\Select::make('currency')->required()->options(getCurrency())->searchable()->preload()->label('Currency'),
+                                getSelectCurrency(),
                                 Forms\Components\FileUpload::make('file')->downloadable()->columnSpanFull(),
                                 Forms\Components\Textarea::make('description')->columnSpanFull()->nullable()
                             ])->columns(5),
@@ -269,37 +257,25 @@ class PurchaseRequestResource extends Resource
                                         $tax = $state === null ? 0 : (float)$state;
                                         $price = $get('unit_rate') !== null ? str_replace(',', '', $get('unit_rate')) : 0;
                                         $set('total', number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100)));
-                                    })->live(true)
-                                        ->prefix('%')
-                                        ->numeric()->maxValue(100)
-                                        ->required()
-                                        ->rules([
-                                            fn(): \Closure => function (string $attribute, $value, \Closure $fail) {
-                                                if ($value < 0) {
-                                                    $fail('The :attribute must be greater than 0.');
-                                                }
-                                                if ($value > 100) {
-                                                    $fail('The :attribute must be less than 100.');
-                                                }
-                                            },
-                                        ])
-                                        ->mask(RawJs::make('$money($input)'))
-                                        ->stripCharacters(','),
+                                    })->live(true)->prefix('%')->numeric()->maxValue(100)->required()->rules([
+                                        fn(): \Closure => function (string $attribute, $value, \Closure $fail) {
+                                            if ($value < 0) {
+                                                $fail('The :attribute must be greater than 0.');
+                                            }
+                                            if ($value > 100) {
+                                                $fail('The :attribute must be less than 100.');
+                                            }
+                                        },
+                                    ])->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                                     Forms\Components\TextInput::make('freights')->prefix('%')->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
                                         $tax = $get('taxes') === null ? 0 : (float)$get('taxes');
                                         $q = $get('quantity');
                                         $freights = $state === null ? 0 : (float)$state;
                                         $price = $get('unit_rate') !== null ? str_replace(',', '', $get('unit_rate')) : 0;
                                         $set('total', number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100)));
-                                    })->live(true)
-                                        ->required()
-                                        ->numeric()
-                                        ->mask(RawJs::make('$money($input)'))
-                                        ->stripCharacters(','),
+                                    })->live(true)->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                                     Forms\Components\TextInput::make('total')->readOnly()->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-
                                     Forms\Components\Textarea::make('description')->columnSpanFull()->readOnly()->label('Product Name and Description'),
-
                                 ])->formatStateUsing(function () use ($record) {
                                     $data = [];
                                     foreach ($record->items->where('status', 'approve') as $item) {
@@ -320,7 +296,7 @@ class PurchaseRequestResource extends Resource
                             'employee_id' => $data['employee_id'],
                             'employee_operation_id' => $data['employee_operation_id'],
                             'company_id' => $id,
-                            'currency' => $data['currency'],
+                            'currency_id' => $data['currency_id']
                         ]);
 
                         foreach ($data['Requested Items'] as $item) {
@@ -365,7 +341,7 @@ class PurchaseRequestResource extends Resource
                                 $vendors = '';
                                 $ths = '';
                                 foreach ($record->quotations as $quotation) {
-                                    $vendor = $quotation->party->name . "'s Quotation";
+                                    $vendor = $quotation->party->name . "'s Quotation"." ".$quotation->currency->symbol;
                                     $vendors .= "<th style='border: 1px solid black;padding: 8px;text-align: center;background-color:rgb(90, 86, 86)'>123123{$vendor}</th>";
                                     $totalSum = 0;
 
