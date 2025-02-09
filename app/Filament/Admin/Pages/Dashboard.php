@@ -9,6 +9,7 @@ use App\Filament\Admin\Widgets\invoicePrice;
 use App\Filament\Admin\Widgets\ProfitAndLoss;
 use App\Filament\Admin\Widgets\profitAndLost;
 use App\Filament\Admin\Widgets\StateOverView;
+use App\Filament\Admin\Widgets\test;
 use Filament\Pages\Page;
 
 use Filament\Pages\Dashboard as BaseDashboard;
@@ -26,6 +27,7 @@ class Dashboard extends BaseDashboard
             accounting::class,
             invoicePrice::class,
             assetInStorage::class,
+
         ];
     }
 }
