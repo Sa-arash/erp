@@ -182,7 +182,7 @@ class PurchaseRequestResource extends Resource
                     ->icon('heroicon-s-shopping-cart')
                     ->url(fn($record) => PurchaseOrderResource::getUrl('create') . "?prno=" . $record->id),
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\Action::make('prQuotation')->visible(fn($record) => $record->is_quotation)->color('warning')->label('Quotation ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.quotation', ['id' => $record->id])),
+                    Tables\Actions\Action::make('prQuotation')->visible(fn($record) => $record->is_quotation)->color('warning')->label('Quotation ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.quotation', ['id' => $record->id]))->openUrlInNewTab(),
                     Tables\Actions\Action::make('insertQuotation')->modalWidth(MaxWidth::Full)->icon('heroicon-s-newspaper')->color('info')->label('InsertQuotation')->visible(fn($record) => $record->is_quotation)->form(function ($record) {
                         return [
                             Section::make([
@@ -343,7 +343,7 @@ class PurchaseRequestResource extends Resource
                                 $ths = '';
                                 foreach ($record->quotations as $quotation) {
                                     $vendor = $quotation->party->name . "'s Quotation"." ".$quotation->currency->symbol;
-                                    $vendors .= "<th style='border: 1px solid black;padding: 8px;text-align: center;background-color:rgb(90, 86, 86)'>123123{$vendor}</th>";
+                                    $vendors .= "<th style='border: 1px solid black;padding: 8px;text-align: center;background-color:rgb(90, 86, 86)'>{$vendor}</th>";
                                     $totalSum = 0;
 
                                     foreach ($quotation->quotationItems as $quotationItem) {
@@ -405,9 +405,9 @@ class PurchaseRequestResource extends Resource
                         }
                         $data['total_cost'] = $totalSum;
                         Bid::query()->create($data);
-                        Notification::make('make bid')->success()->title('Created Successfully')->send()->sendToDatabase(auth()->user());
+                        Notification::make('make bid')->success()->title('Submitted Successfully')->send()->sendToDatabase(auth()->user());
                     })->modalWidth(MaxWidth::Full)->visible(fn($record) => $record->quotations->count() > 0),
-                    Tables\Actions\Action::make('prPDF')->label('PR ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.purchase', ['id' => $record->id])),
+                    Tables\Actions\Action::make('prPDF')->label('PR ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.purchase', ['id' => $record->id]))->openUrlInNewTab(),
                 ]),
 
 

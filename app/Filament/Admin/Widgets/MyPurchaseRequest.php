@@ -132,6 +132,7 @@ class MyPurchaseRequest extends BaseWidget
                             }
                         })->readOnly()->label('PR Number')->unique(modifyRuleUsing: function (Unique $rule) {return $rule->where('company_id', getCompany()->id);})->unique('purchase_requests', 'purchase_number')->required()->numeric(),
                         DatePicker::make('request_date')->default(now())->label('Request Date')->required(),
+                        Select::make('currency_id')->live()->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload(),
                         Textarea::make('description')->columnSpanFull()->label('Description'),
                         Repeater::make('Requested Items')
                         ->addActionLabel('Add Item')
@@ -152,7 +153,7 @@ class MyPurchaseRequest extends BaseWidget
                             ])
                             ->columns(5)
                             ->columnSpanFull(),
-                    ])->columns(2)
+                    ])->columns(3)
                 ])->action(function ($data){
                     $employee=getEmployee();
                     $company=getCompany();
