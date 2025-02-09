@@ -87,7 +87,6 @@ class AssetResource extends Resource
                         ->label('Depreciation Amount')
                         ->numeric()
                         ->mask(RawJs::make('$money($input)'))->stripCharacters(',')
-                        ->required()
                         ->placeholder('Enter amount'),
 
                     Forms\Components\Hidden::make('status')->default('inStorageUsable')->required(),
