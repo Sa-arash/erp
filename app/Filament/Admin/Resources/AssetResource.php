@@ -123,7 +123,7 @@ class AssetResource extends Resource
                             return $assets;
                         }
                     }
-                })
+                })->cloneable()
             ]);
     }
 

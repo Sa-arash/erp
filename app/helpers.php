@@ -664,7 +664,7 @@ function getSelectCurrency(){
         Notification::make('success')->title('success')->success()->send();
         return Currency::query()->create($data)->getKey();
     })->editOptionForm([
-        Section::make([
+       \Filament\Forms\Components\Section::make([
             TextInput::make('name')->required()->maxLength(255),
             TextInput::make('symbol')->required()->maxLength(255),
             TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
