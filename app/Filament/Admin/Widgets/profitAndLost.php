@@ -58,11 +58,11 @@ class ProfitAndLost extends ApexChartWidget
             ],
             'series' => [
                 [
-                    'name' => 'Income',
+                    'name' => 'Profit',
                     'data' => $incomeData,
                 ],
                 [
-                    'name' => 'Expense',
+                    'name' => 'Loss',
                     'data' => $expenseData,
                 ],
             ],
