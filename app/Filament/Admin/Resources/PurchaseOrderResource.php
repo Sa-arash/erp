@@ -630,7 +630,7 @@ class PurchaseOrderResource extends Resource
             ], getModelFilter())
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('registration')->label('Registration assets')->url(fn($record) => AssetResource::getUrl('create', ['po' => $record->id]))
+                Tables\Actions\Action::make('GRN')->label('GRN')->url(fn($record) => AssetResource::getUrl('create', ['po' => $record->id]))
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
