@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('purchase_orders', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('invoice_id')->nullable()->constrained('accounts')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('invoice_id')->nullable()->constrained('invoices')->cascadeOnDelete()->cascadeOnUpdate();
 
             $table->date('date_of_delivery');
             $table->string('location_of_delivery', 255)->nullable();

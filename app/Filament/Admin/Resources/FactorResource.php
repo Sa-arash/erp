@@ -194,48 +194,46 @@ class FactorResource extends Resource
                                         return $get('isCurrency') || $get->getData()['type'] !== "1";
                                     })->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)
                                         ->rules([
-                                            fn(Get $get): Closure => function (string $attribute, $value, Closure $fail,$operation) use ($get) {
+                                            fn(Get $get): Closure => function (string $attribute, $value, Closure $fail, $operation) use ($get) {
                                                 if ($operation == "create") {
 
-                                                if ($get->getData()['type'] === "1") {
+                                                    if ($get->getData()['type'] === "1") {
 
 
-                                                    if ($get('debtor') == 0) {
-                                                        $fail('The debtor field must be not zero.');
-                                                    } else {
+                                                        if ($get('debtor') == 0) {
+                                                            $fail('The debtor field must be not zero.');
+                                                        } else {
 
-                                                        // dd(()));
-                                                        $produtTotal = array_map(function ($item) {
-                                                            // dd($item);
-                                                            return (($item['quantity'] * str_replace(',', '', $item['unit_price'])) - (($item['quantity'] * str_replace(',', '', $item['unit_price'])) * $item['discount']) / 100);
-                                                        }, $get->getData()['items']);
+                                                            // dd(()));
+                                                            $produtTotal = array_map(function ($item) {
+                                                                // dd($item);
+                                                                return (($item['quantity'] * str_replace(',', '', $item['unit_price'])) - (($item['quantity'] * str_replace(',', '', $item['unit_price'])) * $item['discount']) / 100);
+                                                            }, $get->getData()['items']);
 
-                                                        $invoiceTotal = array_map(function ($item) {
-                                                            // dd($item);
-                                                            return (str_replace(',', '', $item['debtor']));
-                                                        }, $get->getData()['invoice']['transactions']);
+                                                            $invoiceTotal = array_map(function ($item) {
+                                                                // dd($item);
+                                                                return (str_replace(',', '', $item['debtor']));
+                                                            }, $get->getData()['invoice']['transactions']);
 
-                                                        $productSum = collect($produtTotal)->sum();
-                                                        $invoiceSum = collect($invoiceTotal)->sum();
+                                                            $productSum = collect($produtTotal)->sum();
+                                                            $invoiceSum = collect($invoiceTotal)->sum();
 
-                                                        if ($invoiceSum != $productSum) {
-                                                            $remainingAmount = $productSum - $invoiceSum;
-                                                            $fail("The paid amount does not match the total price. Total amount:" . number_format($productSum, 2) . ", Remaining amount: " . number_format($remainingAmount, 2));
+                                                            if ($invoiceSum != $productSum) {
+                                                                $remainingAmount = $productSum - $invoiceSum;
+                                                                $fail("The paid amount does not match the total price. Total amount:" . number_format($productSum, 2) . ", Remaining amount: " . number_format($remainingAmount, 2));
+                                                            }
                                                         }
+                                                    } elseif ($get('debtor') != 0) {
+                                                        $fail('The debtor field must be zero.');
                                                     }
-                                                } elseif ($get('debtor') != 0) {
-                                                    $fail('The debtor field must be zero.');
+                                                } else {
+                                                    if ($get('debtor') == 0 && $get('creditor') == 0) {
+                                                        $fail('Only one of these values can be zero.');
+                                                    } elseif ($get('debtor') != 0 && $get('creditor') != 0) {
+                                                        $fail('At least one of the values must be zero.');
+                                                    }
                                                 }
-                                         
-                                        } else {
-                                            if ($get('debtor') == 0 && $get('creditor') == 0) {
-                                                $fail('Only one of these values can be zero.');
-                                            } elseif ($get('debtor') != 0 && $get('creditor') != 0) {
-                                                $fail('At least one of the values must be zero.');
-                                            }
-                                        }
-                                    }
-,
+                                            },
                                         ]),
                                     Forms\Components\TextInput::make('creditor')->prefix(defaultCurrency()->symbol)->readOnly(function (Get $get) {
                                         return $get('isCurrency') || $get->getData()['type'] === "1";
@@ -248,47 +246,46 @@ class FactorResource extends Resource
                                         ->mask(RawJs::make('$money($input)'))->stripCharacters(',')
                                         ->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)
                                         ->rules([
-                                            fn(Get $get): Closure => function (string $attribute, $value, Closure $fail ,$operation ) use ($get) {
+                                            fn(Get $get): Closure => function (string $attribute, $value, Closure $fail, $operation) use ($get) {
 
                                                 if ($operation == "create") {
-                                             
-                                                if ($get->getData()['type'] !== "1") {
+
+                                                    if ($get->getData()['type'] !== "1") {
 
 
-                                                    if ($get('creditor') == 0) {
-                                                        $fail('The creditor field must be not zero.');
-                                                    } else {
+                                                        if ($get('creditor') == 0) {
+                                                            $fail('The creditor field must be not zero.');
+                                                        } else {
 
-                                                        // dd(()));
-                                                        $produtTotal = array_map(function ($item) {
-                                                            // dd($item);
-                                                            return (($item['quantity'] * str_replace(',', '', $item['unit_price'])) - (($item['quantity'] * str_replace(',', '', $item['unit_price'])) * $item['discount']) / 100);
-                                                        }, $get->getData()['items']);
+                                                            // dd(()));
+                                                            $produtTotal = array_map(function ($item) {
+                                                                // dd($item);
+                                                                return (($item['quantity'] * str_replace(',', '', $item['unit_price'])) - (($item['quantity'] * str_replace(',', '', $item['unit_price'])) * $item['discount']) / 100);
+                                                            }, $get->getData()['items']);
 
-                                                        $invoiceTotal = array_map(function ($item) {
-                                                            // dd($item);
-                                                            return (str_replace(',', '', $item['creditor']));
-                                                        }, $get->getData()['invoice']['transactions']);
+                                                            $invoiceTotal = array_map(function ($item) {
+                                                                // dd($item);
+                                                                return (str_replace(',', '', $item['creditor']));
+                                                            }, $get->getData()['invoice']['transactions']);
 
-                                                        $productSum = collect($produtTotal)->sum();
-                                                        $invoiceSum = collect($invoiceTotal)->sum();
+                                                            $productSum = collect($produtTotal)->sum();
+                                                            $invoiceSum = collect($invoiceTotal)->sum();
 
-                                                        if ($invoiceSum != $productSum) {
-                                                            $remainingAmount = $productSum - $invoiceSum;
-                                                            $fail("The paid amount does not match the total price. Total amount:" . number_format($productSum, 2) . ", Remaining amount: " . number_format($remainingAmount, 2));
+                                                            if ($invoiceSum != $productSum) {
+                                                                $remainingAmount = $productSum - $invoiceSum;
+                                                                $fail("The paid amount does not match the total price. Total amount:" . number_format($productSum, 2) . ", Remaining amount: " . number_format($remainingAmount, 2));
+                                                            }
                                                         }
+                                                    } elseif ($get('creditor') != 0) {
+                                                        $fail('The creditor field must be zero.');
                                                     }
-                                                } elseif ($get('creditor') != 0) {
-                                                    $fail('The creditor field must be zero.');
+                                                } else {
+                                                    if ($get('debtor') == 0 && $get('creditor') == 0) {
+                                                        $fail('Only one of these values can be zero.');
+                                                    } elseif ($get('debtor') != 0 && $get('creditor') != 0) {
+                                                        $fail('At least one of the values must be zero.');
+                                                    }
                                                 }
-                                            } else {
-                                                if ($get('debtor') == 0 && $get('creditor') == 0) {
-                                                    $fail('Only one of these values can be zero.');
-                                                } elseif ($get('debtor') != 0 && $get('creditor') != 0) {
-                                                    $fail('At least one of the values must be zero.');
-                                                }
-                                            }
-
                                             },
                                         ]),
                                     Forms\Components\Hidden::make('isCurrency'),

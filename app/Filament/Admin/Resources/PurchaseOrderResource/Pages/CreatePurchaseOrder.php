@@ -109,7 +109,7 @@ class CreatePurchaseOrder extends CreateRecord
 
             // dd($this->data['invoice']['transactions']); 
             $this->callHook('beforeCreate');
-
+// dd( $this->form->model($this->getRecord()));
             $this->record = $this->handleRecordCreation($data);
             $this->form->model($this->getRecord())->saveRelationships();
             // foreach ($this->data['invoice']['transactions'] as $tr){
@@ -150,6 +150,10 @@ class CreatePurchaseOrder extends CreateRecord
                         'user_id' => auth()->user()->id,
                         'creditor' => str_replace(',', '', $transaction['creditor']),
                         'debtor' => 0,
+                        "currency_id" => $transaction['currency_id'] ?? defaultCurrency()->id,
+                        "exchange_rate" => str_replace(',', '', $transaction['exchange_rate']) ?? defaultCurrency()->exchange_rate,
+                        "debtor_foreign" => 0,
+                        "creditor_foreign" => str_replace(',', '', $transaction['creditor_foreign']),
                         'Cheque' => $transaction['Cheque'],
                         'financial_period_id' => $transaction['financial_period_id'],
                     ]);
@@ -192,12 +196,16 @@ class CreatePurchaseOrder extends CreateRecord
             #fix
             $vendorAccount = Parties::find($data['vendor_id']);
 
+
             //Giving money to Vendor
             $savedTransaction = $this->record->invoice->transactions()->create([
 
                 'account_id' => $vendorAccount->accountVendor->id,
                 'user_id' => auth()->user()->id,
                 'creditor' => 0,
+                "currency_id" => $vendorAccount->accountVendor->currency_id,
+                "exchange_rate" => $vendorAccount->accountVendor->currency->exchange_rate,
+                "debtor_foreign" => $total != 0 ? $total / $vendorAccount->accountVendor->currency->exchange_rate : 0,
                 'debtor' => $total,
                 'description' => 'Giving money to ' . $vendorAccount->name . ($this->record->purchase_request_id ? (" PRNO:" . $this->record->purchaseRequest->purchase_number) : "" . " PONO:" . $this->record->purchase_orders_number),
                 'company_id' => getCompany()->id,
@@ -212,6 +220,11 @@ class CreatePurchaseOrder extends CreateRecord
 
                 'account_id' => $vendorAccount->accountVendor->id,
                 'user_id' => auth()->user()->id,
+
+                "currency_id" => $vendorAccount->accountVendor->currency_id,
+                "exchange_rate" => $vendorAccount->accountVendor->currency->exchange_rate,
+                "creditor_foreign" => $total != 0 ? ($total / $vendorAccount->accountVendor->currency->exchange_rate) : 0,
+
                 'debtor' => 0,
                 'creditor' => $total,
                 'description' => 'Get assets from ' . $vendorAccount->name . ($this->record->purchase_request_id ? (" PRNO:" . $this->record->purchaseRequest->purchase_number) : "" . " PONO:" . $this->record->purchase_orders_number),
@@ -238,6 +251,10 @@ class CreatePurchaseOrder extends CreateRecord
                     'description' => 'Added ' . $product->title . ' to assets ' . ($this->record->purchase_request_id ? (" PRNO:" . $this->record->purchaseRequest->purchase_number) : "" . " PONO:" . $this->record->purchase_orders_number),
                     'company_id' => getCompany()->id,
                     'financial_period_id' => getPeriod()->id,
+
+                    "currency_id" => $product->subAccount->currency_id,
+                "exchange_rate" => $product->subAccount->currency->exchange_rate,
+                "debtor_foreign" => (($item['quantity'] * str_replace(',', '', $item['unit_price'])) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['taxes']) / 100) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['freights']) / 100)) != 0 ? (($item['quantity'] * str_replace(',', '', $item['unit_price'])) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['taxes']) / 100) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['freights']) / 100)) / $product->subAccount->currency->exchange_rate : 0,
 
 
                 ]);

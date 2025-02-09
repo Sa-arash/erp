@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources;
 use App\Filament\Admin\Resources\PurchaseOrderResource\Pages;
 use App\Filament\Admin\Resources\PurchaseOrderResource\RelationManagers;
 use App\Models\Account;
+use App\Models\Currency;
 use App\Models\FinancialPeriod;
 use App\Models\Parties;
 use App\Models\PurchaseOrder;
@@ -25,6 +26,7 @@ use Filament\Forms\Components\Wizard;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\RawJs;
 use Filament\Tables;
@@ -47,7 +49,7 @@ class PurchaseOrderResource extends Resource
     protected static ?string $model = PurchaseOrder::class;
     protected static ?string $navigationGroup = 'Finance Management';
 
-    protected static ?int $navigationSort =0;
+    protected static ?int $navigationSort = 0;
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
 
@@ -90,6 +92,7 @@ class PurchaseOrderResource extends Resource
                                                 }
                                                 $set('RequestedItems', $data);
                                                 $set('vendor_id', $record->bid->quotation->party_id);
+                                                $set('currency_id', $record->bid->quotation->currency_id);
                                             } else {
 
 
@@ -125,6 +128,7 @@ class PurchaseOrderResource extends Resource
                                                 }
                                                 $set('RequestedItems', $data);
                                                 $set('vendor_id', $record->bid->quotation->party_id);
+                                                $set('currency_id', $record->bid->quotation->currency_id);
                                             } else {
                                                 $set('RequestedItems', $record->items->where('status', 'approve')->toArray());
                                             }
@@ -139,7 +143,23 @@ class PurchaseOrderResource extends Resource
                                 Forms\Components\Select::make('vendor_id')->label('Vendor')
                                     ->options((getCompany()->parties->where('type', 'vendor')->pluck('info', 'id')))
                                     ->searchable()->preload()->required(),
-                                getSelectCurrency(),
+                                Select::make('currency_id')->live()->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([
+                                    \Filament\Forms\Components\Section::make([
+                                        TextInput::make('name')->required()->maxLength(255),
+                                        TextInput::make('symbol')->required()->maxLength(255),
+                                        TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                                    ])->columns(3)
+                                ])->createOptionUsing(function ($data) {
+                                    $data['company_id'] = getCompany()->id;
+                                    Notification::make('success')->title('success')->success()->send();
+                                    return Currency::query()->create($data)->getKey();
+                                })->editOptionForm([
+                                    Section::make([
+                                        TextInput::make('name')->required()->maxLength(255),
+                                        TextInput::make('symbol')->required()->maxLength(255),
+                                        TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                                    ])->columns(3)
+                                ]),
                                 Forms\Components\TextInput::make('exchange_rate')
                                     ->required()->default(1)
                                     ->numeric(),
@@ -191,6 +211,7 @@ class PurchaseOrderResource extends Resource
                                                 $data[] = $item;
                                             }
                                             $set('vendor_id', $record->bid->quotation->party_id);
+                                            $set('currency_id', $record->bid->quotation->currency_id);
                                             return  $data;
                                         } else {
                                             return $record?->items->where('status', 'approve')->toArray();
@@ -277,10 +298,10 @@ class PurchaseOrderResource extends Resource
                         ]),
                     Wizard\Step::make('Invoice')
                         ->schema([
+
                             Group::make()->relationship('invoice')->schema([
 
-                                Forms\Components\Hidden::make('company_id')->default(Filament::getTenant()->id)->required(),
-
+                                Forms\Components\Hidden::make('company_id')->default(getCompany()->id)->required(),
                                 Forms\Components\Section::make([
                                     Forms\Components\TextInput::make('number')
                                         ->columnSpan(1)
@@ -316,89 +337,194 @@ class PurchaseOrderResource extends Resource
 
                                 Forms\Components\Section::make([
                                     Forms\Components\Repeater::make('transactions')->label('')->relationship('transactions')->schema([
-                                        SelectTree::make('account_id')->defaultOpenLevel(3)->live()->label('Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('company_id', getCompany()->id))->searchable(),
+                                        Forms\Components\Hidden::make('company_id')->default(getCompany()->id)->required(),
+                                        SelectTree::make('account_id')->formatStateUsing(function ($state, Forms\Set $set) {
+                                            $account = Account::query()->where('id', $state)->whereNot('currency_id', defaultCurrency()?->id)->first();
+                                            if ($account) {
+                                                $set('currency_id', $account->currency_id);
+                                                $set('exchange_rate', number_format($account->currency->exchange_rate));
+                                                $set('isCurrency', 1);
+                                                return $state;
+                                            }
+                                            $set('isCurrency', 0);
+                                            return $state;
+                                        })->afterStateUpdated(function ($state, Forms\Set $set) {
+                                            $account = Account::query()->where('id', $state)->whereNot('currency_id', defaultCurrency()?->id)->first();
+                                            if ($account) {
+                                                $set('currency_id', $account->currency_id);
+                                                $set('exchange_rate', number_format($account->currency->exchange_rate));
+                                                return $set('isCurrency', 1);
+                                            }
+                                            return $set('isCurrency', 0);
+                                        })->live()->defaultOpenLevel(3)->live()->label('Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('company_id', getCompany()->id))->searchable(),
                                         Forms\Components\TextInput::make('description')->required(),
 
-                                        Forms\Components\Hidden::make('company_id')->default(Filament::getTenant()->id)->required(),
-                                        Forms\Components\TextInput::make('debtor')->default(0)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->readOnly(),
-                                        Forms\Components\TextInput::make('creditor')
-                                            ->afterStateUpdated(function ($state, Forms\Set $set) {
-                                                $set('cheque.amount', $state);
-                                            })
-                                            ->mask(RawJs::make('$money($input)'))->stripCharacters(',')
-                                            ->mask(RawJs::make('$money($input)'))->stripCharacters(',')
-                                            ->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)
+                                        Forms\Components\TextInput::make('debtor')->prefix(defaultCurrency()->symbol)->mask(RawJs::make('$money($input)'))->readOnly()->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)
                                             ->rules([
-                                                fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                                                fn(Get $get): Closure => function (string $attribute, $value, Closure $fail, $operation) use ($get) {
+                                                    if ($operation == "create") {
 
-                                                    if ($get('creditor') == 0) {
-                                                        $fail('The creditor field must be not zero.');
+
+
+                                                        if ($get('debtor') != 0) {
+                                                            $fail('The debtor field must be zero.');
+                                                        }
                                                     } else {
-
-                                                        // dd(()));
-                                                        $produtTotal = array_map(function ($item) {
-                                                            // dd($item);
-                                                            return (($item['quantity'] * str_replace(',', '', $item['unit_price'])) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['taxes']) / 100) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['freights']) / 100));
-                                                        }, $get->getData()['RequestedItems']);
-
-                                                        $invoiceTotal = array_map(function ($item) {
-                                                            // dd($item);
-                                                            return (str_replace(',', '', $item['creditor']));
-                                                        }, $get->getData()['invoice']['transactions']);
-
-                                                        $productSum = collect($produtTotal)->sum();
-                                                        $invoiceSum = collect($invoiceTotal)->sum();
-
-                                                        if ($invoiceSum != $productSum) {
-                                                            $remainingAmount = $productSum - $invoiceSum;
-                                                            $fail("The paid amount does not match the total price. Total amount:" . number_format($productSum) . ", Remaining amount: " . number_format($remainingAmount));
+                                                        if ($get('debtor') == 0 && $get('creditor') == 0) {
+                                                            $fail('Only one of these values can be zero.');
+                                                        } elseif ($get('debtor') != 0 && $get('creditor') != 0) {
+                                                            $fail('At least one of the values must be zero.');
                                                         }
                                                     }
                                                 },
                                             ]),
+                                        Forms\Components\TextInput::make('creditor')->prefix(defaultCurrency()->symbol)
+                                            ->readOnly(function (Get $get) {
+                                                return $get('isCurrency');
+                                            })
+                                            ->live(true)->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
+                                                if ($get('Cheque')) {
+                                                    $set('cheque.amount', $state);
+                                                }
+                                            })
+                                            ->mask(RawJs::make('$money($input)'))->stripCharacters(',')
+                                            ->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)
+                                            ->rules([
+                                                fn(Get $get): Closure => function (string $attribute, $value, Closure $fail, $operation) use ($get) {
+
+                                                    if ($operation == "create") {
+                                                        if ($get('creditor') == 0) {
+                                                            $fail('The creditor field must be not zero.');
+                                                        } else {
+
+                                                            // dd(()));
+                                                            $produtTotal = array_map(function ($item) {
+                                                                // dd($item);
+                                                                return (($item['quantity'] * str_replace(',', '', $item['unit_price'])) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['taxes']) / 100) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['freights']) / 100));
+                                                            }, $get->getData()['RequestedItems']);
+
+                                                            $invoiceTotal = array_map(function ($item) {
+                                                                // dd($item);
+                                                                return (str_replace(',', '', $item['creditor']));
+                                                            }, $get->getData()['invoice']['transactions']);
+
+                                                            $productSum = collect($produtTotal)->sum();
+                                                            $invoiceSum = collect($invoiceTotal)->sum();
+
+                                                            if ($invoiceSum != $productSum) {
+                                                                $remainingAmount = $productSum - $invoiceSum;
+                                                                $fail("The paid amount does not match the total price. Total amount:" . number_format($productSum) . ", Remaining amount: " . number_format($remainingAmount));
+                                                            }
+                                                        }
+                                                    } else {
+                                                        if ($get('debtor') == 0 && $get('creditor') == 0) {
+                                                            $fail('Only one of these values can be zero.');
+                                                        } elseif ($get('debtor') != 0 && $get('creditor') != 0) {
+                                                            $fail('At least one of the values must be zero.');
+                                                        }
+                                                    }
+                                                },
+                                            ]),
+                                        Forms\Components\Hidden::make('isCurrency'),
+                                        Forms\Components\Hidden::make('currency_id')->default(defaultCurrency()?->id)->hidden(function (Get $get) {
+                                            return $get('isCurrency');
+                                        }),
+                                        Section::make([
+                                            Select::make('currency_id')->live()->label('Currency')->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([
+                                                Section::make([
+                                                    TextInput::make('name')->required()->maxLength(255),
+                                                    TextInput::make('symbol')->required()->maxLength(255),
+                                                    TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                                                ])->columns(3)
+                                            ])->createOptionUsing(function ($data) {
+                                                $data['company_id'] = getCompany()->id;
+                                                Notification::make('success')->title('success')->success()->send();
+                                                return Currency::query()->create($data)->getKey();
+                                            })->editOptionForm([
+                                                Section::make([
+                                                    TextInput::make('name')->required()->maxLength(255),
+                                                    TextInput::make('symbol')->required()->maxLength(255),
+                                                    TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                                                ])->columns(3)
+                                            ])->afterStateUpdated(function ($state, Forms\Set $set) {
+                                                $currency = Currency::query()->firstWhere('id', $state);
+                                                if ($currency) {
+                                                    $set('exchange_rate', $currency->exchange_rate);
+                                                }
+                                            })->editOptionAction(function ($state, Forms\Set $set) {
+                                                $currency = Currency::query()->firstWhere('id', $state);
+                                                if ($currency) {
+                                                    $set('exchange_rate', $currency->exchange_rate);
+                                                }
+                                            }),
+                                            TextInput::make('exchange_rate')->default(defaultCurrency()->exchange_rate)->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                                            Forms\Components\TextInput::make('debtor_foreign')
+                                                ->readOnly()
+                                                ->live(true)->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
+                                                    $set('debtor', number_format((float) str_replace(',', '', $state) * (float) str_replace(',', '', $get('exchange_rate'))));
+                                                })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)->rules([
+                                                    fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                                                        if ($get('debtor_foreign') == 0 && $get('creditor_foreign') == 0) {
+                                                            $fail('Only one of these values can be zero.');
+                                                        } elseif ($get('debtor_foreign') != 0 && $get('creditor_foreign') != 0) {
+                                                            $fail('At least one of the values must be zero.');
+                                                        }
+                                                    },
+                                                ]),
+                                            Forms\Components\TextInput::make('creditor_foreign')
+                                                ->live(true)->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
+                                                    $set('creditor', number_format((float) str_replace(',', '', $state) * (float) str_replace(',', '', $get('exchange_rate'))));
+                                                })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)->rules([
+                                                    fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                                                        if ($get('debtor_foreign') == 0 && $get('creditor_foreign') == 0) {
+                                                            $fail('Only one of these values can be zero.');
+                                                        } elseif ($get('debtor_foreign') != 0 && $get('creditor_foreign') != 0) {
+                                                            $fail('At least one of the values must be zero.');
+                                                        }
+                                                    },
+                                                ]),
+                                        ])->columns(4)->visible(function (Get $get) {
+                                            return $get('isCurrency');
+                                        }),
                                         Forms\Components\Checkbox::make('Cheque')->inline()->live(),
                                         Forms\Components\Section::make([
-                                            Group::make()
-                                                ->relationship('cheque')
-                                                ->schema([
-                                                    Forms\Components\TextInput::make('cheque_number')->required()->maxLength(255),
-                                                    Forms\Components\TextInput::make('amount')->default(function (Get $get) {
-
-                                                        if ($get('debtor') > 0) {
-                                                            return $get('debtor');
-                                                        }
-                                                        if ($get('creditor') > 0) {
-                                                            return $get('creditor');
-                                                        }
-                                                    })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->numeric(),
-                                                    Forms\Components\DatePicker::make('issue_date')->required(),
-                                                    Forms\Components\DatePicker::make('due_date')->required(),
-                                                    Forms\Components\TextInput::make('payer_name')->required()->maxLength(255),
-                                                    Forms\Components\TextInput::make('payee_name')->required()->maxLength(255),
-                                                    Forms\Components\TextInput::make('bank_name')->maxLength(255),
-                                                    Forms\Components\TextInput::make('branch_name')->maxLength(255),
-                                                    Forms\Components\Textarea::make('description')->columnSpanFull(),
-                                                    Forms\Components\ToggleButtons::make('type')->options([0 => 'Receivable', 1 => 'Payable'])->inline()->grouped()->required(),
-                                                    Forms\Components\Hidden::make('company_id')->default(getCompany()->id)
-                                                ])->columns(2),
+                                            Forms\Components\Fieldset::make('cheque')->relationship('cheque')->schema([
+                                                Forms\Components\TextInput::make('cheque_number')->required()->maxLength(255),
+                                                Forms\Components\TextInput::make('amount')->default(function (Get $get) {
+                                                    if ($get('debtor') > 0) {
+                                                        return $get('debtor');
+                                                    }
+                                                    if ($get('creditor') > 0) {
+                                                        return $get('creditor');
+                                                    }
+                                                })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->numeric(),
+                                                Forms\Components\DatePicker::make('issue_date')->required(),
+                                                Forms\Components\DatePicker::make('due_date')->required(),
+                                                Forms\Components\TextInput::make('payer_name')->required()->maxLength(255),
+                                                Forms\Components\TextInput::make('payee_name')->required()->maxLength(255),
+                                                Forms\Components\TextInput::make('bank_name')->maxLength(255),
+                                                Forms\Components\TextInput::make('branch_name')->maxLength(255),
+                                                Forms\Components\Textarea::make('description')->columnSpanFull(),
+                                                Forms\Components\ToggleButtons::make('type')->options([0 => 'Receivable', 1 => 'Payable'])->inline()->grouped()->required(),
+                                                Forms\Components\Hidden::make('company_id')->default(getCompany()->id)
+                                            ]),
                                         ])->collapsible()->persistCollapsed()->visible(fn(Forms\Get $get) => $get('Cheque')),
-                                        Forms\Components\Hidden::make('financial_period_id')->required()->label('Financial Period')
-                                            ->default(getPeriod()->id)
-                                    ])->columns(4)->defaultItems(1)
+                                        Forms\Components\Hidden::make('financial_period_id')->required()->label('Financial Period')->default(getPeriod()?->id)
+                                    ])->minItems(1)->columns(5)->defaultItems(1)
                                         ->mutateRelationshipDataBeforecreateUsing(function (array $data): array {
                                             $data['user_id'] = auth()->id();
                                             $data['company_id'] = getCompany()->id;
                                             $data['period_id'] = FinancialPeriod::query()->where('company_id', getCompany()->id)->where('status', "During")->first()->id;
                                             return $data;
                                         })
-                                ])->columns(1)->columnSpanFull()
-
-                            ])
-                        ]),
-
-                ])->columnSpanFull(),
+                                ])->columnSpanFull()
 
 
+                            ])->columnSpanFull(),
+
+                        ])->columnSpanFull(),
+
+                ])->columnSpanFull()
             ]);
     }
 
