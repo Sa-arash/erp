@@ -47,7 +47,7 @@ class PurchaseOrderResource extends Resource
         return getPeriod() != null;
     }
     protected static ?string $model = PurchaseOrder::class;
-    protected static ?string $navigationGroup = 'Finance Management';
+    protected static ?string $navigationGroup = 'Logistic Management';
 
     protected static ?int $navigationSort = 0;
 
@@ -312,7 +312,7 @@ class PurchaseOrderResource extends Resource
                                     Forms\Components\TextInput::make('reference')
                                         ->columnSpan(1)
                                         ->maxLength(255),
-                                    Forms\Components\DateTimePicker::make('date')
+                                    Forms\Components\DatePicker::make('date')
                                         ->columnSpan(2)
                                         ->required()->default(now()),
                                     Forms\Components\FileUpload::make('document')->placeholder('Browse')->extraInputAttributes(['style' => 'height:30px!important;'])
@@ -630,7 +630,7 @@ class PurchaseOrderResource extends Resource
             ], getModelFilter())
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('registration')->label('Registration assets')->url(fn($record) => AssetResource::getUrl('create', ['po' => $record->id]))
+                Tables\Actions\Action::make('GRN')->label('GRN')->url(fn($record) => AssetResource::getUrl('create', ['po' => $record->id]))
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

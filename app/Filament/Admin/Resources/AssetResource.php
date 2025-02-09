@@ -87,7 +87,6 @@ class AssetResource extends Resource
                         ->label('Depreciation Amount')
                         ->numeric()
                         ->mask(RawJs::make('$money($input)'))->stripCharacters(',')
-                        ->required()
                         ->placeholder('Enter amount'),
 
                     Forms\Components\Hidden::make('status')->default('inStorageUsable')->required(),
@@ -104,7 +103,7 @@ class AssetResource extends Resource
                         $assets = [];
                         if ($PO) {
                             foreach ($PO->items as $item) {
-                                if ($item->product->product_type === "consumable") {
+                                if ($item->product->product_type === "unConsumable") {
                                     for ($i = 1; $i <= $item->quantity; $i++) {
                                         $data = [];
                                         $freights = $item->freights === null ? 0 : (float)$item->freights;

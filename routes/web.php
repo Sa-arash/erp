@@ -9,6 +9,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+
+Route::get('artisan',function (){
+    \Illuminate\Support\Facades\Artisan::command('');
+})->name('artisan');
+
 Route::get('superAdmin', function () {
 
     if (Session::get('super') !== null){
