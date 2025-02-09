@@ -2,6 +2,9 @@
 
 namespace App\Filament\Admin\Pages;
 
+use App\Filament\Admin\Widgets\accounting;
+use App\Filament\Admin\Widgets\assetInStorage;
+use App\Filament\Admin\Widgets\invoicePrice;
 use App\Filament\Admin\Widgets\profitAndLost;
 use Filament\Pages\Page;
 
@@ -16,6 +19,9 @@ class Dashboard extends BaseDashboard
     {
         return [
             profitAndLost::class,
+            accounting::class,
+            invoicePrice::class,
+            assetInStorage::class,
         ];
     }
 }
