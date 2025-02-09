@@ -182,7 +182,7 @@ class PurchaseRequestResource extends Resource
                     ->icon('heroicon-s-shopping-cart')
                     ->url(fn($record) => PurchaseOrderResource::getUrl('create') . "?prno=" . $record->id),
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\Action::make('prQuotation')->visible(fn($record) => $record->is_quotation)->color('warning')->label('Quotation ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.quotation', ['id' => $record->id])),
+                    Tables\Actions\Action::make('prQuotation')->visible(fn($record) => $record->is_quotation)->color('warning')->label('Quotation ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.quotation', ['id' => $record->id]))->openUrlInNewTab(),
                     Tables\Actions\Action::make('insertQuotation')->modalWidth(MaxWidth::Full)->icon('heroicon-s-newspaper')->color('info')->label('InsertQuotation')->visible(fn($record) => $record->is_quotation)->form(function ($record) {
                         return [
                             Section::make([
@@ -407,7 +407,7 @@ class PurchaseRequestResource extends Resource
                         Bid::query()->create($data);
                         Notification::make('make bid')->success()->title('Created Successfully')->send()->sendToDatabase(auth()->user());
                     })->modalWidth(MaxWidth::Full)->visible(fn($record) => $record->quotations->count() > 0),
-                    Tables\Actions\Action::make('prPDF')->label('PR ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.purchase', ['id' => $record->id])),
+                    Tables\Actions\Action::make('prPDF')->label('PR ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.purchase', ['id' => $record->id]))->openUrlInNewTab(),
                 ]),
 
 
