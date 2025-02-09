@@ -62,33 +62,7 @@ class PartiesResource extends Resource
 
 
                 Forms\Components\ToggleButtons::make('type')->visible(fn($operation) => $operation === "create")->live()->grouped()->options(['vendor' => 'Vendor', 'customer' => 'Customer', 'both' => 'Both'])->inline()->required(),
-                Select::make('currency_id')->live()->label('Currency')->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([
-                    \Filament\Forms\Components\Section::make([
-                        TextInput::make('name')->required()->maxLength(255),
-                        TextInput::make('symbol')->required()->maxLength(255),
-                        TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-                    ])->columns(3)
-                ])->createOptionUsing(function ($data) {
-                    $data['company_id'] = getCompany()->id;
-                    Notification::make('success')->title('success')->success()->send();
-                    return Currency::query()->create($data)->getKey();
-                })->editOptionForm([
-                    Section::make([
-                        TextInput::make('name')->required()->maxLength(255),
-                        TextInput::make('symbol')->required()->maxLength(255),
-                        TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-                    ])->columns(3)
-                ])->afterStateUpdated(function ($state, Forms\Set $set) {
-                    $currency = Currency::query()->firstWhere('id', $state);
-                    if ($currency) {
-                        $set('exchange_rate', $currency->exchange_rate);
-                    }
-                })->editOptionAction(function ($state, Forms\Set $set) {
-                    $currency = Currency::query()->firstWhere('id', $state);
-                    if ($currency) {
-                        $set('exchange_rate', $currency->exchange_rate);
-                    }
-                }),
+                getSelectCurrency(),
                 SelectTree::make('parent_vendor')->visible(function (Forms\Get $get) {
 
                     if ($get('type') == "both") {
