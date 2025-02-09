@@ -2,7 +2,9 @@
 
 namespace App\Filament\Admin\Pages;
 
+use App\Filament\Admin\Widgets\ProfitAndLoss;
 use App\Filament\Admin\Widgets\profitAndLost;
+use App\Filament\Admin\Widgets\StateOverView;
 use Filament\Pages\Page;
 
 use Filament\Pages\Dashboard as BaseDashboard;
@@ -15,6 +17,7 @@ class Dashboard extends BaseDashboard
     protected function getHeaderWidgets(): array
     {
         return [
+            StateOverView::class,
             profitAndLost::class,
         ];
     }
