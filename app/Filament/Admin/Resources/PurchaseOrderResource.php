@@ -312,7 +312,7 @@ class PurchaseOrderResource extends Resource
                                     Forms\Components\TextInput::make('reference')
                                         ->columnSpan(1)
                                         ->maxLength(255),
-                                    Forms\Components\DateTimePicker::make('date')
+                                    Forms\Components\DatePicker::make('date')
                                         ->columnSpan(2)
                                         ->required()->default(now()),
                                     Forms\Components\FileUpload::make('document')->placeholder('Browse')->extraInputAttributes(['style' => 'height:30px!important;'])
