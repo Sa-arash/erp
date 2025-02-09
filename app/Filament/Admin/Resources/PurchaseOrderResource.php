@@ -47,7 +47,7 @@ class PurchaseOrderResource extends Resource
         return getPeriod() != null;
     }
     protected static ?string $model = PurchaseOrder::class;
-    protected static ?string $navigationGroup = 'Finance Management';
+    protected static ?string $navigationGroup = 'Logistic Management';
 
     protected static ?int $navigationSort = 0;
 
