@@ -2,10 +2,14 @@
 
 namespace App\Filament\Admin\Resources\FactorResource\Pages;
 
+use App\Filament\Admin\Resources\EmployeeResource;
 use App\Filament\Admin\Resources\FactorResource;
 use App\Models\Account;
 use App\Models\Parties;
 use Filament\Actions;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Wizard;
+use Filament\Forms\Form;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Support\Exceptions\Halt;
 use Filament\Support\Facades\FilamentView;
@@ -14,7 +18,23 @@ use Throwable;
 
 class CreateFactor extends CreateRecord
 {
+    use CreateRecord\Concerns\HasWizard;
+
     protected static string $resource = FactorResource::class;
+    public function form(Form $form): Form
+    {
+        return parent::form($form)
+            ->schema([
+                Section::make([
+                    Wizard::make(FactorResource::getForm())
+                        ->startOnStep($this->getStartStep())
+                        ->submitAction($this->getSubmitFormAction())
+                        ->skippable($this->hasSkippableSteps())
+                        ->contained(false)->columnSpanFull(),
+                ])
+            ])
+            ->columns(null);
+    }
     public function create(bool $another = false): void
     {
         $this->authorizeAccess();
@@ -76,7 +96,7 @@ class CreateFactor extends CreateRecord
                         'financial_period_id' => $transaction['financial_period_id'],
                     ]);
                     // dd($transaction ,!empty($transaction['cheque']) && isset($transaction['cheque']['amount']) );
-                    // چک 
+                    // چک
                     if ($transaction['Cheque']) {
                         $savedTransaction->cheque()->create([
                             'type' => $transaction['cheque']['type'] ?? null,
@@ -109,29 +129,10 @@ class CreateFactor extends CreateRecord
                 // return response()->json(['message' => 'Error occurred', 'error' => $e->getMessage()], 500);
             }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             // dd($total, $this->form->getLivewire()->data,$this->form->getLivewire()->data['type']);
             $party = Parties::find($data['party_id']);
             $account = Account::find($data['account_id']);
-
-            if ($this->form->getLivewire()->data['type'] === 0) {
+            if ($this->form->getLivewire()->data['type'] === "0") {
                 //Expense Buy
 
                 // account debtor
@@ -175,7 +176,7 @@ class CreateFactor extends CreateRecord
 
                 ]);
 
-                // vendor debtor           
+                // vendor debtor
                 // dd(str_replace(',', '', $transaction['debtor_foreign']) != 0 ? $total / defaultCurrency()->exchange_rate : 0, str_replace(',', '', $transaction['debtor_foreign']), str_replace(',', '', $transaction['debtor_foreign']) != 0, $total, defaultCurrency()->exchange_rate);
 
                 $savedTransaction = $this->record->invoice->transactions()->create([
@@ -198,53 +199,11 @@ class CreateFactor extends CreateRecord
 
                 // bank done befor
 
-
-
-
-
-
                 // dd('ex');
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
             } else {
                 //Income Sell
-
-                // customer Creditro 
+                // customer Creditro
                 $savedTransaction = $this->record->invoice->transactions()->create([
 
 
@@ -261,10 +220,9 @@ class CreateFactor extends CreateRecord
                     'financial_period_id' => getPeriod()->id,
                     //  'invoice_id' => $invoice->id,
 
-
                 ]);
 
-                // Customer debtor 
+                // Customer debtor
                 $savedTransaction = $this->record->invoice->transactions()->create([
 
                     'account_id' => $party->accountCustomer->id,

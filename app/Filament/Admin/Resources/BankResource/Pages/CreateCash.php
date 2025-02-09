@@ -47,17 +47,8 @@ class CreateCash extends CreateRecord
                     }
                     return $rule->where('code', $parentAccount . $state)->where('company_id', getCompany()->id);
                 })->model(Account::class),
-                Select::make('currency_id')->label('Currency')->default(defaultCurrency()?->id)->required()->options(getCompany()->currencies->pluck('name','id'))->searchable()->createOptionForm([
-                    Section::make([
-                        TextInput::make('name')->required()->maxLength(255),
-                        TextInput::make('symbol')->required()->maxLength(255),
-                        TextInput::make('exchange_rate')->required()->numeric(),
-                    ])->columns(3)
-                ])->createOptionUsing(function ($data){
-                    $data['company_id']=getCompany()->id;
-                    Notification::make('success')->title('success')->success()->send();
-                    return  Currency::query()->create($data)->getKey();
-                }),
+                getSelectCurrency(),
+
             ])->columns(3),
             Textarea::make('description')->columnSpanFull(),
             Hidden::make('type')->default(1),

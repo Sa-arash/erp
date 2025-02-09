@@ -12,6 +12,7 @@ use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ManageRelatedRecords;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Support\RawJs;
@@ -159,34 +160,13 @@ class BalancePeriod extends ManageRelatedRecords
                     ->label('Start During the Financial Year')->action(function ($record) {
 
                         if (isset($this->record->transactions[0])) {
-                            // $assetID = Account::firstWhere('stamp', 'Assets')->id;
-                            // $libilityID = Account::firstWhere('stamp', 'Liabilities')->id;
-                            // $equityID = Account::firstWhere('stamp', 'Equity')->id;
-
-                            // $labilitis = Account::query()->where('id', $libilityID)
-                            //     ->orWhere('parent_id', $libilityID)
-                            //     ->orWhereHas('account', function ($query) use ($libilityID) {
-                            //         return $query->where('parent_id', $libilityID)->orWhereHas('account', function ($query) use ($libilityID) {
-                            //             return $query->where('parent_id', $libilityID);
-                            //         });
-                            //     })
-                            //     ->pluck('id')->toArray();
-                            // $assets = Account::query()->where('id', $assetID)
-                            //     ->orWhere('parent_id', $assetID)
-                            //     ->orWhereHas('account', function ($query) use ($assetID) {
-                            //         return $query->where('parent_id', $assetID)->orWhereHas('account', function ($query) use ($assetID) {
-                            //             return $query->where('parent_id', $assetID);
-                            //         });
-                            //     })
-                            //     ->pluck('id')->toArray();
-
-                            // $assetSum = $this->record->transactions->whereIn('id', $assets)->sum('debtor')-$this->record->transactions->whereIn('id', $assets)->sum('creditor');
-                            // $libilitySum = $this->record->transactions->whereIn('id', $labilitis);
                             $debtor = $this->record->transactions->sum('debtor');
                             $creditor = $this->record->transactions->sum('creditor');
                             $equity = $debtor - $creditor;
-                            // dd($debtor,$creditor,$equity);
-
+                            if (!defaultCurrency()?->id){
+                                Notification::make('error')->warning()->title('Currency is not defined')->send();
+                                return ;
+                            }
                             if ($equity !== 0) {
                                 $this->record->transactions()->create([
                                     'account_id' => Account::query()->where('stamp', 'Equity')->where('company_id', getCompany()->id)->first()->id,
@@ -197,6 +177,7 @@ class BalancePeriod extends ManageRelatedRecords
                                     'user_id' => auth()->user()->id,
                                     'invoice_id' => $this->record->transactions[0]->invoice_id,
                                     'financial_period_id' => $this->record->id,
+                                    'currency_id'=>defaultCurrency()?->id
                                 ]);
                             }
 
@@ -231,6 +212,12 @@ class BalancePeriod extends ManageRelatedRecords
                                 $transaction['invoice_id'] = $invoice->id;
                                 $transaction['company_id'] = getCompany()->id;
                                 $transaction['user_id'] = auth()->id();
+                                if (defaultCurrency()?->id){
+                                    $transaction['currency_id'] = defaultCurrency()?->id;
+                                }else{
+                                    Notification::make('error')->warning()->title('Currency is not defined')->send();
+                                    return ;
+                                }
                                 $record = Transaction::query()->create($transaction);
                                 if ($transaction['Cheque']) {
                                     $transaction['company_id'] = getCompany()->id;
@@ -263,7 +250,14 @@ class BalancePeriod extends ManageRelatedRecords
                                     $transaction['invoice_id'] = $invoice->id;
                                     $transaction['company_id'] = getCompany()->id;
                                     $transaction['user_id'] = auth()->id();
+                                    if (defaultCurrency()?->id){
+                                        $transaction['currency_id'] = defaultCurrency()?->id;
+                                    }else{
+                                        Notification::make('error')->warning()->title('Currency is not defined')->send();
+                                        return ;
+                                    }
                                     $record = Transaction::query()->create($transaction);
+
                                     if ($transaction['Cheque']) {
                                         $transaction['cheque']['company_id'] = getCompany()->id;
                                         $transaction['cheque']['amount'] = str_replace(',', '', $transaction['amount']);
