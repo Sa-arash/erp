@@ -343,7 +343,7 @@ class PurchaseRequestResource extends Resource
                                 $ths = '';
                                 foreach ($record->quotations as $quotation) {
                                     $vendor = $quotation->party->name . "'s Quotation"." ".$quotation->currency->symbol;
-                                    $vendors .= "<th style='border: 1px solid black;padding: 8px;text-align: center;background-color:rgb(90, 86, 86)'>123123{$vendor}</th>";
+                                    $vendors .= "<th style='border: 1px solid black;padding: 8px;text-align: center;background-color:rgb(90, 86, 86)'>{$vendor}</th>";
                                     $totalSum = 0;
 
                                     foreach ($quotation->quotationItems as $quotationItem) {
