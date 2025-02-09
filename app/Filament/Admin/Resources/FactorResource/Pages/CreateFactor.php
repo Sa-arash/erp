@@ -132,7 +132,7 @@ class CreateFactor extends CreateRecord
             // dd($total, $this->form->getLivewire()->data,$this->form->getLivewire()->data['type']);
             $party = Parties::find($data['party_id']);
             $account = Account::find($data['account_id']);
-            if ($this->form->getLivewire()->data['type'] === "0") {
+            if ($this->form->getLivewire()->data['type'] == 0) {
                 //Expense Buy
 
                 // account debtor
