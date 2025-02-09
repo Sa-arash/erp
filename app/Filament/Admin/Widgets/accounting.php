@@ -3,8 +3,9 @@
 namespace App\Filament\Admin\Widgets;
 
 use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
+use Illuminate\Support\Carbon;
 
-class accounting extends ApexChartWidget
+class Accounting extends ApexChartWidget
 {
     /**
      * Chart Id
@@ -18,7 +19,7 @@ class accounting extends ApexChartWidget
      *
      * @var string|null
      */
-    protected static ?string $heading = 'accounting';
+    protected static ?string $heading = 'Accounting';
 
     /**
      * Chart options (series, labels, types, size, animations...)
@@ -28,18 +29,27 @@ class accounting extends ApexChartWidget
      */
     protected function getOptions(): array
     {
+        $accounts = getCompany()->accounts->groupBy('group');
+        
+        $labels = $accounts->keys()->toArray();
+        $series = $accounts->map(fn($group) => 
+            $group->flatMap(fn($account) => $account->transactions)
+                  ->sum(fn($transaction) => $transaction->creditor - $transaction->debtor)
+        )->values()->toArray();
+
         return [
             'chart' => [
                 'type' => 'pie',
                 'height' => 300,
             ],
-            'series' => [2, 4, 6, 10, 14],
-            'labels' => ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+            'series' => $series,
+            'labels' => $labels,
             'legend' => [
                 'labels' => [
                     'fontFamily' => 'inherit',
                 ],
             ],
+            'colors' => ['#6366f1', '#f59e0b', '#ef4444', '#22c55e', '#8b5cf6'],
         ];
     }
 }
