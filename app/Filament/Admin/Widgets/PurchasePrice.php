@@ -3,8 +3,9 @@
 namespace App\Filament\Admin\Widgets;
 
 use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
+use Illuminate\Support\Carbon;
 
-class assetInStorage extends ApexChartWidget
+class PurchasePrice extends ApexChartWidget
 {
     /**
      * Chart Id
@@ -18,7 +19,7 @@ class assetInStorage extends ApexChartWidget
      *
      * @var string|null
      */
-    protected static ?string $heading = 'assetInStorage';
+    protected static ?string $heading = 'Monthly PR Total Cost';
 
     /**
      * Chart options (series, labels, types, size, animations...)
@@ -28,6 +29,18 @@ class assetInStorage extends ApexChartWidget
      */
     protected function getOptions(): array
     {
+        $months = collect([
+            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+        ]);
+
+        $purchaseData = $months->map(function ($month, $index) {
+            return getCompany()->purchaseRequests
+                ->where('status', 'Finished')
+                ->filter(fn($request) => Carbon::parse($request->request_date)->month == $index + 1)
+                ->sum(fn($request) => $request->bid?->total_cost ?? 0);
+        })->toArray();
+
         return [
             'chart' => [
                 'type' => 'bar',
@@ -35,12 +48,12 @@ class assetInStorage extends ApexChartWidget
             ],
             'series' => [
                 [
-                    'name' => 'BasicBarChart',
-                    'data' => [7, 10, 13, 15, 18],
+                    'name' => 'PR Total Cost',
+                    'data' => $purchaseData,
                 ],
             ],
             'xaxis' => [
-                'categories' => ['Jan', 'Feb', 'Mar', 'Apr', 'May'],
+                'categories' => $months->toArray(),
                 'labels' => [
                     'style' => [
                         'fontFamily' => 'inherit',
@@ -58,7 +71,7 @@ class assetInStorage extends ApexChartWidget
             'plotOptions' => [
                 'bar' => [
                     'borderRadius' => 3,
-                    'horizontal' => true,
+                    'horizontal' => false,
                 ],
             ],
         ];
