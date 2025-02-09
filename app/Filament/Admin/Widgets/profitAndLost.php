@@ -2,9 +2,11 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Models\Account;
 use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
+use Illuminate\Support\Carbon;
 
-class profitAndLost extends ApexChartWidget
+class ProfitAndLost extends ApexChartWidget
 {
     /**
      * Chart Id
@@ -18,7 +20,7 @@ class profitAndLost extends ApexChartWidget
      *
      * @var string|null
      */
-    protected static ?string $heading = 'profitAndLost';
+    protected static ?string $heading = 'Profit & Loss';
 
     /**
      * Chart options (series, labels, types, size, animations...)
@@ -28,6 +30,27 @@ class profitAndLost extends ApexChartWidget
      */
     protected function getOptions(): array
     {
+        $months = collect([
+            'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+            'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+        ]);
+
+        $incomeData = $months->map(function ($month, $index) {
+            return getCompany()->accounts
+                ->where('group', 'Income')
+                ->flatMap(fn($account) => $account->transactions)
+                ->filter(fn($transaction) => Carbon::parse($transaction->created_at)->month == $index + 1)
+                ->sum(fn($transaction) => $transaction->creditor - $transaction->debtor);
+        })->toArray();
+
+        $expenseData = $months->map(function ($month, $index) {
+            return getCompany()->accounts
+                ->where('group', 'Expense')
+                ->flatMap(fn($account) => $account->transactions)
+                ->filter(fn($transaction) => Carbon::parse($transaction->created_at)->month == $index + 1)
+                ->sum(fn($transaction) => $transaction->debtor - $transaction->creditor);
+        })->toArray();
+
         return [
             'chart' => [
                 'type' => 'line',
@@ -35,12 +58,16 @@ class profitAndLost extends ApexChartWidget
             ],
             'series' => [
                 [
-                    'name' => 'profitAndLost',
-                    'data' => [2, 4, 6, 10, 14, 7, 2, 9, 10, 15, 13, 18],
+                    'name' => 'Income',
+                    'data' => $incomeData,
+                ],
+                [
+                    'name' => 'Expense',
+                    'data' => $expenseData,
                 ],
             ],
             'xaxis' => [
-                'categories' => ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+                'categories' => $months->toArray(),
                 'labels' => [
                     'style' => [
                         'fontFamily' => 'inherit',
@@ -54,7 +81,7 @@ class profitAndLost extends ApexChartWidget
                     ],
                 ],
             ],
-            'colors' => ['#f59e0b'],
+            'colors' => ['#22c55e', '#ef4444'], // سبز برای درآمد، قرمز برای هزینه
             'stroke' => [
                 'curve' => 'smooth',
             ],
