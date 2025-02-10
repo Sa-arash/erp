@@ -10,6 +10,7 @@ use App\Models\Bank_category;
 use App\Models\Benefit;
 use App\Models\BenefitPayroll;
 use App\Models\Contract;
+use App\Models\Currency;
 use App\Models\Employee;
 use App\Models\Expense;
 use App\Models\FinancialPeriod;
@@ -21,6 +22,8 @@ use App\Models\Transaction;
 use Carbon\Carbon;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
@@ -519,10 +522,10 @@ class PayrollResource extends Resource
                 Tables\Columns\TextColumn::make('month')->state(fn($record) => Carbon::parse($record->start_date)->format('M'))->alignLeft()->sortable(),
                 Tables\Columns\TextColumn::make('year')->state(fn($record) => Carbon::parse($record->start_date)->year)->alignLeft()->sortable(),
                 //   Tables\Columns\TextColumn::make('payment_date')->alignCenter()->state(fn($record) => $record->payment_date ? Carbon::make($record->payment_date)->format('Y/m/d') : "Not Paid")->sortable(),
-                Tables\Columns\TextColumn::make('employee.base_salary')->label('Base Salary')->alignLeft()->numeric()->sortable(),
-                Tables\Columns\TextColumn::make('total_allowance')->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total Allowance'))->label('Total Allowance'." ".defaultCurrency()?->symbol)->alignLeft()->numeric()->sortable(),
-                Tables\Columns\TextColumn::make('total_deduction')->summarize(Tables\Columns\Summarizers\Sum::make('total_deduction')->label('Total Deduction'))->label('Total Deduction'." ".defaultCurrency()?->symbol)->alignLeft()->numeric()->sortable(),
-                Tables\Columns\TextColumn::make('amount_pay')->summarize(Tables\Columns\Summarizers\Sum::make('amount_pay')->label('Total Net Pay'))->label('Net Pay'." ".defaultCurrency()?->symbol)->alignLeft()->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('employee.base_salary')->copyable()->label('Base Salary')->alignLeft()->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('total_allowance')->copyable()->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total Allowance'))->label('Total Allowance'." ".defaultCurrency()?->symbol)->alignLeft()->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('total_deduction')->copyable()->summarize(Tables\Columns\Summarizers\Sum::make('total_deduction')->label('Total Deduction'))->label('Total Deduction'." ".defaultCurrency()?->symbol)->alignLeft()->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('amount_pay')->copyable()->summarize(Tables\Columns\Summarizers\Sum::make('amount_pay')->label('Total Net Pay'))->label('Net Pay'." ".defaultCurrency()?->symbol)->alignLeft()->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('status')->badge()->alignLeft(),
             ])
             ->filters([
@@ -684,20 +687,28 @@ class PayrollResource extends Resource
                             'status' => 'accepted',
                             'user_id' => auth()->id()
                         ]);
-                        return Notification::make('approvePayroll')->title('Approve Payroll ' . $record->employee->fullName)->actions([\Filament\Notifications\Actions\Action::make('Payroll')->color('aColor')])->success()->send()->sendToDatabase(auth()->user());
+                        return Notification::make('approvePayroll')->title('Approve Payroll ' . $record->employee->fullName)->actions([\Filament\Notifications\Actions\Action::make('Payroll')->url(route('pdf.payroll',['id'=>$record->id]))->openUrlInNewTab()->color('aColor')])->success()->send()->sendToDatabase(auth()->user());
                     })]
                 )->modalWidth(MaxWidth::FitContent)->visible(fn($record) => $record->status->value === "pending"),
                 Tables\Actions\Action::make('payment')->visible(fn($record) => $record->status->value === "accepted")->label('Payment')->tooltip('Payment')->icon('heroicon-o-credit-card')->iconSize(IconSize::Medium)->color('warning')->action(function ($data, $record) {
                     $debtor = 0;
                     $creditor = 0;
                     $debtorID = 0;
-                    foreach ($data['transactions'] as $transaction) {
+
+                    foreach ($data['transactions'] as $key=> $transaction) {
                         if ($transaction['creditor'] > 0) {
                             $creditor += str_replace(',', '', $transaction['creditor']);
                             $debtorID = $transaction['account_id'];
 
                         } else {
                             $debtor += str_replace(',', '', $transaction['debtor']);
+                        }
+                        if ($transaction['isCurrency']===0){
+                            if ($transaction['creditor_foreign'] >0 or $transaction['debtor_foreign'] >0){
+                                Notification::make('warning')->title('Foreign Creditor Or Foreign Debtor Is Not Zero')->warning()->send();
+                                return;
+                            }
+                            $data['transactions'][$key]['exchange_rate']=1;
                         }
                     }
                     if ($debtor !== $creditor) {
@@ -709,6 +720,7 @@ class PayrollResource extends Resource
                         Notification::make('warning')->title('Financial Period Not Find')->warning()->send();
                         return;
                     }
+
 
                     $invoice = Invoice::query()->create([
                         'name' => $data['name'], 'number' => $data['number'], 'date' => $data['date'], 'description' => $data['description'], 'reference' => $data['reference'], 'status' => 'final', 'company_id' => getCompany()->id, 'document' => $data['document']
@@ -732,7 +744,7 @@ class PayrollResource extends Resource
                         'reference' => $data['reference']
 
                     ]);
-                    return Notification::make('Create Invoice Payroll')->success()->title('Pay Payroll')->actions([\Filament\Notifications\Actions\Action::make('Payroll')])->send()->sendToDatabase(auth()->user());
+                    return Notification::make('Create Invoice Payroll')->success()->title('Pay Payroll')->actions([\Filament\Notifications\Actions\Action::make('Payroll')->url(route('pdf.payroll',['id'=>$record->id]))->openUrlInNewTab()])->send()->sendToDatabase(auth()->user());
                 })->form(function ($record) {
                     return [
                         Forms\Components\Section::make([
@@ -743,34 +755,122 @@ class PayrollResource extends Resource
                             Forms\Components\FileUpload::make('document')->nullable()->columnSpanFull(),
                             Forms\Components\Textarea::make('description')->nullable()->columnSpanFull(),
                             Forms\Components\Section::make([
-                                Forms\Components\Repeater::make('transactions')->label('Accounting Journal')->schema([
-                                    SelectTree::make('account_id')->model(Transaction::class)->live()->defaultOpenLevel(2)->label('Subsidiary Account / Detail Account')->required()->relationship('account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('company_id', getCompany()->id)),
-                                    Forms\Components\Textarea::make('description')->required(),
-                                    Forms\Components\TextInput::make('debtor')->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->live()->default(0)->minValue(0)  ->rules([
-                                        fn (Get $get): \Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
-                                            if ( $get('debtor') == 0 && $get('creditor') == 0) {
+                                Forms\Components\Repeater::make('transactions')->label('')->schema([
+                                    SelectTree::make('account_id')->formatStateUsing(function ($state, Forms\Set $set) {
+                                        $account = Account::query()->where('id', $state)->whereNot('currency_id', defaultCurrency()?->id)->first();
+                                        if ($account) {
+                                            $set('currency_id', $account->currency_id);
+                                            $set('exchange_rate', number_format($account->currency->exchange_rate));
+                                            $set('isCurrency', 1);
+                                            return $state;
+                                        }
+                                        $set('isCurrency', 0);
+                                        return $state;
+                                    })->afterStateUpdated(function ($state, Forms\Set $set) {
+                                        $account = Account::query()->where('id', $state)->whereNot('currency_id', defaultCurrency()?->id)->first();
+                                        if ($account) {
+                                            $set('currency_id', $account->currency_id);
+                                            $set('exchange_rate', number_format($account->currency->exchange_rate));
+                                            return $set('isCurrency', 1);
+                                        }
+                                        return $set('isCurrency', 0);
+                                    })->live()->defaultOpenLevel(3)->live()->label('Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('company_id', getCompany()->id))->searchable(),
+                                    Forms\Components\TextInput::make('description')->required(),
+
+                                    Forms\Components\TextInput::make('debtor')->prefix(defaultCurrency()->symbol)->live(true)->afterStateUpdated(function ($state, Forms\Set $set,Get $get) {
+
+                                    })->mask(RawJs::make('$money($input)'))->readOnly(function (Get $get) {
+                                        return $get('isCurrency');
+                                    })->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)->rules([
+                                        fn(Get $get): \Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
+                                            if ($get('debtor') == 0 && $get('creditor') == 0) {
                                                 $fail('Only one of these values can be zero.');
-                                            }elseif($get('debtor') != 0 && $get('creditor') != 0){
+                                            } elseif ($get('debtor') != 0 && $get('creditor') != 0) {
                                                 $fail('At least one of the values must be zero.');
                                             }
                                         },
                                     ]),
-                                    Forms\Components\TextInput::make('creditor')  ->rules([
-                                        fn (Get $get): \Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
-                                            if ( $get('debtor') == 0 && $get('creditor') == 0) {
-                                                $fail('Only one of these values can be zero.');
-                                            }elseif($get('debtor') != 0 && $get('creditor') != 0){
-                                                $fail('At least one of the values must be zero.');
+                                    Forms\Components\TextInput::make('creditor')->prefix(defaultCurrency()->symbol)->readOnly(function (Get $get) {
+                                        return $get('isCurrency');
+                                    })->live(true)
+
+                                        ->mask(RawJs::make('$money($input)'))->stripCharacters(',')
+                                        ->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)
+                                        ->rules([
+                                            fn(Get $get): \Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
+                                                if ($get('debtor') == 0 && $get('creditor') == 0) {
+                                                    $fail('Only one of these values can be zero.');
+                                                } elseif ($get('debtor') != 0 && $get('creditor') != 0) {
+                                                    $fail('At least one of the values must be zero.');
+                                                }
+                                            },
+                                        ]),
+                                    Forms\Components\Hidden::make('isCurrency'),
+                                    Forms\Components\Hidden::make('currency_id')->default(defaultCurrency()?->id)->hidden(function (Get $get) {
+                                        return $get('isCurrency');
+                                    }),
+                                    Section::make([
+                                        Select::make('currency_id')->model(Transaction::class)->live()->label('Currency')->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([
+                                            Section::make([
+                                                TextInput::make('name')->required()->maxLength(255),
+                                                TextInput::make('symbol')->required()->maxLength(255),
+                                                TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                                            ])->columns(3)
+                                        ])->createOptionUsing(function ($data) {
+                                            $data['company_id'] = getCompany()->id;
+                                            Notification::make('success')->title('success')->success()->send();
+                                            return Currency::query()->create($data)->getKey();
+                                        })->editOptionForm([
+                                            Section::make([
+                                                TextInput::make('name')->required()->maxLength(255),
+                                                TextInput::make('symbol')->required()->maxLength(255),
+                                                TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                                            ])->columns(3)
+                                        ])->afterStateUpdated(function ($state, Forms\Set $set) {
+                                            $currency = Currency::query()->firstWhere('id', $state);
+                                            if ($currency) {
+                                                $set('exchange_rate', $currency->exchange_rate);
                                             }
-                                        },
-                                    ])->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->live()->default(0)->minValue(0),
-                                ])->minItems(2)->maxItems(2)->columns()->defaultItems(2)
+                                        })->editOptionAction(function ($state, Forms\Set $set) {
+                                            $currency = Currency::query()->firstWhere('id', $state);
+                                            if ($currency) {
+                                                $set('exchange_rate', $currency->exchange_rate);
+                                            }
+                                        }),
+                                        TextInput::make('exchange_rate')->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                                        Forms\Components\TextInput::make('debtor_foreign')->live(true)->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
+                                            $set('debtor', number_format((float) str_replace(',', '', $state) * (float) str_replace(',','',$get('exchange_rate'))));
+                                        })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)->rules([
+                                            fn(Get $get): \Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
+                                                if ($get('debtor_foreign') == 0 && $get('creditor_foreign') == 0) {
+                                                    $fail('Only one of these values can be zero.');
+                                                } elseif ($get('debtor_foreign') != 0 && $get('creditor_foreign') != 0) {
+                                                    $fail('At least one of the values must be zero.');
+                                                }
+                                            },
+                                        ]),
+                                        Forms\Components\TextInput::make('creditor_foreign')->live(true)->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
+                                            $set('creditor',number_format((float) str_replace(',', '', $state) * (float) str_replace(',','',$get('exchange_rate'))));
+                                        })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)->rules([
+                                            fn(Get $get): \Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
+                                                if ($get('debtor_foreign') == 0 && $get('creditor_foreign') == 0) {
+                                                    $fail('Only one of these values can be zero.');
+                                                } elseif ($get('debtor_foreign') != 0 && $get('creditor_foreign') != 0) {
+                                                    $fail('At least one of the values must be zero.');
+                                                }
+                                            },
+                                        ]),
+                                    ])->columns(4)->visible(function (Get $get) {
+                                        return $get('isCurrency');
+                                    }),
+                                ])->minItems(2)->columns(5)->defaultItems(2)
                                     ->mutateRelationshipDataBeforecreateUsing(function (array $data): array {
                                         $data['user_id'] = auth()->id();
                                         $data['company_id'] = getCompany()->id;
+                                        $data['period_id'] = FinancialPeriod::query()->where('company_id', getCompany()->id)->where('status', "During")->first()->id;
                                         return $data;
                                     })
-                            ])
+                            ])->columns(1)->columnSpanFull()
                         ])->columns(2)
                     ];
                 })->modalSubmitActionLabel('Payment')->modalWidth(MaxWidth::ScreenTwoExtraLarge),
@@ -779,7 +879,7 @@ class PayrollResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+//                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }
