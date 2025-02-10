@@ -25,7 +25,7 @@ return new class extends Migration
             $table->boolean('covid_vaccine_certificate')->nullable();
             $table->string('phone_number');
             $table->boolean('has_bank')->default(0);
-            $table->timestamp('birthday')->nullable();
+            $table->date('birthday')->nullable();
             $table->timestamp('joining_date')->nullable();
             $table->timestamp('leave_date')->nullable();
             $table->string('country')->nullable();
