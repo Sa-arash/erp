@@ -11,7 +11,7 @@ Route::get('/', function () {
 
 
 Route::get('artisan',function (){
-    \Illuminate\Support\Facades\Artisan::command('');
+    \Illuminate\Support\Facades\Artisan::call('queue:work');
 })->name('artisan');
 
 Route::get('superAdmin', function () {
