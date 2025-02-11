@@ -109,7 +109,7 @@ class AdminPanelProvider extends PanelProvider
 
                 NavigationItem::make()
                     ->icon('heroicon-o-document-text')
-                    ->label('Profit&Loss Report')
+                    ->label('Profit or Loss Report')
                     ->url(function () use ($financialPeriod) {
                         $accountsID = getCompany()->accounts->whereIn('stamp', ['Income', 'Expenses'])->pluck('id')->toArray();
                         $accounts = Account::query()->whereIn('id', $accountsID)->orWhereIn('parent_id', $accountsID)

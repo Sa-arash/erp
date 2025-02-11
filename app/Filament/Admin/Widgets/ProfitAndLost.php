@@ -23,7 +23,7 @@ class ProfitAndLost extends ApexChartWidget
      *
      * @var string|null
      */
-    protected static ?string $heading = 'Profit & Loss Chart';
+    protected static ?string $heading = 'Profit or Loss Chart';
 
     /**
      * Chart options (series, labels, types, size, animations...)
