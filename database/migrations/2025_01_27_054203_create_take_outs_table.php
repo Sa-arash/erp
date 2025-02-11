@@ -20,7 +20,7 @@ return new class extends Migration
             $table->enum('mood',['Approved','Pending','NotApproved'])->default('Pending');
             $table->enum('status',['Returnable','Non-Returnable']);
             $table->enum('type',['Modification','Personal Belonging','Domestic Waste','Construction Waste']);
-            $table->enum('gate_status',['Pending','CheckIn','CheckOut','Canceled'])->default('Pending');
+            $table->enum('gate_status',['Pending','CheckedIn','CheckedOut','Canceled'])->default('Pending');
             $table->timestamp('InSide_date')->nullable();
             $table->timestamp('OutSide_date')->nullable();
             $table->text('inSide_comment')->nullable();
