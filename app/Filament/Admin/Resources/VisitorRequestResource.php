@@ -153,8 +153,15 @@ class VisitorRequestResource extends Resource
                             TextEntry::make('organization'),
                             TextEntry::make('type')->label('Type'),
                             TextEntry::make('remarks')->label('Remarks'),
-
-                        ])
+                        ])->columns(5),
+                        RepeatableEntry::make('driver_vehicle_detail')->schema([
+                            TextEntry::make('name'),
+                            TextEntry::make('id')->label('ID/Passport'),
+                            TextEntry::make('phone')->label('Phone'),
+                            TextEntry::make('model'),
+                            TextEntry::make('color')->label('Color'),
+                            TextEntry::make('Registration_Plate')->label('Registration Plate'),
+                        ])->columns(5),
 
                     ]),
                     \Filament\Infolists\Components\Section::make([
