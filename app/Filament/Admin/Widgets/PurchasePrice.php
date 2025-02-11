@@ -8,7 +8,7 @@ use Illuminate\Support\Carbon;
 
 class PurchasePrice extends ApexChartWidget
 {
-    // use HasWidgetShield;
+    use HasWidgetShield;
 
     /**
      * Chart Id

@@ -12,17 +12,16 @@ use Illuminate\Support\Facades\DB;
 
 class StockAlert extends BaseWidget
 {
-      use HasWidgetShield;
+    use HasWidgetShield;
+
+    protected static ?string $heading = 'Stock Alert';
     protected int | string | array $columnSpan = 2;
     public function table(Table $table): Table
     {
         return $table
             ->query(
-                Product::whereHas('assets', function (Builder $query) {
-                    $query->selectRaw('COUNT(*) as asset_count');
-                })
-                ->withCount('assets') // محاسبه تعداد دارایی‌های مرتبط
-                ->having('assets_count', '<', DB::raw('stock_alert_threshold'))    
+                Product::withCount('assets') // محاسبه تعداد دارایی‌های مرتبط
+                ->havingRaw('assets_count < stock_alert_threshold') // فیلتر کردن محصولات با موجودی کم
 
             )
             ->columns([

@@ -182,6 +182,7 @@ class PurchaseRequestResource extends Resource
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('Order')
+                ->disabled(fn()=>getPeriod()===null)->tooltip(fn()=>getPeriod()!==null?:'Financial Period Required')
                     ->visible(fn($record) => $record->status->value == 'FinishedCeo')
                     ->icon('heroicon-s-shopping-cart')
                     ->url(fn($record) => PurchaseOrderResource::getUrl('create') . "?prno=" . $record->id),
