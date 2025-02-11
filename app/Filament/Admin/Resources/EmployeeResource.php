@@ -36,6 +36,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use OpenSpout\Common\Entity\Style\CellAlignment;
+use Spatie\Permission\Models\Role;
 
 class EmployeeResource extends Resource
 {
@@ -507,16 +508,13 @@ class EmployeeResource extends Resource
             ->actions([
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\Action::make('makeUser')->form([
-                        Forms\Components\Fieldset::make('user')->relationship('user')->schema([
-                            Forms\Components\Select::make('roles')
-                                ->relationship('roles', 'name')
-                                ->saveRelationshipsUsing(function (Model $record, $state) {
-                                    $record->roles()->syncWithPivotValues($state, [config('permission.column_names.team_foreign_key') => getCompany()->id]);
-                                })
+                        Forms\Components\Section::make('')->schema([
+                            Forms\Components\Select::make('roles')->model(User::class)
+                                ->options(Role::query()->where('company_id',getCompany()->id)->pluck('name','id'))
                                 ->multiple()
                                 ->preload()
                                 ->searchable(),
-                            Forms\Components\TextInput::make('email')->email()->unique('users', 'email', ignoreRecord: true)->required()->maxLength(255),
+                            Forms\Components\TextInput::make('email')->model(User::class)->email()->unique('users', 'email', ignoreRecord: true)->required()->maxLength(255),
                             Forms\Components\TextInput::make('password')->autocomplete(false)->hintAction(Forms\Components\Actions\Action::make('generate_password')->action(function (Forms\Set $set) {
                                 $password = Str::password(8);
                                 $set('password', $password);
@@ -526,20 +524,19 @@ class EmployeeResource extends Resource
                         ])
                     ])->visible(fn($record) => $record->user === null)->action(function ($data,$record){
                         $roles = $data['roles'];
-
                         $rolesWithCompanyId = [];
                         foreach ($roles as $roleId) {
                             $rolesWithCompanyId[$roleId] = ['company_id' => getCompany()->id];
                         }
-                        $data = $this->mutateFormDataBeforeCreate($data);
+
                         $user = User::query()->create([
-                            'name' => $data['fullName'],
+                            'name' => $record->fullName,
                             'email' => $data['email'],
                             'password' => $data['password']
                         ]);
                         $user->roles()->attach($rolesWithCompanyId);
                         $record->update(['user_id'=>$user->id]);
-                        CompanyUser::query()->create(['user_id'=>$this->record->user_id,'company_id'=>getCompany()->id]);
+                        CompanyUser::query()->create(['user_id'=>$record->user_id,'company_id'=>getCompany()->id]);
                         Notification::make('success')->success()->title('Submitted Successfully')->send();
 
                     }),
