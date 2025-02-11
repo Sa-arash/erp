@@ -124,7 +124,15 @@ class  ViewEmployee extends ViewRecord
                         textEntry::make('NIC')->copyable()->label('NIC'),
                         textEntry::make('marriage'),
                         textEntry::make('count_of_child'),
-                        textEntry::make('gender'),
+                        textEntry::make('gender')->state(function($record){
+                            if ($record->gender==="male"){
+                                return "Male";
+                            }elseif ($record->gender==="female"){
+                                return "Female";
+                            }else{
+                                return  "Other";
+                            }
+                        }),
                         textEntry::make('blood_group'),
                         textEntry::make('city'),
                         textEntry::make('address'),
