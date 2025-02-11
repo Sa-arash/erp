@@ -2,11 +2,13 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
 use Illuminate\Support\Carbon;
 
 class Accounting extends ApexChartWidget
 {
+    use HasWidgetShield;
     /**
      * Chart Id
      *
@@ -30,13 +32,14 @@ class Accounting extends ApexChartWidget
     protected function getOptions(): array
     {
         $accounts = getCompany()->accounts->groupBy('group');
-        
-        $labels = $accounts->keys()->toArray();
-        $series = $accounts->map(fn($group) => 
-            $group->flatMap(fn($account) => $account->transactions)
-                  ->sum(fn($transaction) => $transaction->creditor - $transaction->debtor)
-        )->values()->toArray();
 
+        $labels = $accounts->keys()->toArray();
+        $series = $accounts->map(
+            fn($group) =>
+            $group->flatMap(fn($account) => $account->transactions)
+                ->sum(fn($transaction) => $transaction->account->type == 'creditor'? $transaction->creditor - $transaction->debtor:$transaction->debtor-$transaction->creditor )
+        )->values()->toArray();
+        // dd($accounts);
         return [
             'chart' => [
                 'type' => 'pie',
