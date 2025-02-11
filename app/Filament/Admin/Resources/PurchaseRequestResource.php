@@ -43,6 +43,10 @@ class PurchaseRequestResource extends Resource
     protected static ?string $navigationGroup = 'Logistic Management';
 
     protected static ?string $navigationIcon = 'heroicon-c-document-arrow-down';
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::where('status','Requested')->count();
+    }
 
     public static function form(Form $form): Form
     {
@@ -76,7 +80,7 @@ class PurchaseRequestResource extends Resource
                     getSelectCurrency(),
                     Forms\Components\TextInput::make('description')->label('Description')->columnSpanFull(),
                     Repeater::make('Requested Items')
-                    ->addActionLabel('Add')
+                        ->addActionLabel('Add')
                         ->relationship('items')
                         ->schema([
                             Forms\Components\Select::make('product_id')
@@ -193,7 +197,7 @@ class PurchaseRequestResource extends Resource
                                         'type' => 'creditor',
                                         'code' => $parentAccount->code . $data['account_code_vendor'],
                                         'level' => 'detail',
-                                        'group'=>'Liabilitie',
+                                        'group' => 'Liabilitie',
                                         'parent_id' => $parentAccount->id,
                                         'built_in' => false,
                                         'company_id' => getCompany()->id,
@@ -210,8 +214,7 @@ class PurchaseRequestResource extends Resource
                                         Forms\Components\TextInput::make('email')->email()->maxLength(255),
                                         Forms\Components\Textarea::make('address')->columnSpanFull(),
                                         SelectTree::make('parent_vendor')->disabledOptions(function () {
-                                            return Account::query()->where('level', 'detail')->where('company_id', getCompany()->id)->orWhereHas('transactions', function ($query) {
-                                            })->pluck('id')->toArray();
+                                            return Account::query()->where('level', 'detail')->where('company_id', getCompany()->id)->orWhereHas('transactions', function ($query) {})->pluck('id')->toArray();
                                         })->default(getCompany()?->vendor_account)->enableBranchNode()->model(Transaction::class)->defaultOpenLevel(3)->live()->label('Parent Vendor Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('stamp', "Liabilities")->where('company_id', getCompany()->id)),
                                         Forms\Components\TextInput::make('account_code_vendor')->prefix(fn(Get $get) => Account::find($get('parent_vendor'))?->code)->default(function () {
                                             if (Parties::query()->where('company_id', getCompany()->id)->where('type', 'vendor')->latest()->first()) {
@@ -231,7 +234,7 @@ class PurchaseRequestResource extends Resource
                                 Forms\Components\Textarea::make('description')->columnSpanFull()->nullable()
                             ])->columns(5),
                             Repeater::make('Requested Items')->required()
-                            ->addActionLabel('Add')
+                                ->addActionLabel('Add')
                                 ->schema([
                                     Forms\Components\Select::make('purchase_request_item_id')->disableOptionsWhenSelectedInSiblingRepeaterItems()
                                         ->label('Product')->options(function () use ($record) {
@@ -342,7 +345,7 @@ class PurchaseRequestResource extends Resource
                                 $vendors = '';
                                 $ths = '';
                                 foreach ($record->quotations as $quotation) {
-                                    $vendor = $quotation->party->name . "'s Quotation"." ".$quotation->currency->symbol;
+                                    $vendor = $quotation->party->name . "'s Quotation" . " " . $quotation->currency->symbol;
                                     $vendors .= "<th style='border: 1px solid black;padding: 8px;text-align: center;background-color:rgb(90, 86, 86)'>{$vendor}</th>";
                                     $totalSum = 0;
 
@@ -413,8 +416,7 @@ class PurchaseRequestResource extends Resource
 
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                ]),
+                Tables\Actions\BulkActionGroup::make([]),
             ]);
     }
 
