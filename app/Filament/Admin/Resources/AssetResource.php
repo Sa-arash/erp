@@ -87,9 +87,9 @@ class AssetResource extends Resource
                         Forms\Components\Select::make('quality')
                         ->options(
                             [
-                                'new'=>"new",
-                                'used'=>"used",
-                                'refurbished'=>"refurbished",
+                                'new'=>"New",
+                                'used'=>"Used",
+                                'refurbished'=>"Refurbished",
                             ]
                         )
                         ->default('new')->searchable()->preload()
@@ -281,9 +281,9 @@ class AssetResource extends Resource
                             Forms\Components\Select::make('quality')
                             ->options(
                                 [
-                                    'new'=>"new",
-                                    'used'=>"used",
-                                    'refurbished'=>"refurbished",
+                                    'new'=>"New",
+                                    'used'=>"Used",
+                                    'refurbished'=>"Refurbished",
                                 ]
                             )
                             ->default('new')->searchable()->preload()

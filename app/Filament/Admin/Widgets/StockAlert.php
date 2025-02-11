@@ -18,11 +18,11 @@ class StockAlert extends BaseWidget
     protected int | string | array $columnSpan = 2;
     public function table(Table $table): Table
     {
+        dd(Product::withCount('assets'));
         return $table
             ->query(
-                Product::select('products.*', DB::raw('products.stock_alert_threshold as threshold'))
-                ->withCount('assets') // محاسبه تعداد دارایی‌ها
-                ->havingRaw('assets_count < threshold') // مقایسه تعداد موجودی با حد آستانه
+                Product::withCount('assets')
+                ->whereColumn('assets.count', '<', 'stock_alert_threshold')
 
             )
             ->columns([
