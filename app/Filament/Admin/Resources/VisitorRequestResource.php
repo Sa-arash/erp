@@ -118,14 +118,14 @@ class VisitorRequestResource extends Resource
                 Tables\Filters\SelectFilter::make('status')->options(['approved'=>'approved','notApproved'=>'notApproved'])->searchable()
             ],getModelFilter())
             ->actions([
-                Tables\Actions\Action::make('ActionInSide')->label('In Side')->form([
+                Tables\Actions\Action::make('ActionInSide')->label('CheckIn')->form([
                     Forms\Components\DateTimePicker::make('InSide_date')->withoutSeconds()->label(' Date And Time')->required()->default(now()),
                     Forms\Components\Textarea::make('inSide_comment')->label(' Comment')
                 ])->requiresConfirmation()->action(function ($data, $record) {
                     $record->update(['InSide_date' => $data['InSide_date'], 'inSide_comment' => $data['inSide_comment'],'gate_status'=>'CheckIn']);
                     Notification::make('success')->success()->title('Submitted Successfully')->send();
                 })->hidden(fn($record)=>$record->InSide_date),
-                Tables\Actions\Action::make('ActionOutSide')->label('OutSide')->form([
+                Tables\Actions\Action::make('ActionOutSide')->label('CheckOut')->form([
                     Forms\Components\DateTimePicker::make('OutSide_date')->withoutSeconds()->label(' Date And Time')->required()->default(now()),
                     Forms\Components\Textarea::make('OutSide_comment')->label(' Comment')
                 ])->requiresConfirmation()->action(function ($data, $record) {
@@ -140,7 +140,13 @@ class VisitorRequestResource extends Resource
                     }
                     return  false;
                 }),
-                Tables\Actions\Action::make('viewAction')->visible(fn($record)=>$record->InSide_date)->label('View In/Out')->tooltip('View InSide/OutSide')->infolist([
+
+
+                Tables\Actions\ViewAction::make()->infolist([
+                    \Filament\Infolists\Components\Section::make([
+                       TextEntry::make('employee.info')->label('Employee'),
+
+                    ]),
                     \Filament\Infolists\Components\Section::make([
                         TextEntry::make('InSide_date')->dateTime(),
                         TextEntry::make('inSide_comment'),
@@ -150,8 +156,6 @@ class VisitorRequestResource extends Resource
                         TextEntry::make('OutSide_comment'),
                     ])->columns(),
                 ]),
-
-                Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')
                     ->url(fn($record) => route('pdf.requestVisit', ['id' => $record->id]))->openUrlInNewTab(),
 
