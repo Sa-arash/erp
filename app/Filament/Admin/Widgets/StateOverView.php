@@ -11,8 +11,10 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class StateOverView extends BaseWidget
 {
-    // use HasWidgetShield;
+    use HasWidgetShield;
     protected ?string $heading = 'StateOverView';
+    protected static ?string $chartId = 'StateOverView';
+
 
     protected function getStats(): array
     {

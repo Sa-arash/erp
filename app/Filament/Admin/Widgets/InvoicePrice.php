@@ -2,28 +2,27 @@
 
 namespace App\Filament\Admin\Widgets;
 
-use App\Models\Account;
 use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
 use Illuminate\Support\Carbon;
 
-class ProfitAndLost extends ApexChartWidget
+class InvoicePrice extends ApexChartWidget
 {
-    // use HasWidgetShield;
+    use HasWidgetShield;
     
     /**
      * Chart Id
      *
      * @var string
      */
-    protected static ?string $chartId = 'profitAndLost';
+    protected static ?string $chartId = 'invoicePrice';
 
     /**
      * Widget Title
      *
      * @var string|null
      */
-    protected static ?string $heading = 'Profit & Loss Chart';
+    protected static ?string $heading = 'Invoice Price';
 
     /**
      * Chart options (series, labels, types, size, animations...)
@@ -38,35 +37,32 @@ class ProfitAndLost extends ApexChartWidget
             'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
         ]);
 
-        $incomeData = $months->map(function ($month, $index) {
-            return getCompany()->accounts
-                ->where('group', 'Income')
-                ->flatMap(fn($account) => $account->transactions)
+        $debtorData = $months->map(function ($month, $index) {
+            return getCompany()->transactions
                 ->filter(fn($transaction) => Carbon::parse($transaction->created_at)->month == $index + 1)
-                ->sum(fn($transaction) => $transaction->creditor - $transaction->debtor);
+                ->sum(fn($transaction) => $transaction->debtor);
         })->toArray();
 
-        $expenseData = $months->map(function ($month, $index) {
-            return getCompany()->accounts
-                ->where('group', 'Expense')
-                ->flatMap(fn($account) => $account->transactions)
+        $creditorData = $months->map(function ($month, $index) {
+            return getCompany()->transactions
                 ->filter(fn($transaction) => Carbon::parse($transaction->created_at)->month == $index + 1)
-                ->sum(fn($transaction) => $transaction->debtor - $transaction->creditor);
+                ->sum(fn($transaction) => $transaction->creditor);
         })->toArray();
 
         return [
             'chart' => [
-                'type' => 'line',
+                'type' => 'bar',
                 'height' => 300,
+                'stacked' => true,
             ],
             'series' => [
                 [
-                    'name' => 'Profit',
-                    'data' => $incomeData,
+                    'name' => 'Debtor',
+                    'data' => $debtorData,
                 ],
                 [
-                    'name' => 'Loss',
-                    'data' => $expenseData,
+                    'name' => 'Creditor',
+                    'data' => $creditorData,
                 ],
             ],
             'xaxis' => [
@@ -84,9 +80,18 @@ class ProfitAndLost extends ApexChartWidget
                     ],
                 ],
             ],
-            'colors' => ['#22c55e', '#ef4444'], // سبز برای درآمد، قرمز برای هزینه
-            'stroke' => [
-                'curve' => 'smooth',
+            'colors' => ['#ef4444', '#22c55e'], // قرمز برای بدهکار، سبز برای بستانکار
+            'plotOptions' => [
+                'bar' => [
+                    'borderRadius' => 3,
+                    'horizontal' => false,
+                ],
+            ],
+            'dataLabels' => [
+                'enabled' => true,
+                // 'formatter' => function ($value) {
+                //     return number_format($value, 2);
+                // },
             ],
         ];
     }

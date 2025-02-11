@@ -12,7 +12,9 @@ use Illuminate\Support\Facades\DB;
 
 class StockAlert extends BaseWidget
 {
-      use HasWidgetShield;
+    use HasWidgetShield;
+
+    protected static ?string $heading = 'Stock Alert';
     protected int | string | array $columnSpan = 2;
     public function table(Table $table): Table
     {
