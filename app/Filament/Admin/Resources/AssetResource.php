@@ -122,7 +122,7 @@ class AssetResource extends Resource
                             return $assets;
                         }
                     }
-                })->cloneable()
+                })->cloneable()->addActionLabel('New Asset')
             ]);
     }
 

@@ -44,7 +44,7 @@ class ListHolidays extends ListRecords
                         },
                     ]),
                 TextInput::make('overtime_rate')
-                    ->label('Overtime Rate')
+                    ->label('Overtime Rate(Overtime Pay Rate Based on Hourly Wage)')
                     ->numeric()
                     ->default(1.5)
                     ->required()->default(getCompany()->overtime_rate),
