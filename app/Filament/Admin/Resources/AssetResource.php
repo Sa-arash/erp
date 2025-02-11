@@ -67,20 +67,32 @@ class AssetResource extends Resource
                     Forms\Components\TextInput::make('price')->prefix(defaultCurrency()?->symbol)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->required()->numeric()->label('Purchase Price'),
                     Forms\Components\Select::make('warehouse_id')->default(getCompany()->warehouse_id)->live()->label('Warehouse/Building')->options(getCompany()->warehouses()->pluck('title', 'id'))->required()->searchable()->preload(),
                     SelectTree::make('structure_id')->default(getCompany()->structure_asset_id)->searchable()->label('Location')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id', modifyQueryUsing: function ($query, Forms\Get $get) {
-                          return $query->where('warehouse_id', $get('warehouse_id'));
+                        return $query->where('warehouse_id', $get('warehouse_id'));
                     })->required(),
                     DatePicker::make('buy_date')->label('Purchase Date')->default(now()),
                     DatePicker::make('guarantee_date')->label('Guarantee Date')->default(now()),
                     Forms\Components\Select::make('depreciation_years')
                         ->label('Depreciation Years')
-                        ->options([
-                            1 => '1 Year',
-                            2 => '2 Years',
-                            3 => '3 Years',
-                            4 => '4 Years',
-                            5 => '5 Years',
-                        ])
-                        ->default(1)
+                        ->options(
+                            function(){
+                                $array = [];
+                                for ($i=0; $i < 50; $i++) { 
+                                 $array[$i] = ($i+1).' Year';
+                                }
+                                return $array;
+                            }
+                        )
+                        ->default(0)->searchable()->preload()
+                        ->required(),
+                        Forms\Components\Select::make('quality')
+                        ->options(
+                            [
+                                'new'=>"new",
+                                'used'=>"used",
+                                'refurbished'=>"refurbished",
+                            ]
+                        )
+                        ->default('new')->searchable()->preload()
                         ->required(),
 
                     Forms\Components\TextInput::make('depreciation_amount')
@@ -147,7 +159,8 @@ class AssetResource extends Resource
                         return EmployeeResource::getUrl('view', ['record' => $record->employees->last()?->assetEmployee?->employee_id]);
                     }
                 })->label('Employee'),
-
+                Tables\Columns\TextColumn::make('quality')
+                ->sortable()    ,
                 Tables\Columns\TextColumn::make('depreciation_years')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
@@ -155,7 +168,7 @@ class AssetResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('buy_date')->label('Purchase Date')
-                ->date('Y-m-d')
+                    ->date('Y-m-d')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('guarantee_date')
@@ -251,17 +264,31 @@ class AssetResource extends Resource
                         })->required(),
                         DatePicker::make('guarantee_date')->default(now()),
                         DatePicker::make('buy_date')->default(now()),
+
                         Forms\Components\Select::make('depreciation_years')
                             ->label('Depreciation Years')
-                            ->options([
-                                1 => '1 Year',
-                                2 => '2 Years',
-                                3 => '3 Years',
-                                4 => '4 Years',
-                                5 => '5 Years',
-                            ])
-                            ->default(1)
+                            ->options(
+                                function(){
+                                    $array = [];
+                                    for ($i=0; $i < 50; $i++) { 
+                                     $array[$i] = ($i+1).' Year';
+                                    }
+                                    return $array;
+                                }
+                            )
+                            ->default(0)->searchable()->preload()
                             ->required(),
+                            Forms\Components\Select::make('quality')
+                            ->options(
+                                [
+                                    'new'=>"new",
+                                    'used'=>"used",
+                                    'refurbished'=>"refurbished",
+                                ]
+                            )
+                            ->default('new')->searchable()->preload()
+                            ->required(),
+    
 
                         Forms\Components\TextInput::make('depreciation_amount')
                             ->label('Depreciation Amount')

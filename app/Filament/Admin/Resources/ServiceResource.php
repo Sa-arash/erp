@@ -73,7 +73,7 @@ class ServiceResource extends Resource
                     Forms\Components\Textarea::make('reply')
                         ->columnSpanFull(),
 
-                    Forms\Components\TextInput::make('PO_number')
+                    Forms\Components\TextInput::make('PO_number')->label('PONO')
                         ->maxLength(255),
                     Forms\Components\Hidden::make('company_id')
                         ->default(getCompany()->id)
