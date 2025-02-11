@@ -21,6 +21,7 @@ use Illuminate\Support\Carbon;
 
 class MyPayroll extends BaseWidget
 {
+    
         protected int | string | array $columnSpan='full';
 
         public function table(Table $table): Table

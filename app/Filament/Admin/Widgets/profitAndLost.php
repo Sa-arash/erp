@@ -3,11 +3,14 @@
 namespace App\Filament\Admin\Widgets;
 
 use App\Models\Account;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
 use Illuminate\Support\Carbon;
 
 class ProfitAndLost extends ApexChartWidget
 {
+    use HasWidgetShield;
+    
     /**
      * Chart Id
      *
@@ -20,7 +23,7 @@ class ProfitAndLost extends ApexChartWidget
      *
      * @var string|null
      */
-    protected static ?string $heading = 'Profit & Loss';
+    protected static ?string $heading = 'Profit & Loss Chart';
 
     /**
      * Chart options (series, labels, types, size, animations...)

@@ -2,11 +2,14 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Leandrocfe\FilamentApexCharts\Widgets\ApexChartWidget;
 use Illuminate\Support\Carbon;
 
 class PurchasePrice extends ApexChartWidget
 {
+    use HasWidgetShield;
+
     /**
      * Chart Id
      *

@@ -5,11 +5,15 @@ namespace App\Filament\Admin\Widgets;
 use App\Models\Asset;
 use App\Models\Employee;
 use App\Models\Project;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class StateOverView extends BaseWidget
 {
+    use HasWidgetShield;
+    protected ?string $heading = 'StateOverView';
+
     protected function getStats(): array
     {
         return [

@@ -31,6 +31,7 @@ use Illuminate\Validation\Rules\Unique;
 
 class MyPurchaseRequest extends BaseWidget
 {
+    
     protected int | string | array $columnSpan = 'full';
 
     public function table(Table $table): Table
