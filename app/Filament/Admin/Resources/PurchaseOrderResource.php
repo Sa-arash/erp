@@ -49,7 +49,7 @@ class PurchaseOrderResource extends Resource
     protected static ?string $model = PurchaseOrder::class;
     protected static ?string $navigationGroup = 'Logistic Management';
 
-    protected static ?int $navigationSort = 0;
+    protected static ?int $navigationSort = 5;
 
     protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-check';
 
@@ -129,6 +129,7 @@ class PurchaseOrderResource extends Resource
                                                 $set('RequestedItems', $data);
                                                 $set('vendor_id', $record->bid->quotation->party_id);
                                                 $set('currency_id', $record->bid->quotation->currency_id);
+                                                $set('exchange_rate', $record->bid->quotation->currency->exchange_rate);
                                             } else {
                                                 $set('RequestedItems', $record->items->where('status', 'approve')->toArray());
                                             }
@@ -143,7 +144,19 @@ class PurchaseOrderResource extends Resource
                                 Forms\Components\Select::make('vendor_id')->label('Vendor')
                                     ->options((getCompany()->parties->where('type', 'vendor')->pluck('info', 'id')))
                                     ->searchable()->preload()->required(),
-                                Select::make('currency_id')->live()->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([
+                                Select::make('currency_id')->live()->label('Currency')
+                                
+                                ->afterStateUpdated(function(Set $set , $state){
+                                    $currency = Currency::find($state);
+                                    if($currency!== null)
+                                    {
+                                        // dd($currency,$currency->exchange_rate);
+
+                                        $set('exchange_rate', $currency->exchange_rate);
+                                    }
+                                })
+                                
+                                ->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([
                                     \Filament\Forms\Components\Section::make([
                                         TextInput::make('name')->required()->maxLength(255),
                                         TextInput::make('symbol')->required()->maxLength(255),
@@ -212,6 +225,8 @@ class PurchaseOrderResource extends Resource
                                             }
                                             $set('vendor_id', $record->bid->quotation->party_id);
                                             $set('currency_id', $record->bid->quotation->currency_id);
+                                            $set('exchange_rate', $record->bid->quotation->currency->exchange_rate);
+
                                             return  $data;
                                         } else {
                                             return $record?->items->where('status', 'approve')->toArray();
