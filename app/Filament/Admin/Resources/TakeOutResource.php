@@ -61,17 +61,18 @@ class TakeOutResource extends Resource
                 ])->requiresConfirmation()->action(function ($data, $record) {
                     $record->update(['InSide_date' => $data['InSide_date'], 'inSide_comment' => $data['inSide_comment'],'gate_status'=>'CheckedIn']);
                     Notification::make('success')->success()->title('Submitted Successfully')->send();
-
                 })->visible(function($record){
-                    if ($record->InSide_date!==null ){
-                        return false;
-                    }
-                    if ($record->OutSide_date !==null ){
-                        return true;
+                    if ($record->status !=="Non-Returnable"){
+                        if ($record->InSide_date!==null ){
+                            return false;
+                        }
+                        if ($record->OutSide_date !==null ){
+                            return true;
+                        }
                     }
                     return  false;
                 }),
-                Tables\Actions\Action::make('viewAction')->visible(fn($record)=>$record->OutSide_date)->label('View In/Out')->tooltip('View InSide/OutSide')->infolist([
+                Tables\Actions\Action::make('viewAction')->visible(fn($record)=>$record->OutSide_date)->label('View')->infolist([
                     \Filament\Infolists\Components\Section::make([
                         TextEntry::make('OutSide_date')->dateTime(),
                         TextEntry::make('OutSide_comment'),
