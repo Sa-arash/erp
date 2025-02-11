@@ -16,7 +16,7 @@
             <td>
                 @foreach ($accounts['Assets'] as $key=> $asset)
                 {{-- @dd($key , $asset[]) --}}
-                    @if ($asset['sum']!= 0)
+                    {{-- @if ($asset['sum']!= 0) --}}
                     <ul class="item-list">
                         <li style="font-weight: bold">
                             {{ $key }}:
@@ -34,7 +34,7 @@
                             {{--  @endif  --}}
                         @endforeach
                     </ul>
-                    @endif
+                    {{-- @endif --}}
                 @endforeach
             </td>
             <td>
@@ -45,7 +45,7 @@
                             $items = $accounts[$type];
                         @endphp
                         @foreach ($items as $key => $item)
-                            @if ($item['sum'] != 0)
+                            {{-- @if ($item['sum'] != 0) --}}
                                 <li style="font-weight: bold">
                                     {{ $key }}:
                                     {{ number_format($item['sum']) }}
@@ -58,7 +58,7 @@
                                         {{ number_format($credit['sum']) }}
                                     </li>
                                 @endforeach
-                            @endif
+                            {{-- @endif --}}
                         @endforeach
                         <br>
                     @endforeach
