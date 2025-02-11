@@ -161,7 +161,7 @@ class VisitorRequestResource extends Resource
                             TextEntry::make('model'),
                             TextEntry::make('color')->label('Color'),
                             TextEntry::make('Registration_Plate')->label('Registration Plate'),
-                        ])->columns(5),
+                        ])->columns(6),
 
                     ]),
                     \Filament\Infolists\Components\Section::make([
