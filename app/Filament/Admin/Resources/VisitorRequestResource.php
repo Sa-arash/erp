@@ -8,6 +8,7 @@ use App\Models\VisitorRequest;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
+use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -145,6 +146,15 @@ class VisitorRequestResource extends Resource
                 Tables\Actions\ViewAction::make()->infolist([
                     \Filament\Infolists\Components\Section::make([
                        TextEntry::make('employee.info')->label('Employee'),
+                        RepeatableEntry::make('visitors_detail')->schema([
+                            TextEntry::make('name'),
+                            TextEntry::make('id')->label('ID/Passport'),
+                            TextEntry::make('phone')->label('Phone'),
+                            TextEntry::make('organization'),
+                            TextEntry::make('type')->label('Type'),
+                            TextEntry::make('remarks')->label('Remarks'),
+
+                        ])
 
                     ]),
                     \Filament\Infolists\Components\Section::make([
