@@ -53,15 +53,15 @@ class AdminPanelProvider extends PanelProvider
         if ($financialPeriod) {
             $reportNavigationItems = [
 
-                NavigationItem::make()
-                    ->icon('heroicon-o-document-text')
-                    ->label('Journal')
-                    ->visible(fn() => isset($financialPeriod) && $financialPeriod != null && (auth()->user()->can('view_financial::period')))
-                    ->url(fn() => route('pdf.jornal', [
-                        'transactions' => implode('-',( Transaction::query()->where('company_id',getCompanyUrl())->where('financial_period_id',$financialPeriod )->pluck('id')->toArray())) !='' ?: 'test' ,
-                    ]))
-                    ->group('Accounting Report')
-                    ->sort(1),
+                // NavigationItem::make()
+                //     ->icon('heroicon-o-document-text')
+                //     ->label('Journal')
+                //     ->visible(fn() => isset($financialPeriod) && $financialPeriod != null && (auth()->user()->can('view_financial::period')))
+                //     ->url(fn() => route('pdf.jornal', [
+                //         'transactions' => implode('-',( Transaction::query()->where('company_id',getCompanyUrl())->where('financial_period_id',$financialPeriod )->pluck('id')->toArray())) !='' ?: 'test' ,
+                //     ]))
+                //     ->group('Accounting Report')
+                //     ->sort(1),
 
                 NavigationItem::make()
                     ->icon('heroicon-o-document-text')
