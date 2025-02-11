@@ -25,10 +25,6 @@ class TransActionResource extends Resource
     protected static ?string $navigationGroup ="Accounting Report";
     protected static ?int $navigationSort = 0;
 
-    public static function canAccess(): bool
-    {
-       return (getPeriod() !== null);
-    }
     public static function canCreate(): bool
     {
         return false;
