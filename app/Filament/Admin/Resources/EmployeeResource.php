@@ -17,6 +17,7 @@ use App\Models\Duty;
 use App\Models\Employee;
 use App\Models\Position;
 use App\Models\Structure;
+use App\Models\User;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Actions\Action;
@@ -28,6 +29,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
 use Filament\Support\RawJs;
@@ -556,6 +558,26 @@ class EmployeeResource extends Resource
 
             ], getModelFilter())
             ->actions([
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('setMail')->label('Set Mail')->fillForm(function ($record){
+                        return [
+                            'email'=>$record->user->email
+                        ];
+                    })->form(function ($record){
+                        return [
+                            Forms\Components\TextInput::make('email')->model(User::class)->email()->unique('users', 'email', ignorable: User::query()->firstWhere('id',$record->user_id), ignoreRecord: true)->required()->maxLength(255),
+                        ];
+                    })->action(function ($data,$record){
+                        $record->user->update(['email'=>$data['email']]);
+                        Notification::make('success')->success()->title('Submitted Successfully')->send();
+                    })->requiresConfirmation(),
+                    Tables\Actions\Action::make('setPassword')->label('Set Password')->form([
+                        Forms\Components\TextInput::make('password')->required()->autocomplete(false)
+                        ])->requiresConfirmation()->action(function ($record,$data){
+                            $record->user->update(['password'=>$data['password']]);
+                        Notification::make('success')->success()->title('Submitted Successfully')->send();
+                    })
+                ]),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')
