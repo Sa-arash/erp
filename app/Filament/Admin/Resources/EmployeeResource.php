@@ -559,7 +559,7 @@ class EmployeeResource extends Resource
                         $record->user->update(['email' => $data['email']]);
                         Notification::make('success')->success()->title('Submitted Successfully')->send();
                     })->requiresConfirmation()->icon('heroicon-c-at-symbol')->color('info'),
-                    Tables\Actions\Action::make('setPassword')->label('Set Password')->form([
+                    Tables\Actions\Action::make('setPassword')->label('Reset Password')->form([
                         Forms\Components\TextInput::make('password')->required()->autocomplete(false)
                     ])->requiresConfirmation()->action(function ($record, $data) {
                         $record->user->update(['password' => $data['password']]);
@@ -569,7 +569,7 @@ class EmployeeResource extends Resource
                         return [
                             'roles' => $record->user->roles->pluck('id')->toArray()
                         ];
-                    })->label('Set Roll')->form([
+                    })->label('Assignee Roll')->form([
                         Forms\Components\Select::make('roles')->pivotData(['company_id' => getCompany()->id])->options(getCompany()->roles->pluck('name', 'id'))->multiple()->preload()->searchable(),
                     ])->requiresConfirmation()->action(function ($record, $data) {
                         $user = User::query()->firstWhere('id', $record->user_id);
