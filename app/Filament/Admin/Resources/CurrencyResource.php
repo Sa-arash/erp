@@ -15,6 +15,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Validation\Rules\Unique;
 
 class CurrencyResource extends Resource
 {
@@ -40,7 +41,9 @@ class CurrencyResource extends Resource
                 Forms\Components\TextInput::make('name')->required()->maxLength(255),
                 Forms\Components\TextInput::make('symbol')->required()->maxLength(255),
                 Forms\Components\TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-                Forms\Components\ToggleButtons::make('is_company_currency')->grouped()->label('Base Currency')->default(0)->boolean('Yes','No')->required(),
+                Forms\Components\ToggleButtons::make('is_company_currency')->unique(modifyRuleUsing: function (Unique $rule) {
+                    return $rule->where('is_company_currency', 1)->where('company_id',getCompany()->id);
+               })->grouped()->label('Base Currency')->default(0)->boolean('Yes','No')->required(),
             ]);
     }
 

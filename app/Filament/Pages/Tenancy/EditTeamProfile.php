@@ -30,7 +30,7 @@ class EditTeamProfile extends EditTenantProfile
     {
        return (getCompany()->user_id == auth()->user()->id);
     }
-    
+
 
     public static function getNavigationItems(): array
     {
@@ -56,7 +56,7 @@ class EditTeamProfile extends EditTenantProfile
                             ->schema([
                                 Section::make()
                                 ->schema([
-                                    TextInput::make('title')
+                                    TextInput::make('title')->columnSpanFull()
                                         ->label('Company Name')
                                         ->required()
                                         ->maxLength(120)
@@ -95,12 +95,6 @@ class EditTeamProfile extends EditTenantProfile
                                         ->required()
                                         ->columnSpan(2),
 
-                                    Select::make('currency')
-                                        ->label('Preferred Currency')
-                                        ->options(getCurrency())
-                                        ->searchable()
-                                        ->required()
-                                        ->columnSpan(2),
                                 ])->columns(2),
                             ]),
 
