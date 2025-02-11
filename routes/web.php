@@ -1787,6 +1787,8 @@ Route::get('account',function (){
     \App\Models\Account::query()->forceDelete();
     foreach ($accounts as $account) {
             $account['stamp']=$account['name'];
+            $account['currency_id']=1;
+            $account['group']='Asset';
         \Illuminate\Support\Facades\DB::table('accounts')->insert($account);
     }
 });
