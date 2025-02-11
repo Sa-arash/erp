@@ -8,6 +8,8 @@ use App\Filament\Clusters\FinanceSettings;
 use App\Models\Account;
 use App\Models\Bank;
 use App\Models\Cheque;
+use App\Models\Factor;
+use App\Models\FactorItem;
 use App\Models\FinancialPeriod;
 use App\Models\Invoice;
 use App\Models\Parties;
@@ -63,6 +65,7 @@ class FinancialPeriodResource extends Resource
             Tables\Actions\Action::make('clear')->requiresConfirmation()->action(function (){
                 FinancialPeriod::query()->where('company_id',getCompany()->id)->delete();
                 Invoice::query()->where('company_id',getCompany()->id)->forceDelete();
+                Factor::query()->where('company_id',getCompany()->id)->delete();
                 Bank::query()->where('company_id',getCompany()->id)->delete();
                 Parties::query()->where('company_id',getCompany()->id)->delete();
                 Account::query()->where('company_id',getCompany()->id)->whereNot('built_in',1)->forceDelete();

@@ -176,8 +176,8 @@ class EmployeeResource extends Resource
                                         'company_id' => getCompany()->id
                                     ])->getKey();
                                 })->required(),
-                            Forms\Components\Select::make('warehouse_id')->live()->label('Location')->options(getCompany()->warehouses()->pluck('title', 'id'))->searchable()->preload(),
-                            SelectTree::make('structure_id')->label('Address')->searchable()->label('Address')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id',modifyQueryUsing: function($query, Forms\Get $get){
+                            Forms\Components\Select::make('warehouse_id')->live()->label('Duty Location(Building)')->options(getCompany()->warehouses()->pluck('title', 'id'))->searchable()->preload(),
+                            SelectTree::make('structure_id')->label('Address')->searchable()->label('Duty Location(Room)')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id',modifyQueryUsing: function($query, Forms\Get $get){
                                 return $query->where('warehouse_id', $get('warehouse_id'));
                             }),
                             Forms\Components\DatePicker::make('joining_date')->required(),
@@ -392,8 +392,8 @@ class EmployeeResource extends Resource
                                 'company_id' => getCompany()->id
                             ])->getKey();
                         })->required(),
-                    Forms\Components\Select::make('warehouse_id')->live()->label('Location')->options(getCompany()->warehouses()->pluck('title', 'id'))->searchable()->preload(),
-                    SelectTree::make('structure_id')->label('Address')->searchable()->label('Address')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id',modifyQueryUsing: function($query, Forms\Get $get){
+                    Forms\Components\Select::make('warehouse_id')->live()->label('Duty Location(Building) ')->options(getCompany()->warehouses()->pluck('title', 'id'))->searchable()->preload(),
+                    SelectTree::make('structure_id')->label('Address')->searchable()->label('Duty Location(Room)')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id',modifyQueryUsing: function($query, Forms\Get $get){
                         return $query->where('warehouse_id', $get('warehouse_id'));
                     }),
                     Forms\Components\DatePicker::make('joining_date')->required(),
