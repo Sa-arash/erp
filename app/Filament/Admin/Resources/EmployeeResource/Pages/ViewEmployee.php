@@ -139,25 +139,12 @@ class  ViewEmployee extends ViewRecord
                         textEntry::make('card_status')->label('Card Status'),
                         textEntry::make('type_of_ID')->label('Type Of ID'),
                         textEntry::make('ID_number')->label('ID Number'),
+                        textEntry::make('structure')->state(fn($record)=>$record?->warehouse?->title." - ".$record?->structure?->title)->label('Duty Location(Building And Room) '),
                         textEntry::make('joining_date')->label('Joining Date')->date(),
-                        textEntry::make('leave_date'),
-
-
-
-
-
-                        // TextEntry::make('phone_number')->copyable()->color('aColor')->url(fn($record) => 'tel:' . $record->phone_number)->label('شماره موبایل')->inlineLabel(),
-                        // TextEntry::make('tel')->label('شماره تلفن')->color('aColor')->url(fn($record) => 'tel:' . $record->phone_number)->inlineLabel()->copyable(),
-                        // TextEntry::make('father_number')->copyable()->label('شماره موبایل پدر')->color('aColor')->url(fn($record) => 'tel:' . $record->fhather_number)->inlineLabel(),
-                        // TextEntry::make('mather_number')->copyable()->label('  شماره موبایل مادر')->color('aColor')->url(fn($record) => 'tel:' . $record->mather_number)->inlineLabel(),
-                        // TextEntry::make('eitaa_number')->copyable()->label('ایتا')->inlineLabel(),
-                        // TextEntry::make('telegram_number')->copyable()->label('تلگرام')->inlineLabel(),
+                        textEntry::make('leave_date')->label('Leave Date')->date(),
                     ])->columns(2),
-
                 ])->from('md'),
                 Split::make([
-
-
                     Section::make('Salary and Bank Information')->icon('cart')->iconColor('success')->schema([
                         textEntry::make('base_salary')->numeric()->badge(),
                         textEntry::make('benefits.title')->badge()->label('Allowances/Deductions'),

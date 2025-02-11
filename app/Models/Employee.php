@@ -28,6 +28,10 @@ class Employee extends Model
     {
         return $this->belongsTo(Structure::class);
     }
+    public function warehouse(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Warehouse::class);
+    }
     public function separation(): \Illuminate\Database\Eloquent\Relations\hasOne
     {
         return $this->hasOne(Separation::class);
