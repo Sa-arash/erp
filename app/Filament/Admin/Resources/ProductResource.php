@@ -48,6 +48,7 @@ class ProductResource extends Resource
                         $set('account_id',null);
                     }),
                 ])->columns(3),
+                
                 Select::make('account_id')->options(function (Get $get) {
                    
                    if($get('product_type')=='unConsumable')
@@ -103,7 +104,7 @@ class ProductResource extends Resource
 
                 Forms\Components\Textarea::make('description')->columnSpanFull(),
                 Forms\Components\FileUpload::make('image')->image(),
-                Forms\Components\TextInput::make('stock_alert_threshold')->numeric()->default(5),
+                Forms\Components\TextInput::make('stock_alert_threshold')->numeric()->default(5)->required(),
 
                 // Forms\Components\TextInput::make('price')
                 // ->mask(RawJs::make('$money($input)'))->stripCharacters(',')
@@ -125,7 +126,8 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('account.title')->label('Category Title')->sortable(),
                 Tables\Columns\TextColumn::make('subAccount.title')->label('Sub Category Title')->sortable(),
                 Tables\Columns\TextColumn::make('product_type'),
-                Tables\Columns\TextColumn::make('count')->numeric()->state(fn($record) => $record->assets->count())->label('Quantity')->badge(),
+                Tables\Columns\TextColumn::make('count')->numeric()->state(fn($record) => $record->assets->count())->label('Quantity')->badge()
+                ->color(fn($record)=>$record->assets->count()>$record->stock_alert_threshold ? 'success' : 'danger')->tooltip(fn($record)=>'Stock Alert:'.$record->stock_alert_threshold),
                 Tables\Columns\TextColumn::make('price')->numeric()->state(fn($record) => $record->assets->sum('price'))->label('Total Value')->badge()->color('success')
 
             ])
