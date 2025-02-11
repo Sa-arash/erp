@@ -63,29 +63,29 @@ class AdminPanelProvider extends PanelProvider
                 //     ->group('Accounting Report')
                 //     ->sort(1),
 
-                NavigationItem::make()
-                    ->icon('heroicon-o-document-text')
-                    ->label('Subsidiary Leadger')
-                    ->visible(fn() => isset($financialPeriod) && $financialPeriod != null && (auth()->user()->can('view_financial::period')))
-                    ->url(fn() => route('pdf.account', [
-                        'period' => $financialPeriod ?? ' ',
-                        'reportTitle' => 'Subsidiary Leadger',
-                        'account' => implode('-', getCompany()->accounts->where('level', 'general')->pluck('id')->toArray()),
-                    ]))
-                    ->group('Accounting Report')
-                    ->sort(2),
+                // NavigationItem::make()
+                //     ->icon('heroicon-o-document-text')
+                //     ->label('Subsidiary Leadger')
+                //     ->visible(fn() => isset($financialPeriod) && $financialPeriod != null && (auth()->user()->can('view_financial::period')))
+                //     ->url(fn() => route('pdf.account', [
+                //         'period' => $financialPeriod ?? ' ',
+                //         'reportTitle' => 'Subsidiary Leadger',
+                //         'account' => implode('-', getCompany()->accounts->where('level', 'general')->pluck('id')->toArray()),
+                //     ]))
+                //     ->group('Accounting Report')
+                //     ->sort(2),
 
-                NavigationItem::make()
-                    ->icon('heroicon-o-document-text')
-                    ->label('General Leadger')
-                    ->url(fn() => route('pdf.account', [
-                        'period' => $financialPeriod ?? ' ',
-                        'reportTitle' => 'General Leadger',
-                        'account' => implode('-', getCompany()->accounts->where('level', 'group')->pluck('id')->toArray()),
-                        ]))
-                        ->group('Accounting Report')
-                        ->visible(fn() => isset($financialPeriod) && $financialPeriod != null && (auth()->user()->can('view_financial::period')))
-                    ->sort(3),
+                // NavigationItem::make()
+                //     ->icon('heroicon-o-document-text')
+                //     ->label('General Leadger')
+                //     ->url(fn() => route('pdf.account', [
+                //         'period' => $financialPeriod ?? ' ',
+                //         'reportTitle' => 'General Leadger',
+                //         'account' => implode('-', getCompany()->accounts->where('level', 'group')->pluck('id')->toArray()),
+                //         ]))
+                //         ->group('Accounting Report')
+                //         ->visible(fn() => isset($financialPeriod) && $financialPeriod != null && (auth()->user()->can('view_financial::period')))
+                //     ->sort(3),
 
                 NavigationItem::make()
                     ->icon('heroicon-o-document-text')
