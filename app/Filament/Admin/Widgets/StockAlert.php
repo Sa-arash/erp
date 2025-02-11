@@ -21,7 +21,7 @@ class StockAlert extends BaseWidget
         return $table
             ->query(
                 Product::withCount('assets') // محاسبه تعداد دارایی‌های مرتبط
-                ->havingRaw('assets_count < stock_alert_threshold') // فیلتر کردن محصولات با موجودی کم
+              
 
             )
             ->columns([
