@@ -33,6 +33,7 @@ return new class extends Migration
             $table->text('product_expence_accounts')->nullable();
             $table->integer('warehouse_id')->nullable();
             $table->integer('structure_asset_id')->nullable();
+            $table->integer('security_id')->nullable();
 //          $table->text('company_type');
             $table->text('logo')->nullable();
             $table->timestamps();

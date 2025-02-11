@@ -245,15 +245,27 @@ class ApprovalResource extends Resource
                         if ($data['status'] === "Approve") {
                             if ($record->position === "Head Department") {
                                 $CEO = Employee::query()->firstWhere('user_id', $company->user_id);
-                                $record->approvals()->create([
+                                $record->approvable->approvals()->create([
                                     'employee_id' => $CEO->id,
                                     'company_id' => $company->id,
                                     'position' => 'CEO',
                                     'status' => "Pending"
                                 ]);
+
+                            }elseif ($record->position === "CEO"){
+                                $security = Employee::query()->firstWhere('user_id', $company->user_id);
+                                $record->approvable->approvals()->create([
+                                    'employee_id' => $security->id,
+                                    'company_id' => $company->id,
+                                    'position' => 'Security',
+                                    'status' => "Pending"
+                                ]);
+                                $record->approvable->update([
+                                    'status' => 'approved'
+                                ]);
                             } else {
                                 $record->approvable->update([
-                                    'status' => 'approve'
+                                    'status' => 'approved'
                                 ]);
                             }
                         }else{
@@ -265,11 +277,22 @@ class ApprovalResource extends Resource
                         if ($data['status'] === "Approve") {
                             if ($record->position === "Head Department") {
                                 $CEO = Employee::query()->firstWhere('user_id', $company->user_id);
-                                $record->approvals()->create([
+                                $record->approvable->approvals()->create([
                                     'employee_id' => $CEO->id,
                                     'company_id' => $company->id,
                                     'position' => 'CEO',
                                     'status' => "Pending"
+                                ]);
+                            }elseif ($record->position === "CEO"){
+                                $security = Employee::query()->firstWhere('user_id', $company->user_id);
+                                $record->approvable->approvals()->create([
+                                    'employee_id' => $security->id,
+                                    'company_id' => $company->id,
+                                    'position' => 'Security',
+                                    'status' => "Pending"
+                                ]);
+                                $record->approvable->update([
+                                    'status' => 'approved'
                                 ]);
                             } else {
                                 $record->approvable->update([
