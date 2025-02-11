@@ -292,7 +292,7 @@ class ApprovalResource extends Resource
                                     'status' => "Pending"
                                 ]);
                                 $record->approvable->update([
-                                    'status' => 'approved'
+                                    'mood' => 'Approved'
                                 ]);
                             } else {
                                 $record->approvable->update([
