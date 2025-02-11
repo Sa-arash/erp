@@ -48,14 +48,14 @@ class TakeOutResource extends Resource
                 DateRangeFilter::make('date')->label('Date'),
             ],getModelFilter())
             ->actions([
-                Tables\Actions\Action::make('ActionOutSide')->label(' OutSide')->form([
+                Tables\Actions\Action::make('ActionOutSide')->label(' CheckOut')->form([
                     Forms\Components\DateTimePicker::make('OutSide_date')->withoutSeconds()->label(' Date And Time')->required()->default(now()),
                     Forms\Components\Textarea::make('OutSide_comment')->label(' Comment')
                 ])->requiresConfirmation()->action(function ($data, $record) {
                     $record->update(['OutSide_date' => $data['OutSide_date'], 'OutSide_comment' => $data['OutSide_comment'],'gate_status'=>'CheckOut']);
                     Notification::make('success')->success()->title('Submitted Successfully')->send();
                 })->hidden(fn($record)=>$record->OutSide_date),
-                Tables\Actions\Action::make('ActionInSide')->label('In Side')->form([
+                Tables\Actions\Action::make('ActionInSide')->label('CheckIn')->form([
                     Forms\Components\DateTimePicker::make('InSide_date')->withoutSeconds()->label(' Date And Time')->required()->default(now()),
                     Forms\Components\Textarea::make('inSide_comment')->label(' Comment')
                 ])->requiresConfirmation()->action(function ($data, $record) {
