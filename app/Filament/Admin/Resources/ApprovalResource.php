@@ -83,10 +83,10 @@ class ApprovalResource extends Resource
                         Fieldset::make('Visitor Access')->schema([
                             Section::make('Visitor Access Request')->schema([
                                 Section::make('Visit’s Details')->schema([
-                                    TextEntry::make('requested_by')->label('Requested By'),
-                                    TextEntry::make('visit_date')->label('Visit Date'),
-                                    TextEntry::make('arrival_time')->label('Arrival Time'),
-                                    TextEntry::make('departure_time')->label('Departure Time'),
+                                    TextEntry::make('employee.info')->label('Requested By'),
+                                    TextEntry::make('visit_date')->date()->label('Visit Date'),
+                                    TextEntry::make('arrival_time')->time()->label('Arrival Time'),
+                                    TextEntry::make('departure_time')->time()->label('Departure Time'),
                                     TextEntry::make('purpose')->label('Purpose')->columnSpanFull(),
                                 ])->columns(4),
 
