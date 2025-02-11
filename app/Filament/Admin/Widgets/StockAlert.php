@@ -18,11 +18,10 @@ class StockAlert extends BaseWidget
     protected int | string | array $columnSpan = 2;
     public function table(Table $table): Table
     {
-        
+    
         return $table
         ->query(
-            Product::withCount('assets') 
-            ->having('assets_count', '<', 'stock_alert_threshold')
+            Product::withCount('assets')->havingRaw('assets_count < stock_alert_threshold')
             )
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
