@@ -23,8 +23,8 @@ return new class extends Migration
             $table->enum('status', ['approved', 'notApproved'])->default('notApproved');
             $table->timestamps();
             $table->enum('gate_status',['Pending','CheckIn','CheckOut','Canceled'])->default('Pending');
-            $table->date('InSide_date')->nullable();
-            $table->date('OutSide_date')->nullable();
+            $table->timestamp('InSide_date')->nullable();
+            $table->timestamp('OutSide_date')->nullable();
             $table->text('inSide_comment')->nullable();
             $table->text('OutSide_comment')->nullable();
             $table->foreignId('requested_by')->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
