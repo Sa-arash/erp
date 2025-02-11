@@ -8,10 +8,13 @@ use App\Models\VisitorRequest;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Form;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class VisitorRequestResource extends Resource
 {
@@ -33,12 +36,7 @@ class VisitorRequestResource extends Resource
                             ->required()
                             ->options(getCompany()->employees->pluck('fullName', 'id'))
                             ->default(fn() => auth()->user()->employee->id),
-
-                            Forms\Components\DatePicker::make('visit_date')->default(now()->addDay())
-
-                            ->required(),
-
-
+                            Forms\Components\DatePicker::make('visit_date')->default(now()->addDay())->required(),
                         Forms\Components\TimePicker::make('arrival_time')
                         ->seconds(false)
                         ->before('departure_time')
@@ -75,10 +73,6 @@ class VisitorRequestResource extends Resource
                             ->label('Remarks'),
 
                     ])->columns(6)->columnSpanFull(),
-
-
-
-
                     Forms\Components\Repeater::make('driver_vehicle_detail')
                     ->addActionLabel('Add')
                     ->label('Drivers/Vehicles Detail')->schema([
@@ -98,45 +92,65 @@ class VisitorRequestResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
+        return $table->defaultSort('visit_date','desc')
             ->columns([
 
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('employee.fullName')
-                ->label('Requestor')
+                    ->label('Requestor')
                     ->numeric()
                     ->sortable(),
-                    Tables\Columns\TextColumn::make('visitors_detail')
+                Tables\Columns\TextColumn::make('visitors_detail')
                     ->label('Visitors')
-                    ->state(fn($record)=>implode(', ',(array_map(fn($item)=>$item['name'],$record->visitors_detail))))
-                        ->numeric()
-                        ->sortable(),
-                    Tables\Columns\TextColumn::make('visit_date')
-                        ->date()
-                        ->sortable(),
-
+                    ->state(fn($record) => implode(', ', (array_map(fn($item) => $item['name'], $record->visitors_detail))))
+                    ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('visit_date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('arrival_time')->time('H:m'),
                 Tables\Columns\TextColumn::make('departure_time')->time('H:m'),
-
-
-
-                Tables\Columns\TextColumn::make('status'),
-
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-
+                Tables\Columns\TextColumn::make('status')->badge(),
+                Tables\Columns\TextColumn::make('gate_status')->label('Gate Status')->badge(),
+                Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
-            ])
+                Tables\Filters\SelectFilter::make('employee_id')->options(getCompany()->employees->pluck('info','id'))->searchable()->preload()->label('Employee'),
+                DateRangeFilter::make('visit_date')->label('Visit Date'),
+                Tables\Filters\SelectFilter::make('status')->options(['approved'=>'approved','notApproved'=>'notApproved'])->searchable()
+            ],getModelFilter())
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('ActionInSide')->label('In Side')->form([
+                    Forms\Components\DateTimePicker::make('InSide_date')->withoutSeconds()->label('InSide Date')->required()->default(now()),
+                    Forms\Components\Textarea::make('inSide_comment')->label('InSide Comment')
+                ])->requiresConfirmation()->action(function ($data, $record) {
+                    $record->update(['InSide_date' => $data['InSide_date'], 'inSide_comment' => $data['inSide_comment'],'gate_status'=>'InSide']);
+                    Notification::make('success')->success()->title('Submitted Successfully')->send();
+                })->hidden(fn($record)=>$record->InSide_date),
+                Tables\Actions\Action::make('ActionOutSide')->label('OutSide')->form([
+                    Forms\Components\DateTimePicker::make('OutSide_date')->withoutSeconds()->label('OutSide Date')->required()->default(now()),
+                    Forms\Components\Textarea::make('OutSide_comment')->label('InSide Comment')
+                ])->requiresConfirmation()->action(function ($data, $record) {
+                    $record->update(['OutSide_date' => $data['OutSide_date'], 'OutSide_comment' => $data['OutSide_comment'],'gate_status'=>'OutSide']);
+                    Notification::make('success')->success()->title('Submitted Successfully')->send();
+                })->visible(function($record){
+                    if ($record->OutSide_date!==null ){
+                        return false;
+                    }
+                    if ($record->InSide_date !==null ){
+                        return true;
+                    }
+                    return  false;
+                }),
+                Tables\Actions\Action::make('viewAction')->visible(fn($record)=>$record->InSide_date)->label('View In/Out')->tooltip('View InSide/OutSide')->infolist([
+                    \Filament\Infolists\Components\Section::make([
+                        TextEntry::make('InSide_date')->dateTime(),
+                        TextEntry::make('inSide_comment'),
+                    ])->columns(),
+                    \Filament\Infolists\Components\Section::make([
+                        TextEntry::make('OutSide_date')->dateTime(),
+                        TextEntry::make('OutSide_comment'),
+                    ])->columns(),
+                ]),
+
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')
                     ->url(fn($record) => route('pdf.requestVisit', ['id' => $record->id]))->openUrlInNewTab(),

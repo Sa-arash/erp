@@ -20,6 +20,11 @@ return new class extends Migration
             $table->enum('mood',['Approved','Pending','NotApproved'])->default('Pending');
             $table->enum('status',['Returnable','Non-Returnable']);
             $table->enum('type',['Modification','Personal Belonging','Domestic Waste','Construction Waste']);
+            $table->enum('gate_status',['Pending','InSide','OutSide'])->default('Pending');
+            $table->date('InSide_date')->nullable();
+            $table->date('OutSide_date')->nullable();
+            $table->text('inSide_comment')->nullable();
+            $table->text('OutSide_comment')->nullable();
             $table->foreignId('employee_id')->constrained('employees')->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('company_id')->constrained('employees')->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();

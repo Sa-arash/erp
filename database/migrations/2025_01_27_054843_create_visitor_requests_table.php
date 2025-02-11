@@ -22,8 +22,11 @@ return new class extends Migration
             $table->date('approval_date')->nullable();
             $table->enum('status', ['approved', 'notApproved'])->default('notApproved');
             $table->timestamps();
-                
-
+            $table->enum('gate_status',['Pending','InSide','OutSide'])->default('Pending');
+            $table->date('InSide_date')->nullable();
+            $table->date('OutSide_date')->nullable();
+            $table->text('inSide_comment')->nullable();
+            $table->text('OutSide_comment')->nullable();
             $table->foreignId('requested_by')->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('approved_by')->nullable()->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();

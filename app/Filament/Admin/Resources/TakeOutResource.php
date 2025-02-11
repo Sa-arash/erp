@@ -11,11 +11,13 @@ use Filament\Forms\Form;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class TakeOutResource extends Resource
 {
@@ -39,11 +41,46 @@ class TakeOutResource extends Resource
                 Tables\Columns\TextColumn::make('date')->date(),
                 Tables\Columns\TextColumn::make('status')->badge(),
                 Tables\Columns\TextColumn::make('type')->badge(),
+                Tables\Columns\TextColumn::make('gate_status')->label('Gate Status')->badge(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('employee_id')->options(Employee::query()->where('company_id',getCompany()->id)->pluck('fullName','id'))
-            ])
+                Tables\Filters\SelectFilter::make('employee_id')->options(Employee::query()->where('company_id',getCompany()->id)->pluck('fullName','id')),
+                DateRangeFilter::make('date')->label('Date'),
+            ],getModelFilter())
             ->actions([
+                Tables\Actions\Action::make('ActionOutSide')->label(' OutSide')->form([
+                    Forms\Components\DateTimePicker::make('OutSide_date')->withoutSeconds()->label('OutSide Date')->required()->default(now()),
+                    Forms\Components\Textarea::make('OutSide_comment')->label('InSide Comment')
+                ])->requiresConfirmation()->action(function ($data, $record) {
+                    $record->update(['OutSide_date' => $data['OutSide_date'], 'OutSide_comment' => $data['OutSide_comment'],'gate_status'=>'OutSide']);
+                    Notification::make('success')->success()->title('Submitted Successfully')->send();
+                })->hidden(fn($record)=>$record->OutSide_date),
+                Tables\Actions\Action::make('ActionInSide')->label('In Side')->form([
+                    Forms\Components\DateTimePicker::make('InSide_date')->withoutSeconds()->label('InSide Date')->required()->default(now()),
+                    Forms\Components\Textarea::make('inSide_comment')->label('InSide Comment')
+                ])->requiresConfirmation()->action(function ($data, $record) {
+                    $record->update(['InSide_date' => $data['InSide_date'], 'inSide_comment' => $data['inSide_comment'],'gate_status'=>'InSide']);
+                    Notification::make('success')->success()->title('Submitted Successfully')->send();
+
+                })->visible(function($record){
+                    if ($record->InSide_date!==null ){
+                        return false;
+                    }
+                    if ($record->OutSide_date !==null ){
+                        return true;
+                    }
+                    return  false;
+                }),
+                Tables\Actions\Action::make('viewAction')->visible(fn($record)=>$record->OutSide_date)->label('View In/Out')->tooltip('View InSide/OutSide')->infolist([
+                    \Filament\Infolists\Components\Section::make([
+                        TextEntry::make('OutSide_date')->dateTime(),
+                        TextEntry::make('OutSide_comment'),
+                    ])->columns(),
+                    \Filament\Infolists\Components\Section::make([
+                        TextEntry::make('InSide_date')->dateTime(),
+                        TextEntry::make('inSide_comment'),
+                    ])->columns(),
+                ]),
                 Tables\Actions\ViewAction::make('view')->infolist([
                     Section::make([
                         TextEntry::make('employee.fullName'),
