@@ -31,7 +31,7 @@ use Illuminate\Validation\Rules\Unique;
 
 class MyPurchaseRequest extends BaseWidget
 {
-    
+
     protected int | string | array $columnSpan = 'full';
 
     public function table(Table $table): Table
@@ -122,7 +122,7 @@ class MyPurchaseRequest extends BaseWidget
     ]),
 ])
             ->headerActions([
-                Action::make('Request Purchase')->label('Request Purchase') ->modalWidth(MaxWidth::FitContent  )->form([
+                Action::make('Purchase Request ')->label(' Purchase Request ') ->modalWidth(MaxWidth::FitContent  )->form([
                     Section::make('')->schema([
                         TextInput::make('purchase_number')->default(function (){
                             $puncher= PurchaseRequest::query()->where('company_id',getCompany()->id)->latest()->first();

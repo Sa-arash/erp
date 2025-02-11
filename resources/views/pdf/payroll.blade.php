@@ -1,7 +1,5 @@
 
-@include('pdf.header',
-    ['titles'=>[$accountTitle??'Account Report'],    'css'=>false,
-])
+
 
 
 <html lang="en">
@@ -86,6 +84,9 @@
             text-align: right;
             color: #333;
         }
+        @page  {
+           margin: 0px;
+        }
     </style>
 </head>
 <body>
@@ -107,10 +108,10 @@
     <div style="width: 100%;display: flex">
         <div style="display: inline;">
             @if($payroll->employee?->pic )
-            <img src="{!! public_path('images/' . $payroll->employee?->pic) !!}" style="width: 95px;">
+            <img  src="{!! public_path('images/' . $payroll->employee?->pic) !!}" style="width: 95px;margin-bottom: 20px">
             @endif
             @if($payroll->company?->logo)
-            <img src="{!! public_path('images/' . $payroll->company?->logo) !!}" style="width: 95px;padding-left: 440px">
+            <img src="{!! public_path('images/' . $payroll->company?->logo) !!}" style="width: 95px;padding-left: 440px;margin-bottom: 20px">
                 @endif
         </div>
 
