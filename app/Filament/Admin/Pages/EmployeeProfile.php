@@ -45,7 +45,7 @@ class EmployeeProfile extends Page implements HasForms, HasInfolists
                         ComponentsSection::make('Employee info')->schema([
                             FileUpload::make('pic')
                             ->default($record?->pic)
-                            
+
                             ->label('Profile Picture')->image()->columnSpan(1)->imageEditor()->extraAttributes(['style' => 'width:150px!important;border-radius:10px !important']),
                             FileUpload::make('signature_pic')
                             ->default($record?->signature_pic)
@@ -53,7 +53,7 @@ class EmployeeProfile extends Page implements HasForms, HasInfolists
                         ])->columns(2)
                         ];
                 })
-                
+
 
                 ->action(function ($data, $record) {
                     $record = auth()->user()->employee;
@@ -65,8 +65,8 @@ class EmployeeProfile extends Page implements HasForms, HasInfolists
                 }),
 
 
-          
-           
+
+
         ];
     }
 
@@ -121,15 +121,7 @@ class EmployeeProfile extends Page implements HasForms, HasInfolists
                     ->columnSpan(3)->extraAttributes([
                         'style' => 'display:flex; height: 100%; border-radius: 10px; justify-content: center; align-items: center;'
                     ]),
-
-
-
             ])->columns(5)->columnSpanFull(),
-
-
-
-
-
             Section::make('Profile')->schema([
                 Split::make([
                     Section::make('Information')->icon('heroicon-c-identification')->iconColor('success')->schema([
@@ -140,7 +132,15 @@ class EmployeeProfile extends Page implements HasForms, HasInfolists
                         textEntry::make('NIC')->copyable()->label('NIC'),
                         textEntry::make('marriage'),
                         textEntry::make('count_of_child'),
-                        textEntry::make('gender'),
+                        textEntry::make('gender')->state(function($record){
+                            if ($record->gender==="male"){
+                                return "Male";
+                            }elseif ($record->gender==="female"){
+                                return "Female";
+                            }else{
+                                return  "Other";
+                            }
+                        }),
                         textEntry::make('blood_group'),
                         textEntry::make('city'),
                         textEntry::make('address'),
@@ -155,29 +155,16 @@ class EmployeeProfile extends Page implements HasForms, HasInfolists
                         textEntry::make('card_status')->label('Card Status'),
                         textEntry::make('type_of_ID')->label('Type Of ID'),
                         textEntry::make('ID_number')->label('ID Number'),
+                        textEntry::make('structure')->state(fn($record)=>$record?->warehouse?->title." - ".$record?->structure?->title)->label('Duty Location(Building And Room) '),
                         textEntry::make('joining_date')->label('Joining Date')->date(),
-                        textEntry::make('leave_date'),
-
-
-
-
-
-                        // TextEntry::make('phone_number')->copyable()->color('aColor')->url(fn($record) => 'tel:' . $record->phone_number)->label('شماره موبایل')->inlineLabel(),
-                        // TextEntry::make('tel')->label('شماره تلفن')->color('aColor')->url(fn($record) => 'tel:' . $record->phone_number)->inlineLabel()->copyable(),
-                        // TextEntry::make('father_number')->copyable()->label('شماره موبایل پدر')->color('aColor')->url(fn($record) => 'tel:' . $record->fhather_number)->inlineLabel(),
-                        // TextEntry::make('mather_number')->copyable()->label('  شماره موبایل مادر')->color('aColor')->url(fn($record) => 'tel:' . $record->mather_number)->inlineLabel(),
-                        // TextEntry::make('eitaa_number')->copyable()->label('ایتا')->inlineLabel(),
-                        // TextEntry::make('telegram_number')->copyable()->label('تلگرام')->inlineLabel(),
+                        textEntry::make('leave_date')->date()->label('Leave Date'),
                     ])->columns(2),
 
                 ])->from('md'),
                 Split::make([
-
-
                     Section::make('Salary and Bank Information')->icon('cart')->iconColor('success')->schema([
                         textEntry::make('base_salary')->numeric()->badge(),
                         textEntry::make('benefits.title')->badge()->label('Allowances/Deductions'),
-
                         textEntry::make('cart')->label('Bank Account'),
                         textEntry::make('bank'),
                         textEntry::make('branch'),
