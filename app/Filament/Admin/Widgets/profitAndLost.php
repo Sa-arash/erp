@@ -9,7 +9,7 @@ use Illuminate\Support\Carbon;
 
 class ProfitAndLost extends ApexChartWidget
 {
-    use HasWidgetShield;
+    // use HasWidgetShield;
     
     /**
      * Chart Id
