@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Widgets;
 
 use App\Models\Product;
+use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -11,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class StockAlert extends BaseWidget
 {
+      use HasWidgetShield;
     protected int | string | array $columnSpan = 2;
     public function table(Table $table): Table
     {
