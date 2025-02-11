@@ -119,17 +119,17 @@ class VisitorRequestResource extends Resource
             ],getModelFilter())
             ->actions([
                 Tables\Actions\Action::make('ActionInSide')->label('In Side')->form([
-                    Forms\Components\DateTimePicker::make('InSide_date')->withoutSeconds()->label('InSide Date')->required()->default(now()),
-                    Forms\Components\Textarea::make('inSide_comment')->label('InSide Comment')
+                    Forms\Components\DateTimePicker::make('InSide_date')->withoutSeconds()->label(' Date And Time')->required()->default(now()),
+                    Forms\Components\Textarea::make('inSide_comment')->label(' Comment')
                 ])->requiresConfirmation()->action(function ($data, $record) {
-                    $record->update(['InSide_date' => $data['InSide_date'], 'inSide_comment' => $data['inSide_comment'],'gate_status'=>'InSide']);
+                    $record->update(['InSide_date' => $data['InSide_date'], 'inSide_comment' => $data['inSide_comment'],'gate_status'=>'CheckIn']);
                     Notification::make('success')->success()->title('Submitted Successfully')->send();
                 })->hidden(fn($record)=>$record->InSide_date),
                 Tables\Actions\Action::make('ActionOutSide')->label('OutSide')->form([
-                    Forms\Components\DateTimePicker::make('OutSide_date')->withoutSeconds()->label('OutSide Date')->required()->default(now()),
-                    Forms\Components\Textarea::make('OutSide_comment')->label('InSide Comment')
+                    Forms\Components\DateTimePicker::make('OutSide_date')->withoutSeconds()->label(' Date And Time')->required()->default(now()),
+                    Forms\Components\Textarea::make('OutSide_comment')->label(' Comment')
                 ])->requiresConfirmation()->action(function ($data, $record) {
-                    $record->update(['OutSide_date' => $data['OutSide_date'], 'OutSide_comment' => $data['OutSide_comment'],'gate_status'=>'OutSide']);
+                    $record->update(['OutSide_date' => $data['OutSide_date'], 'OutSide_comment' => $data['OutSide_comment'],'gate_status'=>'CheckOut']);
                     Notification::make('success')->success()->title('Submitted Successfully')->send();
                 })->visible(function($record){
                     if ($record->OutSide_date!==null ){
