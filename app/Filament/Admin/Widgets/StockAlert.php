@@ -23,7 +23,7 @@ class StockAlert extends BaseWidget
         ->query(
             Product::withCount('assets') // محاسبه تعداد دارایی‌ها
             ->groupBy('products.id') // اضافه کردن GROUP BY برای محصولات
-            ->havingRaw('assets_count < stock_alert_threshold') // مقایسه تعداد با مقد
+            // ->havingRaw('assets_count < stock_alert_threshold') // مقایسه تعداد با مقد
             )
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
