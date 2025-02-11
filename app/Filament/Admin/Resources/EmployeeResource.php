@@ -8,6 +8,7 @@ use App\Filament\Admin\Resources\EmployeeResource\RelationManagers\LeavesRelatio
 use App\Filament\Admin\Resources\EmployeeResource\RelationManagers\OverTimesRelationManager;
 use App\Filament\Admin\Resources\EmployeeResource\RelationManagers\PayrollsRelationManager;
 use App\Models\Benefit;
+use App\Models\CompanyUser;
 use App\Models\Contract;
 use App\Models\Department;
 use App\Models\Duty;
@@ -35,6 +36,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use OpenSpout\Common\Entity\Style\CellAlignment;
+use Spatie\Permission\Models\Role;
 
 class EmployeeResource extends Resource
 {
@@ -238,29 +240,6 @@ class EmployeeResource extends Resource
                             Forms\Components\Textarea::make('address')->maxLength(255)->columnSpanFull(),
                             Forms\Components\Textarea::make('address2')->label('Address 2')->columnSpanFull()->maxLength(250),
                         ])->columns(2),
-                    Forms\Components\Wizard\Step::make('Account')
-                        ->schema([
-                            Forms\Components\Section::make([
-                                Forms\Components\Fieldset::make('user')->relationship('user')->schema([
-                                    Forms\Components\Select::make('roles')
-                                        ->relationship('roles', 'name')
-                                        ->saveRelationshipsUsing(function (Model $record, $state) {
-                                            $record->roles()->syncWithPivotValues($state, [config('permission.column_names.team_foreign_key') => getCompany()->id]);
-                                        })
-                                        ->multiple()
-                                        ->preload()
-                                        ->searchable(),
-                                    Forms\Components\TextInput::make('email')->email()->unique('users', 'email', ignoreRecord: true)->required()->maxLength(255),
-                                    Forms\Components\TextInput::make('password')->autocomplete(false)->hintAction(Forms\Components\Actions\Action::make('generate_password')->action(function (Forms\Set $set) {
-                                        $password = Str::password(8);
-                                        $set('password', $password);
-                                        $set('password_confirmation', $password);
-                                    }))->dehydrated(fn(?string $state): bool => filled($state))->revealable()->required(fn(string $operation): bool => $operation === 'create')->configure()->same('password_confirmation')->password(),
-                                    Forms\Components\TextInput::make('password_confirmation')->autocomplete(false)->revealable()->required(fn(string $operation): bool => $operation === 'create')->password()
-                                ])->columns(3)->visible(fn($operation) => $operation === "edit"),
-                            ])->columns(2),
-                        ]),
-
                 ])->columnSpanFull()
             ]);
     }
@@ -281,7 +260,9 @@ class EmployeeResource extends Resource
                         ->maxLength(255),
                     Forms\Components\DatePicker::make('birthday')->label('Date Birthday'),
                     Forms\Components\TextInput::make('phone_number')->required()->maxLength(255),
+                    Forms\Components\TextInput::make('email')->email()->required()->maxLength(255),
                     Forms\Components\TextInput::make('NIC')->label('NIC')->maxLength(255),
+                    Forms\Components\ToggleButtons::make('gender')->options(['male' => 'Male', 'female' => 'Female', 'other' => 'Other'])->required()->inline()->grouped(),
                     Forms\Components\Select::make('marriage')->label('Marital Status')->options(['divorced' => 'Divorced', 'widowed' => 'Widowed', 'married' => 'Married', 'single' => 'Single',])->searchable()->preload(),
                     Forms\Components\TextInput::make('count_of_child')->label('Number Of Child')
                         ->numeric()
@@ -304,7 +285,6 @@ class EmployeeResource extends Resource
                             "AB positive"=>"AB positive",
                         ])->searchable(),
                     Forms\Components\ToggleButtons::make('covid_vaccine_certificate')->label('Covid Vaccine Certificate')->grouped()->boolean(),
-                    Forms\Components\ToggleButtons::make('gender')->options(['male' => 'Male', 'female' => 'Female', 'other' => 'Other'])->required()->inline()->grouped(),
                     Forms\Components\Repeater::make('emergency_contact')->columnSpanFull()->label('Emergency Contact')->schema([
                         TextInput::make('name')->required(),
                         TextInput::make('relation')->required(),
@@ -455,26 +435,6 @@ class EmployeeResource extends Resource
                     Forms\Components\Textarea::make('address')->maxLength(255)->columnSpanFull(),
                     Forms\Components\Textarea::make('address2')->label('Address 2')->columnSpanFull()->maxLength(250),
                 ])->columns(2),
-            Forms\Components\Wizard\Step::make('Account')
-                ->schema([
-                    Forms\Components\Section::make([
-                        Forms\Components\Select::make('roles')
-                            ->options(getCompany()->roles->pluck('name', 'id'))
-                            ->multiple()
-                            ->preload()
-                            ->searchable(),
-                        Forms\Components\TextInput::make('email')->email()->unique('users', 'email', ignoreRecord: true)->required()->maxLength(255),
-                        Forms\Components\TextInput::make('password')->autocomplete(false)->hintAction(Forms\Components\Actions\Action::make('generate_password')->action(function (Forms\Set $set) {
-                            $password = Str::password(8);
-                            $set('password', $password);
-                            $set('password_confirmation', $password);
-                        }))->dehydrated(fn(?string $state): bool => filled($state))->revealable()->required(fn(string $operation): bool => $operation === 'create')->configure()->same('password_confirmation')->password(),
-                        Forms\Components\TextInput::make('password_confirmation')->autocomplete(false)->revealable()->required(fn(string $operation): bool => $operation === 'create')->password()
-                    ])->columns(3),
-
-                ]),
-
-
         ];
     }
 
@@ -547,7 +507,40 @@ class EmployeeResource extends Resource
             ], getModelFilter())
             ->actions([
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\Action::make('setMail')->label('Set Mail')->fillForm(function ($record){
+                    Tables\Actions\Action::make('makeUser')->form([
+                        Forms\Components\Section::make('')->schema([
+                            Forms\Components\Select::make('roles')->model(User::class)
+                                ->options(Role::query()->where('company_id',getCompany()->id)->pluck('name','id'))
+                                ->multiple()
+                                ->preload()
+                                ->searchable(),
+                            Forms\Components\TextInput::make('email')->model(User::class)->email()->unique('users', 'email', ignoreRecord: true)->required()->maxLength(255),
+                            Forms\Components\TextInput::make('password')->autocomplete(false)->hintAction(Forms\Components\Actions\Action::make('generate_password')->action(function (Forms\Set $set) {
+                                $password = Str::password(8);
+                                $set('password', $password);
+                                $set('password_confirmation', $password);
+                            }))->revealable()->required()->configure()->same('password_confirmation')->password(),
+                            Forms\Components\TextInput::make('password_confirmation')->autocomplete(false)->revealable()->required()->password()
+                        ])
+                    ])->visible(fn($record) => $record->user === null)->action(function ($data,$record){
+                        $roles = $data['roles'];
+                        $rolesWithCompanyId = [];
+                        foreach ($roles as $roleId) {
+                            $rolesWithCompanyId[$roleId] = ['company_id' => getCompany()->id];
+                        }
+
+                        $user = User::query()->create([
+                            'name' => $record->fullName,
+                            'email' => $data['email'],
+                            'password' => $data['password']
+                        ]);
+                        $user->roles()->attach($rolesWithCompanyId);
+                        $record->update(['user_id'=>$user->id]);
+                        CompanyUser::query()->create(['user_id'=>$record->user_id,'company_id'=>getCompany()->id]);
+                        Notification::make('success')->success()->title('Submitted Successfully')->send();
+
+                    }),
+                    Tables\Actions\Action::make('setMail')->visible(fn($record) => $record->user )->label('Set Mail')->fillForm(function ($record) {
                         return [
                             'email' => $record->user->email
                         ];
@@ -559,13 +552,13 @@ class EmployeeResource extends Resource
                         $record->user->update(['email' => $data['email']]);
                         Notification::make('success')->success()->title('Submitted Successfully')->send();
                     })->requiresConfirmation()->icon('heroicon-c-at-symbol')->color('info'),
-                    Tables\Actions\Action::make('setPassword')->label('Reset Password')->form([
+                    Tables\Actions\Action::make('setPassword')->visible(fn($record) => $record->user )->label('Reset Password')->form([
                         Forms\Components\TextInput::make('password')->required()->autocomplete(false)
                     ])->requiresConfirmation()->action(function ($record, $data) {
                         $record->user->update(['password' => $data['password']]);
                         Notification::make('success')->success()->title('Submitted Successfully')->send();
                     })->icon('heroicon-s-lock-closed')->color('warning'),
-                    Tables\Actions\Action::make('setRoll')->fillForm(function ($record) {
+                    Tables\Actions\Action::make('setRoll')->visible(fn($record) => $record->user )->fillForm(function ($record) {
                         return [
                             'roles' => $record->user->roles->pluck('id')->toArray()
                         ];

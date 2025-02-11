@@ -109,7 +109,7 @@ class EmployeeProfile extends Page implements HasForms, HasInfolists
                     ->schema([
                         TextEntry::make('fullName')
                             ->label('Full Name')
-                            ->state(fn($record) => $record->fullName . "(" . $record->user->roles->pluck('name')->join(', ') . ")")
+                            ->state(fn($record) => $record->fullName . "(" . $record?->user?->roles->pluck('name')->join(', ') . ")")
                             ->size(TextEntry\TextEntrySize::Large)
                             ->inlineLabel(),
                         TextEntry::make('email')

@@ -51,30 +51,19 @@ class CreateEmployee extends CreateRecord
 
             $this->callHook('afterValidate');
 
-            // dd();
-            $roles = $data['roles'];
 
-            $rolesWithCompanyId = [];
-            foreach ($roles as $roleId) {
-                $rolesWithCompanyId[$roleId] = ['company_id' => getCompany()->id];
-            }
 
             $data = $this->mutateFormDataBeforeCreate($data);
-            $user = User::query()->create([
-                'name' => $data['fullName'],
-                'email' => $data['email'],
-                'password' => $data['password']
-            ]);
-            $user->roles()->attach($rolesWithCompanyId);
+
             $this->callHook('beforeCreate');
 
-            $data['user_id'] = $user->id;
+
             $this->record = $this->handleRecordCreation($data);
 
             $this->form->model($this->getRecord())->saveRelationships();
 
             $this->callHook('afterCreate');
-            CompanyUser::query()->create(['user_id'=>$this->record->user_id,'company_id'=>getCompany()->id]);
+
             $this->commitDatabaseTransaction();
         } catch (Halt $exception) {
             $exception->shouldRollbackDatabaseTransaction() ?
