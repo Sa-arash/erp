@@ -18,12 +18,11 @@ class StockAlert extends BaseWidget
     protected int | string | array $columnSpan = 2;
     public function table(Table $table): Table
     {
-        dd(Product::withCount('assets'));
+        
         return $table
-            ->query(
-                Product::withCount('assets')
-                ->whereColumn('assets.count', '<', 'stock_alert_threshold')
-
+        ->query(
+            Product::withCount('assets') 
+            ->having('assets_count', '<', 'stock_alert_threshold')
             )
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
