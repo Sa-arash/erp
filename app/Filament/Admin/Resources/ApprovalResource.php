@@ -244,7 +244,7 @@ class ApprovalResource extends Resource
                     if (substr($record->approvable_type, 11) === "VisitorRequest") {
                         if ($data['status'] === "Approve") {
                             if ($record->position === "Admin") {
-                                sendSecurity($record,$company);
+                                sendSecurity($record->approvable,$company);
                             }else {
                                 $record->approvable->update([
                                     'status' => 'approved'
@@ -258,7 +258,7 @@ class ApprovalResource extends Resource
                     }elseif (substr($record->approvable_type, 11) === "TakeOut"){
                         if ($data['status'] === "Approve") {
                             if ($record->position === "Admin") {
-                                sendSecurity($record,$company);
+                                sendSecurity($record->approvable,$company);
                             }else {
                                 $record->approvable->update([
                                     'mood' => 'Approved'
