@@ -49,21 +49,21 @@ class BankResource extends Resource
                 Forms\Components\TextInput::make('bank_name')->live(true)->afterStateUpdated(function (Forms\Set $set,$state){
                     $set('account.name',$state);
                 })->required()->maxLength(255),
-                Forms\Components\TextInput::make('branch_name')->maxLength(255),
-                Forms\Components\TextInput::make('account_number')->required()->maxLength(255),
-                Forms\Components\TextInput::make('account_code')->default(function () {
+                Forms\Components\TextInput::make('branch_name')->label('branch Name')->maxLength(255),
+                Forms\Components\TextInput::make('account_number')->label('Account Number')->required()->maxLength(255),
+                Forms\Components\TextInput::make('account_code')->label('Account Code')->default(function () {
                     if (Bank::query()->where('company_id', getCompany()->id)->where('type',0)->latest()->first()) {
                         return generateNextCode(Bank::query()->where('company_id', getCompany()->id)->latest()->first()->account_code);
                     } else {
                         return "001";
                     }
                 })->prefix(fn() =>  Account::query()->firstWhere('id', getCompany()->account_bank)?->code)->required()->maxLength(255),
-                Forms\Components\TextInput::make('account_holder')->required()->maxLength(255),
-                Forms\Components\TextInput::make('account_type')->maxLength(255),
+                Forms\Components\TextInput::make('account_holder')->label('Account Holder')->required()->maxLength(255),
+                Forms\Components\TextInput::make('account_type')->label('Account Type')->maxLength(255),
                 Forms\Components\Section::make([
                     getSelectCurrency(),
-                    Forms\Components\TextInput::make('iban')->maxLength(255),
-                    Forms\Components\TextInput::make('swift_code')->maxLength(255),
+                    Forms\Components\TextInput::make('iban')->label('IBAN')->maxLength(255),
+                    Forms\Components\TextInput::make('swift_code')->label('Swift Code')->maxLength(255),
                 ])->columns(3),
                 Forms\Components\Textarea::make('description')->columnSpanFull(),
                 Fieldset::make('Account')->visible(fn($state)=>isset($state['id']))->relationship('account')->schema([
