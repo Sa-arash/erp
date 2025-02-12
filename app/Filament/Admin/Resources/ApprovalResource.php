@@ -243,27 +243,9 @@ class ApprovalResource extends Resource
                     $company = getCompany();
                     if (substr($record->approvable_type, 11) === "VisitorRequest") {
                         if ($data['status'] === "Approve") {
-                            if ($record->position === "Head Department") {
-                                $CEO = Employee::query()->firstWhere('user_id', $company->user_id);
-                                $record->approvable->approvals()->create([
-                                    'employee_id' => $CEO->id,
-                                    'company_id' => $company->id,
-                                    'position' => 'CEO',
-                                    'status' => "Pending"
-                                ]);
-
-                            }elseif ($record->position === "CEO"){
-                                $security = Employee::query()->firstWhere('user_id', $company->user_id);
-                                $record->approvable->approvals()->create([
-                                    'employee_id' => $security->id,
-                                    'company_id' => $company->id,
-                                    'position' => 'Security',
-                                    'status' => "Pending"
-                                ]);
-                                $record->approvable->update([
-                                    'status' => 'approved'
-                                ]);
-                            } else {
+                            if ($record->position === "Admin") {
+                                sendSecurity($record,$company);
+                            }else {
                                 $record->approvable->update([
                                     'status' => 'approved'
                                 ]);
@@ -275,26 +257,9 @@ class ApprovalResource extends Resource
                         }
                     }elseif (substr($record->approvable_type, 11) === "TakeOut"){
                         if ($data['status'] === "Approve") {
-                            if ($record->position === "Head Department") {
-                                $CEO = Employee::query()->firstWhere('user_id', $company->user_id);
-                                $record->approvable->approvals()->create([
-                                    'employee_id' => $CEO->id,
-                                    'company_id' => $company->id,
-                                    'position' => 'CEO',
-                                    'status' => "Pending"
-                                ]);
-                            }elseif ($record->position === "CEO"){
-                                $security = Employee::query()->firstWhere('user_id', $company->user_id);
-                                $record->approvable->approvals()->create([
-                                    'employee_id' => $security->id,
-                                    'company_id' => $company->id,
-                                    'position' => 'Security',
-                                    'status' => "Pending"
-                                ]);
-                                $record->approvable->update([
-                                    'mood' => 'Approved'
-                                ]);
-                            } else {
+                            if ($record->position === "Admin") {
+                                sendSecurity($record,$company);
+                            }else {
                                 $record->approvable->update([
                                     'mood' => 'Approved'
                                 ]);

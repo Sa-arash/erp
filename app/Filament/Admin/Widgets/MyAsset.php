@@ -209,8 +209,7 @@ class MyAsset extends BaseWidget
                         $item['company_id'] = $id;
                         $takeOut->items()->create($item);
                     }
-                    sendAR($employee,$takeOut,getCompany());
-
+                    sendAdmin($employee,$takeOut,getCompany());
                     Notification::make('success')->color('success')->success()->title('Request  Sent')->send()->sendToDatabase(auth()->user());
                 }),
 

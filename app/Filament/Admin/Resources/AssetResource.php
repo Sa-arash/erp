@@ -76,7 +76,7 @@ class AssetResource extends Resource
                         ->options(
                             function(){
                                 $array = [];
-                                for ($i=0; $i < 50; $i++) { 
+                                for ($i=0; $i < 50; $i++) {
                                  $array[$i] = ($i+1).' Year';
                                 }
                                 return $array;
@@ -270,7 +270,7 @@ class AssetResource extends Resource
                             ->options(
                                 function(){
                                     $array = [];
-                                    for ($i=0; $i < 50; $i++) { 
+                                    for ($i=0; $i < 50; $i++) {
                                      $array[$i] = ($i+1).' Year';
                                     }
                                     return $array;
@@ -288,7 +288,7 @@ class AssetResource extends Resource
                             )
                             ->default('new')->searchable()->preload()
                             ->required(),
-    
+
 
                         Forms\Components\TextInput::make('depreciation_amount')
                             ->label('Depreciation Amount')
@@ -298,7 +298,10 @@ class AssetResource extends Resource
                             ->placeholder('Enter amount'),
 
                         Forms\Components\Select::make('status')->default('inStorageUsable')->options(['inuse' => "Inuse", 'inStorageUsable' => "InStorageUsable", 'storageUnUsable' => "StorageUnUsable", 'outForRepair' => "OutForRepair", 'loanedOut' => "LoanedOut"])->required()->searchable(),
-                        KeyValue::make('attributes')->keyLabel('title')->columnSpanFull(),
+                        Forms\Components\Repeater::make('attributes')->schema([
+                            Forms\Components\TextInput::make('title')->required(),
+                            Forms\Components\TextInput::make('value')->required(),
+                        ])->columnSpanFull()->columns()
 
                     ])->columns(3)
                 ]),

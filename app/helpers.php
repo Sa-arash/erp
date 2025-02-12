@@ -651,7 +651,55 @@ function sendAR($employee, $record,$company)
         ]);
     }
 }
+function getAdmin(){
+   $roles=  getCompany()->roles->where('name','Admin')->first();
+   if (isset($roles->users[0])){
+       if ($roles->users[0]->employee){
+           return $roles->users[0]->employee;
+       }
+   }
+}
+function getSecurity(){
+   $roles=  getCompany()->roles->where('name','Security')->first();
+   if (isset($roles->users[0])){
+       if ($roles->users[0]->employee){
+           return $roles->users[0]->employee;
+       }
+   }
+}
+function sendAdmin($employee, $record,$company)
+{
+    if (getAdmin()) {
+        if (getAdmin()->id === $employee->id) {
+            $record->approvals()->create([
+                'employee_id' => getAdmin()->id,
+                'company_id' => $company->id,
+                'position' => 'Admin',
+                'status' => "Approve",
+                'approve_date'=>now()
+            ]);
+            sendSecurity($record,$company);
 
+        }else{
+            $record->approvals()->create([
+                'employee_id' => getAdmin()->id,
+                'company_id' => $company->id,
+                'position' => 'Admin',
+            ]);
+        }
+    }
+}
+function sendSecurity($record,$company){
+    $security=Employee::query()->firstWhere('id',getSecurity()->id);
+    if ($security){
+        $record->approvals()->create([
+            'employee_id'=>$security->id,
+            'company_id'=>$company->id,
+            'position'=>'Security',
+            'status'=>"Pending"
+        ]);
+    }
+}
 function getSelectCurrency(){
    return Select::make('currency_id')->live()->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([
         \Filament\Forms\Components\Section::make([
