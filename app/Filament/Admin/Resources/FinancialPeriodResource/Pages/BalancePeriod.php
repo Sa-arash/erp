@@ -42,6 +42,7 @@ class BalancePeriod extends ManageRelatedRecords
     {
         return $form
             ->schema([
+
                 Forms\Components\TextInput::make('number')->default(1)->readOnly(),
                 Forms\Components\DatePicker::make('date')->default(now())->required(),
                 // Forms\Components\Section::make([
@@ -327,7 +328,7 @@ class BalancePeriod extends ManageRelatedRecords
                             }
                         }),
                         TextInput::make('exchange_rate')->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-                        Forms\Components\TextInput::make('debtor_foreign')->live(true)->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
+                        Forms\Components\TextInput::make('debtor_foreign')->default(0)->live(true)->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
                             $set('debtor', number_format((float) str_replace(',', '', $state) * (float) str_replace(',', '', $get('exchange_rate'))));
                         })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)->rules([
                             fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
@@ -338,7 +339,7 @@ class BalancePeriod extends ManageRelatedRecords
                                 }
                             },
                         ]),
-                        Forms\Components\TextInput::make('creditor_foreign')->live(true)->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
+                        Forms\Components\TextInput::make('creditor_foreign')->default(0)->live(true)->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
                             $set('creditor', number_format((float) str_replace(',', '', $state) * (float) str_replace(',', '', $get('exchange_rate'))));
                         })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)->rules([
                             fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
@@ -393,7 +394,6 @@ class BalancePeriod extends ManageRelatedRecords
                             $children[] = $account->id;
                         }
                     }
-
                     if (isset($finance->transactions[0])) {
                         $arrayData = [];
                         $arr = [];
@@ -415,11 +415,17 @@ class BalancePeriod extends ManageRelatedRecords
                         return $arrayData;
                     } else {
                         foreach (array_unique($children) as $child) {
+                            // dd($child, Account::firstwhere('id', $child)->currency_id);
+                            $account = Account::firstwhere('id', $child);
                             $array[] = [
                                 'account_id' => $child,
                                 'description' => "Opening Journal Entry " . $finance->name,
+                                'currency_id' => $account->currency_id,
+                                'isCurrency' => $account->currency_id != defaultCurrency()->id ? 1 : 0,
                                 'debtor' => 0,
                                 'creditor' => 0,
+                                'debtor_foreign' => 0,
+                                'creditor_foreign' => 0,
                             ];
                         }
                         return $array;
@@ -491,10 +497,11 @@ class BalancePeriod extends ManageRelatedRecords
                     }
                 })->closeModalByClickingAway(false)->modalWidth(MaxWidth::Full)->action(function ($data) {
                     $finance = FinancialPeriod::query()->where('status', 'Before')->where('company_id', getCompany()->id)->first();
+
                     $title = "Opening Journal Entry " . $finance->name;
                     $invoice = Invoice::query()->firstWhere('name', $title);
 
-
+                    // dd($invoice);
                     if ($invoice) {
                         foreach ($invoice?->transactions as $transaction) {
                             $transaction->delete();
@@ -553,15 +560,26 @@ class BalancePeriod extends ManageRelatedRecords
                         }
                     } else {
                         $invoice = Invoice::query()->create(['name' => $title, 'number' => 1, 'date' => $data['date'], 'description' => null, 'reference' => null, 'company_id' => getCompany()->id, 'document' => null]);
+
                         if ($invoice) {
+                            // dd($data['transactions']);
                             foreach ($data['transactions'] as $transaction) {
+                                if ($transaction['isCurrency'] == 0) {
+                                    $transaction["currency_id"] = defaultCurrency()?->id;
+                                    $transaction["exchange_rate"] = defaultCurrency()?->exchange_rate;
+                                    $transaction["debtor_foreign"] = 0;
+                                    $transaction["creditor_foreign"] = 0;
+                                }
+
                                 if ($transaction['debtor'] > 0 or $transaction['creditor'] > 0) {
                                     $transaction['financial_period_id'] = $finance->id;
                                     $transaction['invoice_id'] = $invoice->id;
                                     $transaction['company_id'] = getCompany()->id;
                                     $transaction['user_id'] = auth()->id();
                                     if (defaultCurrency()?->id) {
-                                        $transaction['currency_id'] = defaultCurrency()?->id;
+                                        if ($transaction['isCurrency'] == 0) {
+                                            $transaction['currency_id'] = defaultCurrency()?->id;
+                                        }
                                     } else {
                                         Notification::make('error')->warning()->title('Currency is not defined')->send();
                                         return;
