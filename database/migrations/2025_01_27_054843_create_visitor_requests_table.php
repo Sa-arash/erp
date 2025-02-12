@@ -20,7 +20,7 @@ return new class extends Migration
             $table->json('visitors_detail')->nullable();
             $table->json('driver_vehicle_detail')->nullable();
             $table->date('approval_date')->nullable();
-            $table->enum('status', ['approved', 'notApproved'])->default('notApproved');
+            $table->enum('status', ['approved','Pending', 'notApproved'])->default('notApproved');
             $table->timestamps();
             $table->enum('gate_status',['Pending','CheckIn','CheckOut','Canceled'])->default('Pending');
             $table->timestamp('InSide_date')->nullable();

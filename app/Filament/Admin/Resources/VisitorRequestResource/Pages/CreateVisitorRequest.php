@@ -11,6 +11,6 @@ class CreateVisitorRequest extends CreateRecord
     protected static string $resource = VisitorRequestResource::class;
 
     public function afterCreate(){
-        sendAR($this->record->employee,$this->record,getCompany());
+        sendAdmin($this->record->employee,$this->record,getCompany());
     }
 }

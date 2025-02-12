@@ -109,7 +109,7 @@
             <tr style="border: 0!important;">
                 <td style="border: 0!important;">Requestor's Name: {{$takeOut->employee->fullName}}</td>
                 <td style="border: 0!important;">Badge Number: {{$takeOut->employee->ID_number}}</td>
-            </tr >
+            </tr>
             <tr style="border: 0!important;">
                 <td style="border: 0!important;">Designation: {{$takeOut->employee->position?->title}}</td>
                 <td style="border: 0!important;">Department:{{$takeOut->employee->department?->title}}</td>
@@ -127,11 +127,11 @@
         </thead>
         <tbody>
         @foreach($takeOut->items as $item)
-        <tr>
-            <td>1</td>
-            <td>{{$item->asset->product->title." (".$item->asset->product->sku." )".$item->asset->brand->title."  " .$item->asset->model}}</td>
-            <td>{{$item->remarks}}</td>
-        </tr>
+            <tr>
+                <td>1</td>
+                <td>{{$item->asset->product->title." (".$item->asset->product->sku." )".$item->asset->brand->title."  " .$item->asset->model}}</td>
+                <td>{{$item->remarks}}</td>
+            </tr>
         @endforeach
 
         </tbody>
@@ -168,9 +168,12 @@
             <tr>
                 <td>{{$approve->employee->fullName}}</td>
                 <td>{{$approve->position}}</td>
-                <td>@if($approve->employee?->signature_pic) <img
+                <td>
+                    @if($approve->employee?->signature_pic) <img
                         src="{{public_path('images/'.$approve->employee?->signature_pic)}}"
-                        style="width: 100px;height: 60px" alt=""> @endif</td>
+                        style="width: 100px;height: 60px" alt="">
+                    @endif
+                </td>
             </tr>
         @endforeach
 
