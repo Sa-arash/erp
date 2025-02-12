@@ -18,7 +18,7 @@ class ListBanks extends ListRecords
     {
         return [
             Actions\CreateAction::make()->label('New Bank'),
-            Actions\Action::make('Extra Setting')->form([
+            Actions\Action::make('Extra Setting')->label('Extra Setting')->form([
                 SelectTree::make('account_bank')->default(getCompany()?->account_bank)->disabledOptions(function ($state, SelectTree $component) {
                     return Account::query()->where('level', 'detail')->where('company_id',getCompany()->id)->orWhereHas('transactions',function ($query){})->pluck('id')->toArray();
                 })->enableBranchNode()->model(Transaction::class)->defaultOpenLevel(3)->live()->label('Bank Account SubCategory')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('stamp',"Assets")->where('company_id', getCompany()->id)),
