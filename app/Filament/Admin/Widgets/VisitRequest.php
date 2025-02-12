@@ -47,7 +47,16 @@ class VisitRequest extends BaseWidget
                 Tables\Columns\TextColumn::make('arrival_time')->time('H:m'),
                 Tables\Columns\TextColumn::make('departure_time')->time('H:m'),
 
-                Tables\Columns\TextColumn::make('status')->badge()->color(),
+                Tables\Columns\TextColumn::make('status')->badge()->color(function ($state) {
+                    switch ($state) {
+                        case "approved":
+                            return 'success';
+                        case "Pending":
+                            return 'info';
+                        case "notApproved":
+                            return 'danger';
+                    }
+                }),
 
                 Tables\Columns\TextColumn::make('employee.fullName')
                 ->label('Requester')
