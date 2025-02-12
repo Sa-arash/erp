@@ -561,7 +561,7 @@ class EmployeeResource extends Resource implements HasShieldPermissions
                         Notification::make('success')->success()->title('Submitted Successfully')->send();
 
                     }),
-                    Tables\Actions\Action::make('setMail')->visible(fn($record) => $record->user and auth()->user()->can('email_employee')  )->label('Set Mail')->fillForm(function ($record) {
+                    Tables\Actions\Action::make('setMail')->visible(fn($record) => $record->user and auth()->user()->can('email_employee')  )->label('Modify Mail')->fillForm(function ($record) {
                         return [
                             'email' => $record->user->email
                         ];
