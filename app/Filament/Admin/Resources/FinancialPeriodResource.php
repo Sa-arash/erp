@@ -54,8 +54,8 @@ class FinancialPeriodResource extends Resource
 //                })
 //                ->label('Status')->inline()->grouped()->boolean('Active','UnActive')->required(),
                 //  Forms\Components\ToggleButtons::make('status')->options(['Before'=>'Before','During'=>'During','End'=>'End'])->inline()->grouped(),
-                Forms\Components\DatePicker::make('start_date')->default(now()->startOfYear())->required(),
-                Forms\Components\DatePicker::make('end_date')->default(now()->startOfYear()->addYear())->required(),
+                Forms\Components\DatePicker::make('start_date')->label('Start Date')->default(now()->startOfYear())->required(),
+                Forms\Components\DatePicker::make('end_date')->label('End Date')->default(now()->startOfYear()->addYear())->required(),
             ]);
     }
 
@@ -78,8 +78,8 @@ class FinancialPeriodResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('name')->searchable(),
-                Tables\Columns\TextColumn::make('start_date')->date()->sortable(),
-                Tables\Columns\TextColumn::make('end_date')->date()->sortable(),
+                Tables\Columns\TextColumn::make('start_date')->label('Start Date')->date()->sortable(),
+                Tables\Columns\TextColumn::make('end_date')->label('End Date')->date()->sortable(),
 //                Tables\Columns\TextColumn::make('Balance Period')->label('Balance Period')->state(function ($record) {
 //                    if ($record->status === "Before") {
 //                        return "Initial Journal Entry";
