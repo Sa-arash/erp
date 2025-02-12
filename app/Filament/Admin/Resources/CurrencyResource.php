@@ -22,6 +22,7 @@ class CurrencyResource extends Resource
     protected static ?string $model = Currency::class;
     protected static ?string $cluster = FinanceSettings::class;
     protected static ?string $navigationGroup = 'Finance Management';
+    protected static ?string $label = 'Currency';
     protected static ?int $navigationSort=4;
     protected static ?string $navigationIcon = 'heroicon-c-currency-dollar';
 
