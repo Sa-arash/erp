@@ -522,8 +522,13 @@ class EmployeeResource extends Resource implements HasShieldPermissions
 
             ], getModelFilter())
             ->actions([
+
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')
+                    ->url(fn($record) => route('pdf.employee', ['id' => $record->id]))->openUrlInNewTab(),
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\Action::make('makeUser')->icon('heroicon-o-user-circle')->label('Make User')->form([
+                    Tables\Actions\Action::make('makeUser')->icon('heroicon-o-user-circle')->label('Create User')->form([
                         Forms\Components\Section::make('')->schema([
                             Forms\Components\Select::make('roles')->model(User::class)
                                 ->options(Role::query()->where('company_id',getCompany()->id)->pluck('name','id'))
@@ -556,7 +561,7 @@ class EmployeeResource extends Resource implements HasShieldPermissions
                         Notification::make('success')->success()->title('Submitted Successfully')->send();
 
                     }),
-                    Tables\Actions\Action::make('setMail')->visible(fn($record) => $record->user and auth()->user()->can('email_employee')  )->label('Set Mail')->fillForm(function ($record) {
+                    Tables\Actions\Action::make('setMail')->visible(fn($record) => $record->user and auth()->user()->can('email_employee')  )->label('Modify Mail')->fillForm(function ($record) {
                         return [
                             'email' => $record->user->email
                         ];
@@ -590,10 +595,6 @@ class EmployeeResource extends Resource implements HasShieldPermissions
                         Notification::make('success')->success()->title('Submitted Successfully')->send();
                     })->icon('heroicon-s-shield-check')->color('danger'),
                 ])->color('warning'),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')
-                    ->url(fn($record) => route('pdf.employee', ['id' => $record->id]))->openUrlInNewTab(),
 
             ])->actionsColumnLabel('Actions')->actionsAlignment(CellAlignment::CENTER)
             ->bulkActions([

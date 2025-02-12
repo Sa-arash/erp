@@ -64,7 +64,7 @@ class FactorResource extends Resource
                                 // debtor
                                 // creditor
                             })->required()->default(0)->boolean('Income', 'Expense')->grouped(),
-                            Forms\Components\Select::make('account_id')->label(fn(Forms\Get $get) => $get('type') === "1" ? "Income Account" : "Expence Account")->searchable()->required()->options(function (Forms\Get $get) {
+                            Forms\Components\Select::make('account_id')->label(fn(Forms\Get $get) => $get('type') === "1" ? "Income Account" : "Expense Account")->searchable()->required()->options(function (Forms\Get $get) {
                                 $type = $get('type') === "1" ? "Income" : "Expense";
                                 // dd();
                                 return getCompany()->accounts->whereIn('group', [$type])->pluck('name', 'id');
@@ -556,7 +556,7 @@ class FactorResource extends Resource
                 Tables\Columns\TextColumn::make('party.name')->label('Vendor/Customer')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('account.name')->label('Expence/Icnome')
+                Tables\Columns\TextColumn::make('account.name')->label('Expense/Income')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('from')
