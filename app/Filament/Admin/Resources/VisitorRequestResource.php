@@ -109,7 +109,16 @@ class VisitorRequestResource extends Resource
                 Tables\Columns\TextColumn::make('visit_date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('arrival_time')->time('H:m'),
                 Tables\Columns\TextColumn::make('departure_time')->time('H:m'),
-                Tables\Columns\TextColumn::make('status')->badge(),
+                Tables\Columns\TextColumn::make('status')->color(function($state){
+                    switch ($state){
+                        case "approved":
+                            return 'success';
+                        case "Pending":
+                            return 'info';
+                        case "notApproved":
+                            return 'danger';
+                    }
+                })->badge(),
                 Tables\Columns\TextColumn::make('gate_status')->label('Gate Status')->badge(),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
@@ -125,7 +134,7 @@ class VisitorRequestResource extends Resource
                 ])->requiresConfirmation()->action(function ($data, $record) {
                     $record->update(['InSide_date' => $data['InSide_date'], 'inSide_comment' => $data['inSide_comment'],'gate_status'=>'CheckedIn']);
                     Notification::make('success')->success()->title('Submitted Successfully')->send();
-                })->hidden(fn($record)=>$record->InSide_date),
+                })->hidden(fn($record)=>$record->InSide_date or $record->status==="notApproved"),
                 Tables\Actions\Action::make('ActionOutSide')->label('CheckOut')->form([
                     Forms\Components\DateTimePicker::make('OutSide_date')->withoutSeconds()->label(' Date And Time')->required()->default(now()),
                     Forms\Components\Textarea::make('OutSide_comment')->label(' Comment')

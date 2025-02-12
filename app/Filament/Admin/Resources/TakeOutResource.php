@@ -39,6 +39,16 @@ class TakeOutResource extends Resource
                 Tables\Columns\TextColumn::make('from'),
                 Tables\Columns\TextColumn::make('to'),
                 Tables\Columns\TextColumn::make('date')->date(),
+                Tables\Columns\TextColumn::make('mood')->color(function($state){
+                    switch ($state){
+                        case "Approved":
+                            return 'success';
+                        case "Pending":
+                            return 'info';
+                        case "NotApproved":
+                            return 'danger';
+                    }
+                })->badge(),
                 Tables\Columns\TextColumn::make('status')->badge(),
                 Tables\Columns\TextColumn::make('type')->badge(),
                 Tables\Columns\TextColumn::make('gate_status')->label('Gate Status')->badge(),
