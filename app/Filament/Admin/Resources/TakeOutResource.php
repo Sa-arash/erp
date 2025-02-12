@@ -6,6 +6,7 @@ use App\Filament\Admin\Resources\TakeOutResource\Pages;
 use App\Filament\Admin\Resources\TakeOutResource\RelationManagers;
 use App\Models\Employee;
 use App\Models\TakeOut;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Infolists\Components\RepeatableEntry;
@@ -19,7 +20,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
-class TakeOutResource extends Resource
+class TakeOutResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = TakeOut::class;
 
@@ -27,7 +28,18 @@ class TakeOutResource extends Resource
     protected static ?string $navigationGroup = 'Security Management';
     protected static ?int $navigationSort = 99;
 
-
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
+            'reception',
+        ];
+    }
 
     public static function table(Table $table): Table
     {
@@ -64,7 +76,16 @@ class TakeOutResource extends Resource
                 ])->requiresConfirmation()->action(function ($data, $record) {
                     $record->update(['OutSide_date' => $data['OutSide_date'], 'OutSide_comment' => $data['OutSide_comment'],'gate_status'=>'CheckedOut']);
                     Notification::make('success')->success()->title('Submitted Successfully')->send();
-                })->hidden(fn($record)=>$record->OutSide_date),
+                })->visible(function ($record) {
+                    if (auth()->user()->can('reception_take::out')) {
+                        if ($record->mood === "Approved") {
+                            if ($record->OutSide_date === null) {
+                                return true;
+                            }
+                        }
+                    }
+                    return false;
+                }),
                 Tables\Actions\Action::make('ActionInSide')->label('CheckIn')->form([
                     Forms\Components\DateTimePicker::make('InSide_date')->withoutSeconds()->label(' Date And Time')->required()->default(now()),
                     Forms\Components\Textarea::make('inSide_comment')->label(' Comment')
@@ -73,25 +94,17 @@ class TakeOutResource extends Resource
                     Notification::make('success')->success()->title('Submitted Successfully')->send();
                 })->visible(function($record){
                     if ($record->status !=="Non-Returnable"){
-                        if ($record->InSide_date!==null ){
-                            return false;
-                        }
-                        if ($record->OutSide_date !==null ){
-                            return true;
+                        if (auth()->user()->can('reception_take::out')){
+                            if ($record->InSide_date!==null ){
+                                return false;
+                            }
+                            if ($record->OutSide_date !==null ){
+                                return true;
+                            }
                         }
                     }
                     return  false;
                 }),
-                Tables\Actions\Action::make('viewAction')->visible(fn($record)=>$record->OutSide_date)->label('View')->infolist([
-                    \Filament\Infolists\Components\Section::make([
-                        TextEntry::make('OutSide_date')->dateTime(),
-                        TextEntry::make('OutSide_comment'),
-                    ])->columns(),
-                    \Filament\Infolists\Components\Section::make([
-                        TextEntry::make('InSide_date')->dateTime(),
-                        TextEntry::make('inSide_comment'),
-                    ])->columns(),
-                ]),
                 Tables\Actions\ViewAction::make('view')->infolist([
                     Section::make([
                         TextEntry::make('employee.fullName'),
@@ -104,7 +117,15 @@ class TakeOutResource extends Resource
                             TextEntry::make('asset.title'),
                             TextEntry::make('remarks'),
                             TextEntry::make('returned_date'),
-                        ])->columnSpanFull()->columns(3)
+                        ])->columnSpanFull()->columns(3),
+                        \Filament\Infolists\Components\Section::make([
+                            TextEntry::make('OutSide_date')->dateTime(),
+                            TextEntry::make('OutSide_comment'),
+                        ])->columns(),
+                        \Filament\Infolists\Components\Section::make([
+                            TextEntry::make('InSide_date')->dateTime(),
+                            TextEntry::make('inSide_comment'),
+                        ])->columns(),
                     ])->columns()
                 ])
             ])

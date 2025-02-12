@@ -63,7 +63,7 @@ class TakeOutPolicy
      */
     public function forceDelete(User $user, TakeOut $takeOut): bool
     {
-        return $user->can('force_delete_take::out');
+        return $user->can('{{ ForceDelete }}');
     }
 
     /**
@@ -71,7 +71,7 @@ class TakeOutPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_take::out');
+        return $user->can('{{ ForceDeleteAny }}');
     }
 
     /**
@@ -79,7 +79,7 @@ class TakeOutPolicy
      */
     public function restore(User $user, TakeOut $takeOut): bool
     {
-        return $user->can('restore_take::out');
+        return $user->can('{{ Restore }}');
     }
 
     /**
@@ -87,7 +87,7 @@ class TakeOutPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_take::out');
+        return $user->can('{{ RestoreAny }}');
     }
 
     /**
@@ -95,7 +95,7 @@ class TakeOutPolicy
      */
     public function replicate(User $user, TakeOut $takeOut): bool
     {
-        return $user->can('replicate_take::out');
+        return $user->can('{{ Replicate }}');
     }
 
     /**
@@ -103,6 +103,6 @@ class TakeOutPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_take::out');
+        return $user->can('{{ Reorder }}');
     }
 }
