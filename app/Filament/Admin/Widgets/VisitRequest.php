@@ -30,7 +30,7 @@ class VisitRequest extends BaseWidget
     {
         return $table
             ->query(
-                VisitorRequest::query()->where('company_id', getCompany()->id)->where('employee_id',getEmployee()->id)
+                VisitorRequest::query()->where('company_id', getCompany()->id)->where('requested_by',getEmployee()->id)
                 // ->where('status', '!=', 'FinishedCeo')
             )
             ->columns([
