@@ -14,6 +14,7 @@ use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\IconSize;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -127,7 +128,9 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                             TextEntry::make('inSide_comment'),
                         ])->columns(),
                     ])->columns()
-                ])
+                ]),
+                Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')
+                    ->url(fn($record) => route('pdf.takeOut', ['id' => $record->id]))->openUrlInNewTab(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

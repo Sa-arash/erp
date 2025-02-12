@@ -163,14 +163,14 @@
                 <th>Signature</th>
             </tr>
             </thead>
-            @foreach($requestVisit->approvals as $approve)
+            @foreach($requestVisit->approvals   as $approve)
                 <tr>
                     <th>{{$approve->employee->fullName}}</th>
                     <th>{{$approve->position}}</th>
                     <th>{{$approve->status}}</th>
-                    <th>{{\Carbon\Carbon::make($approve->approve_date)->format('Y-m-d H:i')}}</th>
+                    <th>{{ $approve->approve_date ? \Carbon\Carbon::make($approve->approve_date)->format('Y-m-d H:i'):""}}</th>
                     <th>
-                        @if($approve->employee?->signature_pic)
+                        @if($approve->employee?->signature_pic and $approve->status==="Approve")
                         <img src="{{public_path('images/'.$approve->employee?->signature_pic)}}" style="width: 70px;height: 30px" alt="">
                         @endif
                     </th>
