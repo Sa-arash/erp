@@ -22,12 +22,10 @@ class AdvanceReport extends Page
 
     protected static string $view = 'filament.admin.pages.advance-report';
 
-    // public static function canAccess(): bool
-    // {
-    //     $financialPeriod =
-    //     FinancialPeriod::query()->where('company_id', getCompanyUrl())->where('status', 'During')->first();
-    //     return (isset($financialPeriod) && $financialPeriod != null);
-    // }
+    public static function canAccess(): bool
+    {
+      return (getPeriod()  && (auth()->user()->can('page_AdvanceReport')));
+    }
 
     protected function getActions(): array
 {
