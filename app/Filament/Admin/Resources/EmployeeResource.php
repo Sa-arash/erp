@@ -522,6 +522,11 @@ class EmployeeResource extends Resource implements HasShieldPermissions
 
             ], getModelFilter())
             ->actions([
+
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')
+                    ->url(fn($record) => route('pdf.employee', ['id' => $record->id]))->openUrlInNewTab(),
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\Action::make('makeUser')->icon('heroicon-o-user-circle')->label('Make User')->form([
                         Forms\Components\Section::make('')->schema([
@@ -590,10 +595,6 @@ class EmployeeResource extends Resource implements HasShieldPermissions
                         Notification::make('success')->success()->title('Submitted Successfully')->send();
                     })->icon('heroicon-s-shield-check')->color('danger'),
                 ])->color('warning'),
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\ViewAction::make(),
-                Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')
-                    ->url(fn($record) => route('pdf.employee', ['id' => $record->id]))->openUrlInNewTab(),
 
             ])->actionsColumnLabel('Actions')->actionsAlignment(CellAlignment::CENTER)
             ->bulkActions([
