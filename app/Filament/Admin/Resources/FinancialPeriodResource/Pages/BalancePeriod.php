@@ -268,7 +268,7 @@ class BalancePeriod extends ManageRelatedRecords
                             return $set('isCurrency', 1);
                         }
                         return $set('isCurrency', 0);
-                    })->live()->defaultOpenLevel(3)->live()->label('Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('company_id', getCompany()->id))->searchable(),
+                    })->live()->defaultOpenLevel(3)->live()->label('Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->whereIn('group', ['Asset', 'Liabilitie', "Equity"])->where('company_id', getCompany()->id))->searchable(),
                     Forms\Components\TextInput::make('description')->default('Opening Journal Entry ')->required(),
                     Forms\Components\TextInput::make('debtor')
                         ->mask(RawJs::make('$money($input)'))->stripCharacters(',')
