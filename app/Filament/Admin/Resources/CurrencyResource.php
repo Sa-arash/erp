@@ -53,8 +53,8 @@ class CurrencyResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')->searchable(),
                 Tables\Columns\TextColumn::make('symbol')->searchable(),
-                Tables\Columns\TextColumn::make('exchange_rate')->numeric()->sortable(),
-                Tables\Columns\IconColumn::make('is_company_currency')->boolean(),
+                Tables\Columns\TextColumn::make('exchange_rate')->numeric()->sortable()->label('Exchange Rate'),
+                Tables\Columns\IconColumn::make('is_company_currency')->boolean()->label('Base Currency'),
             ])
             ->filters([
                 //
