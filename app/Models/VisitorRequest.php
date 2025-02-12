@@ -13,16 +13,16 @@ class VisitorRequest extends Model
         'visitors_detail' => 'array',
         'driver_vehicle_detail' => 'array',
     ];
-    public function employee()
+    public function employee(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Employee::class, 'requested_by');
     }
 
-    public function approved()
+    public function approved(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Employee::class, 'approved_by');
     }
-    public function company()
+    public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class, 'company_id');
     }
