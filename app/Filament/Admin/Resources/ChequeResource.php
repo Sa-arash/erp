@@ -103,7 +103,8 @@ class ChequeResource extends Resource
                                     'description' => $data['name'],
                                     'company_id' => getCompany()->id,
                                     'user_id' => auth()->id(),
-                                    'financial_period_id' => getPeriod()->id
+                                    'financial_period_id' => getPeriod()->id,
+                                    'currency_id'=>getCompany()->id
                                 ]);
                                 $invoice->transactions()->create([
                                     'account_id' => $record->transaction->account?->id,
@@ -112,7 +113,8 @@ class ChequeResource extends Resource
                                     'description' => $data['name'],
                                     'company_id' => getCompany()->id,
                                     'user_id' => auth()->id(),
-                                    'financial_period_id' => getPeriod()->id
+                                    'financial_period_id' => getPeriod()->id,
+                                    'currency_id'=>getCompany()->id
                                 ]);
                             }else{
                                 $invoice->transactions()->create([
@@ -122,7 +124,8 @@ class ChequeResource extends Resource
                                     'description' => $data['name'],
                                     'company_id' => getCompany()->id,
                                     'user_id' => auth()->id(),
-                                    'financial_period_id' => getPeriod()->id
+                                    'financial_period_id' => getPeriod()->id,
+                                    'currency_id'=>getCompany()->id
                                 ]);
                                 $invoice->transactions()->create([
                                     'account_id' => $record->transaction->account?->id,
@@ -131,7 +134,8 @@ class ChequeResource extends Resource
                                     'description' => $data['name'],
                                     'company_id' => getCompany()->id,
                                     'user_id' => auth()->id(),
-                                    'financial_period_id' => getPeriod()->id
+                                    'financial_period_id' => getPeriod()->id,
+                                    'currency_id'=>getCompany()->id
                                 ]);
                             }
                         }
