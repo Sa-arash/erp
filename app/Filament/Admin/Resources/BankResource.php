@@ -49,7 +49,7 @@ class BankResource extends Resource
                 Forms\Components\TextInput::make('bank_name')->live(true)->afterStateUpdated(function (Forms\Set $set,$state){
                     $set('account.name',$state);
                 })->required()->maxLength(255),
-                Forms\Components\TextInput::make('branch_name')->label('branch Name')->maxLength(255),
+                Forms\Components\TextInput::make('branch_name')->label('Branch Name')->maxLength(255),
                 Forms\Components\TextInput::make('account_number')->label('Account Number')->required()->maxLength(255),
                 Forms\Components\TextInput::make('account_code')->label('Account Code')->default(function () {
                     if (Bank::query()->where('company_id', getCompany()->id)->where('type',0)->latest()->first()) {
