@@ -29,6 +29,10 @@ class TransActionResource extends Resource
     {
         return false;
     }
+    public static function canAccess(): bool
+    {
+      return (getPeriod()  && (auth()->user()->can('view_trans::action')));
+    }
 //    public static function getNavigationUrl(): string
 //    {
 //        $period_id = getCompany()->financialPeriods->firstWhere('is_active', 1)?->id;
