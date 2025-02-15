@@ -15,11 +15,11 @@
                 <th colspan="2">Account Balance</th>
             </tr>
             <tr>
-                <th>debtor({{ $company->currency }})</th>
-                <th>creditor({{ $company->currency }})</th>
+                <th>debtor({{ PDFdefaultCurrency($company)}})</th>
+                <th>creditor({{ $PDFdefaultCurrency(company)}})</th>
 
-                <th>debtor({{ $company->currency }})</th>
-                <th>creditor({{ $company->currency }})</th>
+                <th>debtor({{ PDFdefaultCurrency($company)}})</th>
+                <th>creditor({{ PDFdefaultCurrency($company)}})</th>
             </tr>
         </thead>
         <tbody>

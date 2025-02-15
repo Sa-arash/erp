@@ -148,7 +148,7 @@
         <table>
             <tr>
                 <th>Description</th>
-                <th>Amount ({{$payroll->company?->currency}})</th>
+                <th>Amount (({{ PDFdefaultCurrency($payroll->company)}}))</th>
             </tr>
             <tr>
                 <td>Daily Salary</td>
@@ -179,7 +179,7 @@
         <table>
             <tr>
                 <th>Description</th>
-                <th>Amount ({{$payroll->company?->currency}})</th>
+                <th>Amount (({{ PDFdefaultCurrency($payroll->company)}}))</th>
             </tr>
             @foreach($payroll->benefits->where('type',"deduction")->sortBy('built_in')  as $deduction)
             <tr>
@@ -207,7 +207,7 @@
             </tr>
             <tr>
                 <td >Net Pay </td>
-                <td   style="color: #1cc6b9;font-size: 15px"  >{{ number_format($payroll->amount_pay ).$payroll->company?->currency }}</td>
+                <td   style="color: #1cc6b9;font-size: 15px"  >{{ number_format($payroll->amount_pay ).PDFdefaultCurrency($payroll->company)}}</td>
             </tr>
         </table>
     </div>

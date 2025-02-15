@@ -12,8 +12,8 @@
             <th>Account Name</th>
             <th>Account Code</th>
             <th>Description</th>
-            <th>Debit({{ $company->currency }})</th>
-            <th>Credit({{ $company->currency }})</th>
+            <th>Debit({{ PDFdefaultCurrency($company)}})</th>
+            <th>Credit({{ PDFdefaultCurrency($company)}})</th>
         </tr>
     </thead>
     <tbody>
