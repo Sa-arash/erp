@@ -6,6 +6,7 @@ namespace App\Filament\Admin\Pages;
 use App\Filament\Admin\Widgets\accounting;
 use App\Filament\Admin\Widgets\assetInStorage;
 use App\Filament\Admin\Widgets\invoicePrice;
+use App\Filament\Admin\Widgets\OverdueChecks;
 use App\Filament\Admin\Widgets\ProfitAndLoss;
 use App\Filament\Admin\Widgets\profitAndLost;
 use App\Filament\Admin\Widgets\PurchasePrice;
@@ -30,6 +31,7 @@ class Dashboard extends BaseDashboard
             invoicePrice::class,
             PurchasePrice::class,
             StockAlert::class,
+            OverdueChecks::class,
 
         ];
     }
