@@ -628,7 +628,7 @@ class FactorResource extends Resource
                             //         })
                             // ])->columns(1)->columnSpanFull()
 
-                        ])
+                       
 
                     ])
                 ])->columnSpanFull(),
