@@ -63,15 +63,6 @@ class VisitRequest extends BaseWidget
                 ->numeric()
                 ->toggleable(isToggledHiddenByDefault: true)
                 ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-
             ])
 
             ->actions([
@@ -120,7 +111,7 @@ class VisitRequest extends BaseWidget
                         'company_id'=>getCompany()->id,
                     ]);
 
-                    sendAdmin(getEmployee(),$visitorRequest,getCompany());
+                    sendSecurity(getEmployee(),$visitorRequest,getCompany());
                     Notification::make('success')->color('success')->success()->title('Request  Sent')->send()->sendToDatabase(auth()->user());
 
                 })

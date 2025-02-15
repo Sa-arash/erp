@@ -10,6 +10,7 @@ use App\Models\Currency;
 use App\Models\Factor;
 use App\Models\FinancialPeriod;
 use App\Models\Parties;
+use App\Models\Transaction;
 use App\Models\Unit;
 use Closure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
@@ -20,6 +21,7 @@ use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
@@ -30,6 +32,7 @@ use Filament\Tables\Table;
 use Hamcrest\Core\Set;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use function Illuminate\Events\queueable;
 
 class FactorResource extends Resource
 {
@@ -60,13 +63,9 @@ class FactorResource extends Resource
                                 if ($operation == "create") {
                                     $set('invoice.transactions', []);
                                 }
-                                // dd($set);
-                                // debtor
-                                // creditor
                             })->required()->default(0)->boolean('Income', 'Expense')->grouped(),
                             Forms\Components\Select::make('account_id')->label(fn(Forms\Get $get) => $get('type') === "1" ? "Income Account" : "Expense Account")->searchable()->required()->options(function (Forms\Get $get) {
                                 $type = $get('type') === "1" ? "Income" : "Expense";
-                                // dd();
                                 return getCompany()->accounts->whereIn('group', [$type])->pluck('name', 'id');
                             })->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
                                 $party = Parties::query()->firstWhere('id', $state);
@@ -89,6 +88,95 @@ class FactorResource extends Resource
                                     $set('from', $party?->name);
                                 }
                             })->live(true),
+
+                                SelectTree::make('parent_customer')->visible(function (Forms\Get $get) {
+                                    if ($get('type') == "both") {
+                                        if ($get("account_customer")===null){
+                                            return true;
+                                        }
+                                    } elseif ($get('type') == "customer") {
+                                        if ($get("account_customer") === null) {
+                                            return true;
+                                        }
+                                    } else {
+                                        return false;
+                                    }
+                                })->default(getCompany()?->customer_account)->disabledOptions(function ($state, SelectTree $component) {
+                                    return Account::query()->where('level', 'detail')->where('company_id', getCompany()->id)->orWhereHas('transactions',function ($query){})->pluck('id')->toArray();
+                                })->enableBranchNode()->model(Transaction::class)->defaultOpenLevel(3)->live()->label('Parent Customer Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('stamp', "Assets")->where('company_id', getCompany()->id)),
+                                Forms\Components\TextInput::make('account_code_vendor')
+                                    ->prefix(fn(Get $get)=>Account::find($get('parent_vendor'))?->code)
+                                    ->default(function () {
+                                        if (Parties::query()->where('company_id', getCompany()->id)->where('type', 'vendor')->latest()->first()) {
+                                            return generateNextCode(Parties::query()->where('company_id', getCompany()->id)->where('type', 'vendor')->latest()->first()->account_code_vendor);
+                                        } else {
+                                            return "001";
+                                        }
+
+                                    })->unique('accounts','code',ignoreRecord: true)->visible(function (Forms\Get $get) {
+
+                                        if ($get('type') == "both") {
+                                            if ($get("account_vendor") === null) {
+                                                return true;
+                                            }
+                                        } elseif ($get('type') == "vendor") {
+                                            if ($get("account_vendor") === null) {
+                                                return true;
+                                            }
+                                        } else {
+                                            return false;
+                                        }
+
+                                    })->required()->tel()->maxLength(255),
+                                Forms\Components\TextInput::make('account_code_customer')->unique('accounts','code',ignoreRecord: true)
+                                    ->prefix(fn(Get $get)=>Account::find($get('parent_customer'))?->code)
+                                    ->default(function () {
+                                        if (Parties::query()->where('company_id', getCompany()->id)->where('type', 'customer')->latest()->first()) {
+                                            return generateNextCode(Parties::query()->where('company_id', getCompany()->id)->where('type', 'customer')->latest()->first()->account_code_customer);
+                                        } else {
+                                            return "001";
+                                        }
+
+                                    })->visible(function (Forms\Get $get) {
+                                        if ($get('type') === "both") {
+                                            if ($get("account_customer") === null) {
+                                                return true;
+                                            }
+                                        } elseif ($get('type') === "customer") {
+                                            if ($get("account_customer") === null) {
+                                                return true;
+                                            }
+                                        } else {
+                                            return false;
+                                        }
+                                    })->required()->tel()->maxLength(255),
+                                Forms\Components\Fieldset::make('Account Vendor')->visible(fn($state)=>isset($state['id']))->relationship('accountVendor')->schema([
+                                    Forms\Components\TextInput::make('name')->required()->maxLength(255),
+                                    SelectTree::make('parent_id')->live()->label('Parent')->disabledOptions(function ($state, SelectTree $component) {
+                                        return Account::query()->where('level', 'detail')->orWhereHas('transactions',function ($query){})->pluck('id')->toArray();
+                                    })->defaultOpenLevel(1)->searchable()->enableBranchNode()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('stamp', "Liabilities")->where('company_id', getCompany()->id))
+                                        ->afterStateUpdated(function ($state, callable $set) {
+                                            $set('type', Account::query()->firstWhere('id', $state)->type);
+                                        }),
+                                    Forms\Components\TextInput::make('code')->unique('accounts','code',ignoreRecord: true)->required()->maxLength(255),
+                                    ToggleButtons::make('type')->disabled()->grouped()->inline()->options(['creditor' => 'Creditor', 'debtor' => 'Debtor'])->required(),
+                                    ToggleButtons::make('group')->disabled()->grouped()->options(['Asset'=>'Asset','Liabilitie'=>'Liabilitie','Equity'=>'Equity','Income'=>'Income','Expense'=>'Expense'])->inline(),
+                                    Forms\Components\Textarea::make('description')->maxLength(255)->columnSpanFull(),
+                                ]),
+                                Forms\Components\Fieldset::make('Account Customer')->visible(fn($state)=>isset($state['id']))->relationship('accountCustomer')->schema([
+                                    Forms\Components\TextInput::make('name')->required()->maxLength(255),
+                                    SelectTree::make('parent_id')->live()->label('Parent')->disabledOptions(function ($state, SelectTree $component) {
+                                        return Account::query()->where('level', 'detail')->orWhereHas('transactions',function ($query){})->pluck('id')->toArray();
+                                    })->defaultOpenLevel(1)->searchable()->enableBranchNode()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('stamp', "Assets")->where('company_id', getCompany()->id))
+                                        ->afterStateUpdated(function ($state, callable $set) {
+                                            $set('type', Account::query()->firstWhere('id', $state)->type);
+                                        }),
+                                    Forms\Components\TextInput::make('code')->unique('accounts','code',ignoreRecord: true)->required()->maxLength(255),
+                                    ToggleButtons::make('type')->disabled()->grouped()->inline()->options(['creditor' => 'Creditor', 'debtor' => 'Debtor'])->required(),
+                                    ToggleButtons::make('group')->disabled()->grouped()->options(['Asset'=>'Asset','Liabilitie'=>'Liabilitie','Equity'=>'Equity','Income'=>'Income','Expense'=>'Expense'])->inline(),
+                                    Forms\Components\Textarea::make('description')->maxLength(255)->columnSpanFull(),
+                                ]),
+                            ]),
 
                         ])->columns(2),
                         Forms\Components\TextInput::make('from')->required()->maxLength(255),
@@ -634,6 +722,103 @@ class FactorResource extends Resource
                         Forms\Components\Select::make('party_id')->label(fn(Forms\Get $get) => $get('type') === "1" ? "Customer" : "Vendor")->searchable()->required()->options(function (Forms\Get $get) {
                             $type = $get('type') === "1" ? "customer" : "vendor";
                             return getCompany()->parties->whereIn('type', [$type, 'both'])->pluck('info', 'id');
+                        })->createOptionUsing(function ($data){
+
+                            if ($data['type'] === "vendor"){
+                                $parentAccount=Account::query()->where('id',$data['parent_vendor'])->where('company_id',getCompany()->id)->first();
+                                $check = Account::query()->where('code', $parentAccount->code . $data['account_code_vendor'])->where('company_id', getCompany()->id)->first();
+                                if ($check) {
+                                    Notification::make('error')->title('this Account Code Exist')->warning()->send();
+                                    return;
+                                }
+                                $account = Account::query()->create([
+                                    'currency_id' =>  $data['currency_id'],
+                                    'name' =>  $data['name'],
+                                    'type' => 'creditor',
+                                    'code' =>  $parentAccount->code . $data['account_code_vendor'],
+                                    'level' => 'detail',
+                                    'parent_id' => $parentAccount->id,
+                                    'group'=>'Liabilitie',
+                                    'built_in' => false,
+                                    'company_id' => getCompany()->id,
+                                ]);
+                                $data['account_vendor']=$account->id;
+
+                            }elseif ($data['type'] === "customer"){
+                                $parentAccount=Account::query()->where('id',$data['parent_customer'])->where('company_id',getCompany()->id)->first();
+                                $check = Account::query()->where('code', $parentAccount->code . $data['account_code_customer'])->where('company_id', getCompany()->id)->first();
+                                if ($check) {
+                                    Notification::make('error')->title('this Account Code Exist')->warning()->send();
+                                    return;
+                                }
+                                $account = Account::query()->create([
+                                    'name' =>  $data['name'],
+                                    'type' => 'debtor',
+                                    'currency_id' =>  $data['currency_id'],
+                                    'code' => $parentAccount->code . $data['account_code_customer'],
+                                    'level' => 'detail',
+                                    'parent_id' => $parentAccount->id,
+                                    'group' => 'Asset',
+                                    'built_in' => false,
+                                    'company_id' => getCompany()->id,
+                                ]);
+                                $data['account_customer']=$account->id;
+
+                            }else{
+                                $parentAccount=Account::query()->where('id',$data['parent_vendor'])->where('company_id',getCompany()->id)->first();
+                                $check = Account::query()->where('code', $parentAccount->code . $data['account_code_vendor'])->where('company_id', getCompany()->id)->first();
+                                if ($check) {
+                                    Notification::make('error')->title('this Account Code Exist')->warning()->send();
+                                    return;
+                                }
+                                $account = Account::query()->create([
+                                    'name' =>  $data['name'],
+                                    'currency_id' =>  $data['currency_id'],
+                                    'type' => 'creditor',
+                                    'code' => $parentAccount->code . $data['account_code_vendor'],
+                                    'level' => 'detail',
+                                    'group'=>'Liabilitie',
+                                    'parent_id' => $parentAccount->id,
+                                    'built_in' => false,
+                                    'company_id' => getCompany()->id,
+                                    'Group'=>'Liabilitie'
+                                ]);
+                                $data['account_vendor']=$account->id;
+
+                                $parentAccount=Account::query()->where('id',$data['parent_customer'])->where('company_id',getCompany()->id)->first();
+                                $check = Account::query()->where('code', $parentAccount->code . $data['account_code_customer'])->where('company_id', getCompany()->id)->first();
+                                if ($check) {
+                                    Notification::make('error')->title('this Account Code Exist')->warning()->send();
+                                    return;
+                                }
+                                $account = Account::query()->create([
+                                    'name' =>  $data['name'],
+                                    'currency_id' =>  $data['currency_id'],
+                                    'type' => 'debtor',
+                                    'code' => $parentAccount->code . $data['account_code_customer'],
+                                    'level' => 'detail',
+                                    'group' => 'Asset',
+                                    'parent_id' => $parentAccount->id,
+                                    'built_in' => false,
+                                    'company_id' => getCompany()->id,
+                                    'Group'=>'Asset'
+                                ]);
+                                $data['account_customer']=$account->id;
+                            }
+                            Parties::query()->create([
+                                'name'=>$data['name'],
+                                'type'=>$data['type'],
+                                'address'=>$data['address'],
+                                'phone'=>$data['phone'],
+                                'email'=>$data['email'],
+                                'account_vendor'=>isset($data['account_vendor'])? $data['account_vendor'] :null,
+                                'account_customer'=>isset($data['account_customer'])?$data['account_customer']:null,
+                                'company_id'=>getCompany()->id,
+                                'currency_id'=>$data['currency_id'],
+                                'account_code_vendor'=>isset($data['account_code_vendor']) ? $data['account_code_vendor']:null,
+                                'account_code_customer'=>isset($data['account_code_customer'])? $data['account_code_customer']:null,
+                            ]);
+                             Notification::make('success')->success()->title('Submitted Successfully')->color('success')->send();
                         })->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
                             $party = Parties::query()->firstWhere('id', $state);
                             if ($get('type') === "1") {
@@ -641,7 +826,113 @@ class FactorResource extends Resource
                             } else {
                                 $set('from', $party?->name);
                             }
-                        })->live(true),
+                        })->live(true)->createOptionForm([
+                            Forms\Components\Section::make([
+                                Forms\Components\TextInput::make('name')->label('Company/Name')->required()->maxLength(255),
+                                Forms\Components\TextInput::make('phone')->tel()->maxLength(255),
+                                Forms\Components\TextInput::make('email')->email()->maxLength(255),
+                                Forms\Components\Textarea::make('address')->columnSpanFull(),
+                            ])->columns(3),
+                            Section::make([
+                                Forms\Components\ToggleButtons::make('type')->live()->grouped()->options(['vendor' => 'Vendor', 'customer' => 'Customer', 'both' => 'Both'])->inline()->required(),
+                                Select::make('currency_id')->live()->model(Parties::class)->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([
+                                    \Filament\Forms\Components\Section::make([
+                                        TextInput::make('name')->required()->maxLength(255),
+                                        TextInput::make('symbol')->required()->maxLength(255),
+                                        TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                                    ])->columns(3)
+                                ])->createOptionUsing(function ($data) {
+                                    $data['company_id'] = getCompany()->id;
+                                    Notification::make('success')->title('success')->success()->send();
+                                    return Currency::query()->create($data)->getKey();
+                                })->editOptionForm([
+                                    \Filament\Forms\Components\Section::make([
+                                        TextInput::make('name')->required()->maxLength(255),
+                                        TextInput::make('symbol')->required()->maxLength(255),
+                                        TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                                    ])->columns(3)
+                                ]),
+                                SelectTree::make('parent_vendor')->visible(function (Forms\Get $get) {
+
+                                    if ($get('type') == "both") {
+                                        if ($get("account_vendor")===null){
+                                            return true;
+                                        }
+                                    } elseif ($get('type') == "vendor") {
+                                        if ($get("account_vendor")===null){
+                                            return true;
+                                        }
+                                    } else {
+                                        return false;
+                                    }
+
+                                })->disabledOptions(function () {
+                                    return Account::query()->where('level', 'detail')->where('company_id', getCompany()->id)->orWhereHas('transactions',function ($query){})->pluck('id')->toArray();
+                                })->hidden(fn($operation) => (bool)$operation === "edit")->default(getCompany()?->vendor_account)->enableBranchNode()->model(Transaction::class)->defaultOpenLevel(3)->live()->label('Parent Vendor Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('stamp', "Liabilities")->where('company_id', getCompany()->id)),
+
+                                SelectTree::make('parent_customer')->visible(function (Forms\Get $get) {
+                                    if ($get('type') == "both") {
+                                        if ($get("account_customer")===null){
+                                            return true;
+                                        }
+                                    } elseif ($get('type') == "customer") {
+                                        if ($get("account_customer") === null) {
+                                            return true;
+                                        }
+                                    } else {
+                                        return false;
+                                    }
+                                })->default(getCompany()?->customer_account)->disabledOptions(function ($state, SelectTree $component) {
+                                    return Account::query()->where('level', 'detail')->where('company_id', getCompany()->id)->orWhereHas('transactions',function ($query){})->pluck('id')->toArray();
+                                })->enableBranchNode()->model(Transaction::class)->defaultOpenLevel(3)->live()->label('Parent Customer Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('stamp', "Assets")->where('company_id', getCompany()->id)),
+                                Forms\Components\TextInput::make('account_code_vendor')
+                                    ->prefix(fn(Get $get)=>Account::find($get('parent_vendor'))?->code)
+                                    ->default(function () {
+                                        if (Parties::query()->where('company_id', getCompany()->id)->where('type', 'vendor')->latest()->first()) {
+                                            return generateNextCode(Parties::query()->where('company_id', getCompany()->id)->where('type', 'vendor')->latest()->first()->account_code_vendor);
+                                        } else {
+                                            return "001";
+                                        }
+
+                                    })->unique('accounts','code',ignoreRecord: true)->visible(function (Forms\Get $get) {
+
+                                        if ($get('type') == "both") {
+                                            if ($get("account_vendor") === null) {
+                                                return true;
+                                            }
+                                        } elseif ($get('type') == "vendor") {
+                                            if ($get("account_vendor") === null) {
+                                                return true;
+                                            }
+                                        } else {
+                                            return false;
+                                        }
+
+                                    })->required()->maxLength(255),
+                                Forms\Components\TextInput::make('account_code_customer')->unique('accounts','code',ignoreRecord: true)
+                                    ->prefix(fn(Get $get)=>Account::find($get('parent_customer'))?->code)
+                                    ->default(function () {
+                                        if (Parties::query()->where('company_id', getCompany()->id)->where('type', 'customer')->latest()->first()) {
+                                            return generateNextCode(Parties::query()->where('company_id', getCompany()->id)->where('type', 'customer')->latest()->first()->account_code_customer);
+                                        } else {
+                                            return "001";
+                                        }
+
+                                    })->visible(function (Forms\Get $get) {
+                                        if ($get('type') === "both") {
+                                            if ($get("account_customer") === null) {
+                                                return true;
+                                            }
+                                        } elseif ($get('type') === "customer") {
+                                            if ($get("account_customer") === null) {
+                                                return true;
+                                            }
+                                        } else {
+                                            return false;
+                                        }
+                                    })->required()->tel()->maxLength(255),
+                            ])->columns()
+                        ]),
 
                     ])->columns(2),
                     Forms\Components\TextInput::make('from')->required()->maxLength(255),

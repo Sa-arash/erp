@@ -44,23 +44,6 @@ class PartiesResource extends Resource
                     Forms\Components\TextInput::make('email')->email()->maxLength(255),
                     Forms\Components\Textarea::make('address')->columnSpanFull(),
                 ])->columns(3),
-
-//                SelectTree::make('account_vendor')->hidden(function($state){
-//                    if ($state ===null){
-//                        return true;
-//                    }
-//                })->disabledOptions(function ($state, SelectTree $component) {
-//                    return Account::query()->whereNot('id', $state)->where('company_id', getCompany()->id)->pluck('id')->toArray();
-//                })->model(Transaction::class)->defaultOpenLevel(3)->live()->label('Vendor Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('stamp', "Liabilities")->where('company_id', getCompany()->id))->required(),
-//                SelectTree::make('account_customer')->hidden(function($state){
-//                        if ($state ===null){
-//                            return true;
-//                        }
-//                })->disabledOptions(function ($state, SelectTree $component) {
-//                    return Account::query()->whereNot('id', $state)->where('company_id', getCompany()->id)->pluck('id')->toArray();
-//                })->model(Transaction::class)->defaultOpenLevel(3)->live()->label('Customer Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('stamp', "Liabilities")->where('company_id', getCompany()->id))->required(),
-
-
                 Forms\Components\ToggleButtons::make('type')->visible(fn($operation) => $operation === "create")->live()->grouped()->options(['vendor' => 'Vendor', 'customer' => 'Customer', 'both' => 'Both'])->inline()->required(),
                 getSelectCurrency(),
                 SelectTree::make('parent_vendor')->visible(function (Forms\Get $get) {
@@ -142,7 +125,6 @@ class PartiesResource extends Resource
                         return false;
                     }
                 })->required()->tel()->maxLength(255),
-
                 Forms\Components\Fieldset::make('Account Vendor')->visible(fn($state)=>isset($state['id']))->relationship('accountVendor')->schema([
                     Forms\Components\TextInput::make('name')->required()->maxLength(255),
                     SelectTree::make('parent_id')->live()->label('Parent')->disabledOptions(function ($state, SelectTree $component) {
@@ -169,8 +151,6 @@ class PartiesResource extends Resource
                     ToggleButtons::make('group')->disabled()->grouped()->options(['Asset'=>'Asset','Liabilitie'=>'Liabilitie','Equity'=>'Equity','Income'=>'Income','Expense'=>'Expense'])->inline(),
                     Forms\Components\Textarea::make('description')->maxLength(255)->columnSpanFull(),
                 ]),
-
-
             ]);
     }
 

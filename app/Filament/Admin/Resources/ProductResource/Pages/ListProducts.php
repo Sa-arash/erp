@@ -30,12 +30,12 @@ class ListProducts extends ListRecords
             ])->action(function ($data){
 
                 getCompany()->update(['product_accounts'=>$data['accounts']]);
-                
+
                 Notification::make('accountssuccess')->success()->title('Set accounts successfull')->send();
             }),
 
-            Actions\Action::make('Set Expence')->form([
-                Select::make('expence')->default(getCompany()->product_expence_accounts)->options(function (){
+            Actions\Action::make('Set Expense')->form([
+                Select::make('expense')->default(getCompany()->product_expence_accounts)->options(function (){
                     $data=[];
                     $accounts=Account::query()->where('company_id',getCompany()->id)->where('group','Expense')->orderBy('code')->get();
                     foreach ( $accounts as $account){
@@ -46,9 +46,9 @@ class ListProducts extends ListRecords
 
             ])->action(function ($data){
 
-                getCompany()->update(['product_expence_accounts'=>$data['expence']]);
-                
-                Notification::make('successexpence')->success()->title('Set expence accounts successfull')->send();
+                getCompany()->update(['product_expence_accounts'=>$data['expense']]);
+
+                Notification::make('success expense')->success()->title('Set Expense Accounts Successfully')->send();
             })
         ];
     }

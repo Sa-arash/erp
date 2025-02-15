@@ -496,6 +496,20 @@ function getCompanyUrl()
 function generateNextCode($code): string
 {
 
+    $parts = explode('.', $code);
+    if (isset($parts[1])){
+        // گرفتن آخرین بخش و تبدیل آن به عدد
+        $lastNumber = (int)end($parts);
+
+        // افزایش عدد
+        $nextNumber = $lastNumber + 1;
+
+        // جایگزینی آخرین بخش با عدد جدید
+        $parts[count($parts) - 1] = str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+
+        // ترکیب بخش‌ها به یک کد جدید
+        return implode('.', $parts);
+    }
     $lastNumber = $code;
     $lastNumber = (int)$lastNumber;
     $nextNumber = $lastNumber + 1;
@@ -511,6 +525,8 @@ function PDFdefaultCurrency($company){
 
 function generateNextCodePO($code): string
 {
+
+
 
     $lastNumber = $code;
     $lastNumber = (int)$lastNumber;
@@ -689,16 +705,26 @@ function sendAdmin($employee, $record,$company)
         }
     }
 }
-function sendSecurity($record,$company){
-    $security=Employee::query()->firstWhere('id',getSecurity()->id);
-    if ($security){
-        $record->approvals()->create([
-            'employee_id'=>$security->id,
-            'company_id'=>$company->id,
-            'position'=>'Security',
-            'status'=>"Pending"
-        ]);
+function sendSecurity($employee,$record,$company){
+    $security=Employee::query()->firstWhere('id',getSecurity()?->id);
+    if ($security) {
+        if ($security->id === $employee->id) {
+            $record->approvals()->create([
+                'employee_id' => $security->id,
+                'company_id' => $company->id,
+                'position' => 'Security',
+                'status' => "Approve",
+                'approve_date'=>now()
+            ]);
+        }else{
+            $record->approvals()->create([
+                'employee_id' => $security->id,
+                'company_id' => $company->id,
+                'position' => 'Security',
+            ]);
+        }
     }
+
 }
 function getSelectCurrency(){
    return Select::make('currency_id')->live()->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([

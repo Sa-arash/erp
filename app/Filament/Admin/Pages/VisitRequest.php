@@ -2,7 +2,6 @@
 
 namespace App\Filament\Admin\Pages;
 
-use App\Filament\Admin\Widgets\CEOapproval as WidgetsCEOapproval;
 use App\Filament\Admin\Widgets\VisitRequest as WidgetsVisitRequest;
 use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Pages\Page;
@@ -10,7 +9,7 @@ use Filament\Pages\Page;
 class VisitRequest extends Page
 {
     use HasPageShield;
-    
+
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel = "Visit Requests";
 

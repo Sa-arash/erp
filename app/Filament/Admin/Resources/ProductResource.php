@@ -48,12 +48,12 @@ class ProductResource extends Resource
                         $set('account_id',null);
                     }),
                 ])->columns(3),
-                
+
                 Select::make('account_id')->options(function (Get $get) {
-                   
+
                    if($get('product_type')=='unConsumable')
                    {
-                
+
                     $data=[];
                     if (getCompany()->product_accounts){
                         $accounts= Account::query()
@@ -82,7 +82,6 @@ class ProductResource extends Resource
                     }
                     return $data;
                 }
-
                 })->required()->model(Transaction::class)->searchable()->label('Categoy'),
 
                 select::make('sub_account_id')->required()->searchable()->label('SubCategory')->options(fn(Get $get)=>  $get('account_id') !== null? getCompany()->accounts()->where('parent_id',$get('account_id'))->pluck('name', 'id'):[])
