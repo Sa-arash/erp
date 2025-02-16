@@ -36,7 +36,7 @@ class CreateCash extends CreateRecord
                     } else {
                         return "001";
                     }
-                })->prefix(fn(Get $get) => Account::query()->firstWhere('id', getCompany()->account_bank)?->code)->required()->maxLength(255)->unique(modifyRuleUsing: function (Unique $rule, $state) {
+                })->prefix(fn(Get $get) => Account::query()->firstWhere('id', getCompany()->account_bank)?->code)->required()->maxLength(255)->unique(ignoreRecord: true,modifyRuleUsing: function (Unique $rule, $state) {
                     if (getCompany()->account_cash !== null) {
                         $parent = getCompany()->account_cash;
                         $parentAccount = Account::query()->where('id', $parent)->where('company_id', getCompany()->id)->first();

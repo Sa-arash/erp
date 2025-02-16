@@ -28,7 +28,7 @@ class PositionResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('title')->unique(modifyRuleUsing: function (Unique $rule) {
+                Forms\Components\TextInput::make('title')->unique(ignoreRecord: true,modifyRuleUsing: function (Unique $rule) {
                     return $rule->where('company_id', getCompany()->id);
                 })->label('Designation Title')
                     ->required()

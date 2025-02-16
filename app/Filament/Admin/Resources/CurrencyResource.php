@@ -42,7 +42,7 @@ class CurrencyResource extends Resource
                 Forms\Components\TextInput::make('name')->required()->maxLength(255),
                 Forms\Components\TextInput::make('symbol')->required()->maxLength(255),
                 Forms\Components\TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-                Forms\Components\ToggleButtons::make('is_company_currency')->unique(modifyRuleUsing: function (Unique $rule) {
+                Forms\Components\ToggleButtons::make('is_company_currency')->unique(ignoreRecord: true,modifyRuleUsing: function (Unique $rule) {
                     return $rule->where('is_company_currency', 1)->where('company_id',getCompany()->id);
                })->grouped()->label('Base Currency')->default(0)->boolean('Yes','No')->required(),
             ]);

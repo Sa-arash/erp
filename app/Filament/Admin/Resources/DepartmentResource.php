@@ -35,7 +35,7 @@ class DepartmentResource extends Resource
             ->schema([
                 Forms\Components\TextInput::make('title')->label('Department Name')
                     ->required()
-                    ->maxLength(255)->columnSpanFull()->unique(modifyRuleUsing: function (Unique $rule) {
+                    ->maxLength(255)->columnSpanFull()->unique(ignoreRecord: true,modifyRuleUsing: function (Unique $rule) {
                         return $rule->where('company_id', getCompany()->id);
                     }),
                 Forms\Components\Textarea::make('description')->columnSpanFull()
