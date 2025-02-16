@@ -14,9 +14,9 @@ enum PeriodStatus:string implements HasColor,HasLabel
     public function getLabel(): ?string
     {
         return match ($this){
-            self::Before => 'Before the Financial Year',
-            self::During => 'During the Financial Year',
-            self::End => 'At the End of the Financial Year',
+            self::Before => 'Setup Prerequisites',
+            self::During => 'Current Fiscal Year',
+            self::End => 'Closed',
 
 
         };

@@ -16,7 +16,7 @@ class ListFactors extends ListRecords
     public function mount(): void
     {
         if (getPeriod()==null) {
-        Notification::make('financialErors')->seconds(5)->color('danger')->danger()->title('There is no financial period.')->send()->sendToDatabase(auth()->user());
+        Notification::make('financialErors')->seconds(5)->color('danger')->danger()->title('Setup Fiscal Year')->send()->sendToDatabase(auth()->user());
         }
         $this->authorizeAccess();
 
@@ -33,7 +33,7 @@ class ListFactors extends ListRecords
         }else{
             return [
 
-                Actions\Action::make('financialEror')->label('There Is No Financial Period. Click To Create')->url(fn()=>FinancialPeriodResource::getUrl('index'))->color('danger')
+                Actions\Action::make('financialEror')->label('Setup Fiscal Year')->url(fn()=>FinancialPeriodResource::getUrl('index'))->color('danger')
             ];
         }
     }

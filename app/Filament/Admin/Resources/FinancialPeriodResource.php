@@ -94,9 +94,9 @@ class FinancialPeriodResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\Action::make('balance_period')->label('Initial Journal Entry')->visible(fn($record)=>$record->status->name==="Before")->url(fn($record) => FinancialPeriodResource::getUrl('balance_period', ['record' => $record->id])),
+                Tables\Actions\Action::make('balance_period')->label('Opening Balances')->visible(fn($record)=>$record->status->name==="Before")->url(fn($record) => FinancialPeriodResource::getUrl('balance_period', ['record' => $record->id])),
                 Tables\Actions\EditAction::make()->visible(fn($record)=>$record->status->name !== 'End'),
-                Tables\Actions\Action::make('The End')->requiresConfirmation()
+                Tables\Actions\Action::make('Close')->requiresConfirmation()
                 ->icon('heroicon-o-check') // اضافه کردن آیکون
                 ->color('danger')
                 ->action(function($record){
@@ -117,7 +117,7 @@ class FinancialPeriodResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+//                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }
