@@ -22,13 +22,12 @@ class ListTransActions extends ListRecords
 
     public function getTabs(): array
     {
-        $finance = FinancialPeriod::query()->where('status', 'During')->where('company_id', getCompany()->id)->first();
         return [
-            "All"=> Tab::make()->query(fn(\Illuminate\Database\Eloquent\Builder $query) => $query->where('financial_period_id',$finance?->id)),
-            "Subsidiary"=> Tab::make()->query(fn(\Illuminate\Database\Eloquent\Builder $query) => $query->where('financial_period_id',$finance?->id)->whereHas('account',function ($query){
+            "All"=> Tab::make()->query(fn(\Illuminate\Database\Eloquent\Builder $query) => $query),
+            "Subsidiary"=> Tab::make()->query(fn(\Illuminate\Database\Eloquent\Builder $query) => $query->whereHas('account',function ($query){
                 return $query->where('level',"subsidiary");
             })),
-            "General"=> Tab::make()->query(fn(\Illuminate\Database\Eloquent\Builder $query) => $query->where('financial_period_id',$finance?->id)->whereHas('account',function ($query){
+            "General"=> Tab::make()->query(fn(\Illuminate\Database\Eloquent\Builder $query) => $query->whereHas('account',function ($query){
                 return $query->where('level',"general");
             })),
         ];

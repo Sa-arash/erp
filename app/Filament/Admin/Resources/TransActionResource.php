@@ -57,7 +57,7 @@ class TransActionResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            // ->defaultSort('payment_date', 'desc')
+             ->defaultSort('id', 'desc')
             ->headerActions([
                 // Action::make('Filter')->form(function (Table $table) {
                 //     if ($table->getLivewire()->activeTab === "General") {
@@ -183,7 +183,7 @@ class TransActionResource extends Resource
 
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('financial_period_id')->label('Financial Period')->searchable()->preload()->options(FinancialPeriod::query()->where('company_id', getCompany()->id)->pluck('name', 'id'))->default(getCompany()->financialPeriods()->where('status', "During")->first()?->id),
+                Tables\Filters\SelectFilter::make('financial_period_id')->label('Financial Period')->searchable()->preload()->options(FinancialPeriod::query()->where('company_id', getCompany()->id)->pluck('name', 'id'))->default(getPeriod()?->id),
                 Tables\Filters\SelectFilter::make('invoice_id')->label('Financial Document')->searchable()->preload()->options(Invoice::query()->where('company_id', getCompany()->id)->pluck('name', 'id')),
                 Tables\Filters\Filter::make('filter')->form([
                     Select::make('account_id')->relationship('account', 'name', fn(Builder $query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->multiple()
