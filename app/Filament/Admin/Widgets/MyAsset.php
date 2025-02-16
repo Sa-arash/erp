@@ -157,8 +157,8 @@ class MyAsset extends BaseWidget
                 Tables\Actions\BulkAction::make('Take Out')->modalWidth(MaxWidth::SixExtraLarge)->color('warning')->form(function ($records) {
                     return [
                         Section::make([
-                            TextInput::make('from')->label('From(Location)')->default(getEmployee()->structure?->title)->required()->maxLength(255),
-                            TextInput::make('to')->label('To(Location)')->required()->maxLength(255),
+                            TextInput::make('from')->label('From (Location)')->default(getEmployee()->structure?->title)->required()->maxLength(255),
+                            TextInput::make('to')->label('To (Location)')->required()->maxLength(255),
                             DatePicker::make('date')->default(now())->required()->label('CheckOut Date'),
                             DatePicker::make('return_date')->label('CheckIn Date'),
                             Textarea::make('reason')->columnSpanFull()->required(),
@@ -170,7 +170,7 @@ class MyAsset extends BaseWidget
                                     return ['Personal Belonging' => 'Personal Belonging', 'Domestic Waste' => 'Domestic Waste', 'Construction Waste' => 'Construction Waste'];
                                 }
                             }),
-                            Repeater::make('items')->orderable(false)->schema([
+                            Repeater::make('items')->label('Registered Asset')->orderable(false)->schema([
                                 Select::make('asset_id')
                                     ->disableOptionsWhenSelectedInSiblingRepeaterItems()
                                     ->live()->label('Asset')->options(function () {
@@ -194,7 +194,7 @@ class MyAsset extends BaseWidget
                                 }
                                 return $data;
                             }),
-                            Repeater::make('itemsOut')->orderable(false)->schema([
+                            Repeater::make('itemsOut')->label('Unregistered Asset')->orderable(false)->schema([
                                 TextInput::make('name')->required(),
                                 TextInput::make('remarks')->nullable(),
                             ])->columnSpanFull()->columns()

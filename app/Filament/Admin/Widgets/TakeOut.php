@@ -31,10 +31,10 @@ class TakeOut extends BaseWidget
         return $table->headerActions([
             Action::make('Take Out')->label('Take Out')->form([
                 \Filament\Forms\Components\Section::make([
-                    TextInput::make('from')->label('From(Location)')->default(getEmployee()->structure?->title)->required()->maxLength(255),
-                    TextInput::make('to')->label('To(Location)')->required()->maxLength(255),
-                    DatePicker::make('date')->default(now())->required()->label('CheckOut Date'),
-                    DatePicker::make('return_date')->label('CheckIn Date'),
+                    TextInput::make('from')->label('From (Location)')->default(getEmployee()->structure?->title)->required()->maxLength(255),
+                    TextInput::make('to')->label('To (Location)')->required()->maxLength(255),
+                    DatePicker::make('date')->default(now())->required()->label('Check Out Date'),
+                    DatePicker::make('return_date')->label('Check In Date'),
                     Textarea::make('reason')->columnSpanFull()->required(),
                     ToggleButtons::make('status')->default('Returnable')->colors(['Returnable' => 'success', 'Non-Returnable' => 'danger'])->live()->required()->grouped()->options(['Returnable' => 'Returnable', 'Non-Returnable' => 'Non-Returnable']),
                     ToggleButtons::make('type')->default('Modification')->required()->grouped()->options(function (Get $get) {
@@ -44,7 +44,7 @@ class TakeOut extends BaseWidget
                             return ['Personal Belonging' => 'Personal Belonging', 'Domestic Waste' => 'Domestic Waste', 'Construction Waste' => 'Construction Waste'];
                         }
                     }),
-                    Repeater::make('items')->orderable(false)->schema([
+                    Repeater::make('items')->label('Registered Asset')->orderable(false)->schema([
                         Select::make('asset_id')
                             ->disableOptionsWhenSelectedInSiblingRepeaterItems()
                             ->live()->label('Asset')->options(function () {
@@ -61,7 +61,7 @@ class TakeOut extends BaseWidget
                             })->required()->searchable()->preload(),
                         TextInput::make('remarks')->nullable()
                     ])->columnSpanFull()->columns(),
-                    Repeater::make('itemsOut')->orderable(false)->schema([
+                    Repeater::make('itemsOut')->label('Unregistered Asset')->orderable(false)->schema([
                         TextInput::make('name')->required(),
                         TextInput::make('remarks')->nullable(),
                     ])->columnSpanFull()->columns()

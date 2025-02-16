@@ -14,8 +14,8 @@ class InvoiceExporter extends Exporter
     public static function getColumns(): array
     {
         return [
-            ExportColumn::make('name')->label('Voucher Name'),
             ExportColumn::make('number')->label('Voucher NO'),
+            ExportColumn::make('name')->label('Voucher Name'),
             ExportColumn::make('date'),
             ExportColumn::make('reference'),
 //            ExportColumn::make('total_debtor')->state(function (Invoice $record): float {
