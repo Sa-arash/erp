@@ -8,6 +8,7 @@ use App\Models\VisitorRequest;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
@@ -51,6 +52,33 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                             ->required()
                             ->options(getCompany()->employees->pluck('fullName', 'id'))
                             ->default(fn() => auth()->user()->employee->id),
+                            Select::make('agency')->options([
+                                'UNC' => 'UNC',
+                                'FAO' => 'FAO',
+                                'IFAD' => 'IFAD',
+                                'ILO' => 'ILO',
+                                'IOM' => 'IOM',
+                                'OCHA' => 'OCHA',
+                                'UN-Habitat' => 'UN-Habitat',
+                                'UN Women' => 'UN Women',
+                                'UNAIDS' => 'UNAIDS',
+                                'UNAMA' => 'UNAMA',
+                                'UNCTAD' => 'UNCTAD',
+                                'UNDP' => 'UNDP',
+                                'UNESCO' => 'UNESCO',
+                                'UNFPA' => 'UNFPA',
+                                'UNHCR' => 'UNHCR',
+                                'UNICEF' => 'UNICEF',
+                                'UNIDO' => 'UNIDO',
+                                'UNITAR' => 'UNITAR',
+                                'UNMAS' => 'UNMAS',
+                                'UNODC' => 'UNODC',
+                                'UNOPS' => 'UNOPS',
+                                'WFP' => 'WFP',
+                                'WHO' => 'WHO',
+                                'World Bank' => 'World Bank',
+                            ])->searchable()->preload(),
+                            
                         Forms\Components\DatePicker::make('visit_date')->default(now()->addDay())->required(),
                         Forms\Components\TimePicker::make('arrival_time')
                             ->seconds(false)
@@ -62,7 +90,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                             ->required(),
                         Forms\Components\TextInput::make('purpose')->columnSpanFull()
                             ->required(),
-                    ])->columns(4),
+                    ])->columns(5),
                     Forms\Components\Repeater::make('visitors_detail')
                         ->addActionLabel('Add')
                         ->label('Visitors Detail')

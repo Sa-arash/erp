@@ -16,6 +16,7 @@ return new class extends Migration
             $table->date('visit_date');
             $table->time('arrival_time');
             $table->time('departure_time');
+            $table->string('agency')->nullable();
             $table->text('purpose');
             $table->json('visitors_detail')->nullable();
             $table->json('driver_vehicle_detail')->nullable();
