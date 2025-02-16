@@ -4,12 +4,14 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\InvoiceResource\Pages;
 use App\Filament\Admin\Resources\InvoiceResource\RelationManagers;
+use App\Filament\Exports\InvoiceExporter;
 use App\Models\Account;
 use App\Models\Currency;
 use App\Models\FinancialPeriod;
 use App\Models\Invoice;
 use Closure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
+use Filament\Actions\ExportAction;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -101,7 +103,7 @@ class InvoiceResource extends Resource
                             return $set('isCurrency', 0);
                         })->live()->defaultOpenLevel(3)->live()->label('Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('company_id', getCompany()->id))->searchable(),
                         Forms\Components\TextInput::make('description')->required(),
-                        
+
                         Forms\Components\TextInput::make('debtor')->prefix(defaultCurrency()->symbol)->live(true)->afterStateUpdated(function ($state, Forms\Set $set,Get $get) {
                             if ($get('Cheque')) {
                                 $set('cheque.amount', $state);
@@ -233,6 +235,10 @@ class InvoiceResource extends Resource
     public static function table(Table $table): Table
     {
         return $table->defaultSort('id','desc')
+            ->headerActions([
+                Tables\Actions\ExportAction::make()
+                    ->exporter(InvoiceExporter::class)->color('purple')
+            ])
             ->columns([
 
                 Tables\Columns\TextColumn::make('')->rowIndex(),
@@ -263,7 +269,9 @@ class InvoiceResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+//                    Tables\Actions\DeleteBulkAction::make(),
+                    Tables\Actions\ExportAction::make()
+                        ->exporter(InvoiceExporter::class)->color('purple')
                 ]),
             ]);
     }

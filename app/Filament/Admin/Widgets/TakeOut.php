@@ -90,6 +90,15 @@ class TakeOut extends BaseWidget
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('assets.product.title')->state(fn($record)=> $record->assets->pluck('title')->toArray())->badge()->label('Assets'),
+                Tables\Columns\TextColumn::make('itemsOut')->state(function($record){
+                    $data=[];
+                    if ($record->itemsOut){
+                        foreach ($record->itemsOut as $item){
+                            $data[]=$item['name'];
+                        }
+                    }
+                    return $data;
+                })->limitList(5)->badge(),
                 Tables\Columns\TextColumn::make('from'),
                 Tables\Columns\TextColumn::make('to'),
                 Tables\Columns\TextColumn::make('date')->date(),
@@ -106,7 +115,7 @@ class TakeOut extends BaseWidget
                 Tables\Columns\TextColumn::make('type')->badge(),
             ])->actions([
                 Tables\Actions\Action::make('pdf')->url(fn($record) => route('pdf.takeOut', ['id' => $record->id]))->icon('heroicon-s-printer')->iconSize(IconSize::Large)->label('PDF'),
-                Tables\Actions\Action::make('view')->infolist([
+                Tables\Actions\ViewAction::make('view')->infolist([
                     Section::make([
                         TextEntry::make('employee.fullName'),
                         TextEntry::make('from'),
@@ -114,14 +123,26 @@ class TakeOut extends BaseWidget
                         TextEntry::make('date')->date(),
                         TextEntry::make('status')->badge(),
                         TextEntry::make('type')->badge(),
-
                         RepeatableEntry::make('items')->label('Assets')->schema([
                             TextEntry::make('asset.title'),
                             TextEntry::make('remarks'),
                             TextEntry::make('returned_date'),
-                        ])->columnSpanFull()->columns(3)
+                        ])->columnSpanFull()->columns(3),
+                        RepeatableEntry::make('itemsOut')->label('itemsOut')->schema([
+                            TextEntry::make('name'),
+                            TextEntry::make('remarks'),
+                        ])->columnSpanFull()->columns(),
+                        \Filament\Infolists\Components\Section::make([
+                            TextEntry::make('OutSide_date')->dateTime(),
+                            TextEntry::make('OutSide_comment'),
+                        ])->columns(),
+                        \Filament\Infolists\Components\Section::make([
+                            TextEntry::make('InSide_date')->dateTime(),
+                            TextEntry::make('inSide_comment'),
+                        ])->columns(),
                     ])->columns()
-                ])
+                ]),
+
             ]);
     }
 }
