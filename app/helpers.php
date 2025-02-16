@@ -694,7 +694,7 @@ function sendAdmin($employee, $record,$company)
                 'status' => "Approve",
                 'approve_date'=>now()
             ]);
-            sendSecurity($record,$company);
+            sendSecurity($employee,$record,$company);
 
         }else{
             $record->approvals()->create([
@@ -716,6 +716,13 @@ function sendSecurity($employee,$record,$company){
                 'status' => "Approve",
                 'approve_date'=>now()
             ]);
+
+            if (  substr($record->approvals[0]?->approvable_type, 11) === "TakeOut"){
+                $record->update(['mood'=>'Approved']);
+            }else{
+                $record->update(['status'=>'Approved']);
+
+            }
         }else{
             $record->approvals()->create([
                 'employee_id' => $security->id,

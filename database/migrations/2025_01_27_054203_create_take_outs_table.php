@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('take_outs', function (Blueprint $table) {
             $table->id();
             $table->date('date');
+            $table->date('return_date')->nullable();
             $table->string('to');
             $table->string('from');
             $table->text('reason')->nullable();

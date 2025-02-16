@@ -46,8 +46,7 @@ class MyAsset extends BaseWidget
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\ImageColumn::make('asset.product.image')->label('Item Photo'),
-                Tables\Columns\TextColumn::make('asset.titlen')->label('Product')
-                ,
+                Tables\Columns\TextColumn::make('asset.titlen')->label('Product'),
                 Tables\Columns\TextColumn::make('warehouse.title')->label('Warehouse/Building')->sortable(),
                 Tables\Columns\TextColumn::make('structure.title')->label('Location')->sortable(),
                 Tables\Columns\TextColumn::make('asset.serial_number')->label('Serial Number'),
@@ -158,9 +157,10 @@ class MyAsset extends BaseWidget
                 Tables\Actions\BulkAction::make('Take Out')->modalWidth(MaxWidth::SixExtraLarge)->color('warning')->form(function ($records) {
                     return [
                         Section::make([
-                            TextInput::make('from')->default(getEmployee()->structure?->title)->required()->maxLength(255),
-                            TextInput::make('to')->required()->maxLength(255),
-                            DatePicker::make('date')->default(now())->required(),
+                            TextInput::make('from')->label('From(Location)')->default(getEmployee()->structure?->title)->required()->maxLength(255),
+                            TextInput::make('to')->label('To(Location)')->required()->maxLength(255),
+                            DatePicker::make('date')->default(now())->required()->label('CheckOut Date'),
+                            DatePicker::make('return_date')->label('CheckIn Date'),
                             Textarea::make('reason')->columnSpanFull()->required(),
                             ToggleButtons::make('status')->default('Returnable')->colors(['Returnable' => 'success', 'Non-Returnable' => 'danger'])->live()->required()->grouped()->options(['Returnable' => 'Returnable', 'Non-Returnable' => 'Non-Returnable']),
                             ToggleButtons::make('type')->default('Modification')->required()->grouped()->options(function (Get $get) {
@@ -170,7 +170,7 @@ class MyAsset extends BaseWidget
                                     return ['Personal Belonging' => 'Personal Belonging', 'Domestic Waste' => 'Domestic Waste', 'Construction Waste' => 'Construction Waste'];
                                 }
                             }),
-                            Repeater::make('items')->schema([
+                            Repeater::make('items')->orderable(false)->schema([
                                 Select::make('asset_id')
                                     ->disableOptionsWhenSelectedInSiblingRepeaterItems()
                                     ->live()->label('Asset')->options(function () {
@@ -194,7 +194,7 @@ class MyAsset extends BaseWidget
                                 }
                                 return $data;
                             })
-                        ])->columns(3)
+                        ])->columns(4)
                     ];
                 })->action(function ($data) {
                     $id = getCompany()->id;

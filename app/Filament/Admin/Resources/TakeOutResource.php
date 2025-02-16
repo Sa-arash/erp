@@ -44,7 +44,7 @@ class TakeOutResource extends Resource implements HasShieldPermissions
 
     public static function table(Table $table): Table
     {
-        return $table
+        return $table->defaultSort('id','desc')
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('employee.fullName'),
@@ -52,6 +52,7 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('from'),
                 Tables\Columns\TextColumn::make('to'),
                 Tables\Columns\TextColumn::make('date')->date(),
+                Tables\Columns\TextColumn::make('return_date')->date(),
                 Tables\Columns\TextColumn::make('mood')->color(function($state){
                     switch ($state){
                         case "Approved":
