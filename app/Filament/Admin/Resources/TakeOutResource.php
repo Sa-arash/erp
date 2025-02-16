@@ -48,8 +48,8 @@ class TakeOutResource extends Resource implements HasShieldPermissions
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('employee.fullName'),
-                Tables\Columns\TextColumn::make('assets.product.title')->state(fn($record)=> $record->assets->pluck('title')->toArray())->badge()->label('Assets'),
-                Tables\Columns\TextColumn::make('itemsOut')->state(function($record){
+                Tables\Columns\TextColumn::make('assets.product.title')->state(fn($record)=> $record->assets->pluck('title')->toArray())->badge()->label('Registered Asset'),
+                Tables\Columns\TextColumn::make('itemsOut')->label('Unregistered Asset')->state(function($record){
                     $data=[];
                     if ($record->itemsOut){
                         foreach ($record->itemsOut as $item){
@@ -124,12 +124,12 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                         TextEntry::make('date')->date(),
                         TextEntry::make('status')->badge(),
                         TextEntry::make('type')->badge(),
-                        RepeatableEntry::make('items')->label('Assets')->schema([
+                        RepeatableEntry::make('items')->label('Registered Asset')->schema([
                             TextEntry::make('asset.title'),
                             TextEntry::make('remarks'),
                             TextEntry::make('returned_date'),
                         ])->columnSpanFull()->columns(3),
-                        RepeatableEntry::make('itemsOut')->label('itemsOut')->schema([
+                        RepeatableEntry::make('itemsOut')->label('Unregistered Asset')->schema([
                             TextEntry::make('name'),
                             TextEntry::make('remarks'),
                         ])->columnSpanFull()->columns(),
