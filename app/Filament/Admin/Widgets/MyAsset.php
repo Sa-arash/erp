@@ -193,7 +193,11 @@ class MyAsset extends BaseWidget
                                     $data[] = ['asset_id' => $record->asset_id];
                                 }
                                 return $data;
-                            })
+                            }),
+                            Repeater::make('itemsOut')->orderable(false)->schema([
+                                TextInput::make('name')->required(),
+                                TextInput::make('remarks')->nullable(),
+                            ])->columnSpanFull()->columns()
                         ])->columns(4)
                     ];
                 })->action(function ($data) {
@@ -210,7 +214,7 @@ class MyAsset extends BaseWidget
                         $takeOut->items()->create($item);
                     }
                     sendAdmin($employee,$takeOut,getCompany());
-                    Notification::make('success')->color('success')->success()->title('Request  Sent')->send()->sendToDatabase(auth()->user());
+                    Notification::make('success')->color('success')->success()->title('Request Sent')->send()->sendToDatabase(auth()->user());
                 }),
 
             ]);

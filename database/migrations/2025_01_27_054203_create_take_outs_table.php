@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->date('date');
             $table->date('return_date')->nullable();
+            $table->text('itemsOut')->nullable();
             $table->string('to');
             $table->string('from');
             $table->text('reason')->nullable();

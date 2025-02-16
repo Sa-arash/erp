@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class TakeOut extends Model
 {
     protected $guarded=['id'];
+    protected $casts=['itemsOut'=>'array'];
 
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

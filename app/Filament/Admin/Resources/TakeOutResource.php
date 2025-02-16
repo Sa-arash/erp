@@ -49,6 +49,15 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('employee.fullName'),
                 Tables\Columns\TextColumn::make('assets.product.title')->state(fn($record)=> $record->assets->pluck('title')->toArray())->badge()->label('Assets'),
+                Tables\Columns\TextColumn::make('itemsOut')->state(function($record){
+                    $data=[];
+                    if ($record->itemsOut){
+                        foreach ($record->itemsOut as $item){
+                            $data[]=$item['name'];
+                        }
+                    }
+                    return $data;
+                })->limitList(5)->badge(),
                 Tables\Columns\TextColumn::make('from'),
                 Tables\Columns\TextColumn::make('to'),
                 Tables\Columns\TextColumn::make('date')->date(),
@@ -120,6 +129,10 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                             TextEntry::make('remarks'),
                             TextEntry::make('returned_date'),
                         ])->columnSpanFull()->columns(3),
+                        RepeatableEntry::make('itemsOut')->label('itemsOut')->schema([
+                            TextEntry::make('name'),
+                            TextEntry::make('remarks'),
+                        ])->columnSpanFull()->columns(),
                         \Filament\Infolists\Components\Section::make([
                             TextEntry::make('OutSide_date')->dateTime(),
                             TextEntry::make('OutSide_comment'),

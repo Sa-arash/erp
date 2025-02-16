@@ -2,11 +2,22 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Models\Asset;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ToggleButtons;
+use Filament\Forms\Get;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Notifications\Notification;
 use Filament\Support\Enums\IconSize;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
+use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 
@@ -17,11 +28,65 @@ class TakeOut extends BaseWidget
 
     public function table(Table $table): Table
     {
-        return $table
+        return $table->headerActions([
+            Action::make('Take Out')->label('Take Out')->form([
+                \Filament\Forms\Components\Section::make([
+                    TextInput::make('from')->label('From(Location)')->default(getEmployee()->structure?->title)->required()->maxLength(255),
+                    TextInput::make('to')->label('To(Location)')->required()->maxLength(255),
+                    DatePicker::make('date')->default(now())->required()->label('CheckOut Date'),
+                    DatePicker::make('return_date')->label('CheckIn Date'),
+                    Textarea::make('reason')->columnSpanFull()->required(),
+                    ToggleButtons::make('status')->default('Returnable')->colors(['Returnable' => 'success', 'Non-Returnable' => 'danger'])->live()->required()->grouped()->options(['Returnable' => 'Returnable', 'Non-Returnable' => 'Non-Returnable']),
+                    ToggleButtons::make('type')->default('Modification')->required()->grouped()->options(function (Get $get) {
+                        if ($get('status') === "Returnable") {
+                            return ['Modification' => 'Modification'];
+                        } else {
+                            return ['Personal Belonging' => 'Personal Belonging', 'Domestic Waste' => 'Domestic Waste', 'Construction Waste' => 'Construction Waste'];
+                        }
+                    }),
+                    Repeater::make('items')->orderable(false)->schema([
+                        Select::make('asset_id')
+                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                            ->live()->label('Asset')->options(function () {
+                                $data = [];
+                                $assets = Asset::query()->with('product')->whereHas('employees', function ($query) {
+                                    return $query->where('return_date', null)->where('return_approval_date', null)->whereHas('assetEmployee', function ($query) {
+                                        return $query->where('employee_id', getEmployee()->id);
+                                    });
+                                })->where('company_id', getCompany()->id)->get();
+                                foreach ($assets as $asset) {
+                                    $data[$asset->id] = $asset->product?->title . " ( SKU #" . $asset->product?->sku . " )";
+                                }
+                                return $data;
+                            })->required()->searchable()->preload(),
+                        TextInput::make('remarks')->nullable()
+                    ])->columnSpanFull()->columns(),
+                    Repeater::make('itemsOut')->orderable(false)->schema([
+                        TextInput::make('name')->required(),
+                        TextInput::make('remarks')->nullable(),
+                    ])->columnSpanFull()->columns()
+                ])->columns(4)
+
+            ])->modalWidth(MaxWidth::SixExtraLarge)->action(function ($data) {
+                $id = getCompany()->id;
+                $data['company_id'] = $id;
+                $employee = getEmployee();
+
+                $data['employee_id'] = $employee->id;
+                $items = $data['items'];
+                unset($data['items']);
+                $takeOut = \App\Models\TakeOut::query()->create($data);
+                foreach ($items as $item) {
+                    $item['company_id'] = $id;
+                    $takeOut->items()->create($item);
+                }
+                sendAdmin($employee,$takeOut,getCompany());
+                Notification::make('success')->color('success')->success()->title('Request Sent')->send()->sendToDatabase(auth()->user());
+            })->color('warning')
+        ])
             ->query(
                 \App\Models\TakeOut::query()->where('employee_id', getEmployee()->id)->orderBy('id','desc')
-            )->headerActions([
-            ])
+            )
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('assets.product.title')->state(fn($record)=> $record->assets->pluck('title')->toArray())->badge()->label('Assets'),
