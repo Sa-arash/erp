@@ -47,17 +47,19 @@
 <body>
 <div class="">
     <div class="section">
-        <div class="section-title">Requestor’s Details</div>
+        <div class="section-title">Requester’s Details</div>
         <table>
             <tr>
                 <th>Full Name</th>
+                <th>Agency</th>
                 <th>Cell Phone</th>
                 <th>Email</th>
             </tr>
             <tr>
                 <td>{{$requestVisit->employee->fullName}}</td>
-                <td>+1234567890</td>
-                <td>johndoe@unagency.org</td>
+                <td>{{$requestVisit->agency}}</td>
+                <td>{{$requestVisit->employee->phone_number}}</td>
+                <td>{{$requestVisit->employee->email}}</td>
             </tr>
 
         </table>

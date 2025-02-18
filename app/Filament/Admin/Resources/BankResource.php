@@ -106,7 +106,7 @@ class BankResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()->hidden(fn($record)=>$record->account->transactions->count())->action(function ($record){
-                    $record->account()->delete();
+                    $record->account()->forceDelete();
                     $record->delete();
                 }),
                 Tables\Actions\Action::make('print')
