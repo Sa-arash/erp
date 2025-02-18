@@ -152,8 +152,10 @@
 
         </table>
     </div>
-<div class="section">
-        <div class="section-title">Endorsement and Approval </div>
+    <div class="section">
+        <div class="section-title">Approval</div>
+        
+
         <table style="width: 100%; border-collapse: collapse;">
             <tr>
                 <td style="white-space: nowrap; width: 1%;">FSU UNHCR</td>
@@ -174,12 +176,7 @@
                 <td style="width: auto;">Date : &nbsp;&nbsp;&nbsp;&nbsp;</td>
             </tr>
         </table>
-    </div>
-    <div class="section">
-        <div class="section-title">Approval</div>
-        
-
-
+        @if(isset($requestVisit->approvals[0]))
         <table>
             <thead>
             <tr>
@@ -204,6 +201,7 @@
                 </tr>
             @endforeach
         </table>
+        @endif
     </div>
 </div>
 
