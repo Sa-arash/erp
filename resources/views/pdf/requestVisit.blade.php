@@ -152,9 +152,34 @@
 
         </table>
     </div>
-
+<div class="section">
+        <div class="section-title">Endorsement and Approval </div>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td style="white-space: nowrap; width: 1%;">FSU UNHCR</td>
+                <td style="width: auto;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                <td style="width: auto;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                <td style="width: auto;">Date : &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            </tr>
+            <tr>
+                <td style="white-space: nowrap; width: 1%;">FSA FAO</td>
+                <td style="width: auto;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                <td style="width: auto;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                <td style="width: auto;">Date : &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            </tr>
+            <tr>
+                <td style="white-space: nowrap; width: 1%;">ICON SFP</td>
+                <td style="width: auto;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                <td style="width: auto;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+                <td style="width: auto;">Date : &nbsp;&nbsp;&nbsp;&nbsp;</td>
+            </tr>
+        </table>
+    </div>
     <div class="section">
         <div class="section-title">Approval</div>
+        
+
+
         <table>
             <thead>
             <tr>
