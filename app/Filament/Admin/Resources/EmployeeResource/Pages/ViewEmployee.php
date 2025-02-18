@@ -3,6 +3,9 @@
 namespace App\Filament\Admin\Resources\EmployeeResource\Pages;
 
 use App\Filament\Admin\Resources\EmployeeResource;
+use App\Models\Employee;
+use App\Models\Permission;
+use Spatie\Permission\Models\Role;
 use App\Models\Separation;
 use Filament\Actions;
 use Filament\Forms\Components\DatePicker;
@@ -30,14 +33,32 @@ class  ViewEmployee extends ViewRecord
     {
         return [
             Actions\EditAction::make()->color('success'),
-            Actions\Action::make('separation')->form([
+            Actions\Action::make('separation')->label('Separation')->form([
                 DatePicker::make('date')->required()
             ])->action(function ($data){
                 $data['employee_id']=$this->record->id;
                 $data['company_id']=getCompany()->id;
                 $data['approved_by']=auth()->user()->employee->id;
-                Separation::query()->create($data);
-                Notification::make('success')->title('Separation')->success()->send()->sendToDatabase(auth()->user());
+                $roles=Role::query()->with('users')->whereHas('permissions',function ($query){
+                   return $query->where('name','separation_employee');
+                })->where('company_id',getCompany()->id)->get();
+                $userIDs=[];
+                foreach ($roles as $role){
+                    foreach ($role->users->pluck('id')->toArray() as $userID ){
+                        $userIDs[]=$userID ;
+                    }
+                }
+                $employees= Employee::query()->whereIn('user_id',$userIDs)->get();
+                $record=Separation::query()->create($data);
+                foreach ($employees as $employee){
+                    $record->approvals()->create([
+                        'employee_id' => $employee->id,
+                        'company_id' => getCompany()->id,
+                        'position' => $employee->position?->title,
+                        'status' => "Pending"
+                    ]);
+                }
+                Notification::make('success')->title('Separation Submitted Successfully')->success()->send()->sendToDatabase(auth()->user());
             })->color('danger')->hidden(fn($record)=>isset($record->separation)),
             Actions\Action::make('View Separation')->label('View Separation')->infolist(function ($record){
                 return [
