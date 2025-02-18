@@ -73,7 +73,7 @@ class  DatabaseSeeder extends Seeder
             'password' => 'admin',
         ]);
         Employee::factory()->create([
-            'id'=>2,
+            'id' => 2,
             'fullName' => 'Head Of department',
             'user_id' => 2,
             'company_id' => 1,
@@ -98,7 +98,7 @@ class  DatabaseSeeder extends Seeder
         Unit::factory(10)->create();
 
         Employee::factory()->create([
-            'id'=>1,
+            'id' => 1,
             'fullName' => 'CEO of company',
             'user_id' => 1,
             'department_id' => 1,
@@ -122,7 +122,7 @@ class  DatabaseSeeder extends Seeder
             'password' => 'admin',
         ]);
         Employee::factory()->create([
-            'id'=>3,
+            'id' => 3,
             'fullName' => 'Logestic manager',
             'user_id' => 3,
             'department_id' => 1,
@@ -170,7 +170,7 @@ class  DatabaseSeeder extends Seeder
             'password' => 'admin',
         ]);
         Employee::factory()->create([
-            'id'=>4,
+            'id' => 4,
             'fullName' => 'SimpleEmployee',
             'user_id' => 4,
             'department_id' => 1,
@@ -187,14 +187,22 @@ class  DatabaseSeeder extends Seeder
 
 
         $brands = [
-            'Apple', 'Samsung', 'Sony', 'LG', 'Nike',
-            'Adidas', 'Puma', 'Reebok', 'Microsoft', 'Google'
+            'Apple',
+            'Samsung',
+            'Sony',
+            'LG',
+            'Nike',
+            'Adidas',
+            'Puma',
+            'Reebok',
+            'Microsoft',
+            'Google'
         ];
 
         foreach ($brands as $brand) {
             Brand::create([
                 'title' => $brand,
-                'company_id'=>1,
+                'company_id' => 1,
             ]);
         }
 
@@ -562,8 +570,14 @@ class  DatabaseSeeder extends Seeder
         foreach ($accounts as $account) {
             $account['stamp'] = $account['name'];
             $account['currency_id'] = 1;
+            if ($account['id'] == 18) {
+                $account['name'] = 'Equityes';
+            } elseif ($account['id'] == 21) {
+                $account['name'] = 'Incomes';
+            }
             DB::table('accounts')->insert($account);
         }
+
 
         Product::factory(10)->create();
 
