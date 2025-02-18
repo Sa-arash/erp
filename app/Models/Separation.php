@@ -10,6 +10,10 @@ class Separation extends Model
 
     protected $casts=['comments_signature'=>'array'];
 
+    public function approvals(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(Approval::class,'approvable','approvable_type','approvable_id');
+    }
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);

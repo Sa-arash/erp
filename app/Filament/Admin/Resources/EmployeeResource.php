@@ -67,7 +67,8 @@ class EmployeeResource extends Resource implements HasShieldPermissions
             'user',
             'password',
             'role',
-            'email'
+            'email',
+            'separation'
         ];
     }
 
