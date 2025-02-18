@@ -1,6 +1,6 @@
-@include('pdf.header', ['titles' => ['Separation'], 'css'=>false] )
+@include('pdf.header', ['titles' => ['Staff Clearance/Separation Form'], 'css'=>false] )
 
-<title>Staff Clearance/Separation Form</title>
+
     <style>
         body {
             font-family: Vazir, sans-serif;
@@ -35,8 +35,6 @@
 </head>
 <body>
 
-<div class="form-title">SERVICES TEAM - UN COMPOUND</div>
-<div class="form-title">Staff Clearance/Separation Form</div>
 
 <table>
     <tr>
@@ -48,10 +46,15 @@
     </tr>
     <tr>
         <td>Duty Station: {{$employee->structure?->title}}</td>
-        <td>Date: {{\Carbon\Carbon::make($employee->leave_date)->format('Y/m/d')}}</td>
+        <td>Date: {{\Carbon\Carbon::make($employee->separation->date)->format('Y/m/d')}}</td>
     </tr>
     <tr>
-        <td colspan="2">Signature: (employee)</td>
+        <td >Signature: (employee)</td>
+        <td >
+            @if($employee?->signature_pic)
+            <img src="{{public_path('images/'.$employee->signature_pic)}}" style="border-radius: 50px ; width: 80px;">
+            @endif
+        </td>
     </tr>
 </table>
 
@@ -60,31 +63,22 @@
     <tr>
         <th>Department</th>
         <th>Comments/Liabilities</th>
+        <th>Signature</th>
     </tr>
-    <tr>
-        <td>Relevant Department</td>
-        <td>Comments, name and signature</td>
-    </tr>
-    <tr>
-        <td>Logistic Department</td>
-        <td>Comments, name and signature</td>
-    </tr>
-    <tr>
-        <td>Administration Department</td>
-        <td>Comments, name and signature</td>
-    </tr>
-    <tr>
-        <td>HR Department</td>
-        <td>Comments, name and signature</td>
-    </tr>
-    <tr>
-        <td>Stock</td>
-        <td>Comments, name and signature</td>
-    </tr>
-    <tr>
-        <td>Finance Department</td>
-        <td>Comments, name and signature</td>
-    </tr>
+    @foreach($employee->separation->approvals->where('status','Approve') as $approve)
+
+        <tr>
+            <td>{{$approve->employee?->department?->title}}</td>
+            <td>{{$approve->comment}}</td>
+            <td>
+                @if($approve->employee?->signature_pic)
+                <img src="{{public_path('images/'.$approve->employee?->signature_pic)}}" style="border-radius: 50px ; width: 80px;">
+                @endif
+            </td>
+        </tr>
+    @endforeach
+
+
 </table>
 
 <div class="section-title">Final Steps:</div>

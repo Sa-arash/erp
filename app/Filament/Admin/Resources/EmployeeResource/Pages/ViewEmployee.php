@@ -39,6 +39,7 @@ class  ViewEmployee extends ViewRecord
                 $data['employee_id']=$this->record->id;
                 $data['company_id']=getCompany()->id;
                 $data['approved_by']=auth()->user()->employee->id;
+                $this->record->update('leave_date',$data['date']);
                 $roles=Role::query()->with('users')->whereHas('permissions',function ($query){
                    return $query->where('name','separation_employee');
                 })->where('company_id',getCompany()->id)->get();
