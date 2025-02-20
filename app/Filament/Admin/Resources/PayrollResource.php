@@ -426,6 +426,7 @@ class PayrollResource extends Resource
                             }
 
 
+
                             // مرخصی‌ها و اضافه‌کاری
                             $leaves = Leave::query()->where('status', 'accepted')
                                 ->where('employee_id', $employee->id)
@@ -459,17 +460,14 @@ class PayrollResource extends Resource
                                 Notification::make('error')->danger()->title('Daily Salary  Or Company Daily Working Hours Is 0' )->send();
                                 return ;
                             }
-
                             // افزودن اضافه‌کاری به مزایا و مرخصی به کسورات
                             $totalAllowances += $totalOvertime;
                             $totalDeductions += $totalLeaves;
-
                             // محاسبه حقوق نهایی
-                            $finalNetPay = ($grossAmount +$totalAllowances)-$totalDeductions;
 
                             // ایجاد Payroll
                             $payroll = Payroll::query()->create([
-                                'amount_pay' => $finalNetPay,
+                                'amount_pay' => $grossAmount,
                                 'employee_id' => $employee->id,
                                 'payment_date' => null,
                                 'start_date' => $startDate,
