@@ -94,7 +94,15 @@ class InvoiceResource extends Resource
                             $set('isCurrency', 0);
                             return $state;
                         })->afterStateUpdated(function ($state, Forms\Set $set) {
+                            $query = Account::query()->find($state);
+                            // dd($query);
+                            if($query->has_cheque == 1){
+                                $set('Cheque',true);
+                            }else{
+                                $set('Cheque',false);
+                            }
                             $account = Account::query()->where('id', $state)->whereNot('currency_id', defaultCurrency()?->id)->first();
+                            // dd($account);
                             if ($account) {
                                 $set('currency_id', $account->currency_id);
                                 $set('exchange_rate', number_format($account->currency->exchange_rate));
@@ -196,22 +204,24 @@ class InvoiceResource extends Resource
                         ])->columns(4)->visible(function (Get $get) {
                             return $get('isCurrency');
                         }),
-                        Forms\Components\Checkbox::make('Cheque')->inline()->live(),
+                        Forms\Components\Checkbox::make('Cheque')->label('Cheque/Instalment')->inline()->live(),
                         Forms\Components\Section::make([
-                            Forms\Components\Fieldset::make('cheque')->relationship('cheque')->schema([
-                                Forms\Components\TextInput::make('cheque_number')->required()->maxLength(255),
-                                Forms\Components\TextInput::make('amount')->default(function (Get $get) {
+                            Forms\Components\Fieldset::make('cheque')->label('Cheque/Instalment')->relationship('cheque')->schema([
+                                Forms\Components\TextInput::make('cheque_number')->maxLength(255),
+                                Forms\Components\TextInput::make('amount')->readOnly()->default(function (Get $get) {
                                     if ($get('debtor') > 0) {
                                         return $get('debtor');
                                     }
-                                    if ($get('creditor') > 0) {
+                                    else if ($get('creditor') > 0) {
                                         return $get('creditor');
+                                    }else {
+                                        return 0;
                                     }
                                 })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->numeric(),
-                                Forms\Components\DatePicker::make('issue_date')->required(),
+                                Forms\Components\DatePicker::make('issue_date')->default(now())->required(),
                                 Forms\Components\DatePicker::make('due_date')->required(),
-                                Forms\Components\TextInput::make('payer_name')->required()->maxLength(255),
-                                Forms\Components\TextInput::make('payee_name')->required()->maxLength(255),
+                                Forms\Components\TextInput::make('payer_name')->maxLength(255),
+                                Forms\Components\TextInput::make('payee_name')->maxLength(255),
                                 Forms\Components\TextInput::make('bank_name')->maxLength(255),
                                 Forms\Components\TextInput::make('branch_name')->maxLength(255),
                                 Forms\Components\Textarea::make('description')->columnSpanFull(),

@@ -23,6 +23,7 @@ return new class extends Migration
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('currency_id')->constrained('currencies')->cascadeOnDelete()->cascadeOnUpdate();
             $table->boolean('built_in')->default(0);
+            $table->boolean('has_cheque')->default(0);
             $table->text('description')->nullable();
             $table->timestamp('closed_at')->nullable();
             $table->softDeletes();

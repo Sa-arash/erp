@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('cheques', function (Blueprint $table) {
             $table->id();
-            $table->string('cheque_number');
+            $table->string('cheque_number')->nullable();
             $table->string('bank_name')->nullable();
             $table->string('branch_name')->nullable();
             $table->string('account_number')->nullable();
@@ -22,8 +22,8 @@ return new class extends Migration
             $table->boolean('type')->default(0);
             $table->timestamp('due_date')->nullable();
             $table->enum('status',['issued','paid','returned','blocked','pending','cancelled','post_dated']);
-            $table->string('payer_name');
-            $table->string('payee_name');
+            $table->string('payer_name')->nullable();
+            $table->string('payee_name')->nullable();
             $table->text('description')->nullable();
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('transaction_id')->nullable()->constrained('transactions')->cascadeOnDelete()->cascadeOnUpdate();
