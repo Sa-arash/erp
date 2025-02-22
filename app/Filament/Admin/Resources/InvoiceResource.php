@@ -96,10 +96,20 @@ class InvoiceResource extends Resource
                         })->afterStateUpdated(function ($state, Forms\Set $set) {
                             $query = Account::query()->find($state);
                             // dd($query);
-                            if($query->has_cheque == 1){
-                                $set('Cheque',true);
-                            }else{
-                                $set('Cheque',false);
+                            if ($query) {
+                                if($query->type == 'debtor')
+                                {
+                                    $set('cheque.type', 0);
+                                }else{
+                                    $set('cheque.type', 1);
+                                }
+                                if ($query->has_cheque == 1) {
+                                    $set('Cheque', true);
+                                } else {
+                                    $set('Cheque', false);
+                                }
+                            } else {
+                                $set('Cheque', false);
                             }
                             $account = Account::query()->where('id', $state)->whereNot('currency_id', defaultCurrency()?->id)->first();
                             // dd($account);
@@ -112,7 +122,7 @@ class InvoiceResource extends Resource
                         })->live()->defaultOpenLevel(3)->live()->label('Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('company_id', getCompany()->id))->searchable(),
                         Forms\Components\TextInput::make('description')->required(),
 
-                        Forms\Components\TextInput::make('debtor')->prefix(defaultCurrency()->symbol)->live(true)->afterStateUpdated(function ($state, Forms\Set $set,Get $get) {
+                        Forms\Components\TextInput::make('debtor')->prefix(defaultCurrency()->symbol)->live(true)->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
                             if ($get('Cheque')) {
                                 $set('cheque.amount', $state);
                             }
@@ -180,7 +190,7 @@ class InvoiceResource extends Resource
                             }),
                             TextInput::make('exchange_rate')->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                             Forms\Components\TextInput::make('debtor_foreign')->live(true)->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
-                                $set('debtor', number_format((float) str_replace(',', '', $state) * (float) str_replace(',','',$get('exchange_rate'))));
+                                $set('debtor', number_format((float) str_replace(',', '', $state) * (float) str_replace(',', '', $get('exchange_rate'))));
                             })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)->rules([
                                 fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
                                     if ($get('debtor_foreign') == 0 && $get('creditor_foreign') == 0) {
@@ -191,7 +201,7 @@ class InvoiceResource extends Resource
                                 },
                             ]),
                             Forms\Components\TextInput::make('creditor_foreign')->live(true)->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
-                                $set('creditor',number_format((float) str_replace(',', '', $state) * (float) str_replace(',','',$get('exchange_rate'))));
+                                $set('creditor', number_format((float) str_replace(',', '', $state) * (float) str_replace(',', '', $get('exchange_rate'))));
                             })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)->rules([
                                 fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
                                     if ($get('debtor_foreign') == 0 && $get('creditor_foreign') == 0) {
@@ -211,10 +221,9 @@ class InvoiceResource extends Resource
                                 Forms\Components\TextInput::make('amount')->readOnly()->default(function (Get $get) {
                                     if ($get('debtor') > 0) {
                                         return $get('debtor');
-                                    }
-                                    else if ($get('creditor') > 0) {
+                                    } else if ($get('creditor') > 0) {
                                         return $get('creditor');
-                                    }else {
+                                    } else {
                                         return 0;
                                     }
                                 })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->numeric(),
@@ -244,7 +253,7 @@ class InvoiceResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->defaultSort('id','desc')
+        return $table->defaultSort('id', 'desc')
             ->headerActions([
                 Tables\Actions\ExportAction::make()
                     ->exporter(InvoiceExporter::class)->color('purple')
@@ -279,7 +288,7 @@ class InvoiceResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-//                    Tables\Actions\DeleteBulkAction::make(),
+                    //                    Tables\Actions\DeleteBulkAction::make(),
                     Tables\Actions\ExportAction::make()
                         ->exporter(InvoiceExporter::class)->color('purple')
                 ]),

@@ -145,34 +145,33 @@ class PurchaseOrderResource extends Resource
                                     ->options((getCompany()->parties->where('type', 'vendor')->pluck('info', 'id')))
                                     ->searchable()->preload()->required(),
                                 Select::make('currency_id')->live()->label('Currency')
-                                
-                                ->afterStateUpdated(function(Set $set , $state){
-                                    $currency = Currency::find($state);
-                                    if($currency!== null)
-                                    {
-                                        // dd($currency,$currency->exchange_rate);
 
-                                        $set('exchange_rate', $currency->exchange_rate);
-                                    }
-                                })
-                                
-                                ->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([
-                                    \Filament\Forms\Components\Section::make([
-                                        TextInput::make('name')->required()->maxLength(255),
-                                        TextInput::make('symbol')->required()->maxLength(255),
-                                        TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-                                    ])->columns(3)
-                                ])->createOptionUsing(function ($data) {
-                                    $data['company_id'] = getCompany()->id;
-                                    Notification::make('success')->title('success')->success()->send();
-                                    return Currency::query()->create($data)->getKey();
-                                })->editOptionForm([
-                                    Section::make([
-                                        TextInput::make('name')->required()->maxLength(255),
-                                        TextInput::make('symbol')->required()->maxLength(255),
-                                        TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-                                    ])->columns(3)
-                                ]),
+                                    ->afterStateUpdated(function (Set $set, $state) {
+                                        $currency = Currency::find($state);
+                                        if ($currency !== null) {
+                                            // dd($currency,$currency->exchange_rate);
+
+                                            $set('exchange_rate', $currency->exchange_rate);
+                                        }
+                                    })
+
+                                    ->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([
+                                        \Filament\Forms\Components\Section::make([
+                                            TextInput::make('name')->required()->maxLength(255),
+                                            TextInput::make('symbol')->required()->maxLength(255),
+                                            TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                                        ])->columns(3)
+                                    ])->createOptionUsing(function ($data) {
+                                        $data['company_id'] = getCompany()->id;
+                                        Notification::make('success')->title('success')->success()->send();
+                                        return Currency::query()->create($data)->getKey();
+                                    })->editOptionForm([
+                                        Section::make([
+                                            TextInput::make('name')->required()->maxLength(255),
+                                            TextInput::make('symbol')->required()->maxLength(255),
+                                            TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                                        ])->columns(3)
+                                    ]),
                                 Forms\Components\TextInput::make('exchange_rate')
                                     ->required()->default(1)
                                     ->numeric(),
@@ -364,6 +363,26 @@ class PurchaseOrderResource extends Resource
                                             $set('isCurrency', 0);
                                             return $state;
                                         })->afterStateUpdated(function ($state, Forms\Set $set) {
+                                            $query = Account::query()->find($state);
+                                            // dd($query);
+                                            if ($query) {
+
+                                                if ($query->type == 'debtor') {
+                                                    $set('cheque.type', 0);
+                                                } else {
+
+                                                    $set('cheque.type', 1);
+                                                }
+
+                                                if ($query->has_cheque == 1) {
+                                                    $set('Cheque', true);
+                                                } else {
+                                                    $set('Cheque', false);
+                                                }
+                                            } else {
+                                                $set('Cheque', false);
+                                            }
+
                                             $account = Account::query()->where('id', $state)->whereNot('currency_id', defaultCurrency()?->id)->first();
                                             if ($account) {
                                                 $set('currency_id', $account->currency_id);
@@ -371,7 +390,7 @@ class PurchaseOrderResource extends Resource
                                                 return $set('isCurrency', 1);
                                             }
                                             return $set('isCurrency', 0);
-                                        })->live()->defaultOpenLevel(3)->live()->label('Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('company_id', getCompany()->id))->searchable(),
+                                        })->live()->defaultOpenLevel(3)->live()->label('Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('group','asset')->where('company_id', getCompany()->id))->searchable(),
                                         Forms\Components\TextInput::make('description')->required(),
 
                                         Forms\Components\TextInput::make('debtor')->prefix(defaultCurrency()->symbol)->mask(RawJs::make('$money($input)'))->readOnly()->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)
@@ -501,22 +520,24 @@ class PurchaseOrderResource extends Resource
                                         ])->columns(4)->visible(function (Get $get) {
                                             return $get('isCurrency');
                                         }),
-                                        Forms\Components\Checkbox::make('Cheque')->inline()->live(),
+                                        Forms\Components\Checkbox::make('Cheque')->label('Cheque/Instalment')->inline()->live(),
                                         Forms\Components\Section::make([
-                                            Forms\Components\Fieldset::make('cheque')->relationship('cheque')->schema([
-                                                Forms\Components\TextInput::make('cheque_number')->required()->maxLength(255),
+                                            Forms\Components\Fieldset::make('cheque')->label('Cheque/Instalment')->relationship('cheque')->schema([
+                                                Forms\Components\TextInput::make('cheque_number')->maxLength(255),
                                                 Forms\Components\TextInput::make('amount')->default(function (Get $get) {
                                                     if ($get('debtor') > 0) {
                                                         return $get('debtor');
                                                     }
-                                                    if ($get('creditor') > 0) {
+                                                    else if ($get('creditor') > 0) {
                                                         return $get('creditor');
+                                                    } else {
+                                                        return 0;
                                                     }
                                                 })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->numeric(),
-                                                Forms\Components\DatePicker::make('issue_date')->required(),
+                                                Forms\Components\DatePicker::make('issue_date')->required()->default(now()),
                                                 Forms\Components\DatePicker::make('due_date')->required(),
-                                                Forms\Components\TextInput::make('payer_name')->required()->maxLength(255),
-                                                Forms\Components\TextInput::make('payee_name')->required()->maxLength(255),
+                                                Forms\Components\TextInput::make('payer_name')->maxLength(255),
+                                                Forms\Components\TextInput::make('payee_name')->maxLength(255),
                                                 Forms\Components\TextInput::make('bank_name')->maxLength(255),
                                                 Forms\Components\TextInput::make('branch_name')->maxLength(255),
                                                 Forms\Components\Textarea::make('description')->columnSpanFull(),

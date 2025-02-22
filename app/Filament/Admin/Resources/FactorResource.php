@@ -264,6 +264,24 @@ class FactorResource extends Resource
                                         $set('isCurrency', 0);
                                         return $state;
                                     })->afterStateUpdated(function ($state, Forms\Set $set) {
+                                        $query = Account::query()->find($state);
+                                        // dd($query);
+                                        if ($query) {
+                                            if($query->type == 'debtor')
+                                            {
+                                                $set('cheque.type', 0);
+                                            }else{
+                                                $set('cheque.type', 1);
+                                            }
+                                            if ($query->has_cheque == 1) {
+                                                $set('Cheque', true);
+                                            } else {
+                                                $set('Cheque', false);
+                                            }
+                                        } else {
+                                            $set('Cheque', false);
+                                        }
+
                                         $account = Account::query()->where('id', $state)->whereNot('currency_id', defaultCurrency()?->id)->first();
                                         if ($account) {
                                             $set('currency_id', $account->currency_id);
@@ -442,22 +460,24 @@ class FactorResource extends Resource
                                     ])->columns(4)->visible(function (Get $get) {
                                         return $get('isCurrency');
                                     }),
-                                    Forms\Components\Checkbox::make('Cheque')->inline()->live(),
+                                    Forms\Components\Checkbox::make('Cheque')->label('Cheque/Instalment')->inline()->live(),
                                     Forms\Components\Section::make([
-                                        Forms\Components\Fieldset::make('cheque')->relationship('cheque')->schema([
-                                            Forms\Components\TextInput::make('cheque_number')->required()->maxLength(255),
+                                        Forms\Components\Fieldset::make('cheque')->label('Cheque/Instalment')->relationship('cheque')->schema([
+                                            Forms\Components\TextInput::make('cheque_number')->maxLength(255),
                                             Forms\Components\TextInput::make('amount')->default(function (Get $get) {
                                                 if ($get('debtor') > 0) {
                                                     return $get('debtor');
                                                 }
-                                                if ($get('creditor') > 0) {
+                                                else if ($get('creditor') > 0) {
                                                     return $get('creditor');
+                                                } else {
+                                                    return 0;
                                                 }
                                             })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->numeric(),
-                                            Forms\Components\DatePicker::make('issue_date')->required(),
+                                            Forms\Components\DatePicker::make('issue_date')->default(now())->required(),
                                             Forms\Components\DatePicker::make('due_date')->required(),
-                                            Forms\Components\TextInput::make('payer_name')->required()->maxLength(255),
-                                            Forms\Components\TextInput::make('payee_name')->required()->maxLength(255),
+                                            Forms\Components\TextInput::make('payer_name')->maxLength(255),
+                                            Forms\Components\TextInput::make('payee_name')->maxLength(255),
                                             Forms\Components\TextInput::make('bank_name')->maxLength(255),
                                             Forms\Components\TextInput::make('branch_name')->maxLength(255),
                                             Forms\Components\Textarea::make('description')->columnSpanFull(),
@@ -1020,6 +1040,23 @@ class FactorResource extends Resource
                                     $set('isCurrency', 0);
                                     return $state;
                                 })->afterStateUpdated(function ($state, Forms\Set $set) {
+                                    $query = Account::query()->find($state);
+                                    // dd($query);
+                                    if ($query) {
+                                        if($query->type == 'debtor')
+                                        {
+                                            $set('cheque.type', 0);
+                                        }else{
+                                            $set('cheque.type', 1);
+                                        }
+                                        if ($query->has_cheque == 1) {
+                                            $set('Cheque', true);
+                                        } else {
+                                            $set('Cheque', false);
+                                        }
+                                    } else {
+                                        $set('Cheque', false);
+                                    }
                                     $account = Account::query()->where('id', $state)->whereNot('currency_id', defaultCurrency()?->id)->first();
                                     if ($account) {
                                         $set('currency_id', $account->currency_id);
@@ -1197,22 +1234,24 @@ class FactorResource extends Resource
                                 ])->columns(4)->visible(function (Get $get) {
                                     return $get('isCurrency');
                                 }),
-                                Forms\Components\Checkbox::make('Cheque')->inline()->live(),
+                                Forms\Components\Checkbox::make('Cheque')->label('Cheque/Instalment')->inline()->live(),
                                 Forms\Components\Section::make([
-                                    Forms\Components\Fieldset::make('cheque')->relationship('cheque')->schema([
-                                        Forms\Components\TextInput::make('cheque_number')->required()->maxLength(255),
+                                    Forms\Components\Fieldset::make('cheque')->label('Cheque/Instalment')->relationship('cheque')->schema([
+                                        Forms\Components\TextInput::make('cheque_number')->maxLength(255),
                                         Forms\Components\TextInput::make('amount')->default(function (Get $get) {
                                             if ($get('debtor') > 0) {
                                                 return $get('debtor');
                                             }
                                             if ($get('creditor') > 0) {
                                                 return $get('creditor');
+                                            } else {
+                                                return 0;
                                             }
                                         })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->numeric(),
-                                        Forms\Components\DatePicker::make('issue_date')->required(),
+                                        Forms\Components\DatePicker::make('issue_date')->default(now())->required(),
                                         Forms\Components\DatePicker::make('due_date')->required(),
-                                        Forms\Components\TextInput::make('payer_name')->required()->maxLength(255),
-                                        Forms\Components\TextInput::make('payee_name')->required()->maxLength(255),
+                                        Forms\Components\TextInput::make('payer_name')->maxLength(255),
+                                        Forms\Components\TextInput::make('payee_name')->maxLength(255),
                                         Forms\Components\TextInput::make('bank_name')->maxLength(255),
                                         Forms\Components\TextInput::make('branch_name')->maxLength(255),
                                         Forms\Components\Textarea::make('description')->columnSpanFull(),
