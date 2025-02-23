@@ -150,7 +150,7 @@ class FactorResource extends Resource
                                             return false;
                                         }
                                     })->required()->tel()->maxLength(255),
-                                Forms\Components\Fieldset::make('Account Vendor')->visible(fn($state)=>isset($state['id']))->relationship('accountVendor')->schema([
+                                Forms\Components\Fieldset::make('Account Vendor')->visible(fn($state)=>isset($state['id']))->schema([
                                     Forms\Components\TextInput::make('name')->required()->maxLength(255),
                                     SelectTree::make('parent_id')->live()->label('Parent')->disabledOptions(function ($state, SelectTree $component) {
                                         return Account::query()->where('level', 'detail')->orWhereHas('transactions',function ($query){})->pluck('id')->toArray();
@@ -163,7 +163,7 @@ class FactorResource extends Resource
                                     ToggleButtons::make('group')->disabled()->grouped()->options(['Asset'=>'Asset','Liabilitie'=>'Liabilitie','Equity'=>'Equity','Income'=>'Income','Expense'=>'Expense'])->inline(),
                                     Forms\Components\Textarea::make('description')->maxLength(255)->columnSpanFull(),
                                 ]),
-                                Forms\Components\Fieldset::make('Account Customer')->visible(fn($state)=>isset($state['id']))->relationship('accountCustomer')->schema([
+                                Forms\Components\Fieldset::make('Account Customer')->visible(fn($state)=>isset($state['id']))->schema([
                                     Forms\Components\TextInput::make('name')->required()->maxLength(255),
                                     SelectTree::make('parent_id')->live()->label('Parent')->disabledOptions(function ($state, SelectTree $component) {
                                         return Account::query()->where('level', 'detail')->orWhereHas('transactions',function ($query){})->pluck('id')->toArray();
@@ -648,7 +648,7 @@ class FactorResource extends Resource
                             //         })
                             // ])->columns(1)->columnSpanFull()
 
-                       
+
 
                     ])
                 ])->columnSpanFull(),
