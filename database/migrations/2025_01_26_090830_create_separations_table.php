@@ -15,9 +15,10 @@ return new class extends Migration
             $table->id();
             $table->text('comments_signature')->nullable();
             $table->foreignId('employee_id')->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->foreignId('approved_by')->nullable()->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('attested_by')->nullable()->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
             $table->date('date');
+            $table->text('reason');
+            $table->text('feedback')->nullable();
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();
         });

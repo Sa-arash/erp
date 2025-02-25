@@ -68,7 +68,7 @@ class EmployeeResource extends Resource implements HasShieldPermissions
             'password',
             'role',
             'email',
-            'separation'
+            'clearance'
         ];
     }
 
@@ -257,7 +257,7 @@ class EmployeeResource extends Resource implements HasShieldPermissions
                             Forms\Components\Textarea::make('address')->maxLength(255)->columnSpanFull(),
                             Forms\Components\Textarea::make('address2')->label('Address 2')->columnSpanFull()->maxLength(250),
                         ])->columns(2),
-                ])->columnSpanFull()
+                ])->skippable()->columnSpanFull()
             ]);
     }
 

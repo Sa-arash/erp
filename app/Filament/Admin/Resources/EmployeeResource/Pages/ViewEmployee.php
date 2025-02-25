@@ -33,7 +33,7 @@ class  ViewEmployee extends ViewRecord
     {
         return [
             Actions\EditAction::make()->color('success'),
-            Actions\Action::make('separation')->label('Separation')->form([
+            Actions\Action::make('separation')->label('Clearance')->form([
                 DatePicker::make('date')->required()
             ])->action(function ($data){
                 $data['employee_id']=$this->record->id;
@@ -41,7 +41,7 @@ class  ViewEmployee extends ViewRecord
                 $data['approved_by']=auth()->user()->employee->id;
                 $this->record->update('leave_date',$data['date']);
                 $roles=Role::query()->with('users')->whereHas('permissions',function ($query){
-                   return $query->where('name','separation_employee');
+                   return $query->where('name','clearance_employee');
                 })->where('company_id',getCompany()->id)->get();
                 $userIDs=[];
                 foreach ($roles as $role){
@@ -59,14 +59,14 @@ class  ViewEmployee extends ViewRecord
                         'status' => "Pending"
                     ]);
                 }
-                Notification::make('success')->title('Separation Submitted Successfully')->success()->send()->sendToDatabase(auth()->user());
+                Notification::make('success')->title('Clearance Submitted Successfully')->success()->send()->sendToDatabase(auth()->user());
             })->color('danger')->hidden(fn($record)=>isset($record->separation)),
-            Actions\Action::make('View Separation')->label('View Separation')->infolist(function ($record){
+            Actions\Action::make('View Separation')->label('View Clearance')->infolist(function ($record){
                 return [
                     Section::make([
                         TextEntry::make('fullName'),
                         TextEntry::make('date'),
-                        Fieldset::make('separation')->relationship('separation')->schema([
+                        Fieldset::make('Clearance')->relationship('separation')->schema([
                             RepeatableEntry::make('comments_signature')->schema([
                                 TextEntry::make('employee'),
                                 TextEntry::make('comment'),

@@ -318,4 +318,8 @@ class Company extends Model implements HasAvatar, HasName
     {
         return $this->hasMany(Currency::class);
     }
+    public function separations(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Separation::class);
+    }
 }
