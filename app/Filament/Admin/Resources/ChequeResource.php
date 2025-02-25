@@ -60,13 +60,10 @@ class ChequeResource extends Resource
     {
         return $table->defaultSort('id','desc')
             ->columns([
-                Tables\Columns\TextColumn::make('cheque_number')->searchable(),
+
                 Tables\Columns\TextColumn::make('payer_name')->searchable(),
                 Tables\Columns\TextColumn::make('payee_name')->searchable(),
                 Tables\Columns\TextColumn::make('type')->state(fn($record) => $record->type ? "Payable" : "Receivable")->badge(),
-                Tables\Columns\TextColumn::make('bank_name')->searchable(),
-                Tables\Columns\TextColumn::make('branch_name')->searchable(),
-                Tables\Columns\TextColumn::make('account_number')->searchable(),
                 Tables\Columns\TextColumn::make('amount')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('issue_date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('due_date')->date()->sortable(),
