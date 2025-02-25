@@ -24,15 +24,15 @@ class TaskResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\TextInput::make('title')->required()->maxLength(255)->columnSpanFull(),
                Forms\Components\Section::make([
-                   Forms\Components\TextInput::make('title')->required()->maxLength(255),
                    Forms\Components\Select::make('employees')->required()->relationship('employees','fullName',modifyQueryUsing: fn($query)=>$query->where('employees.company_id',getCompany()->id))->searchable()->preload()->multiple()->pivotData([
                        'company_id'=>getCompany()->id
                    ]),
                    Forms\Components\DatePicker::make('start_date')->default(now())->required(),
                    Forms\Components\DatePicker::make('deadline')->afterOrEqual(fn(Forms\Get $get)=> $get('start_date'))->required(),
                    Forms\Components\Select::make('priority_level')->searchable()->preload()->options(['Low'=>'Low','Medium'=>'Medium','High'=>'High'])->required(),
-               ])->columns(5),
+               ])->columns(4),
                 Forms\Components\Textarea::make('description')->columnSpanFull(),
                 Forms\Components\FileUpload::make('document')->downloadable()->columnSpanFull(),
                 Forms\Components\Hidden::make('employee_id')->default(getEmployee()?->id)->required(),
