@@ -30,7 +30,7 @@ class SeparationResource extends Resource
             ->schema([
                 Forms\Components\Select::make('employee_id')->searchable()->preload()->relationship('employee', 'fullName', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->required(),
                 Forms\Components\DatePicker::make('date')->after(now())->default(now())->label('Date of Resignation ')->required(),
-                Forms\Components\Textarea::make('reason')->label('Reason for Resignation:')->required()->columnSpanFull(),
+                Forms\Components\Textarea::make('reason')->label('Reason for Resignation')->required()->columnSpanFull(),
                 Forms\Components\Textarea::make('feedback')->columnSpanFull(),
             ]);
     }

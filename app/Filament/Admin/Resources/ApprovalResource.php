@@ -41,7 +41,12 @@ class ApprovalResource extends Resource
                 Tables\Columns\TextColumn::make('approvable.employee.info')->label('Employee')->searchable()->badge(),
                 Tables\Columns\TextColumn::make('created_at')->label('Request Date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('approvable_type')->label('Request Type')->state(function ($record) {
-                    return substr($record->approvable_type, 11);
+                    $type=substr($record->approvable_type, 11);
+                    if ($type==="Separation"){
+                        return "Clearance";
+                    }
+                    return $type;
+
                 })->searchable()->badge(),
                 Tables\Columns\TextColumn::make('approve_date')->label('Approval Date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('status')->badge(),

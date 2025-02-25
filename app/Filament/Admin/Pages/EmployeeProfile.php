@@ -4,12 +4,16 @@ namespace App\Filament\Admin\Pages;
 
 use App\Models\Employee;
 use App\Models\PurchaseOrder;
+use App\Models\Separation;
 use Filament\Actions\Action;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section as ComponentsSection;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Infolists\Components\Actions\Action as ActionsAction;
+use Filament\Infolists\Components\Fieldset;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\Section;
@@ -20,6 +24,7 @@ use Filament\Infolists\Contracts\HasInfolists;
 use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Spatie\Permission\Models\Role;
 
 class EmployeeProfile extends Page implements HasForms, HasInfolists
 {
@@ -63,7 +68,54 @@ class EmployeeProfile extends Page implements HasForms, HasInfolists
                     ]);
                     Notification::make('successfull')->success()->title('Success Full')->send()->sendToDatabase(auth()->user());
                 }),
+            Action::make('separation')->label('Clearance')->form([
+                DatePicker::make('date')->default(now())->label('Date of Resignation ')->required(),
+                Textarea::make('reason')->columnSpanFull()->label('Reason for Resignation')->required(),
+                Textarea::make('feedback')->columnSpanFull(),
+            ])->action(function ($data){
 
+                $data['employee_id']=auth()->user()->employee->id;
+                $data['company_id']=getCompany()->id;
+                $data['approved_by']=auth()->user()->employee->id;
+                $this->record->update(['leave_date'=>$data['date']]);
+                $roles=Role::query()->with('users')->whereHas('permissions',function ($query){
+                    return $query->where('name','clearance_employee');
+                })->where('company_id',getCompany()->id)->get();
+                $userIDs=[];
+                foreach ($roles as $role){
+                    foreach ($role->users->pluck('id')->toArray() as $userID ){
+                        $userIDs[]=$userID ;
+                    }
+                }
+                $employees= Employee::query()->whereIn('user_id',$userIDs)->get();
+                $record=Separation::query()->create($data);
+                foreach ($employees as $employee){
+                    $record->approvals()->create([
+                        'employee_id' => $employee->id,
+                        'company_id' => getCompany()->id,
+                        'position' => $employee->position?->title,
+                        'status' => "Pending"
+                    ]);
+                }
+                Notification::make('success')->title('Clearance Submitted Successfully')->success()->send()->sendToDatabase(auth()->user());
+            })->color('danger')->hidden(fn($record)=>isset(auth()->user()->employee->separation)),
+            Action::make('View Clearance')->visible(fn($record)=>isset(auth()->user()->employee->separation))->label('View Clearance')->record(auth()->user()->employee)->infolist(function (){
+                return [
+                    Section::make([
+                        TextEntry::make('fullName'),
+                        TextEntry::make('date'),
+                        Fieldset::make('Clearance')->relationship('separation')->schema([
+                            RepeatableEntry::make('approvals')->schema([
+                                TextEntry::make('employee.info'),
+                                TextEntry::make('position'),
+                                TextEntry::make('status'),
+                                TextEntry::make('approve_date')->date(),
+                                TextEntry::make('comment')
+                            ])->columnSpanFull()->columns(4)
+                        ])
+                    ])->columns()
+                ];
+            })
 
 
 

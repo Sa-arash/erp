@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\EmployeeResource\Pages;
 use App\Filament\Admin\Resources\EmployeeResource;
 use App\Models\Employee;
 use App\Models\Permission;
+use Filament\Forms\Components\Textarea;
 use Spatie\Permission\Models\Role;
 use App\Models\Separation;
 use Filament\Actions;
@@ -34,12 +35,14 @@ class  ViewEmployee extends ViewRecord
         return [
             Actions\EditAction::make()->color('success'),
             Actions\Action::make('separation')->label('Clearance')->form([
-                DatePicker::make('date')->required()
+                DatePicker::make('date')->default(now())->label('Date of Resignation ')->required(),
+                Textarea::make('reason')->columnSpanFull()->label('Reason for Resignation')->required(),
+                Textarea::make('feedback')->columnSpanFull(),
             ])->action(function ($data){
                 $data['employee_id']=$this->record->id;
                 $data['company_id']=getCompany()->id;
                 $data['approved_by']=auth()->user()->employee->id;
-                $this->record->update('leave_date',$data['date']);
+                $this->record->update(['leave_date'=> $data['date']]);
                 $roles=Role::query()->with('users')->whereHas('permissions',function ($query){
                    return $query->where('name','clearance_employee');
                 })->where('company_id',getCompany()->id)->get();
@@ -61,18 +64,19 @@ class  ViewEmployee extends ViewRecord
                 }
                 Notification::make('success')->title('Clearance Submitted Successfully')->success()->send()->sendToDatabase(auth()->user());
             })->color('danger')->hidden(fn($record)=>isset($record->separation)),
-            Actions\Action::make('View Separation')->label('View Clearance')->infolist(function ($record){
+            Actions\Action::make('View Clearance')->visible(fn($record)=>isset($record->separation))->label('View Clearance')->infolist(function (){
                 return [
                     Section::make([
                         TextEntry::make('fullName'),
                         TextEntry::make('date'),
                         Fieldset::make('Clearance')->relationship('separation')->schema([
-                            RepeatableEntry::make('comments_signature')->schema([
-                                TextEntry::make('employee'),
-                                TextEntry::make('comment'),
-                                TextEntry::make('signature'),
-                                TextEntry::make('stats'),
-                            ])
+                            RepeatableEntry::make('approvals')->schema([
+                                TextEntry::make('employee.info'),
+                                TextEntry::make('position'),
+                                TextEntry::make('status'),
+                                TextEntry::make('approve_date')->date(),
+                                TextEntry::make('comment')
+                            ])->columnSpanFull()->columns(4)
                         ])
                     ])->columns()
                 ];
