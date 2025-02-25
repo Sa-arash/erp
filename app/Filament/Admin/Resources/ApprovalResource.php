@@ -6,6 +6,7 @@ use App\Filament\Admin\Resources\ApprovalResource\Pages;
 use App\Filament\Admin\Resources\ApprovalResource\RelationManagers;
 use App\Models\Approval;
 use App\Models\Employee;
+use App\Models\Payroll;
 use App\Models\Product;
 use App\Models\PurchaseRequestItem;
 use Filament\Forms;
@@ -136,8 +137,8 @@ class ApprovalResource extends Resource
                                 TextEntry::make('estimated_unit_cost')->numeric(),
                                 TextEntry::make('project.name')->badge(),
                                 TextEntry::make('description')->columnSpanFull(),
-                                TextEntry::make('head_decision')->badge()->label('Head Of Department Decision'),
-                                TextEntry::make('head_comment')->limit(50)->tooltip(fn($record) => $record->head_comment)->label('Head Of Department Comment'),
+                                TextEntry::make('head_decision')->badge()->label('Operation Decision'),
+                                TextEntry::make('head_comment')->limit(50)->tooltip(fn($record) => $record->head_comment)->label('Operation Comment'),
                                 TextEntry::make('ceo_decision')->badge()->label('CEO Decision'),
                                 TextEntry::make('ceo_comment')->tooltip(fn($record) => $record->ceo_comment)->label('CEO Comment'),
                             ])->columns(5)->columnSpanFull(),
@@ -201,7 +202,7 @@ class ApprovalResource extends Resource
                         if ($record->position === "CEO") {
                             $PR->update(['is_quotation' => $data['is_quotation'], 'status' => 'FinishedCeo']);
                         } else {
-                            $PR->update(['is_quotation' => $data['is_quotation'], 'status' => 'FinishedHead']);
+                            $PR->update(['is_quotation' => $data['is_quotation'], 'status' => 'FinishedOperation']);
                         }
                     }
                         foreach ($data['items'] as $item) {

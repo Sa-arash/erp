@@ -21,7 +21,7 @@ return new class extends Migration
 
         $table->enum('status', [
             'Requested',
-            'FinishedHead',
+            'FinishedOperation',
             'FinishedCeo',
             'Finished',
             'Rejected',
