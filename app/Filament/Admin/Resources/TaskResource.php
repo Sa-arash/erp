@@ -5,8 +5,13 @@ namespace App\Filament\Admin\Resources;
 use App\Filament\Admin\Resources\TaskResource\Pages;
 use App\Filament\Admin\Resources\TaskResource\RelationManagers;
 use App\Models\Task;
+use App\Models\TaskReports;
 use Filament\Forms;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -46,8 +51,8 @@ class TaskResource extends Resource
         return $table->defaultSort('id','desc')
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
-                Tables\Columns\TextColumn::make('employee.info')->label('Assigned By')->sortable(),
                 Tables\Columns\TextColumn::make('title')->label('Title')->sortable(),
+                Tables\Columns\TextColumn::make('employee.info')->label('Assigned By')->sortable(),
                 Tables\Columns\TextColumn::make('employees.fullName')->limitList(3)->bulleted()->label('Employees')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('start_date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('deadline')->date()->sortable(),
@@ -60,7 +65,29 @@ class TaskResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->visible(fn($record)=>$record->employee_id ===getEmployee()?->id),
+                Tables\Actions\Action::make('Send Reports')->form([
+                    Section::make([
+                        Textarea::make('description')->columnSpanFull()->required(),
+                        FileUpload::make('document')->columnSpanFull()
+                    ])->columns()
+                ])->action(function ($record,$data){
+                    TaskReports::query()->create([
+                        'date'=>now(),
+                        'employee_id'=>getEmployee()->id,
+                        'task_id'=>$record->id,
+                        'company_id'=>getCompany()->id,
+                        'description'=>$data['description'],
+                        'document'=>$data['document'],
+                    ]);
+                    Notification::make('success')->color('success')->success()->title('Submitted Successfully')->send();
+                })->visible(fn($record)=>$record->status->name ==="Processing"),
+                Tables\Actions\Action::make('Done')->color('success')->requiresConfirmation()->action(function ($record){
+                    $record->update(['status'=>'Completed']);
+                }),
+                Tables\Actions\Action::make('Canceled')->color('danger')->requiresConfirmation()->action(function ($record){
+                    $record->update(['status'=>'Canceled']);
+                }),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

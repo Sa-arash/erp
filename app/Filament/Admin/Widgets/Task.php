@@ -49,9 +49,12 @@ class Task extends BaseWidget
                     ]);
                     Notification::make('success')->color('success')->success()->title('Submitted Successfully')->send();
                 })->visible(fn($record)=>$record->status->name ==="Processing"),
-                Tables\Actions\Action::make('complete')->requiresConfirmation()->action(function ($record){
+                Tables\Actions\Action::make('Done')->requiresConfirmation()->action(function ($record){
                     $record->update(['status'=>'Completed']);
-                })
+                }),
+                Tables\Actions\Action::make('Canceled')->requiresConfirmation()->action(function ($record){
+                    $record->update(['status'=>'Completed']);
+                }),
             ]);
     }
 }
