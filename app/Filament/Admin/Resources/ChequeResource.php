@@ -138,7 +138,7 @@ class ChequeResource extends Resource
                                     'company_id' => getCompany()->id,
                                     'user_id' => auth()->id(),
                                     'financial_period_id' => getPeriod()->id,
-                                    'currency_id' => getCurrency()->id
+                                    'currency_id' => defaultCurrency()?->id
                                 ]);
                                 $invoice->transactions()->create([
                                     'account_id' => $record->transaction->account?->id,
