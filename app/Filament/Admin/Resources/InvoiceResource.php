@@ -93,20 +93,25 @@ class InvoiceResource extends Resource
                             }
                             $set('isCurrency', 0);
                             return $state;
-                        })->afterStateUpdated(function ($state, Forms\Set $set) {
+                        })->afterStateUpdated(function ($state, Forms\Set $set, $get) {
                             $query = Account::query()->find($state);
                             // dd($query);
                             if ($query) {
-                                if($query->type == 'debtor')
-                                {
+                                if ($query->type == 'debtor') {
                                     $set('cheque.type', 0);
-                                }else{
+                                } else {
                                     $set('cheque.type', 1);
                                 }
                                 if ($query->has_cheque == 1) {
                                     $set('Cheque', true);
                                 } else {
                                     $set('Cheque', false);
+                                }
+
+                                if ($get('debtor') > $get('creditor')) {
+                                    $set('cheque.amount', $get('debtor'));
+                                } else {
+                                    $set('cheque.amount', $get('creditor'));
                                 }
                             } else {
                                 $set('Cheque', false);
@@ -214,7 +219,7 @@ class InvoiceResource extends Resource
                         ])->columns(4)->visible(function (Get $get) {
                             return $get('isCurrency');
                         }),
-                        Forms\Components\Checkbox::make('Cheque')->label('Cheque/Instalment')->inline()->live(),
+                        Forms\Components\Hidden::make('Cheque')->label('Cheque/Instalment')->live(),
                         Forms\Components\Section::make([
                             Forms\Components\Fieldset::make('cheque')->label('Cheque/Instalment')->relationship('cheque')->schema([
                                 Forms\Components\TextInput::make('cheque_number')->maxLength(255),
@@ -239,7 +244,7 @@ class InvoiceResource extends Resource
                             ]),
                         ])->collapsible()->persistCollapsed()->visible(fn(Forms\Get $get) => $get('Cheque')),
                         Forms\Components\Hidden::make('financial_period_id')->required()->label('Financial Period')->default(getPeriod()?->id)
-                    ])->minItems(2)->columns(5)->defaultItems(2)
+                    ])->minItems(2)->columns(4)->defaultItems(2)
                         ->mutateRelationshipDataBeforecreateUsing(function (array $data): array {
                             $data['user_id'] = auth()->id();
                             $data['company_id'] = getCompany()->id;

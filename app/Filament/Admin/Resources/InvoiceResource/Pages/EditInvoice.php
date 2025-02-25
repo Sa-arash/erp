@@ -88,7 +88,7 @@ class EditInvoice extends EditRecord
         $this->fillForm();
         foreach ($this->data['transactions']  as $key=> $datum){
 
-            if ($datum['cheque']['cheque_number']){
+            if ($datum['cheque']['due_date']){
                 $this->data['transactions'][$key]['Cheque']=true;
             }
         }
