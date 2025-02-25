@@ -211,6 +211,7 @@ class AdminPanelProvider extends PanelProvider
                 // ...EditTeamProfile::getNavigationItems()
                 // ...PayRoll::getNavigationItems()
             ])->navigationGroups([
+                'IT Management',
                 'HR Management System',
                 'Finance Management',
                 'Accounting Report',
