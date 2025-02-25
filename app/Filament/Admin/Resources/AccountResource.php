@@ -282,7 +282,7 @@ class AccountResource extends Resource
                                 ]);
                             }
                         })->icon('heroicon-s-printer')->color('warning')->visible(fn($record)=>$record->currency_id !== defaultCurrency()?->id),
-                    Action::make('new')->icon('heroicon-o-document-chart-bar')->color('info')->label('New Account')->hidden(fn($record) => $record->level === "detail")
+                    Action::make('new')->icon('heroicon-o-document-chart-bar')->color('info')->label('New Account')->hidden(fn($record) => $record->level === "detail" || isset($record->transactions[0]))
                         ->url(function ($record) {
                             return AccountResource::getUrl('create', ['parent' => $record->id]);
                         })
