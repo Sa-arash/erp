@@ -29,7 +29,7 @@ class ChequeResource extends Resource
     protected static ?int $navigationSort = 2;
     protected static ?string $navigationGroup = 'Finance Management';
 
-    protected static ?string $navigationLabel = 'Cheque Management';
+    protected static ?string $navigationLabel = 'AR/AP';
 
     public static function form(Form $form): Form
     {
