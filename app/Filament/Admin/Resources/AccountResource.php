@@ -13,6 +13,7 @@ use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Infolists\Components\Section;
@@ -69,6 +70,7 @@ class AccountResource extends Resource
                         }
                         $set('type', $parent?->type);
                         $set('group', $parent?->group);
+                         $set('has_cheque', $parent?->has_cheque);
                     })->searchable()->live()->default((int)Request::query('parent')),
                 Forms\Components\TextInput::make('code')->formatStateUsing(function ($state) {
                     if ((int)Request::query('parent')) {
@@ -119,7 +121,6 @@ class AccountResource extends Resource
                         return  $state;
                     }
                 })->grouped()->inline()->options(['creditor' => 'Creditor', 'debtor' => 'Debtor'])->required(),
-
                 Forms\Components\ToggleButtons::make('group')->disabled()->grouped()
                 ->formatStateUsing(function ($state) {
                     if ((int)Request::query('parent')){
@@ -129,6 +130,13 @@ class AccountResource extends Resource
                     }
                 })
                 ->options(['Asset'=>'Asset','Liabilitie'=>'Liabilitie','Equity'=>'Equity','Income'=>'Income','Expense'=>'Expense'])->inline(),
+                Toggle::make('has_cheque')->required()->disabled()->inline()->formatStateUsing(function ($state) {
+                    if ((int)Request::query('parent')){
+                        return Account::query()->where('id', (int)Request::query('parent'))->first()?->has_cheque;
+                    }else{
+                        return  $state;
+                    }
+                }),
                 Forms\Components\Textarea::make('description')->maxLength(255)->columnSpanFull(),
 
             ]);
@@ -274,7 +282,7 @@ class AccountResource extends Resource
                                 ]);
                             }
                         })->icon('heroicon-s-printer')->color('warning')->visible(fn($record)=>$record->currency_id !== defaultCurrency()?->id),
-                    Action::make('new')->icon('heroicon-o-document-chart-bar')->color('info')->label('New Account')->hidden(fn($record) => $record->level === "detail")
+                    Action::make('new')->icon('heroicon-o-document-chart-bar')->color('info')->label('New Account')->hidden(fn($record) => $record->level === "detail" || isset($record->transactions[0]))
                         ->url(function ($record) {
                             return AccountResource::getUrl('create', ['parent' => $record->id]);
                         })
