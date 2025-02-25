@@ -68,7 +68,7 @@ class EmployeeResource extends Resource implements HasShieldPermissions
             'password',
             'role',
             'email',
-            'clearance'
+            'clearanceApproval'
         ];
     }
 
@@ -528,74 +528,6 @@ class EmployeeResource extends Resource implements HasShieldPermissions
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')
                     ->url(fn($record) => route('pdf.employee', ['id' => $record->id]))->openUrlInNewTab(),
-                Tables\Actions\ActionGroup::make([
-                    Tables\Actions\Action::make('makeUser')->icon('heroicon-o-user-circle')->label('Create User')->form([
-                        Forms\Components\Section::make('')->schema([
-                            Forms\Components\Select::make('roles')->model(User::class)
-                                ->options(Role::query()->where('company_id',getCompany()->id)->pluck('name','id'))
-                                ->multiple()
-                                ->preload()
-                                ->searchable(),
-                            Forms\Components\TextInput::make('email')->model(User::class)->email()->unique('users', 'email', ignoreRecord: true)->required()->maxLength(255),
-                            Forms\Components\TextInput::make('password')->autocomplete(false)->hintAction(Forms\Components\Actions\Action::make('generate_password')->action(function (Forms\Set $set) {
-                                $password = Str::password(8);
-                                $set('password', $password);
-                                $set('password_confirmation', $password);
-                            }))->revealable()->required()->configure()->same('password_confirmation')->password(),
-                            Forms\Components\TextInput::make('password_confirmation')->autocomplete(false)->revealable()->required()->password()
-                        ])
-                    ])->visible(fn($record) => (auth()->user()->can('user_employee')  and $record->user === null))->action(function ($data,$record){
-                        $roles = $data['roles'];
-                        $rolesWithCompanyId = [];
-                        foreach ($roles as $roleId) {
-                            $rolesWithCompanyId[$roleId] = ['company_id' => getCompany()->id];
-                        }
-
-                        $user = User::query()->create([
-                            'name' => $record->fullName,
-                            'email' => $data['email'],
-                            'password' => $data['password']
-                        ]);
-                        $user->roles()->attach($rolesWithCompanyId);
-                        $record->update(['user_id'=>$user->id]);
-                        CompanyUser::query()->create(['user_id'=>$record->user_id,'company_id'=>getCompany()->id]);
-                        Notification::make('success')->success()->title('Submitted Successfully')->send();
-
-                    }),
-                    Tables\Actions\Action::make('setMail')->visible(fn($record) => $record->user and auth()->user()->can('email_employee')  )->label('Modify Mail')->fillForm(function ($record) {
-                        return [
-                            'email' => $record->user->email
-                        ];
-                    })->form(function ($record) {
-                        return [
-                            Forms\Components\TextInput::make('email')->model(User::class)->email()->unique('users', 'email', ignorable: User::query()->firstWhere('id', $record->user_id), ignoreRecord: true)->required()->maxLength(255),
-                        ];
-                    })->action(function ($data, $record) {
-                        $record->user->update(['email' => $data['email']]);
-                        Notification::make('success')->success()->title('Submitted Successfully')->send();
-                    })->requiresConfirmation()->icon('heroicon-c-at-symbol')->color('info'),
-                    Tables\Actions\Action::make('setPassword')->visible(fn($record) => $record->user and auth()->user()->can('password_employee') )->label('Reset Password')->form([
-                        Forms\Components\TextInput::make('password')->required()->autocomplete(false)
-                    ])->requiresConfirmation()->action(function ($record, $data) {
-                        $record->user->update(['password' => $data['password']]);
-                        Notification::make('success')->success()->title('Submitted Successfully')->send();
-                    })->icon('heroicon-s-lock-closed')->color('warning'),
-                    Tables\Actions\Action::make('setRole')->visible(fn($record) => $record->user and auth()->user()->can('role_employee') )->fillForm(function ($record) {
-                        return [
-                            'roles' => $record->user->roles->pluck('id')->toArray()
-                        ];
-                    })->label('Assignee Role')->form([
-                        Forms\Components\Select::make('roles')->pivotData(['company_id' => getCompany()->id])->options(getCompany()->roles->pluck('name', 'id'))->multiple()->preload()->searchable(),
-                    ])->requiresConfirmation()->action(function ($record, $data) {
-                        $user = User::query()->firstWhere('id', $record->user_id);
-                        $rolesWithCompanyId = [];
-                        foreach ($data['roles'] as $roleId) {
-                            $rolesWithCompanyId[$roleId] = ['company_id' => getCompany()->id];
-                        }
-                        $user->roles()->sync($rolesWithCompanyId);
-                        Notification::make('success')->success()->title('Submitted Successfully')->send();
-                    })->icon('heroicon-s-shield-check')->color('danger'),
-                ])->color('warning'),
 
             ])->actionsColumnLabel('Actions')->actionsAlignment(CellAlignment::CENTER)
             ->bulkActions([

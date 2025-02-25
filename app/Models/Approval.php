@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ApprovalStatus;
 use App\Enums\TaskStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
@@ -9,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 class Approval extends Model
 {
     protected $guarded = ['id'];
-    protected $casts = ['status' => TaskStatus::class];
+    protected $casts = ['status' => ApprovalStatus::class];
 
     public $count=0;
 

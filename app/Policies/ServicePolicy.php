@@ -71,7 +71,7 @@ class ServicePolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_service');
+        return $user->can('{{ ForceDeleteAny }}');
     }
 
     /**
@@ -87,7 +87,7 @@ class ServicePolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_service');
+        return $user->can('{{ RestoreAny }}');
     }
 
     /**
@@ -95,7 +95,7 @@ class ServicePolicy
      */
     public function replicate(User $user, Service $service): bool
     {
-        return $user->can('replicate_service');
+        return $user->can('{{ Replicate }}');
     }
 
     /**
@@ -103,6 +103,6 @@ class ServicePolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_service');
+        return $user->can('{{ Reorder }}');
     }
 }

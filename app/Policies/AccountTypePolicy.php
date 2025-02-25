@@ -71,7 +71,7 @@ class AccountTypePolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_account::type');
+        return $user->can('{{ ForceDeleteAny }}');
     }
 
     /**
@@ -87,7 +87,7 @@ class AccountTypePolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_account::type');
+        return $user->can('{{ RestoreAny }}');
     }
 
     /**
@@ -95,7 +95,7 @@ class AccountTypePolicy
      */
     public function replicate(User $user, AccountType $accountType): bool
     {
-        return $user->can('replicate_account::type');
+        return $user->can('{{ Replicate }}');
     }
 
     /**
@@ -103,6 +103,6 @@ class AccountTypePolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_account::type');
+        return $user->can('{{ Reorder }}');
     }
 }

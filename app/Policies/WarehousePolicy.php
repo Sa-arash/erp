@@ -71,7 +71,7 @@ class WarehousePolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_warehouse');
+        return $user->can('{{ ForceDeleteAny }}');
     }
 
     /**
@@ -87,7 +87,7 @@ class WarehousePolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_warehouse');
+        return $user->can('{{ RestoreAny }}');
     }
 
     /**
@@ -95,7 +95,7 @@ class WarehousePolicy
      */
     public function replicate(User $user, Warehouse $warehouse): bool
     {
-        return $user->can('replicate_warehouse');
+        return $user->can('{{ Replicate }}');
     }
 
     /**
@@ -103,6 +103,6 @@ class WarehousePolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_warehouse');
+        return $user->can('{{ Reorder }}');
     }
 }

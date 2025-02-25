@@ -71,7 +71,7 @@ class ApprovalPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_approval');
+        return $user->can('{{ ForceDeleteAny }}');
     }
 
     /**
@@ -87,7 +87,7 @@ class ApprovalPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_approval');
+        return $user->can('{{ RestoreAny }}');
     }
 
     /**
@@ -95,7 +95,7 @@ class ApprovalPolicy
      */
     public function replicate(User $user, Approval $approval): bool
     {
-        return $user->can('replicate_approval');
+        return $user->can('{{ Replicate }}');
     }
 
     /**
@@ -103,6 +103,6 @@ class ApprovalPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_approval');
+        return $user->can('{{ Reorder }}');
     }
 }

@@ -71,7 +71,7 @@ class LeavePolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_leave');
+        return $user->can('{{ ForceDeleteAny }}');
     }
 
     /**
@@ -87,7 +87,7 @@ class LeavePolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_leave');
+        return $user->can('{{ RestoreAny }}');
     }
 
     /**
@@ -95,7 +95,7 @@ class LeavePolicy
      */
     public function replicate(User $user, Leave $leave): bool
     {
-        return $user->can('replicate_leave');
+        return $user->can('{{ Replicate }}');
     }
 
     /**
@@ -103,6 +103,6 @@ class LeavePolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_leave');
+        return $user->can('{{ Reorder }}');
     }
 }

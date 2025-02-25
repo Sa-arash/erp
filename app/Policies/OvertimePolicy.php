@@ -71,7 +71,7 @@ class OvertimePolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_overtime');
+        return $user->can('{{ ForceDeleteAny }}');
     }
 
     /**
@@ -87,7 +87,7 @@ class OvertimePolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_overtime');
+        return $user->can('{{ RestoreAny }}');
     }
 
     /**
@@ -95,7 +95,7 @@ class OvertimePolicy
      */
     public function replicate(User $user, Overtime $overtime): bool
     {
-        return $user->can('replicate_overtime');
+        return $user->can('{{ Replicate }}');
     }
 
     /**
@@ -103,6 +103,6 @@ class OvertimePolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_overtime');
+        return $user->can('{{ Reorder }}');
     }
 }

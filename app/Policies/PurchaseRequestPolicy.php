@@ -71,7 +71,7 @@ class PurchaseRequestPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_purchase::request');
+        return $user->can('{{ ForceDeleteAny }}');
     }
 
     /**
@@ -87,7 +87,7 @@ class PurchaseRequestPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_purchase::request');
+        return $user->can('{{ RestoreAny }}');
     }
 
     /**
@@ -95,7 +95,7 @@ class PurchaseRequestPolicy
      */
     public function replicate(User $user, PurchaseRequest $purchaseRequest): bool
     {
-        return $user->can('replicate_purchase::request');
+        return $user->can('{{ Replicate }}');
     }
 
     /**
@@ -103,6 +103,6 @@ class PurchaseRequestPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_purchase::request');
+        return $user->can('{{ Reorder }}');
     }
 }

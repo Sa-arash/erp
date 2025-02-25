@@ -71,7 +71,7 @@ class AssetEmployeePolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_asset::employee');
+        return $user->can('{{ ForceDeleteAny }}');
     }
 
     /**
@@ -87,7 +87,7 @@ class AssetEmployeePolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_asset::employee');
+        return $user->can('{{ RestoreAny }}');
     }
 
     /**
@@ -95,7 +95,7 @@ class AssetEmployeePolicy
      */
     public function replicate(User $user, AssetEmployee $assetEmployee): bool
     {
-        return $user->can('replicate_asset::employee');
+        return $user->can('{{ Replicate }}');
     }
 
     /**
@@ -103,6 +103,6 @@ class AssetEmployeePolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_asset::employee');
+        return $user->can('{{ Reorder }}');
     }
 }

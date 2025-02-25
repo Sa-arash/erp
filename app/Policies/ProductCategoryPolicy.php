@@ -71,7 +71,7 @@ class ProductCategoryPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_product::category');
+        return $user->can('{{ ForceDeleteAny }}');
     }
 
     /**
@@ -87,7 +87,7 @@ class ProductCategoryPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_product::category');
+        return $user->can('{{ RestoreAny }}');
     }
 
     /**
@@ -95,7 +95,7 @@ class ProductCategoryPolicy
      */
     public function replicate(User $user, ProductCategory $productCategory): bool
     {
-        return $user->can('replicate_product::category');
+        return $user->can('{{ Replicate }}');
     }
 
     /**
@@ -103,6 +103,6 @@ class ProductCategoryPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_product::category');
+        return $user->can('{{ Reorder }}');
     }
 }

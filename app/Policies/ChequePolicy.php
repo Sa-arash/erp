@@ -71,7 +71,7 @@ class ChequePolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_cheque');
+        return $user->can('{{ ForceDeleteAny }}');
     }
 
     /**
@@ -87,7 +87,7 @@ class ChequePolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_cheque');
+        return $user->can('{{ RestoreAny }}');
     }
 
     /**
@@ -95,7 +95,7 @@ class ChequePolicy
      */
     public function replicate(User $user, Cheque $cheque): bool
     {
-        return $user->can('replicate_cheque');
+        return $user->can('{{ Replicate }}');
     }
 
     /**
@@ -103,6 +103,6 @@ class ChequePolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_cheque');
+        return $user->can('{{ Reorder }}');
     }
 }

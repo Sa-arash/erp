@@ -71,7 +71,7 @@ class PayrollPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_payroll');
+        return $user->can('{{ ForceDeleteAny }}');
     }
 
     /**
@@ -87,7 +87,7 @@ class PayrollPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_payroll');
+        return $user->can('{{ RestoreAny }}');
     }
 
     /**
@@ -95,7 +95,7 @@ class PayrollPolicy
      */
     public function replicate(User $user, Payroll $payroll): bool
     {
-        return $user->can('replicate_payroll');
+        return $user->can('{{ Replicate }}');
     }
 
     /**
@@ -103,6 +103,6 @@ class PayrollPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_payroll');
+        return $user->can('{{ Reorder }}');
     }
 }

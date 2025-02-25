@@ -16,7 +16,8 @@ return new class extends Migration
             $table->foreignId('employee_id')->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
             $table->date('start_date');
             $table->date('deadline');
-            $table->text('description');
+            $table->string('title');
+            $table->text('description')->nullable();
             $table->enum('priority_level',['Low','Medium','High']);
             $table->enum('status',['Processing','Completed','Canceled'])->default('Processing');
             $table->text('document')->nullable();

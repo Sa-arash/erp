@@ -71,7 +71,7 @@ class StructurePolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_structure');
+        return $user->can('{{ ForceDeleteAny }}');
     }
 
     /**
@@ -87,7 +87,7 @@ class StructurePolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_structure');
+        return $user->can('{{ RestoreAny }}');
     }
 
     /**
@@ -95,7 +95,7 @@ class StructurePolicy
      */
     public function replicate(User $user, Structure $structure): bool
     {
-        return $user->can('replicate_structure');
+        return $user->can('{{ Replicate }}');
     }
 
     /**
@@ -103,6 +103,6 @@ class StructurePolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_structure');
+        return $user->can('{{ Reorder }}');
     }
 }

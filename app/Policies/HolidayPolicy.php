@@ -71,7 +71,7 @@ class HolidayPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_holiday');
+        return $user->can('{{ ForceDeleteAny }}');
     }
 
     /**
@@ -87,7 +87,7 @@ class HolidayPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_holiday');
+        return $user->can('{{ RestoreAny }}');
     }
 
     /**
@@ -95,7 +95,7 @@ class HolidayPolicy
      */
     public function replicate(User $user, Holiday $holiday): bool
     {
-        return $user->can('replicate_holiday');
+        return $user->can('{{ Replicate }}');
     }
 
     /**
@@ -103,6 +103,6 @@ class HolidayPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_holiday');
+        return $user->can('{{ Reorder }}');
     }
 }

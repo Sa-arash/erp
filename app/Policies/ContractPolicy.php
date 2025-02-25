@@ -71,7 +71,7 @@ class ContractPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_contract');
+        return $user->can('{{ ForceDeleteAny }}');
     }
 
     /**
@@ -87,7 +87,7 @@ class ContractPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_contract');
+        return $user->can('{{ RestoreAny }}');
     }
 
     /**
@@ -95,7 +95,7 @@ class ContractPolicy
      */
     public function replicate(User $user, Contract $contract): bool
     {
-        return $user->can('replicate_contract');
+        return $user->can('{{ Replicate }}');
     }
 
     /**
@@ -103,6 +103,6 @@ class ContractPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_contract');
+        return $user->can('{{ Reorder }}');
     }
 }

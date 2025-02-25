@@ -71,7 +71,7 @@ class FinancialPeriodPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_financial::period');
+        return $user->can('{{ ForceDeleteAny }}');
     }
 
     /**
@@ -87,7 +87,7 @@ class FinancialPeriodPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_financial::period');
+        return $user->can('{{ RestoreAny }}');
     }
 
     /**
@@ -95,7 +95,7 @@ class FinancialPeriodPolicy
      */
     public function replicate(User $user, FinancialPeriod $financialPeriod): bool
     {
-        return $user->can('replicate_financial::period');
+        return $user->can('{{ Replicate }}');
     }
 
     /**
@@ -103,6 +103,6 @@ class FinancialPeriodPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_financial::period');
+        return $user->can('{{ Reorder }}');
     }
 }

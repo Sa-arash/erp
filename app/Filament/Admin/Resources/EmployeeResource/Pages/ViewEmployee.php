@@ -44,7 +44,7 @@ class  ViewEmployee extends ViewRecord
                 $data['approved_by']=auth()->user()->employee->id;
                 $this->record->update(['leave_date'=> $data['date']]);
                 $roles=Role::query()->with('users')->whereHas('permissions',function ($query){
-                   return $query->where('name','clearance_employee');
+                   return $query->where('name','clearanceApproval_employee');
                 })->where('company_id',getCompany()->id)->get();
                 $userIDs=[];
                 foreach ($roles as $role){

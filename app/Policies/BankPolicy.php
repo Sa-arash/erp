@@ -71,7 +71,7 @@ class BankPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_cash');
+        return $user->can('{{ ForceDeleteAny }}');
     }
 
     /**
@@ -87,7 +87,7 @@ class BankPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_cash');
+        return $user->can('{{ RestoreAny }}');
     }
 
     /**
@@ -95,7 +95,7 @@ class BankPolicy
      */
     public function replicate(User $user, Bank $bank): bool
     {
-        return $user->can('replicate_cash');
+        return $user->can('{{ Replicate }}');
     }
 
     /**
@@ -103,6 +103,6 @@ class BankPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_cash');
+        return $user->can('{{ Reorder }}');
     }
 }

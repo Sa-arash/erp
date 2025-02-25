@@ -15,7 +15,7 @@ class EmployeePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_employee');
+        return $user->can('view_any_i::temployee');
     }
 
     /**
@@ -23,7 +23,7 @@ class EmployeePolicy
      */
     public function view(User $user, Employee $employee): bool
     {
-        return $user->can('view_employee');
+        return $user->can('view_i::temployee');
     }
 
     /**
@@ -31,7 +31,7 @@ class EmployeePolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_employee');
+        return $user->can('create_i::temployee');
     }
 
     /**
@@ -39,7 +39,7 @@ class EmployeePolicy
      */
     public function update(User $user, Employee $employee): bool
     {
-        return $user->can('update_employee');
+        return $user->can('update_i::temployee');
     }
 
     /**
@@ -47,7 +47,7 @@ class EmployeePolicy
      */
     public function delete(User $user, Employee $employee): bool
     {
-        return $user->can('delete_employee');
+        return $user->can('delete_i::temployee');
     }
 
     /**
@@ -55,7 +55,7 @@ class EmployeePolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_employee');
+        return $user->can('delete_any_i::temployee');
     }
 
     /**
@@ -63,7 +63,7 @@ class EmployeePolicy
      */
     public function forceDelete(User $user, Employee $employee): bool
     {
-        return $user->can('{{ ForceDelete }}');
+        return $user->can('force_delete_i::temployee');
     }
 
     /**
@@ -79,7 +79,7 @@ class EmployeePolicy
      */
     public function restore(User $user, Employee $employee): bool
     {
-        return $user->can('{{ Restore }}');
+        return $user->can('restore_i::temployee');
     }
 
     /**

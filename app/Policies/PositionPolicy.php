@@ -71,7 +71,7 @@ class PositionPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_position');
+        return $user->can('{{ ForceDeleteAny }}');
     }
 
     /**
@@ -87,7 +87,7 @@ class PositionPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_position');
+        return $user->can('{{ RestoreAny }}');
     }
 
     /**
@@ -95,7 +95,7 @@ class PositionPolicy
      */
     public function replicate(User $user, Position $position): bool
     {
-        return $user->can('replicate_position');
+        return $user->can('{{ Replicate }}');
     }
 
     /**
@@ -103,6 +103,6 @@ class PositionPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_position');
+        return $user->can('{{ Reorder }}');
     }
 }

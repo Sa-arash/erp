@@ -71,7 +71,7 @@ class QuotationPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_quotation');
+        return $user->can('{{ ForceDeleteAny }}');
     }
 
     /**
@@ -87,7 +87,7 @@ class QuotationPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_quotation');
+        return $user->can('{{ RestoreAny }}');
     }
 
     /**
@@ -95,7 +95,7 @@ class QuotationPolicy
      */
     public function replicate(User $user, Quotation $quotation): bool
     {
-        return $user->can('replicate_quotation');
+        return $user->can('{{ Replicate }}');
     }
 
     /**
@@ -103,6 +103,6 @@ class QuotationPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_quotation');
+        return $user->can('{{ Reorder }}');
     }
 }

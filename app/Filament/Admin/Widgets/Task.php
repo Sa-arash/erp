@@ -25,7 +25,8 @@ class Task extends BaseWidget
             )
             ->columns([
                 Tables\Columns\TextColumn::make('employee.info')->label('Assigned By')->numeric()->sortable(),
-//                Tables\Columns\TextColumn::make('employees.fullName')->limitList(3)->bulleted()->label('Employees')->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('employees.fullName')->limitList(3)->bulleted()->label('Employees')->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('title')->label('Title')->sortable(),
                 Tables\Columns\TextColumn::make('start_date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('deadline')->date()->sortable(),
                 Tables\Columns\TextColumn::make('priority_level')->badge(),

@@ -25,14 +25,15 @@ class TaskResource extends Resource
         return $form
             ->schema([
                Forms\Components\Section::make([
+                   Forms\Components\TextInput::make('title')->required()->maxLength(255),
                    Forms\Components\Select::make('employees')->required()->relationship('employees','fullName',modifyQueryUsing: fn($query)=>$query->where('employees.company_id',getCompany()->id))->searchable()->preload()->multiple()->pivotData([
                        'company_id'=>getCompany()->id
                    ]),
                    Forms\Components\DatePicker::make('start_date')->default(now())->required(),
                    Forms\Components\DatePicker::make('deadline')->afterOrEqual(fn(Forms\Get $get)=> $get('start_date'))->required(),
                    Forms\Components\Select::make('priority_level')->searchable()->preload()->options(['Low'=>'Low','Medium'=>'Medium','High'=>'High'])->required(),
-               ])->columns(4),
-                Forms\Components\Textarea::make('description')->required()->columnSpanFull(),
+               ])->columns(5),
+                Forms\Components\Textarea::make('description')->columnSpanFull(),
                 Forms\Components\FileUpload::make('document')->downloadable()->columnSpanFull(),
                 Forms\Components\Hidden::make('employee_id')->default(getEmployee()?->id)->required(),
 
@@ -44,7 +45,9 @@ class TaskResource extends Resource
     {
         return $table->defaultSort('id','desc')
             ->columns([
-                Tables\Columns\TextColumn::make('employee.info')->label('Assigned By')->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('')->rowIndex(),
+                Tables\Columns\TextColumn::make('employee.info')->label('Assigned By')->sortable(),
+                Tables\Columns\TextColumn::make('title')->label('Title')->sortable(),
                 Tables\Columns\TextColumn::make('employees.fullName')->limitList(3)->bulleted()->label('Employees')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('start_date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('deadline')->date()->sortable(),

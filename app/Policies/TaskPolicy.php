@@ -3,10 +3,10 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\PurchaseOrder;
+use App\Models\Task;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class PurchaseOrderPolicy
+class TaskPolicy
 {
     use HandlesAuthorization;
 
@@ -15,15 +15,15 @@ class PurchaseOrderPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_purchase::order');
+        return $user->can('view_any_task');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, PurchaseOrder $purchaseOrder): bool
+    public function view(User $user, Task $task): bool
     {
-        return $user->can('view_purchase::order');
+        return $user->can('view_task');
     }
 
     /**
@@ -31,23 +31,23 @@ class PurchaseOrderPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_purchase::order');
+        return $user->can('create_task');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, PurchaseOrder $purchaseOrder): bool
+    public function update(User $user, Task $task): bool
     {
-        return $user->can('update_purchase::order');
+        return $user->can('update_task');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, PurchaseOrder $purchaseOrder): bool
+    public function delete(User $user, Task $task): bool
     {
-        return $user->can('delete_purchase::order');
+        return $user->can('delete_task');
     }
 
     /**
@@ -55,15 +55,15 @@ class PurchaseOrderPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_purchase::order');
+        return $user->can('delete_any_task');
     }
 
     /**
      * Determine whether the user can permanently delete.
      */
-    public function forceDelete(User $user, PurchaseOrder $purchaseOrder): bool
+    public function forceDelete(User $user, Task $task): bool
     {
-        return $user->can('force_delete_purchase::order');
+        return $user->can('force_delete_task');
     }
 
     /**
@@ -77,9 +77,9 @@ class PurchaseOrderPolicy
     /**
      * Determine whether the user can restore.
      */
-    public function restore(User $user, PurchaseOrder $purchaseOrder): bool
+    public function restore(User $user, Task $task): bool
     {
-        return $user->can('restore_purchase::order');
+        return $user->can('restore_task');
     }
 
     /**
@@ -93,7 +93,7 @@ class PurchaseOrderPolicy
     /**
      * Determine whether the user can replicate.
      */
-    public function replicate(User $user, PurchaseOrder $purchaseOrder): bool
+    public function replicate(User $user, Task $task): bool
     {
         return $user->can('{{ Replicate }}');
     }

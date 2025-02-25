@@ -71,7 +71,7 @@ class DutyPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_duty');
+        return $user->can('{{ ForceDeleteAny }}');
     }
 
     /**
@@ -87,7 +87,7 @@ class DutyPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_duty');
+        return $user->can('{{ RestoreAny }}');
     }
 
     /**
@@ -95,7 +95,7 @@ class DutyPolicy
      */
     public function replicate(User $user, Duty $duty): bool
     {
-        return $user->can('replicate_duty');
+        return $user->can('{{ Replicate }}');
     }
 
     /**
@@ -103,6 +103,6 @@ class DutyPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_duty');
+        return $user->can('{{ Reorder }}');
     }
 }

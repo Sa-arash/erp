@@ -71,7 +71,7 @@ class FactorPolicy
      */
     public function forceDeleteAny(User $user): bool
     {
-        return $user->can('force_delete_any_factor');
+        return $user->can('{{ ForceDeleteAny }}');
     }
 
     /**
@@ -87,7 +87,7 @@ class FactorPolicy
      */
     public function restoreAny(User $user): bool
     {
-        return $user->can('restore_any_factor');
+        return $user->can('{{ RestoreAny }}');
     }
 
     /**
@@ -95,7 +95,7 @@ class FactorPolicy
      */
     public function replicate(User $user, Factor $factor): bool
     {
-        return $user->can('replicate_factor');
+        return $user->can('{{ Replicate }}');
     }
 
     /**
@@ -103,6 +103,6 @@ class FactorPolicy
      */
     public function reorder(User $user): bool
     {
-        return $user->can('reorder_factor');
+        return $user->can('{{ Reorder }}');
     }
 }
