@@ -417,9 +417,9 @@ class PurchaseOrderResource extends Resource
                                                 return $get('isCurrency');
                                             })
                                             ->live(true)->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
-                                                if ($get('Cheque')) {
+                                                
                                                     $set('cheque.amount', $state);
-                                                }
+                                                
                                             })
                                             ->mask(RawJs::make('$money($input)'))->stripCharacters(',')
                                             ->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)
@@ -520,7 +520,7 @@ class PurchaseOrderResource extends Resource
                                         ])->columns(4)->visible(function (Get $get) {
                                             return $get('isCurrency');
                                         }),
-                                        Forms\Components\Checkbox::make('Cheque')->label('Cheque/Instalment')->inline()->live(),
+                                        Forms\Components\Hidden::make('Cheque')->label('Cheque/Instalment')->live(),
                                         Forms\Components\Section::make([
                                             Forms\Components\Fieldset::make('cheque')->label('Cheque/Instalment')->relationship('cheque')->schema([
                                                 Forms\Components\TextInput::make('cheque_number')->maxLength(255),
@@ -528,7 +528,8 @@ class PurchaseOrderResource extends Resource
                                                     if ($get('debtor') > 0) {
                                                         return $get('debtor');
                                                     }
-                                                    else if ($get('creditor') > 0) {
+                                                    else 
+                                                    if ($get('creditor') > 0) {
                                                         return $get('creditor');
                                                     } else {
                                                         return 0;
@@ -546,7 +547,7 @@ class PurchaseOrderResource extends Resource
                                             ]),
                                         ])->collapsible()->persistCollapsed()->visible(fn(Forms\Get $get) => $get('Cheque')),
                                         Forms\Components\Hidden::make('financial_period_id')->required()->label('Financial Period')->default(getPeriod()?->id)
-                                    ])->minItems(1)->columns(5)->defaultItems(1)
+                                    ])->minItems(1)->columns(4)->defaultItems(1)
                                         ->mutateRelationshipDataBeforecreateUsing(function (array $data): array {
                                             $data['user_id'] = auth()->id();
                                             $data['company_id'] = getCompany()->id;

@@ -108,11 +108,7 @@ class InvoiceResource extends Resource
                                     $set('Cheque', false);
                                 }
 
-                                if ($get('debtor') > $get('creditor')) {
-                                    $set('cheque.amount', $get('debtor'));
-                                } else {
-                                    $set('cheque.amount', $get('creditor'));
-                                }
+                               
                             } else {
                                 $set('Cheque', false);
                             }
@@ -124,12 +120,17 @@ class InvoiceResource extends Resource
                                 return $set('isCurrency', 1);
                             }
                             return $set('isCurrency', 0);
-                        })->live()->defaultOpenLevel(3)->live()->label('Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('company_id', getCompany()->id))->searchable(),
+                        })->defaultOpenLevel(3)->live()->label('Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('company_id', getCompany()->id))->searchable(),
                         Forms\Components\TextInput::make('description')->required(),
 
                         Forms\Components\TextInput::make('debtor')->prefix(defaultCurrency()->symbol)->live(true)->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
                             if ($get('Cheque')) {
-                                $set('cheque.amount', $state);
+                                if($state >= $get('creditor'))
+                                {
+                                    $set('cheque.amount', $state);
+                                }else{
+                                    $set('cheque.amount', $get('creditor'));
+                                }
                             }
                         })->mask(RawJs::make('$money($input)'))->readOnly(function (Get $get) {
                             return $get('isCurrency');
@@ -147,7 +148,12 @@ class InvoiceResource extends Resource
                         })->live(true)
                             ->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
                                 if ($get('Cheque')) {
-                                    $set('cheque.amount', $state);
+                                    if($state >= $get('debtor'))
+                                    {
+                                        $set('cheque.amount', $state);
+                                    }else{
+                                        $set('cheque.amount', $get('debtor'));
+                                    }
                                 }
                             })
                             ->mask(RawJs::make('$money($input)'))->stripCharacters(',')

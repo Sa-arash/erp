@@ -405,7 +405,12 @@ class FactorResource extends Resource
 
                                 Forms\Components\TextInput::make('debtor')->prefix(defaultCurrency()->symbol)->live(true)->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
                                     if ($get('Cheque')) {
-                                        $set('cheque.amount', $state);
+                                        if($state >= $get('creditor'))
+                                        {
+                                            $set('cheque.amount', $state);
+                                        }else{
+                                            $set('cheque.amount', $get('creditor'));
+                                        }
                                     }
                                 })->mask(RawJs::make('$money($input)'))->readOnly(function (Get $get) {
                                     return $get('isCurrency') || $get->getData()['type'] !== "1";
@@ -457,7 +462,12 @@ class FactorResource extends Resource
                                 })->live(true)
                                     ->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
                                         if ($get('Cheque')) {
-                                            $set('cheque.amount', $state);
+                                            if($state >= $get('debtor'))
+                                            {
+                                                $set('cheque.amount', $state);
+                                            }else{
+                                                $set('cheque.amount', $get('debtor'));
+                                            }
                                         }
                                     })
                                     ->mask(RawJs::make('$money($input)'))->stripCharacters(',')
@@ -567,7 +577,7 @@ class FactorResource extends Resource
                                 ])->columns(4)->visible(function (Get $get) {
                                     return $get('isCurrency');
                                 }),
-                                Forms\Components\Checkbox::make('Cheque')->label('Cheque/Instalment')->inline()->live(),
+                                Forms\Components\Hidden::make('Cheque')->label('Cheque/Instalment')->live(),
                                 Forms\Components\Section::make([
                                     Forms\Components\Fieldset::make('cheque')->label('Cheque/Instalment')->relationship('cheque')->schema([
                                         Forms\Components\TextInput::make('cheque_number')->maxLength(255),
@@ -1179,7 +1189,7 @@ class FactorResource extends Resource
                             ])->columns(4)->visible(function (Get $get) {
                                 return $get('isCurrency');
                             }),
-                            Forms\Components\Checkbox::make('Cheque')->label('Cheque/Instalment')->inline()->live(),
+                            Forms\Components\hidden::make('Cheque')->label('Cheque/Instalment')->live(),
                             Forms\Components\Section::make([
                                 Forms\Components\Fieldset::make('cheque')->label('Cheque/Instalment')->relationship('cheque')->schema([
                                     Forms\Components\TextInput::make('cheque_number')->maxLength(255),
@@ -1205,7 +1215,7 @@ class FactorResource extends Resource
                                 ]),
                             ])->collapsible()->persistCollapsed()->visible(fn(Forms\Get $get) => $get('Cheque')),
                             Forms\Components\Hidden::make('financial_period_id')->required()->label('Financial Period')->default(getPeriod()?->id)
-                        ])->minItems(1)->columns(5)->defaultItems(1)
+                        ])->minItems(1)->columns(4)->defaultItems(1)
                             ->mutateRelationshipDataBeforecreateUsing(function (array $data): array {
                                 $data['user_id'] = auth()->id();
                                 $data['company_id'] = getCompany()->id;

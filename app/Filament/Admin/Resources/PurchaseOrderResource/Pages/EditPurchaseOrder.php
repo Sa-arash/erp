@@ -16,4 +16,21 @@ class EditPurchaseOrder extends EditRecord
             Actions\DeleteAction::make(),
         ];
     }
+    public function mount(int | string $record): void
+    {
+        $this->record = $this->resolveRecord($record);
+
+        $this->authorizeAccess();
+
+        $this->fillForm();
+        
+        foreach ($this->data['invoice']['transactions']  as $key=> $datum){
+
+            if ($datum['cheque']['due_date']){
+                $this->data['invoice']['transactions'][$key]['Cheque']=true;
+            }
+        }
+
+        $this->previousUrl = url()->previous();
+    }
 }
