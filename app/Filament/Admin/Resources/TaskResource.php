@@ -21,10 +21,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class TaskResource extends Resource
 {
     protected static ?string $model = Task::class;
-    protected static ?string $navigationGroup = 'HR Management System';
-    protected static ?int $navigationSort=2;
-    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
 
+    protected static ?string $navigationIcon = 'heroicon-o-clipboard-document-list';
     public static function form(Form $form): Form
     {
         return $form
