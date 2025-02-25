@@ -14,7 +14,7 @@ class CreatePurchaseRequest extends CreateRecord
         $request=$this->record;
         $company=getCompany();
         $employee=Employee::query()->firstWhere('id',$request->employee_id);
-        sendAR($employee,$request,$company);
+        sendOperation($employee,$request,$company);
 
     }
 }

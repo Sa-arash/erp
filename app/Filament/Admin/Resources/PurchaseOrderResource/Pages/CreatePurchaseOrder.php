@@ -107,7 +107,7 @@ class CreatePurchaseOrder extends CreateRecord
             //     ]);
             // }
 
-            // dd($this->data['invoice']['transactions']); 
+            // dd($this->data['invoice']['transactions']);
             $this->callHook('beforeCreate');
 // dd( $this->form->model($this->getRecord()));
             $this->record = $this->handleRecordCreation($data);
@@ -158,7 +158,7 @@ class CreatePurchaseOrder extends CreateRecord
                         'financial_period_id' => $transaction['financial_period_id'],
                     ]);
                     // dd($transaction ,!empty($transaction['cheque']) && isset($transaction['cheque']['amount']) );
-                    // چک 
+                    // چک
                     if ($transaction['Cheque']) {
                         $savedTransaction->cheque()->create([
                             'type' => $transaction['cheque']['type'] ?? null,
@@ -235,7 +235,7 @@ class CreatePurchaseOrder extends CreateRecord
 
             ]);
 
-            //Added each product to asset 
+            //Added each product to asset
 
             foreach ($this->form->getLivewire()->data['RequestedItems'] as $item) {
 
@@ -277,41 +277,6 @@ class CreatePurchaseOrder extends CreateRecord
                     'status' => "Finished"
                 ]);
             }
-
-            // $this->record->update([
-            //     'invoice_id'=>$this->record->invoice->id,
-            // ]);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
             $this->callHook('afterCreate');
 
             $this->commitDatabaseTransaction();

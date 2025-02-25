@@ -683,6 +683,34 @@ function getSecurity(){
        }
    }
 }
+function getOperation(){
+   $roles=  getCompany()->roles->where('name','Operation')->first();
+   if (isset($roles->users[0])){
+       if ($roles->users[0]->employee){
+           return $roles->users[0]->employee;
+       }
+   }
+}
+function sendOperation($employee, $record,$company)
+{
+    if (getOperation()) {
+        if (getOperation()->id === $employee->id) {
+            $record->approvals()->create([
+                'employee_id' => getAdmin()->id,
+                'company_id' => $company->id,
+                'position' => 'Operation',
+                'status' => "Approve",
+                'approve_date'=>now()
+            ]);
+        }else{
+            $record->approvals()->create([
+                'employee_id' => getOperation()->id,
+                'company_id' => $company->id,
+                'position' => 'Operation',
+            ]);
+        }
+    }
+}
 function sendAdmin($employee, $record,$company)
 {
     if (getAdmin()) {

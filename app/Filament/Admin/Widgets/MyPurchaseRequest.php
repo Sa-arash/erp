@@ -156,6 +156,7 @@ class MyPurchaseRequest extends BaseWidget
                             ->columnSpanFull(),
                     ])->columns(3)
                 ])->action(function ($data){
+
                     $employee=getEmployee();
                     $company=getCompany();
                     $data['company_id']=$company->id;
@@ -166,16 +167,16 @@ class MyPurchaseRequest extends BaseWidget
                         $requestedItem['company_id']=$company->id;
                         $request->items()->create($requestedItem);
                     }
-                    if ($employee->department->employee_id){
-                        if ($employee->department->employee_id ===$employee->id){
+                    if (getOperation()){
+                        if (getOperation()->id ===$employee->id){
                             $request->approvals()->create([
-                                'employee_id'=>$employee->department->employee_id,
+                                'employee_id'=>getOperation()->id,
                                 'company_id'=>$company->id,
-                                'position'=>'Head Department',
+                                'position'=>'Operation',
                                 'status'=>"Approve",
                                 'approve_date'=>now()
                             ]);
-                            $request->update(['status'=>'FinishedHead']);
+                            $request->update(['status'=>'FinishedOperation']);
                             $CEO=Employee::query()->firstWhere('user_id',$company->user_id);
                             $request->approvals()->create([
                                 'employee_id'=>$CEO->id,
@@ -186,9 +187,9 @@ class MyPurchaseRequest extends BaseWidget
 
                         }else{
                             $request->approvals()->create([
-                                'employee_id'=>$employee->department->employee_id,
+                                'employee_id'=>getOperation()?->id,
                                 'company_id'=>$company->id,
-                                'position'=>'Head Department'
+                                'position'=>'Operation'
                             ]);
                         }
                     }

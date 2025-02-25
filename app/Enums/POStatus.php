@@ -9,7 +9,7 @@ use Filament\Support\Contracts\HasLabel;
 enum POStatus:string implements HasColor,HasLabel
 {
     case Requested = 'Requested';
-    case FinishedHead = 'FinishedHead';
+    case FinishedOperation = 'FinishedOperation';
     case FinishedCeo = 'FinishedCeo';
     case Finished = 'Finished';
     case Rejected = 'Rejected';
@@ -17,7 +17,7 @@ enum POStatus:string implements HasColor,HasLabel
     {
         return match ($this){
             self::Requested => 'Requested',
-            self::FinishedHead => 'Approved By Head Of Department',
+            self::FinishedOperation => 'Approved By Head Of Department',
             self::FinishedCeo => 'Approved By CEO',
             self::Finished => 'Finished',
             self::Rejected => 'Rejected',
@@ -27,7 +27,7 @@ enum POStatus:string implements HasColor,HasLabel
     {
         return match($this){
             self::Requested => 'info',
-            self::FinishedHead => 'success',
+            self::FinishedOperation => 'success',
             self::FinishedCeo => 'success',
             self::Finished => 'success',
             self::Rejected => 'danger',
