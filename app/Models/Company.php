@@ -22,7 +22,7 @@ class Company extends Model implements HasAvatar, HasName
     }
 
 
-    protected $fillable = ['security_id','warehouse_id','structure_asset_id','product_expence_accounts','account_cash','product_accounts','category_account','customer_account', 'vendor_account', 'account_bank', 'weekend_days', 'daily_working_hours', 'overtime_rate', 'title', 'logo', 'description', 'user_id', 'country', 'address', 'contact_information', 'company_registration_document', 'currency'];
+    protected $fillable = ['security_id', 'warehouse_id', 'structure_asset_id', 'product_expence_accounts', 'account_cash', 'product_accounts', 'category_account', 'customer_account', 'vendor_account', 'account_bank', 'weekend_days', 'daily_working_hours', 'overtime_rate', 'title', 'logo', 'description', 'user_id', 'country', 'address', 'contact_information', 'company_registration_document', 'currency'];
 
     protected $casts = [
         'weekend_days' => 'array',
@@ -45,12 +45,10 @@ class Company extends Model implements HasAvatar, HasName
     }
 
 
-
     public function getAccountTitleAttribute()
     {
-        return  $this?->title . "-" . $this?->address;
+        return $this?->title . "-" . $this?->address;
     }
-
 
 
     public function departments(): \Illuminate\Database\Eloquent\Relations\HasMany
@@ -98,10 +96,12 @@ class Company extends Model implements HasAvatar, HasName
     {
         return $this->hasMany(Product::class);
     }
+
     public function purchaseRequests(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(PurchaseRequest::class);
     }
+
     public function purchaseRequestItems(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(PurchaseRequestItem::class);
@@ -111,10 +111,12 @@ class Company extends Model implements HasAvatar, HasName
     {
         return $this->hasMany(PurchaseOrder::class);
     }
+
     public function purchaseOrderItems(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(PurchaseOrderItem::class);
     }
+
     public function incomes(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Income::class);
@@ -276,22 +278,27 @@ class Company extends Model implements HasAvatar, HasName
     {
         return $this->hasMany(AssetEmployee::class);
     }
+
     public function assetEmployeeItems(): HasMany
     {
         return $this->hasMany(AssetEmployeeItem::class);
     }
+
     public function projects(): HasMany
     {
         return $this->hasMany(Project::class);
     }
+
     public function purchaseOrderItem(): HasMany
     {
         return $this->hasMany(PurchaseOrderItem::class);
     }
+
     public function purchaseOrder(): HasMany
     {
         return $this->hasMany(PurchaseOrder::class);
     }
+
     public function takeOuts(): HasMany
     {
         return $this->hasMany(TakeOut::class);
@@ -306,20 +313,29 @@ class Company extends Model implements HasAvatar, HasName
     {
         return $this->hasMany(Approval::class);
     }
+
     public function services(): HasMany
     {
         return $this->hasMany(Service::class);
     }
+
     public function factors(): HasMany
     {
         return $this->hasMany(Factor::class);
     }
+
     public function currencies(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Currency::class);
     }
+
     public function separations(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Separation::class);
+    }
+
+    public function tasks(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Task::class);
     }
 }
