@@ -23,7 +23,7 @@ enum TaskStatus:string implements HasColor,HasLabel
     {
         return match($this){
             self::Processing => 'info',
-            self::Canceled => 'Canceled',
+            self::Canceled => 'danger',
             self::Completed => 'success',
         };
     }

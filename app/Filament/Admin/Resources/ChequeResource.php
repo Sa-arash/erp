@@ -9,6 +9,7 @@ use App\Filament\Admin\Resources\ChequeResource\Widgets\StateCheque;
 use App\Models\Cheque;
 use App\Models\Invoice;
 use App\Models\Transaction;
+use Carbon\Carbon;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -61,14 +62,29 @@ class ChequeResource extends Resource
         return $table->defaultSort('id','desc')
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
+                Tables\Columns\TextColumn::make('transaction.description')->sortable(),
                 Tables\Columns\TextColumn::make('amount')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('issue_date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('due_date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('payer_name')->searchable(),
                 Tables\Columns\TextColumn::make('payee_name')->searchable(),
+                Tables\Columns\TextColumn::make('Due Days')->label('Due Days')->state(function ($record){
+                    if (Carbon::make($record->due_date)->diff()->totalDays <0 ){
+                        return Carbon::make($record->due_date)->diff()->roundDay()->day. " Days Due";
+                    }else{
+                        return Carbon::make($record->due_date)->diff()->roundDay()->day. " Days Passed";
+                    }
+                })->color(function ($record){
+                    if (Carbon::make($record->due_date)->diff()->totalDays <0 ){
+                        return 'success';
+                    }elseif (Carbon::make($record->due_date)->diff()->day===0){
+                        return 'warning';
+                    }else{
+                        return  "danger";
+                    }
+                })->badge()->searchable(),
                 Tables\Columns\TextColumn::make('type')->state(fn($record) => $record->type ? "Payable" : "Receivable")->badge(),
                 Tables\Columns\TextColumn::make('status')->badge(),
-
             ])
             ->filters([
                 SelectFilter::make('type')->options([0 => 'Receivable', 1 => 'Payable'])->searchable(),
@@ -84,6 +100,7 @@ class ChequeResource extends Resource
                     })
             ], getModelFilter())
             ->actions([
+                Tables\Actions\Action::make('invoice')->visible(fn($record)=> (bool)$record->transaction_id)->url(fn($record)=>$record->transaction_id ? InvoiceResource::getUrl('edit',['record'=>$record->transaction->invoice_id]) : false),
                 Tables\Actions\EditAction::make()->hidden(fn($record) => $record->status->name === "Paid"),
                 Tables\Actions\Action::make('action')->requiresConfirmation()->extraModalFooterActions([
                     Tables\Actions\Action::make('Paid')->label('Paid')->form(function ($record){
@@ -117,7 +134,7 @@ class ChequeResource extends Resource
                                     'company_id' => getCompany()->id,
                                     'user_id' => auth()->id(),
                                     'financial_period_id' => getPeriod()->id,
-                                    'currency_id' => getCompany()->id
+                                    'currency_id' => defaultCurrency()?->id
                                 ]);
                                 $invoice->transactions()->create([
                                     'account_id' => $record->transaction->account?->id,
@@ -127,7 +144,7 @@ class ChequeResource extends Resource
                                     'company_id' => getCompany()->id,
                                     'user_id' => auth()->id(),
                                     'financial_period_id' => getPeriod()->id,
-                                    'currency_id' => getCompany()->id
+                                    'currency_id' => defaultCurrency()?->id
                                 ]);
                             } else {
                                 $invoice->transactions()->create([
