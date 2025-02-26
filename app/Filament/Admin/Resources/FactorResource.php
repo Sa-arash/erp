@@ -697,9 +697,9 @@ class FactorResource extends Resource
                     })->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
                         $party = Parties::query()->firstWhere('id', $state);
                         if ($get('type') !== "1") {
-                            $set('to', getCompany()->AccountTitle);
-                        } else {
                             $set('from', getCompany()->AccountTitle);
+                        } else {
+                            $set('to', getCompany()->AccountTitle);
                         }
                     })->live(true),
 
@@ -805,9 +805,9 @@ class FactorResource extends Resource
                     })->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
                         $party = Parties::query()->firstWhere('id', $state);
                         if ($get('type') === "1") {
-                            $set('to', $party?->name);
-                        } else {
                             $set('from', $party?->name);
+                        } else {
+                            $set('to', $party?->name);
                         }
                     })->live(true)->createOptionForm([
                         Forms\Components\Section::make([
