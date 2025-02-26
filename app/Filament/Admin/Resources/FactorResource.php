@@ -589,7 +589,7 @@ class FactorResource extends Resource
                                             Forms\Components\TextInput::make('bank_name')->maxLength(255),
                                             Forms\Components\TextInput::make('branch_name')->maxLength(255),
                                             Forms\Components\Textarea::make('description')->columnSpanFull(),
-                                            Forms\Components\ToggleButtons::make('type')->options([0 => 'Receivable', 1 => 'Payable'])->inline()->grouped()->required(),
+                                            Forms\Components\Hidden::make('type')->required(),
                                             Forms\Components\Hidden::make('company_id')->default(getCompany()->id)
                                         ]),
                                     ])->collapsible()->persistCollapsed()->visible(fn(Forms\Get $get) => $get('Cheque')),
@@ -1202,7 +1202,7 @@ class FactorResource extends Resource
                                     Forms\Components\TextInput::make('bank_name')->maxLength(255),
                                     Forms\Components\TextInput::make('branch_name')->maxLength(255),
                                     Forms\Components\Textarea::make('description')->columnSpanFull(),
-                                    Forms\Components\ToggleButtons::make('type')->options([0 => 'Receivable', 1 => 'Payable'])->inline()->grouped()->required(),
+                                    Forms\Components\hidden::make('type')->required(),
                                     Forms\Components\Hidden::make('company_id')->default(getCompany()->id)
                                 ]),
                             ])->collapsible()->persistCollapsed()->visible(fn(Forms\Get $get) => $get('Cheque')),
