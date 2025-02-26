@@ -321,7 +321,7 @@ class FactorResource extends Resource
                                 $unitPrice = $get('unit_price') === null ?  0 : (float)str_replace(',', '', $get('unit_price'));
                                 $discount = $get('discount') === null ?  0 : (float)$get('discount');
                                 $set('total', number_format(($count * $unitPrice) - (($count * $unitPrice) * $discount) / 100, 2));
-                            })->default(0)->required()->label('Discount'),
+                            })->default(0)->required(),
                             Forms\Components\TextInput::make('total')->prefix(defaultCurrency()?->symbol)->live()->readOnly()->default(0)->required()->label('Total'),
                         ])->columnSpanFull()->columns(7),
                     ])->columns(2),
@@ -934,7 +934,7 @@ class FactorResource extends Resource
                         $unitPrice = $get('unit_price') === null ?  0 : (float)str_replace(',', '', $get('unit_price'));
                         $discount = $get('discount') === null ?  0 : (float)$get('discount');
                         $set('total', number_format(($count * $unitPrice) - (($count * $unitPrice) * $discount) / 100, 2));
-                    })->default(0)->required()->label('Discount'),
+                    })->default(0)->required(),
                     Forms\Components\TextInput::make('total')->prefix(defaultCurrency()?->symbol)->live()->readOnly()->default(0)->required()->label('Total'),
                 ])->columnSpanFull()->columns(7),
             ])->columns(2),
