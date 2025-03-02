@@ -117,7 +117,7 @@ class CompanyResource extends Resource
 
             ])
             ->actions([
-                Tables\Actions\Action::make('login')->tooltip('Login As Admin')->label('')->action(function ($record) {
+                Tables\Actions\Action::make('login')->tooltip('Login')->label('')->action(function ($record) {
 //                    if ($record->user_id) {
 //                        Auth::loginUsingId($record->user_id);
 //                        return redirect('/admin');
@@ -127,7 +127,7 @@ class CompanyResource extends Resource
 //                    return redirect('superAdmin/');
 
                   return  redirect(route('filament.admin.pages.dashboard',['tenant'=>$record->id]));
-                })->icon('heroicon-s-user-circle')->iconSize(IconSize::Large)->requiresConfirmation()->modalHeading('Do want to login as admin?')->modalIcon('heroicon-s-user-circle')->modalSubmitActionLabel('Login'),
+                })->icon('heroicon-s-user-circle')->iconSize(IconSize::Large)->requiresConfirmation()->modalHeading('Do want to login ?')->modalIcon('heroicon-s-user-circle')->modalSubmitActionLabel('Login'),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
