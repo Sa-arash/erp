@@ -239,7 +239,7 @@ class UserResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('setPassword')->visible(fn($record) => $record->user and auth()->user()->can('password_employee') )->label('Reset Password')->form([
+                Tables\Actions\Action::make('setPassword')->label('Reset Password')->form([
                     Forms\Components\TextInput::make('password')->required()->autocomplete(false)
                 ])->requiresConfirmation()->action(function ($record, $data) {
                     $record->update(['password' => $data['password']]);
