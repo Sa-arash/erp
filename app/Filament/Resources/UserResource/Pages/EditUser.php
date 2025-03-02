@@ -9,11 +9,25 @@ use Filament\Resources\Pages\EditRecord;
 class EditUser extends EditRecord
 {
     protected static string $resource = UserResource::class;
-
-    protected function getHeaderActions(): array
+    public function mount(int | string $record): void
     {
-        return [
-            Actions\DeleteAction::make(),
-        ];
+        $this->record = $this->resolveRecord($record);
+        if ($this->record->employee){
+            $this->record['haveEmployee']=true;
+        }
+
+        $this->authorizeAccess();
+
+        $this->fillForm();
+
+        $this->previousUrl = url()->previous();
     }
+
+
+//    protected function getHeaderActions(): array
+//    {
+//        return [
+//            Actions\DeleteAction::make(),
+//        ];
+//    }
 }

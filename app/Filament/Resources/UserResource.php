@@ -16,6 +16,7 @@ use Filament\Forms;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\RawJs;
 use Filament\Tables;
@@ -44,7 +45,8 @@ class UserResource extends Resource
                     $set('password_confirmation', $password);
                 }))->dehydrated(fn(?string $state): bool => filled($state))->revealable()->required(fn(string $operation): bool => $operation === 'create')->configure()->same('password_confirmation')->password(),
                 Forms\Components\TextInput::make('password_confirmation')->revealable()->required(fn(string $operation): bool => $operation === 'create')->password(),
-                Forms\Components\Fieldset::make('Employee')->relationship('employee')->schema([
+                Forms\Components\Checkbox::make('haveEmployee')->label('Create Employee Profile ')->live(),
+            Forms\Components\Fieldset::make('Employee')->visible(fn(Get $get)=>$get('haveEmployee'))->relationship('employee')->schema([
                     Forms\Components\Wizard::make([
                         Forms\Components\Wizard\Step::make('Information')
                             ->schema([
@@ -229,31 +231,24 @@ class UserResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('email')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('email_verified_at')
-                    ->dateTime()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('name')->searchable(),
+                Tables\Columns\TextColumn::make('email')->searchable(),
             ])
             ->filters([
                 //
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('setPassword')->visible(fn($record) => $record->user and auth()->user()->can('password_employee') )->label('Reset Password')->form([
+                    Forms\Components\TextInput::make('password')->required()->autocomplete(false)
+                ])->requiresConfirmation()->action(function ($record, $data) {
+                    $record->update(['password' => $data['password']]);
+                    Notification::make('success')->success()->title('Submitted Successfully')->send();
+                })->icon('heroicon-s-lock-closed')->color('warning'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+//                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }
