@@ -21,9 +21,6 @@ class CreateEmployee extends CreateRecord
     protected static string $resource = EmployeeResource::class;
     use CreateRecord\Concerns\HasWizard;
 
-
-
-
     public function form(Form $form): Form
     {
         return parent::form($form)

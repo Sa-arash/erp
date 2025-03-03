@@ -481,14 +481,14 @@ function getDaysBetweenDates($start_date, $end_date, $target_days)
 
 function getCompanyUrl()
 {
-    $url =  \Illuminate\Support\Facades\Request::url();
+    $url = \Illuminate\Support\Facades\Request::url();
     $path = parse_url($url, PHP_URL_PATH);
     $parts = explode('/', $path);
     $index = array_search('admin', $parts);
     if ($index !== false && isset($parts[$index + 1])) {
         return $parts[$index + 1];
-    }else{
-        return  1;
+    } else {
+        return 1;
     }
 }
 
@@ -497,7 +497,7 @@ function generateNextCode($code): string
 {
 
     $parts = explode('.', $code);
-    if (isset($parts[1])){
+    if (isset($parts[1])) {
         // گرفتن آخرین بخش و تبدیل آن به عدد
         $lastNumber = (int)end($parts);
 
@@ -516,16 +516,19 @@ function generateNextCode($code): string
 
     return str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
 }
-function defaultCurrency(){
-    return getCompany()->currencies->where('is_company_currency',1)->first();
+
+function defaultCurrency()
+{
+    return getCompany()->currencies->where('is_company_currency', 1)->first();
 }
-function PDFdefaultCurrency($company){
-    return $company->currencies->where('is_company_currency',1)->first()?->symbol;
+
+function PDFdefaultCurrency($company)
+{
+    return $company->currencies->where('is_company_currency', 1)->first()?->symbol;
 }
 
 function generateNextCodePO($code): string
 {
-
 
 
     $lastNumber = $code;
@@ -534,6 +537,7 @@ function generateNextCodePO($code): string
 
     return str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
 }
+
 function generateNextCodeAsset($code): string
 {
 
@@ -582,6 +586,7 @@ function generateNextCodeDote($code): string
     // ترکیب بخش‌ها به یک کد جدید
     return implode('.', $parts);
 }
+
 function getPeriod()
 {
     return FinancialPeriod::query()->where('status', 'During')->where('company_id', getCompany()->id)->first();
@@ -603,7 +608,7 @@ function getGender($record)
     }
 }
 
-function addSpacesBasedOnParentLevel($record, $level = 0,$visited = [])
+function addSpacesBasedOnParentLevel($record, $level = 0, $visited = [])
 {
     $spaces = str_repeat(' ', $level * 10);
 
@@ -614,13 +619,15 @@ function addSpacesBasedOnParentLevel($record, $level = 0,$visited = [])
     return $spaces;
 }
 
-function getEmployee(){
+function getEmployee()
+{
     return auth()->user()->employee;
 }
 
 
-function getParents($record, $visited = []) {
-    $str = "/".$record?->title;
+function getParents($record, $visited = [])
+{
+    $str = "/" . $record?->title;
 
     // بررسی اینکه آیا والد موجود است و آیا قبلاً بازدید نشده
     if ($record?->parent && !in_array($record->parent->id, $visited)) {
@@ -632,7 +639,7 @@ function getParents($record, $visited = []) {
     return $str;
 }
 
-function sendAR($employee, $record,$company)
+function sendAR($employee, $record, $company)
 {
 
     if ($employee?->department?->employee_id) {
@@ -642,14 +649,14 @@ function sendAR($employee, $record,$company)
                 'company_id' => $company->id,
                 'position' => 'Head Department',
                 'status' => "Approve",
-                'approve_date'=>now()
+                'approve_date' => now()
             ]);
-            $CEO=Employee::query()->firstWhere('user_id',$company->user_id);
+            $CEO = Employee::query()->firstWhere('user_id', $company->user_id);
             $record->approvals()->create([
-                'employee_id'=>$CEO->id,
-                'company_id'=>$company->id,
-                'position'=>'CEO',
-                'status'=>"Pending"
+                'employee_id' => $CEO->id,
+                'company_id' => $company->id,
+                'position' => 'CEO',
+                'status' => "Pending"
             ]);
         } else {
             $record->approvals()->create([
@@ -658,8 +665,8 @@ function sendAR($employee, $record,$company)
                 'position' => 'Head Department'
             ]);
         }
-    }else{
-        $CEO=Employee::query()->firstWhere('user_id',$company->user_id);
+    } else {
+        $CEO = Employee::query()->firstWhere('user_id', $company->user_id);
         $record->approvals()->create([
             'employee_id' => $CEO->id,
             'company_id' => $company->user_id,
@@ -667,31 +674,38 @@ function sendAR($employee, $record,$company)
         ]);
     }
 }
-function getAdmin(){
-   $roles=  getCompany()->roles->where('name','Admin')->first();
-   if (isset($roles->users[0])){
-       if ($roles->users[0]->employee){
-           return $roles->users[0]->employee;
-       }
-   }
+
+function getAdmin()
+{
+    $roles = getCompany()->roles->where('name', 'Admin')->first();
+    if (isset($roles->users[0])) {
+        if ($roles->users[0]->employee) {
+            return $roles->users[0]->employee;
+        }
+    }
 }
-function getSecurity(){
-   $roles=  getCompany()->roles->where('name','Security')->first();
-   if (isset($roles->users[0])){
-       if ($roles->users[0]->employee){
-           return $roles->users[0]->employee;
-       }
-   }
+
+function getSecurity()
+{
+    $roles = getCompany()->roles->where('name', 'Security')->first();
+    if (isset($roles->users[0])) {
+        if ($roles->users[0]->employee) {
+            return $roles->users[0]->employee;
+        }
+    }
 }
-function getOperation(){
-   $roles=  getCompany()->roles->where('name','Operation')->first();
-   if (isset($roles->users[0])){
-       if ($roles->users[0]->employee){
-           return $roles->users[0]->employee;
-       }
-   }
+
+function getOperation()
+{
+    $roles = getCompany()->roles->where('name', 'Operation')->first();
+    if (isset($roles->users[0])) {
+        if ($roles->users[0]->employee) {
+            return $roles->users[0]->employee;
+        }
+    }
 }
-function sendOperation($employee, $record,$company)
+
+function sendOperation($employee, $record, $company)
 {
     if (getOperation()) {
         if (getOperation()->id === $employee->id) {
@@ -700,9 +714,9 @@ function sendOperation($employee, $record,$company)
                 'company_id' => $company->id,
                 'position' => 'Operation',
                 'status' => "Approve",
-                'approve_date'=>now()
+                'approve_date' => now()
             ]);
-        }else{
+        } else {
             $record->approvals()->create([
                 'employee_id' => getOperation()->id,
                 'company_id' => $company->id,
@@ -711,7 +725,8 @@ function sendOperation($employee, $record,$company)
         }
     }
 }
-function sendAdmin($employee, $record,$company)
+
+function sendAdmin($employee, $record, $company)
 {
     if (getAdmin()) {
         if (getAdmin()->id === $employee->id) {
@@ -720,11 +735,11 @@ function sendAdmin($employee, $record,$company)
                 'company_id' => $company->id,
                 'position' => 'Admin',
                 'status' => "Approve",
-                'approve_date'=>now()
+                'approve_date' => now()
             ]);
-            sendSecurity($employee,$record,$company);
+            sendSecurity($employee, $record, $company);
 
-        }else{
+        } else {
             $record->approvals()->create([
                 'employee_id' => getAdmin()->id,
                 'company_id' => $company->id,
@@ -733,8 +748,10 @@ function sendAdmin($employee, $record,$company)
         }
     }
 }
-function sendSecurity($employee,$record,$company){
-    $security=Employee::query()->firstWhere('id',getSecurity()?->id);
+
+function sendSecurity($employee, $record, $company)
+{
+    $security = Employee::query()->firstWhere('id', getSecurity()?->id);
     if ($security) {
         if ($security->id === $employee->id) {
             $record->approvals()->create([
@@ -742,16 +759,16 @@ function sendSecurity($employee,$record,$company){
                 'company_id' => $company->id,
                 'position' => 'Security',
                 'status' => "Approve",
-                'approve_date'=>now()
+                'approve_date' => now()
             ]);
 
-            if (  substr($record->approvals[0]?->approvable_type, 11) === "TakeOut"){
-                $record->update(['mood'=>'Approved']);
-            }else{
-                $record->update(['status'=>'Approved']);
+            if (substr($record->approvals[0]?->approvable_type, 11) === "TakeOut") {
+                $record->update(['mood' => 'Approved']);
+            } else {
+                $record->update(['status' => 'Approved']);
 
             }
-        }else{
+        } else {
             $record->approvals()->create([
                 'employee_id' => $security->id,
                 'company_id' => $company->id,
@@ -761,8 +778,10 @@ function sendSecurity($employee,$record,$company){
     }
 
 }
-function getSelectCurrency(){
-   return Select::make('currency_id')->live()->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([
+
+function getSelectCurrency()
+{
+    return Select::make('currency_id')->live()->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([
         \Filament\Forms\Components\Section::make([
             TextInput::make('name')->required()->maxLength(255),
             TextInput::make('symbol')->required()->maxLength(255),
@@ -773,10 +792,35 @@ function getSelectCurrency(){
         Notification::make('success')->title('success')->success()->send();
         return Currency::query()->create($data)->getKey();
     })->editOptionForm([
-       \Filament\Forms\Components\Section::make([
+        \Filament\Forms\Components\Section::make([
             TextInput::make('name')->required()->maxLength(255),
             TextInput::make('symbol')->required()->maxLength(255),
             TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
         ])->columns(3)
     ]);
+}
+
+
+function getAllPermission(): array
+{
+    return [
+        1, 2, 3, 4, 5, 9, 10, 11, 13, 14, 15, 16, 17, 21, 22, 23, 37, 38, 39, 40, 41, 45, 46, 47, 49, 50,
+        51, 52, 53, 57, 58, 59, 61, 62, 63, 64, 65, 69, 70, 71, 73, 74, 75, 76, 77, 81, 82, 83, 85, 86,
+        87, 88, 89, 93, 94, 95, 97, 98, 99, 100, 101, 105, 106, 107, 109, 110, 111, 112, 113, 117, 118,
+        119, 121, 122, 123, 124, 125, 129, 130, 131, 133, 134, 135, 136, 137, 141, 142, 143, 145, 146,
+        147, 148, 149, 153, 154, 155, 157, 158, 159, 160, 161, 165, 166, 167, 169, 170, 171, 172, 173,
+        177, 178, 179, 181, 182, 183, 184, 189, 190, 193, 194, 195, 196, 197, 201, 202, 203, 205, 206,
+        207, 208, 209, 213, 214, 215, 217, 218, 219, 220, 221, 225, 226, 227, 229, 230, 231, 232, 233,
+        237, 238, 239, 241, 242, 243, 244, 245, 249, 250, 251, 253, 254, 255, 256, 257, 261, 262, 263,
+        265, 266, 267, 268, 269, 273, 274, 275, 277, 278, 279, 280, 281, 285, 286, 287, 289, 290, 291,
+        292, 293, 297, 298, 299, 301, 302, 303, 304, 305, 309, 310, 311, 313, 314, 315, 316, 317, 321,
+        322, 323, 325, 326, 327, 328, 329, 333, 334, 335, 337, 338, 339, 340, 341, 345, 346, 347, 349,
+        350, 351, 352, 353, 357, 358, 359, 361, 362, 363, 364, 365, 369, 370, 371, 373, 374, 375, 376,
+        377, 381, 382, 383, 385, 386, 387, 388, 389, 390, 391, 392, 393, 394, 395, 399, 400, 401, 403,
+        404, 405, 406, 407, 411, 412, 413, 415, 416, 417, 418, 423, 424, 427, 428, 429, 430, 431, 435,
+        436, 437, 439, 440, 441, 442, 443, 447, 448, 449, 451, 452, 453, 454, 455, 459, 460, 461, 463,
+        464, 465, 466, 471, 472, 475, 476, 477, 478, 479, 483, 484, 485, 487, 509, 510, 511, 512, 513,
+        514, 518, 519, 520, 521, 522, 523, 525, 527, 528, 529, 530, 531, 535, 536, 537, 539, 540, 541,
+        542, 543, 544, 545, 546, 547, 548, 549, 550, 551, 552, 553, 554, 557
+    ];
 }

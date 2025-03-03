@@ -478,7 +478,6 @@ class ITemployeeResource extends Resource
                 } )->alignLeft()->sortable(),
                 Tables\Columns\TextColumn::make('phone_number')->alignLeft()->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('duty.title')->alignLeft()->numeric()->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('base_salary')->label('Base Salary' . "(" . defaultCurrency()?->symbol . ")")->alignLeft()->numeric()->sortable()->badge(),
                 Tables\Columns\TextColumn::make('department.title')->alignLeft()->color('aColor')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('position.title')->alignLeft()->label('Position')->sortable(),
                 //                Tables\Columns\TextColumn::make('payrolls_count')->counts('payrolls')->badge()->url(fn($record): string => (PayrollResource::getUrl('index', ['tableFilters[employee_id][value]' => $record->id])))->sortable(),
@@ -500,29 +499,7 @@ class ITemployeeResource extends Resource
                 DateRangeFilter::make('birthday'),
                 DateRangeFilter::make('joining_date'),
                 DateRangeFilter::make('leave_date'),
-                Filter::make('base_salary')
-                    ->form([
-                        Forms\Components\Section::make([
-                            TextInput::make('min')->label('Min Base Salary')
-                                ->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)
-                                ->numeric(),
 
-                            TextInput::make('max')->label('Max Base Salary')
-                                ->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)
-                                ->numeric(),
-                        ])->columns()
-                    ])->columnSpanFull()
-                    ->query(function (Builder $query, array $data): Builder {
-                        return $query
-                            ->when(
-                                $data['min'],
-                                fn(Builder $query, $date): Builder => $query->where('base_salary', '>=', str_replace(',', '', $date)),
-                            )
-                            ->when(
-                                $data['max'],
-                                fn(Builder $query, $date): Builder => $query->where('base_salary', '<=', str_replace(',', '', $date)),
-                            );
-                    }),
 
 
             ], getModelFilter())
@@ -586,13 +563,18 @@ class ITemployeeResource extends Resource
                     })->icon('heroicon-s-lock-closed')->color('warning'),
                     Tables\Actions\Action::make('setRole')->visible(fn($record) => $record->user and auth()->user()->can('role_employee') )->fillForm(function ($record) {
                         return [
-                            'roles' => $record->user->roles->pluck('id')->toArray()
+                            'roles' => $record->user->roles->where('company_id',getCompany()->id)->where('is_show',1)->pluck('id')->toArray()
                         ];
                     })->label('Assignee Role')->form([
-                        Forms\Components\Select::make('roles')->pivotData(['company_id' => getCompany()->id])->options(getCompany()->roles->pluck('name', 'id'))->multiple()->preload()->searchable(),
+                        Forms\Components\Select::make('roles')->pivotData(['company_id' => getCompany()->id])->options(getCompany()->roles->where('is_show',1)->pluck('name', 'id'))->multiple()->preload()->searchable(),
                     ])->requiresConfirmation()->action(function ($record, $data) {
                         $user = User::query()->firstWhere('id', $record->user_id);
                         $rolesWithCompanyId = [];
+
+                        if ($user->roles->where('is_show',0)->first()){
+                            $rolesWithCompanyId[$user->roles->where('is_show',0)->first()->id]=['company_id' => getCompany()->id];
+                        }
+
                         foreach ($data['roles'] as $roleId) {
                             $rolesWithCompanyId[$roleId] = ['company_id' => getCompany()->id];
                         }
@@ -601,7 +583,7 @@ class ITemployeeResource extends Resource
                     })->icon('heroicon-s-shield-check')->color('danger'),
                 ])->color('warning'),
 
-            ])->actionsColumnLabel('Actions')->actionsAlignment(CellAlignment::CENTER)
+            ])->actionsColumnLabel('Actions')
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
 //                    Tables\Actions\DeleteBulkAction::make(),

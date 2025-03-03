@@ -73,7 +73,7 @@ class TaskResource extends Resource
                 ])->action(function ($record,$data){
                     TaskReports::query()->create([
                         'date'=>now(),
-                        'employee_id'=>getEmployee()->id,
+                        'employee_id'=>getEmployee()?->id,
                         'task_id'=>$record->id,
                         'company_id'=>getCompany()->id,
                         'description'=>$data['description'],

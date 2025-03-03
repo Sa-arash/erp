@@ -573,7 +573,7 @@ class  DatabaseSeeder extends Seeder
             $account['stamp'] = $account['name'];
             $account['currency_id'] = 1;
             if ($account['id'] == 18) {
-                $account['name'] = 'Equityes';
+                $account['name'] = 'Equity`s';
             } elseif ($account['id'] == 21) {
                 $account['name'] = 'Incomes';
             }

@@ -6,7 +6,14 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
 
 Route::get('/', function () {
+
+
     return view('welcome');
+});
+Route::get('/test', function () {
+
+    $roll=\Spatie\Permission\Models\Role::query()->firstWhere('id',10);
+    dd($roll->permissions->pluck('id')->toArray());
 });
 
 

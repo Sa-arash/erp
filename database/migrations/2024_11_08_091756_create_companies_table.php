@@ -20,7 +20,6 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained('users')->cascadeOnUpdate()->cascadeOnDelete();
             $table->text('description')->nullable();
             $table->text('company_registration_document')->nullable();
-            $table->string('currency');
             $table->float('overtime_rate')->default(1);
             $table->string('daily_working_hours')->nullable();
             $table->string('weekend_days')->nullable();

@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\CompanyResource\Pages;
 use App\Filament\Resources\CompanyResource\RelationManagers;
 use App\Models\Company;
+use App\Models\FinancialPeriod;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -129,6 +130,14 @@ class CompanyResource extends Resource
                   return  redirect(route('filament.admin.pages.dashboard',['tenant'=>$record->id]));
                 })->icon('heroicon-s-user-circle')->iconSize(IconSize::Large)->requiresConfirmation()->modalHeading('Do want to login ?')->modalIcon('heroicon-s-user-circle')->modalSubmitActionLabel('Login'),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('balance')->url(function($record){
+                   $financialPeriod= FinancialPeriod::query()->where('company_id',$record->id)->where('status','During')->first();
+                   if ($financialPeriod){
+                       return route('pdf.balance',['period'=>$financialPeriod->id]);
+                   }
+                })->visible(function ($record){
+                    return  FinancialPeriod::query()->where('company_id',$record->id)->where('status','During')->first();
+                })
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
