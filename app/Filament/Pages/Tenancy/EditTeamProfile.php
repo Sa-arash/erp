@@ -22,13 +22,13 @@ class EditTeamProfile extends EditTenantProfile
     // use HasPageShield;
     public static function getLabel(): string
     {
-        return 'company profile';
+        return 'Company Profile';
     }
     public static $url;
 
     public static function canView(Model $tenant): bool
     {
-       return (getCompany()->user_id == auth()->user()->id);
+       return (getCompany()->user_id == auth()->user()->id or auth()->user()->is_super);
     }
 
 

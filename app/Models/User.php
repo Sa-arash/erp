@@ -17,10 +17,22 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\PermissionRegistrar;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements HasTenants
+class User extends Authenticatable implements HasTenants, FilamentUser
 {
     use HasRoles,Notifiable;
     use HasFactory;
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        if ($panel->getId()==="super-admin" and $this->is_super ===1){
+            return  true;
+        }elseif ($panel->getId()==="admin"){
+            return  true;
+        }else{
+            return  false;
+        }
+
+    }
 
     public function allRoles(): BelongsToMany
     {
