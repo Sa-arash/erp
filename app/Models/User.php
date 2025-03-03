@@ -67,6 +67,7 @@ class User extends Authenticatable implements HasTenants
         'name',
         'email',
         'password',
+        'is_super'
 
     ];
 

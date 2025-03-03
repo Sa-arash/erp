@@ -481,14 +481,24 @@ function getDaysBetweenDates($start_date, $end_date, $target_days)
 
 function getCompanyUrl()
 {
+
     $url = \Illuminate\Support\Facades\Request::url();
+
     $path = parse_url($url, PHP_URL_PATH);
     $parts = explode('/', $path);
     $index = array_search('admin', $parts);
     if ($index !== false && isset($parts[$index + 1])) {
+        \Illuminate\Support\Facades\Cache::set('CompanyId',$parts[$index + 1]);
+
         return $parts[$index + 1];
     } else {
-        return 1;
+        if (in_array('livewire', $parts) && in_array('update', $parts)) {
+
+            return getCompany() ? getCompany()->id : \Illuminate\Support\Facades\Cache::get('CompanyId');
+        }
+        if (getCompany()){
+            return  getCompany()->id;
+        }
     }
 }
 

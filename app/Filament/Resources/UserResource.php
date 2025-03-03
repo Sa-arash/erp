@@ -232,6 +232,7 @@ class UserResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name')->searchable(),
                 Tables\Columns\TextColumn::make('email')->searchable(),
+                Tables\Columns\TextColumn::make('is_super')->alignCenter()->label('Super Admin')->state(fn($record)=>(bool)$record->is_super? "Yes":"No"),
             ])
             ->filters([
                 //
@@ -243,9 +244,7 @@ class UserResource extends Resource
                     foreach ($companies as $company){
                         if ($company->roles->where('is_show',0)->first()){
                             $roleID=$company->roles->where('is_show',0)->first()->id;
-
                             if (!$record->allRoles->where('id',$roleID)->first()){
-
                                 $record->roles()->attach([
                                     $roleID=>[
                                         'company_id'=>$company->id
@@ -253,9 +252,10 @@ class UserResource extends Resource
                                 ]);
                             }
                         }
-
-
                     }
+                    $record->update(['is_super'=>1]);
+                    Notification::make('success')->success()->title('Submitted Successfully')->send();
+
                 }),
                 Tables\Actions\Action::make('setPassword')->label('Reset Password')->form([
                     Forms\Components\TextInput::make('password')->required()->autocomplete(false)

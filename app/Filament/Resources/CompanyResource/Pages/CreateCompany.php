@@ -444,6 +444,8 @@ class CreateCompany extends CreateRecord
             $tempIds = [];
 
             foreach ($accounts as $account) {
+
+                $account['stamp']=$account['name'];
                 if ($account['id'] == 18) {
                     $account['name'] = "Equity`s";
                 } elseif ($account['id'] == 21) {
