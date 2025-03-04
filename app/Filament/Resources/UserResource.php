@@ -257,7 +257,7 @@ class UserResource extends Resource
                     }
                     $record->update(['is_super' => 1]);
                     Notification::make('success')->success()->title('Submitted Successfully')->send();
-                })->requiresConfirmation()->visible(fn($record)=>!$record->is_super),
+                })->requiresConfirmation()->visible(fn($record)=>!$record->is_super)->hidden(fn($record)=>$record->id ===auth()->user()->id),
                 Tables\Actions\Action::make('unSuper')->label('Revoke Supper Admin')->action(function ($record) {
                     $companies = Company::query()->get();
                     foreach ($companies as $company) {
@@ -274,7 +274,7 @@ class UserResource extends Resource
                     }
                     $record->update(['is_super' => 0]);
                     Notification::make('success')->success()->title('Submitted Successfully')->send();
-                })->requiresConfirmation()->visible(fn($record)=>$record->is_super),
+                })->requiresConfirmation()->visible(fn($record)=>$record->is_super)->hidden(fn($record)=>$record->id ===auth()->user()->id),
                 Tables\Actions\Action::make('setPassword')->label('Reset Password')->form([
                     Forms\Components\TextInput::make('password')->required()->autocomplete(false)
                 ])->requiresConfirmation()->action(function ($record, $data) {
