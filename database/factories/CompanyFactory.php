@@ -23,7 +23,7 @@ class CompanyFactory extends Factory
             'description' => $this->faker->paragraph,
             'address' => $this->faker->address,
             'country'=> $this->faker->company,
-            'currency'=>'$',
+            // 'currency'=>'$',
         ];
     }
 }

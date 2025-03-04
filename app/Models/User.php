@@ -17,10 +17,17 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\PermissionRegistrar;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements HasTenants, FilamentUser
+class User extends Authenticatable implements HasTenants, FilamentUser , HasName
 {
     use HasRoles,Notifiable;
     use HasFactory;
+
+
+
+    public function getFilamentName(): string
+    {
+        return $this->employee->fullName ?? $this->name;
+    }
 
     public function canAccessPanel(Panel $panel): bool
     {
