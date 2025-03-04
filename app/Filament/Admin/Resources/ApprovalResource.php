@@ -287,7 +287,7 @@ class ApprovalResource extends Resource
     }
     public static function getNavigationBadge(): ?string
     {
-        return Approval::query()->where('employee_id', getEmployee()->id)->where('status', 'Pending')->count();
+        return Approval::query()->where('employee_id', getEmployee()?->id)->where('status', 'Pending')->count() ?? 0;
     }
 
     public static function getRelations(): array
