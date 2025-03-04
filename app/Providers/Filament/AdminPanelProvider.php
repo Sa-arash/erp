@@ -139,7 +139,7 @@ class AdminPanelProvider extends PanelProvider
         }
 
 
-        return $panel
+        return $panel->brandName(fn()=>getCompany()->title." -ERP")
             ->id('admin')->maxContentWidth(MaxWidth::Full)->favicon(asset('img/my.png'))
             ->path('admin')->sidebarCollapsibleOnDesktop()
             ->login()

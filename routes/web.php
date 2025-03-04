@@ -55,6 +55,11 @@ Route::get('login',function (){
 })->name('login');
 
 Route::get('/',function (){
+
+    if (auth()->user() and auth()->user()->is_super){
+        return redirect('/super-admin');
+
+    }
     return redirect('/admin');
 });
 Route::middleware('auth')->group(function(){
