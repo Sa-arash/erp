@@ -474,6 +474,10 @@ class CreateCompany extends CreateRecord
             $superAdminRole->permissions()->attach(getAllPermission());
             $users= User::query()->where('is_super',1)->get();
             foreach ($users as $user){
+                CompanyUser::query()->create([
+                    'user_id'=>$user->id,
+                    'company_id'=>$company->id
+                ]);
                 $user->roles()->attach([
                     $superAdminRole->id=>[
                         'company_id'=>$company->id
