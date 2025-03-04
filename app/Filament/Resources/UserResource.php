@@ -241,7 +241,7 @@ class UserResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('super')->label('Make Supper Admin')->action(function ($record) {
+                Tables\Actions\Action::make('super')->label('Grant Supper Admin')->action(function ($record) {
                     $companies = Company::query()->get();
                     foreach ($companies as $company) {
                         if ($company->roles->where('is_show', 0)->first()) {
@@ -257,8 +257,24 @@ class UserResource extends Resource
                     }
                     $record->update(['is_super' => 1]);
                     Notification::make('success')->success()->title('Submitted Successfully')->send();
+                })->requiresConfirmation()->visible(fn($record)=>!$record->is_super),
+                Tables\Actions\Action::make('unSuper')->label('Revoke Supper Admin')->action(function ($record) {
+                    $companies = Company::query()->get();
+                    foreach ($companies as $company) {
 
-                }),
+                        if ($company->roles->where('is_show', 0)->first()) {
+
+                            $roleID = $company->roles->where('is_show', 0)->first()->id;
+                            $role=$record->allRoles->where('id', $roleID)->first();
+                            if ($role) {
+
+                               $role->pivot->delete();
+                            }
+                        }
+                    }
+                    $record->update(['is_super' => 0]);
+                    Notification::make('success')->success()->title('Submitted Successfully')->send();
+                })->requiresConfirmation()->visible(fn($record)=>$record->is_super),
                 Tables\Actions\Action::make('setPassword')->label('Reset Password')->form([
                     Forms\Components\TextInput::make('password')->required()->autocomplete(false)
                 ])->requiresConfirmation()->action(function ($record, $data) {
