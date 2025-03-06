@@ -18,6 +18,7 @@ use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\IconSize;
 use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -28,7 +29,7 @@ use Illuminate\Support\Str;
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
-
+    protected static ?string $label='User';
     protected static ?string $navigationIcon = 'heroicon-o-user-group';
 
     public static function form(Form $form): Form
@@ -240,8 +241,9 @@ class UserResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\DeleteAction::make()->hidden(fn($record)=>$record->id===auth()->id()),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('super')->label('Grant Supper Admin')->action(function ($record) {
+                Tables\Actions\Action::make('super')->icon('heroicon-s-shield-check')->iconSize(IconSize::Large)->label('Grant Supper Admin')->action(function ($record) {
                     $companies = Company::query()->get();
                     foreach ($companies as $company) {
                         if ($company->roles->where('is_show', 0)->first()) {
@@ -261,13 +263,10 @@ class UserResource extends Resource
                 Tables\Actions\Action::make('unSuper')->label('Revoke Supper Admin')->action(function ($record) {
                     $companies = Company::query()->get();
                     foreach ($companies as $company) {
-
                         if ($company->roles->where('is_show', 0)->first()) {
-
                             $roleID = $company->roles->where('is_show', 0)->first()->id;
                             $role=$record->allRoles->where('id', $roleID)->first();
                             if ($role) {
-
                                $role->pivot->delete();
                             }
                         }
