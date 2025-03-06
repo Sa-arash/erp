@@ -47,22 +47,7 @@ class CreateCompany extends CreateRecord
                 'user_id' => $this->record->user_id,
             ]);
 
-            Employee::query()->create(['daily_salary',
-                'contract_id'=>$company->contracts[0]->id,
-                'phone_number'=>"",
-               'user_id'=>$company->users[0]->id,
-                'fullName'=>$company->users[0]->name,
-                'email'=>$company->users[0]->email,
-                'joining_date'=>now(),
-                'department_id'=>$company->departments[0]->id,
-                'position_id'=>$company->positions[0]->id,
-                'gender'=>'male',
-                'company_id'=>$company->id,
-                'duty_id'=>$company->duties[0]->id,
-                'card_status'=>"National Staff",
-                'type_of_ID'=>"Renewal",
-                'ID_number'=>"011",
-            ]);
+
 
             Benefit::query()->create([
                 'title' => 'Overtime',

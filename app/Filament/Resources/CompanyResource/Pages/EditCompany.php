@@ -5,6 +5,7 @@ namespace App\Filament\Resources\CompanyResource\Pages;
 use App\Filament\Resources\CompanyResource;
 use App\Models\CompanyUser;
 use Filament\Actions;
+use Filament\Forms\Form;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Support\Exceptions\Halt;
 use Filament\Support\Facades\FilamentView;
@@ -13,6 +14,7 @@ use function Filament\Support\is_app_url;
 class EditCompany extends EditRecord
 {
     protected static string $resource = CompanyResource::class;
+
 
 
     public function save(bool $shouldRedirect = true, bool $shouldSendSavedNotification = true): void

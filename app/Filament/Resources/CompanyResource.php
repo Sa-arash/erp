@@ -46,10 +46,14 @@ class CompanyResource extends Resource
                        ])->optionsLimit(10)->required()->label('CEO')->relationship('user', 'name')->searchable()->preload(),
                        Forms\Components\FileUpload::make('logo')->image(),
                        Forms\Components\FileUpload::make('company_registration_document'),
-                       Forms\Components\Select::make('currency')->required()->required()->options(getCurrency())->searchable(),
                        Forms\Components\Select::make('country')->required()->required()->options(getCountry())->searchable(),
-                       Section::make()
-                           ->schema([
+                       Forms\Components\Textarea::make('contact_information')->maxLength(120),
+                       Forms\Components\Textarea::make('address')->maxLength(120),
+                       Forms\Components\Textarea::make('description')->columnSpanFull(),]
+                   )->columns(2),
+                   Forms\Components\Wizard\Step::make('Basic Setting')->schema([
+                       Forms\Components\Select::make('currency')->visible(fn($operation)=>$operation==="create")->required()->required()->options(getCurrency())->searchable(),
+                       Section::make()->schema([
                                TextInput::make('daily_working_hours')->required()->label('Daily Working Hours')->numeric(),
                                select::make('weekend_days')->required()->label('Weekend Days')->multiple()->options([
                                    'saturday' => 'Saturday',
@@ -62,46 +66,12 @@ class CompanyResource extends Resource
                                ])->placeholder('Select weekend days'),
                                Forms\Components\TextInput::make('overtime_rate')->required()->numeric(),
                            ])->columns(3),
-                       Forms\Components\Textarea::make('contact_information')->maxLength(120),
-                       Forms\Components\Textarea::make('address')->maxLength(120),
-                       Forms\Components\Textarea::make('description')->columnSpanFull(),]
-                   )->columns(2),
-                   Forms\Components\Wizard\Step::make('Basic Setting')->schema([
-                       Forms\Components\Repeater::make('departments')->relationship('departments')->schema([
-                           Forms\Components\TextInput::make('title')->label('Department Name')
-                               ->required()
-                               ->maxLength(255)->columnSpanFull(),
-                           Forms\Components\Textarea::make('description')->columnSpanFull()
-                       ])->defaultItems(1)->maxItems(1)->required(),
-                       Forms\Components\Repeater::make('Duty Type')->relationship('duties')->schema([
-                           Forms\Components\TextInput::make('title')->columnSpanFull()
-                               ->required()
-                               ->maxLength(255),
-                           Forms\Components\Textarea::make('description')
-                               ->nullable()
-                               ->columnSpanFull(),
-                       ])->defaultItems(1)->maxItems(1)->required(),
-                       Forms\Components\Repeater::make('Pay Frequency')->relationship('contracts')->schema([
-                           Forms\Components\TextInput::make('title')
-                               ->required()
-                               ->maxLength(255),
-                           Forms\Components\TextInput::make('day')
-                               ->required()
-                               ->numeric(),
-                       ])->defaultItems(1)->maxItems(1)->required(),
-                       Forms\Components\Repeater::make('Designation')->relationship('positions')->schema([
-                           Forms\Components\TextInput::make('title')->label('Designation Title')
-                               ->required()
-                               ->columnSpanFull()
-                               ->maxLength(255),
-                           Forms\Components\FileUpload::make('document')->columnSpanFull(),
-                           Forms\Components\Textarea::make('description')
-                               ->columnSpanFull(),
-                       ])->defaultItems(1)->required()->maxItems(1),
                    ])->columns(2)
                ])->columnSpanFull()
             ]);
     }
+
+
 
 
     public static function table(Table $table): Table

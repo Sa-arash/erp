@@ -12,7 +12,7 @@ Route::get('/', function () {
 });
 Route::get('/test', function () {
 
-    $roll=\Spatie\Permission\Models\Role::query()->firstWhere('id',10);
+    $roll=\Spatie\Permission\Models\Role::query()->firstWhere('id',1);
     dd($roll->permissions->pluck('id')->toArray());
 });
 
