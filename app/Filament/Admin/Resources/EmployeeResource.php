@@ -7,6 +7,7 @@ use App\Filament\Admin\Resources\EmployeeResource\RelationManagers\AssetEmployee
 use App\Filament\Admin\Resources\EmployeeResource\RelationManagers\LeavesRelationManager;
 use App\Filament\Admin\Resources\EmployeeResource\RelationManagers\OverTimesRelationManager;
 use App\Filament\Admin\Resources\EmployeeResource\RelationManagers\PayrollsRelationManager;
+use App\Filament\Exports\EmployeeExporter;
 use App\Models\Benefit;
 use App\Models\CompanyUser;
 use App\Models\Contract;
@@ -457,7 +458,9 @@ class EmployeeResource extends Resource implements HasShieldPermissions
 
     public static function table(Table $table): Table
     {
-        return $table
+        return $table->headerActions([
+            Tables\Actions\ExportAction::make()->label('Export Employees')->color('purple')->exporter(EmployeeExporter::class)
+        ])
             ->searchable()
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
@@ -533,7 +536,10 @@ class EmployeeResource extends Resource implements HasShieldPermissions
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
 //                    Tables\Actions\DeleteBulkAction::make(),
+
                 ]),
+                Tables\Actions\ExportBulkAction::make()->label('Export Employees')->color('purple')->exporter(EmployeeExporter::class)
+
             ]);
     }
 

@@ -16,7 +16,7 @@
             </tr>
             <tr>
                 <th>debtor({{ PDFdefaultCurrency($company)}})</th>
-                <th>creditor({{ $PDFdefaultCurrency(company)}})</th>
+                <th>creditor({{ PDFdefaultCurrency($company)}})</th>
 
                 <th>debtor({{ PDFdefaultCurrency($company)}})</th>
                 <th>creditor({{ PDFdefaultCurrency($company)}})</th>

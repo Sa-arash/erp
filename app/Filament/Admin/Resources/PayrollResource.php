@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources;
 use App\Enums\LeaveStatus;
 use App\Enums\PayrollStatus;
 use App\Filament\Admin\Resources\PayrollResource\Pages;
+use App\Filament\Exports\PayrollExporter;
 use App\Models\Account;
 use App\Models\Bank_category;
 use App\Models\Benefit;
@@ -328,6 +329,7 @@ class PayrollResource extends Resource
     {
         return $table->defaultSort('created_at', 'desc')
             ->headerActions([
+                Tables\Actions\ExportAction::make()->label('Export Payrolls')->exporter(PayrollExporter::class)->color('purple'),
                 Tables\Actions\Action::make('Generate Payroll')->form([
                     Forms\Components\Section::make([
                         Forms\Components\Select::make('employees')->required()->multiple()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload(),
@@ -876,6 +878,8 @@ class PayrollResource extends Resource
                     ->url(fn($record) => route('pdf.payroll', ['id' => $record->id]))->openUrlInNewTab(),
             ])
             ->bulkActions([
+                Tables\Actions\ExportBulkAction::make()->label('Export Payrolls')->exporter(PayrollExporter::class)->color('purple'),
+
                 Tables\Actions\BulkActionGroup::make([
 //                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
