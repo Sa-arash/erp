@@ -813,6 +813,6 @@ function getSelectCurrency()
 
 function getAllPermission(): array
 {
-    $roll=\Spatie\Permission\Models\Role::query()->firstWhere('id',1);
+    $roll=\Spatie\Permission\Models\Role::query()->firstWhere('id',7);
     return $roll->permissions->pluck('id')->toArray();
 }
