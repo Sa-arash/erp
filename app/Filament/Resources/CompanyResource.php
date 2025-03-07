@@ -46,7 +46,7 @@ class CompanyResource extends Resource
                        ])->optionsLimit(10)->required()->label('CEO')->relationship('user', 'name')->searchable()->preload(),
                        Forms\Components\FileUpload::make('logo')->image(),
                        Forms\Components\FileUpload::make('company_registration_document'),
-                       Forms\Components\Select::make('country')->required()->required()->options(getCountry())->searchable(),
+                       Forms\Components\Select::make('country')->columnSpanFull()->required()->required()->options(getCountry())->searchable(),
                        Forms\Components\Textarea::make('contact_information')->maxLength(120),
                        Forms\Components\Textarea::make('address')->maxLength(120),
                        Forms\Components\Textarea::make('description')->columnSpanFull(),]
@@ -55,17 +55,27 @@ class CompanyResource extends Resource
                        Forms\Components\Select::make('currency')->visible(fn($operation)=>$operation==="create")->required()->required()->options(getCurrency())->searchable(),
                        Section::make()->schema([
                                TextInput::make('daily_working_hours')->required()->label('Daily Working Hours')->numeric(),
-                               select::make('weekend_days')->required()->label('Weekend Days')->multiple()->options([
-                                   'saturday' => 'Saturday',
-                                   'sunday' => 'Sunday',
-                                   'monday' => 'Monday',
-                                   'tuesday' => 'Tuesday',
-                                   'wednesday' => 'Wednesday',
-                                   'thursday' => 'Thursday',
-                                   'friday' => 'Friday',
-                               ])->placeholder('Select weekend days'),
+                               select::make('weekend_days')->required()->label('Weekend Days')->multiple()->options(['saturday' => 'Saturday', 'sunday' => 'Sunday', 'monday' => 'Monday', 'tuesday' => 'Tuesday', 'wednesday' => 'Wednesday', 'thursday' => 'Thursday', 'friday' => 'Friday',])->placeholder('Select weekend days'),
                                Forms\Components\TextInput::make('overtime_rate')->required()->numeric(),
                            ])->columns(3),
+                       Forms\Components\Repeater::make('Leave Types')->label('Leave Types')->relationship('typeleaves')->schema([
+                           Forms\Components\TextInput::make('title')->label('Leave Title')->maxLength(250)->required(),
+                           Forms\Components\TextInput::make('days')->label('Max Days')->numeric()->required(),
+                           Forms\Components\ToggleButtons::make('is_payroll')->inline()->boolean('Paid Leave','Unpaid Leave')->label('Payment')->required(),
+                           Forms\Components\Textarea::make('description')->nullable()->maxLength(255)->columnSpanFull()
+                       ])->defaultItems(1),
+                       Forms\Components\Repeater::make('Duty Type')->relationship('duties')->label('Duty Types')->schema([
+                           Forms\Components\TextInput::make('title')->columnSpanFull()->required()->maxLength(255),
+                           Forms\Components\Textarea::make('description')->nullable()->columnSpanFull(),
+                       ])->defaultItems(1),
+                       Forms\Components\Repeater::make('Pay Frequency')->label('Pay Frequencies')->relationship('contracts')->schema([
+                           Forms\Components\TextInput::make('title')->required()->maxLength(255),
+                           Forms\Components\TextInput::make('day')->required()->numeric(),
+                       ])->defaultItems(1)->maxItems(1),
+                       Forms\Components\Repeater::make('Holidays')->label('Holidays')->relationship('Holidays')->schema([
+                           Forms\Components\TextInput::make('name')->label('Details')->required()->maxLength(255),
+                           Forms\Components\DatePicker::make('date')->required(),
+                       ])->defaultItems(1),
                    ])->columns(2)
                ])->columnSpanFull()
             ]);
