@@ -472,49 +472,49 @@ class CreateCompany extends CreateRecord
             $ceo=Role::query()->create([
                 'company_id'=>$company->id,
                 'guard_name'=>'web',
-                'is_show'=>0,
+                'is_show'=>1,
                 'name'=>'CEO'
             ]);
             $head=Role::query()->create([
                 'company_id'=>$company->id,
                 'guard_name'=>'web',
-                'is_show'=>0,
+                'is_show'=>1,
                 'name'=>'Head of Department'
             ]);
             $admin=Role::query()->create([
                 'company_id'=>$company->id,
                 'guard_name'=>'web',
-                'is_show'=>0,
+                'is_show'=>1,
                 'name'=>'Admin'
             ]);
             $logestic=Role::query()->create([
                 'company_id'=>$company->id,
                 'guard_name'=>'web',
-                'is_show'=>0,
+                'is_show'=>1,
                 'name'=>'Logestic'
             ]);
             $security=Role::query()->create([
                 'company_id'=>$company->id,
                 'guard_name'=>'web',
-                'is_show'=>0,
+                'is_show'=>1,
                 'name'=>'Security'
             ]);
             $user=Role::query()->create([
                 'company_id'=>$company->id,
                 'guard_name'=>'web',
-                'is_show'=>0,
+                'is_show'=>1,
                 'name'=>'User'
             ]);
             $operation=Role::query()->create([
                 'company_id'=>$company->id,
                 'guard_name'=>'web',
-                'is_show'=>0,
+                'is_show'=>1,
                 'name'=>'Operation'
             ]);
             $reception=Role::query()->create([
                 'company_id'=>$company->id,
                 'guard_name'=>'web',
-                'is_show'=>0,
+                'is_show'=>1,
                 'name'=>'Reception'
             ]);
 
