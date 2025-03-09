@@ -24,12 +24,15 @@ use Illuminate\Support\HtmlString;
 
 class CustomerResource extends Resource
 {
+    
     protected static ?int $navigationSort = 2;
     protected static ?string $model = Customer::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-arrow-down-tray';
     protected static ?string $navigationGroup = 'Finance Management';
     protected static ?string $label = 'customer';
+
+
     public static function canAccess(): bool
     {
         return false;

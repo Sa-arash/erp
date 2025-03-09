@@ -30,10 +30,10 @@ class CreateParties extends CreateRecord
 
             $data = $this->mutateFormDataBeforeCreate($data);
 
-            // dd($data);
             if ($data['type'] === "vendor"){
-
                 $parentAccount=Account::query()->where('id',$data['parent_vendor'])->where('company_id',getCompany()->id)->first();
+                // dd($parentAccount,$parentAccount->has_cheque == 1 ? 1:0);
+                
                 $check = Account::query()->where('code', $parentAccount->code . $data['account_code_vendor'])->where('company_id', getCompany()->id)->first();
                 if ($check) {
                     Notification::make('error')->title('this Account Code Exist')->warning()->send();
@@ -46,6 +46,7 @@ class CreateParties extends CreateRecord
                     'code' => $parentAccount->code . $data['account_code_vendor'],
                     'level' => 'detail',
                     'parent_id' => $parentAccount->id,
+                    'has_cheque' => $parentAccount->has_cheque == 1 ? 1 : 0  , 
                     'group'=>'Liabilitie',
                     'built_in' => false,
                     'company_id' => getCompany()->id,
@@ -65,6 +66,7 @@ class CreateParties extends CreateRecord
                     'code' => $parentAccount->code . $data['account_code_customer'],
                     'level' => 'detail',
                     'parent_id' => $parentAccount->id,
+                    'has_cheque' => $parentAccount->has_cheque == 1 ? 1 : 0  , 
                     'group' => 'Asset',
                     'built_in' => false,
                     'company_id' => getCompany()->id,
@@ -86,6 +88,7 @@ class CreateParties extends CreateRecord
                     'level' => 'detail',
                     'group'=>'Liabilitie',
                     'parent_id' => $parentAccount->id,
+                    'has_cheque' => $parentAccount->has_cheque == 1 ? 1 : 0  , 
                     'built_in' => false,
                     'company_id' => getCompany()->id,
                     'Group'=>'Liabilitie'
@@ -106,6 +109,7 @@ class CreateParties extends CreateRecord
                     'level' => 'detail',
                     'group' => 'Asset',
                     'parent_id' => $parentAccount->id,
+                    'has_cheque' => $parentAccount->has_cheque == 1 ? 1 : 0  , 
                     'built_in' => false,
                     'company_id' => getCompany()->id,
                     'Group'=>'Asset'
