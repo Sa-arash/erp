@@ -148,7 +148,7 @@ class PdfController extends Controller
 
         $accounts = $company->accounts
             ->where('level', 'main')
-            ->pluck(null, 'name')
+            ->pluck(null, 'stamp')
             ->map(function ($group) use ($request) {
                 return
                     [$group->stamp => [
