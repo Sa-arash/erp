@@ -9,13 +9,15 @@ use App\Models\Account;
 use App\Models\Bank;
 use App\Models\Cheque;
 use App\Models\Factor;
-use App\Models\FactorItem;
 use App\Models\FinancialPeriod;
 use App\Models\Invoice;
 use App\Models\Parties;
+use App\Models\Transaction;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Table;
 
@@ -97,15 +99,75 @@ class FinancialPeriodResource extends Resource
                 Tables\Actions\Action::make('balance_period')->label('Opening Balances')->visible(fn($record)=>$record->status->name==="Before")->url(fn($record) => FinancialPeriodResource::getUrl('balance_period', ['record' => $record->id])),
                 Tables\Actions\EditAction::make()->visible(fn($record)=>$record->status->name !== 'End'),
                 Tables\Actions\Action::make('Close')->requiresConfirmation()
-                ->icon('heroicon-o-check') // اضافه کردن آیکون
-                ->color('danger')
-                ->action(function($record){
-                    $record->update(['status' => 'End']);
+                    ->icon('heroicon-o-check') // اضافه کردن آیکون
+                    ->color('danger')->form([
+                        Forms\Components\Section::make([
+                            Forms\Components\TextInput::make('name')->label('Fiscal Year Title')->columnSpanFull()->required()->maxLength(255),
+                            Forms\Components\DatePicker::make('start_date')->label('Start Date')->default(now()->startOfYear())->required(),
+                            Forms\Components\DatePicker::make('end_date')->label('End Date')->default(now()->startOfYear()->addYear())->required(),
+                        ])->columns()
+                    ])
+                    ->action(function ($record, $data) {
+                        $record->update(['status' => 'End']);
+                        $company = getCompany();
+                        $financial = FinancialPeriod::query()->create([
+                            'name' => $data['name'],
+                            'start_date' => $data['start_date'],
+                            'end_date' => $data['end_date'],
+                            'company_id' => $company->id,
+                            'status' => 'During'
+                        ]);
+                        $accounts = Account::query()->with('transactions')->where('company_id', $company->id)->get();
+                        $accountsArray = [];
 
-                               $url = "admin/" . getCompany()->id . "/financial-periods";
-                               return redirect($url);
+                        foreach ($accounts as $account) {
+                            if (isset($account->transactions->where('financial_period_id', $record->id)[1])) {
+                                $totalCreditor = 0;
+                                $totalDebtor = 0;
+                                foreach ($account->transactions->where('financial_period_id', $record->id) as $item) {
+                                    $totalCreditor += $item->creditor;
+                                    $totalDebtor += $item->debtor;
+                                }
+                                $total = $totalCreditor - $totalDebtor;
+                                $status = $totalCreditor > $totalDebtor ? 0 : 1;
 
-                })->visible(fn($record)=>$record->status->name === 'During'),
+                                if ($total != 0) {
+                                    $accountsArray[] = ['account_id' => $account->id, 'status' => $status, 'amount' => abs($total)];
+                                }
+                            }
+                        }
+                        if (isset($accountsArray[0])){
+                            $invoice = Invoice::query()->create([
+                                'name' => 'Start FinancialPeriod ',
+                                'number' => 1,
+                                'date' => now(),
+                                'company_id' => $company->id,
+                            ]);
+                        }
+
+                        foreach ($accountsArray as $item) {
+                            Transaction::query()->create([
+                                'account_id' => $item['account_id'],
+                                'creditor'=>$item['status'] ===1 ? $item['amount']:0,
+                                'debtor'=>$item['status'] ===0 ? $item['amount']:0,
+                                'description'=>'Start FinancialPeriod ',
+                                'company_id' => $company->id,
+                                'user_id'=>auth()->id(),
+                                'invoice_id'=>$invoice->id,
+                                'financial_period_id'=>$financial->id,
+                                'creditor_foreign'=>0,
+                                'debtor_foreign'=>0,
+                                'currency_id'=>defaultCurrency()->id,
+                                'exchange_rate'=>1,
+                            ]);
+                        }
+
+
+//                        $url = "admin/" . $company->id . "/financial-periods";
+//                        return redirect($url);
+                        Notification::make('success')->success()->title('Success')->send();
+
+                    })->modalSubmitActionLabel('Close Previous FY and Open New FY')->modalWidth(MaxWidth::FourExtraLarge)->visible(fn($record) => $record->status->name === 'During'),
 //                $record->update($data);
 //        if ($data['status'] == "Before") {
 //            $url = "admin/" . getCompany()->id . "/financial-periods";

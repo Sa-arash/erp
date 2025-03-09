@@ -43,6 +43,7 @@ use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use OpenSpout\Common\Entity\Style\CellAlignment;
 use Spatie\Permission\Models\Role;
 class ITemployeeResource extends Resource
+    implements HasShieldPermissions
 {
     protected static ?string $model = Employee::class;
 
@@ -56,16 +57,13 @@ class ITemployeeResource extends Resource
     {
         return [
             'view',
-            'view_any',
             'create',
             'update',
-            'delete',
-            'delete_any',
+            'viewAny',
             'user',
             'password',
             'role',
             'email',
-            'clearance'
         ];
     }
     public static function canCreate(): bool
