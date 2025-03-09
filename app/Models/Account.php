@@ -21,6 +21,7 @@ class Account extends Model
         'built_in',
         'description',
         'company_id',
+        'has_cheque',
         'closed_at',
         'currency_id',
     ];
