@@ -39,7 +39,7 @@
             </td>
             <td>
                 <ul class="item-list">
-                    @foreach (['Liabilities', 'Equity`s'] as $type)
+                    @foreach (['Liabilities', 'Equity'] as $type)
                         @php
                             // دریافت لیست مربوط به Libility یا Equity
                             $items = $accounts[$type];
