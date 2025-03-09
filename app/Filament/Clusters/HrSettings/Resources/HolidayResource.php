@@ -27,6 +27,8 @@ class HolidayResource extends Resource
     protected static ?string $model = Holiday::class;
 
     protected static ?string $navigationIcon = 'heroicon-c-calendar-date-range';
+    protected static ?string $label="Holiday (HR Setting) ";
+    protected static ?string $pluralLabel="Holiday  ";
 
     protected static ?string $cluster = HrSettings::class;
 
@@ -97,11 +99,11 @@ class HolidayResource extends Resource
                 })
             ], getModelFilter())
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->modelLabel('Edit'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+//                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

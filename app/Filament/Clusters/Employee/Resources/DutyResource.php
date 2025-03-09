@@ -22,6 +22,7 @@ class DutyResource extends Resource
 
     protected static ?string $navigationIcon = 'duty';
     protected static ?string $label = 'Duty Type';
+    protected static ?string $pluralLabel = 'Duty Type (Hr Setting)';
     protected static ?string $cluster = HrSettings::class;
 
     public static function form(Form $form): Form
@@ -50,11 +51,11 @@ class DutyResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->modelLabel('Edit'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+//                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

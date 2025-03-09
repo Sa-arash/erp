@@ -23,7 +23,8 @@ class TypeLeaveResource extends Resource
 {
     protected static ?string $model = Typeleave::class;
     protected static ?string $cluster = HrSettings::class;
-    protected static ?string $label='Leave Type';
+    protected static ?string $pluralLabel='Leave Type';
+    protected static ?string $label='Leave Type(HR Setting)';
 
     protected static ?string $navigationIcon = 'heroicon-s-arrow-uturn-left';
 
@@ -76,7 +77,7 @@ class TypeLeaveResource extends Resource
 
             ], getModelFilter())
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->modelLabel('Leave Type'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

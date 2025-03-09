@@ -31,6 +31,8 @@ class WarehouseResource extends Resource
     protected static ?string $navigationGroup = 'Logistic Management';
     protected static ?string $navigationIcon = 'heroicon-c-home-modern';
     protected static ?string $cluster = StackManagementSettings::class;
+    protected static ?string $label="Warehouse (Logistic Setting)";
+    protected static ?string $pluralLabel="Warehouse";
 
 
     public static function form(Form $form): Form
@@ -76,7 +78,7 @@ class WarehouseResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->modelLabel('Edit'),
                 Tables\Actions\Action::make('add')->label('Add Structure')->form(function ($record){
                     return [
                         Forms\Components\TextInput::make('title')->required()->maxLength(255),

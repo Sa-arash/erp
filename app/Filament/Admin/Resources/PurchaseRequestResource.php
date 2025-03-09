@@ -39,7 +39,8 @@ class PurchaseRequestResource extends Resource
 
     protected static ?int $navigationSort = 4;
     protected static ?string $pluralLabel = 'Purchase Request';
-    protected static ?string $modelLabel = 'Request';
+    protected static ?string $modelLabel = 'Purchase Request';
+    protected static ?string $Label = 'Purchase Request';
     protected static ?string $navigationGroup = 'Logistic Management';
 
     protected static ?string $navigationIcon = 'heroicon-c-document-arrow-down';

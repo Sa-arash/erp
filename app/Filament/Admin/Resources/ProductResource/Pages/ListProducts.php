@@ -16,7 +16,7 @@ class ListProducts extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()->label('New Product'),
             Actions\Action::make('Set Category')->form([
                 Select::make('accounts')->default(getCompany()->product_accounts)->options(function (){
                     $data=[];

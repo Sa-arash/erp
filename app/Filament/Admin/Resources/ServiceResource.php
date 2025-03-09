@@ -33,7 +33,7 @@ class ServiceResource extends Resource
         return $form
             ->schema([
                 Section::make('Service Request')->schema([
-                    Forms\Components\Select::make('employee_id')->live()
+                    Forms\Components\Select::make('employee_id')->label('Employee')->live()
                         ->searchable()
                         ->preload()
                         ->required()

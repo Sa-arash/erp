@@ -46,7 +46,8 @@ class ITemployeeResource extends Resource
 {
     protected static ?string $model = Employee::class;
 
-
+    protected static ?string $label='User Creation';
+    protected static ?string $pluralLabel='IT Management';
     protected static ?int $navigationSort = 1;
     protected static ?string $navigationGroup = 'IT Management';
     protected static ?string $navigationIcon = 'heroicon-s-computer-desktop';

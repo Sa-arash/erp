@@ -16,7 +16,7 @@ class ListHolidays extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()->label('New Holiday '),
             Actions\Action::make('Extra Setting')->form([
                 select::make('weekend_days')
                     ->label('Weekend Days')

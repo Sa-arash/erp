@@ -20,6 +20,8 @@ class BrandResource extends Resource
     protected static ?string $navigationGroup = 'Logistic Management';
     protected static ?string $cluster = StackManagementSettings::class;
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $label="Brand (Logistic Setting)";
+    protected static ?string $pluralLabel="Brand ";
 
     public static function form(Form $form): Form
     {
@@ -40,7 +42,7 @@ class BrandResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->modelLabel('Edit Brand'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

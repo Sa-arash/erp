@@ -27,7 +27,8 @@ class BenefitResource extends Resource
 
     protected static ?string $model = Benefit::class;
     protected static ?string $cluster = HrSettings::class;
-    protected static ?string $label='Allowance/Deduction';
+    protected static ?string $label='Allowance/Deduction (HR Setting)';
+     protected static ?string $pluralLabel='Allowance/Deduction';
     protected static ?string $navigationIcon = 'heroicon-c-squares-plus';
 
     public static function form(Form $form): Form
@@ -83,7 +84,7 @@ class BenefitResource extends Resource
                     }),
             ], getModelFilter())
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->modelLabel('Edit'),
                 Tables\Actions\DeleteAction::make('delete')->hidden(fn($record)=>(bool)$record->built_in)
             ])
             ->bulkActions([

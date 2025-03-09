@@ -23,7 +23,7 @@ class ContractResource extends Resource
     protected static ?string $model = Contract::class;
 
     protected static ?string $navigationIcon = 'frequency';
-    protected static ?string $label='Pay Frequency';
+    protected static ?string $label='Pay Frequency(Hr Setting)';
     protected static ?string $cluster = HrSettings::class;
 
     public static function form(Form $form): Form

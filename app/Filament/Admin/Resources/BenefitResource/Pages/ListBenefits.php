@@ -13,7 +13,7 @@ class ListBenefits extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()->label('New Allowance/Deduction'),
         ];
     }
 }

@@ -25,6 +25,8 @@ class DepartmentResource extends Resource
     protected static ?string $model = Department::class;
     protected static ?int $navigationSort = -2;
     protected static ?string $cluster = HrSettings::class;
+    protected static ?string $label=' Department (Hr Setting)';
+    protected static ?string $pluralLabel=' Department';
 
 
     protected static ?string $navigationIcon = 'departement';
@@ -57,7 +59,7 @@ class DepartmentResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->modelLabel('Edit '),
                 Tables\Actions\Action::make('head')->icon('heroicon-m-user-circle')->iconSize(IconSize::Large)->tooltip('Set Head of Department')->label('Set Head of Department')->form(function ($record){
                     return [
                         Forms\Components\Select::make('employee_id')->label('Head of Department ')->searchable()->preload()->options(getCompany()->employees()->pluck('fullName','id'))->required()->default($record->employee_id)
