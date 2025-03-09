@@ -7,7 +7,7 @@
     <thead>
         <tr>
             <th>Assets ({{ PDFdefaultCurrency($company)}})</th>
-            <th>Liabilities + Equity ({{ PDFdefaultCurrency($company)}})</th>
+            <th>Liabilities + Equity`s ({{ PDFdefaultCurrency($company)}})</th>
         </tr>
     </thead>
     <tbody>
@@ -47,14 +47,23 @@
                         @foreach ($items as $key => $item)
                             {{-- @if ($item['sum'] != 0) --}}
                                 <li style="font-weight: bold">
-                                    {{ $key }}:
+                                    @if($key==="Equity")
+                                        Equity`s
+                                    @else
+                                        {{ $key }}:
+                                    @endif
+
                                     {{ number_format($item['sum']) }}
 
                                 </li>
                                 {{--  @dd($items)  --}}
                                 @foreach ($item['item'] as $key => $credit)
                                     <li>
-                                        {{ $key }}:
+                                        @if($key==="Equity")
+                                            Equity`s
+                                        @else
+                                            {{ $key }}:
+                                        @endif
                                         {{ number_format($credit['sum']) }}
                                     </li>
                                 @endforeach
