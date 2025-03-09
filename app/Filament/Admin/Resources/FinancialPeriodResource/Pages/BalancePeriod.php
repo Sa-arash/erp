@@ -455,7 +455,7 @@ class BalancePeriod extends ManageRelatedRecords
             ->headerActions([
                 Tables\Actions\Action::make('start')
                     ->requiresConfirmation()
-                    ->label('Start During the Financial Year')->action(function ($record) {
+                    ->label('Start Fiscal Year')->action(function ($record) {
 
                         if (isset($this->record->transactions[0])) {
                             $debtor = $this->record->transactions->sum('debtor');
@@ -470,7 +470,6 @@ class BalancePeriod extends ManageRelatedRecords
                                     'account_id' => Account::query()->where('stamp', 'Equity')->where('company_id', getCompany()->id)->first()->id,
                                     'creditor' => $equity >= 0 ? $equity : 0,
                                     'debtor' => $equity <= 0 ? abs($equity) : 0,
-                                    'currency_id' => defaultCurrency()->exchange_rate,
                                     'exchange_rate' => defaultCurrency()->id,
                                     'debtor_foreign' => 0,
                                     'creditor_foreign' => 0,
