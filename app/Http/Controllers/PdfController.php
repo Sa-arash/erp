@@ -151,7 +151,7 @@ class PdfController extends Controller
             ->pluck(null, 'name')
             ->map(function ($group) use ($request) {
                 return
-                    [$group->name => [
+                    [$group->stamp => [
                         'sum' =>
                         $group
                             ->where('id', $group->id)->orWhere('parent_id', $group->id)

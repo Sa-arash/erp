@@ -294,7 +294,7 @@ class CreateCompany extends CreateRecord
                     'currency_id'=>$currency->id                ],
                 [
                     'id' => 18,
-                    'name' => 'Equity',
+                    'name' => 'Equity`s',
                     'type' => 'creditor',
                     'code' => '30',
                     'level' => 'main',
