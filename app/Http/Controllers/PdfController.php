@@ -192,7 +192,7 @@ class PdfController extends Controller
                                         })->where('financial_period_id', $this->period->id)->sum('debtor');
                                 }
                             })->sum(),
-                        'item' => $group->childerns->pluck(null, 'name')->map(function ($child) use ($request) {
+                        'item' => $group->childerns->pluck(null, 'stamp')->map(function ($child) use ($request) {
                             return [
                                 'sum' => $child
                                     ->where('id', $child->id)->orWhere('parent_id', $child->id)
@@ -233,7 +233,7 @@ class PdfController extends Controller
                                                 })->where('financial_period_id', $this->period->id)->sum('debtor');
                                         }
                                     })->sum(),
-                                'item' => $child->childerns->pluck(null, 'name')->map(function ($item) use ($request) {
+                                'item' => $child->childerns->pluck(null, 'stamp')->map(function ($item) use ($request) {
                                     return $item
                                         ->where('id', $item->id)->orWhere('parent_id', $item->id)
                                         ->orWhereHas('account', function ($query) use ($item) {
