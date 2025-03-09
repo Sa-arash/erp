@@ -21,8 +21,8 @@ class DutyResource extends Resource
     protected static ?string $model = Duty::class;
 
     protected static ?string $navigationIcon = 'duty';
-    protected static ?string $label = 'Duty Type';
-    protected static ?string $pluralLabel = 'Duty Type (Hr Setting)';
+    protected static ?string $label = 'Duty Type (HR Setting)';
+    protected static ?string $pluralLabel = 'Duty Type';
     protected static ?string $cluster = HrSettings::class;
 
     public static function form(Form $form): Form

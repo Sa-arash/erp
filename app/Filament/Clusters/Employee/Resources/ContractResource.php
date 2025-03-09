@@ -24,6 +24,7 @@ class ContractResource extends Resource
 
     protected static ?string $navigationIcon = 'frequency';
     protected static ?string $label='Pay Frequency(Hr Setting)';
+    protected static ?string $pluralLabel='Pay Frequency';
     protected static ?string $cluster = HrSettings::class;
 
     public static function form(Form $form): Form
@@ -77,7 +78,7 @@ class ContractResource extends Resource
                     }),
                 ],getModelFilter())
             ->actions([
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->modelLabel('Edit'),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
