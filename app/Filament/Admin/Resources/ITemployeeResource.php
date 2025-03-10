@@ -47,10 +47,10 @@ class ITemployeeResource extends Resource
     protected static ?string $model = Employee::class;
 
     protected static ?string $label='User Creation';
-    protected static ?string $pluralLabel='IT Management';
+    protected static ?string $pluralLabel='Users';
     protected static ?int $navigationSort = 1;
     protected static ?string $navigationGroup = 'IT Management';
-    protected static ?string $navigationIcon = 'heroicon-s-computer-desktop';
+    protected static ?string $navigationIcon = 'heroicon-m-user-group';
 
     public static function getPermissionPrefixes(): array
     {
