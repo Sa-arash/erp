@@ -108,7 +108,7 @@ class InvoiceResource extends Resource
                                     $set('Cheque', false);
                                 }
 
-                               
+
                             } else {
                                 $set('Cheque', false);
                             }
@@ -270,7 +270,6 @@ class InvoiceResource extends Resource
                     ->exporter(InvoiceExporter::class)->color('purple')
             ])
             ->columns([
-
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('number')->searchable()->label('Voucher NO'),
                 Tables\Columns\TextColumn::make('date')->state(fn($record) => Carbon::parse($record->date)->format("Y-m-d")),
@@ -278,6 +277,9 @@ class InvoiceResource extends Resource
                 Tables\Columns\TextColumn::make('reference')->searchable(),
             ])
             ->filters([
+                Tables\Filters\SelectFilter::make('financial_period_id')->searchable()->preload()->label('Financial Period')->options(FinancialPeriod::query()->where('company_id',getCompany()->id)->orderBy('id','desc')->pluck('name','id'))->query(fn($query,$data)=>isset($data['value'])? $query->whereHas('transactions',function ($query)use($data){
+                    return $query->where('financial_period_id',$data['value']);
+                }): $query),
                 Tables\Filters\QueryBuilder::make()
                     ->constraints([
                         Tables\Filters\QueryBuilder\Constraints\TextConstraint::make('name')->label('Voucher Title'),
@@ -286,7 +288,6 @@ class InvoiceResource extends Resource
                         Tables\Filters\QueryBuilder\Constraints\TextConstraint::make('description')->label('Description'),
                         Tables\Filters\QueryBuilder\Constraints\TextConstraint::make('record_description')->relationship(name: 'transactions', titleAttribute: 'description'),
                         Tables\Filters\QueryBuilder\Constraints\DateConstraint::make('date'),
-
                     ]),
 
             ], getModelFilter())

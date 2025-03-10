@@ -17,13 +17,12 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class LoanResource extends Resource
 {
     protected static ?string $model = Loan::class;
 
-
+    protected static ?int $navigationSort = 2;
     protected static ?string $navigationIcon = 'loan';
     protected static ?string $navigationGroup = 'HR Management System';
 

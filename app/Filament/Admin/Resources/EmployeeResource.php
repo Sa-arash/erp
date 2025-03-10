@@ -40,7 +40,8 @@ use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use OpenSpout\Common\Entity\Style\CellAlignment;
 use Spatie\Permission\Models\Role;
 
-class EmployeeResource extends Resource implements HasShieldPermissions
+class EmployeeResource extends Resource
+    implements HasShieldPermissions
 {
 
     protected static ?string $model = Employee::class;
@@ -532,7 +533,7 @@ class EmployeeResource extends Resource implements HasShieldPermissions
                 Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')
                     ->url(fn($record) => route('pdf.employee', ['id' => $record->id]))->openUrlInNewTab(),
 
-            ])->actionsColumnLabel('Actions')->actionsAlignment(CellAlignment::CENTER)
+            ])->actionsColumnLabel('Actions')->actionsAlignment(CellAlignment::RIGHT)
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
 //                    Tables\Actions\DeleteBulkAction::make(),
