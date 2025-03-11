@@ -113,18 +113,21 @@
                         </thead>
                         <tbody class="divide-y divide-gray-200">
                             @foreach ($fillerArray as $key => $mount)
+                                {{-- @dd($fillerArray, $monthArray, $monthArray[$key][0]); --}}
                                 @php
-                                    $totalPaid = App\Models\Payroll::whereBetween('payment_date', [
-                                        $monthArray[$key][0],
-                                        $monthArray[$key][1],
-                                    ])->sum('amount_pay');
+                                    $totalPaid = getCompany()
+                                        ->payrolls
+                                        ->where('start_date', '>=', $monthArray[$key][0])
+                                        ->where('end_date', '<=', $monthArray[$key][1])
+                                        ->sum('amount_pay');
+                                        $totalSalariesPaid+=$totalPaid ;
 
-                                    $countPR = App\Models\PurchaseRequest::whereBetween('request_date', [
+                                    $countPR = getCompany()->purchaseRequests->whereBetween('request_date', [
                                         $monthArray[$key][0],
                                         $monthArray[$key][1],
                                     ])->count();
-
-                                    $sumPO = App\Models\PurchaseOrder::whereBetween('date_of_po', [
+  $totalPR +=$countPR;
+                                    $sumPO = App\Models\PurchaseOrder::where('company_id', getCompany()->id)->whereBetween('date_of_po', [
                                         $monthArray[$key][0],
                                         $monthArray[$key][1],
                                     ])
@@ -143,7 +146,7 @@
                                                     100,
                                         )
                                         ->sum();
-
+        $totalPO +=$sumPO;
                                     $incomeData = collect(range(0, count($fillerArray) - 1)) // ایجاد کالکشن از تعداد آیتم‌های fillerArray
                                         ->map(function ($index) use ($monthArray) {
                                             return getCompany()
@@ -157,7 +160,7 @@
                                                     fn($transaction) => $transaction->creditor - $transaction->debtor,
                                                 );
                                         })
-                                        ->sum();
+                                        ->toarray();
 
                                     $expenseData = collect(range(0, count($fillerArray) - 1)) // مانند بالا برای هزینه‌ها
                                         ->map(function ($index) use ($monthArray) {
@@ -172,9 +175,9 @@
                                                     fn($transaction) => $transaction->debtor - $transaction->creditor,
                                                 );
                                         })
-                                        ->sum();
+                                        ->toarray();
 
-                                    // $courseMaxGet=\App\Models\Course::query()->where('price','!=',0)->withCount('registers')->where('pre_registration',0)->whereBetween('start_date',[$mountArray[$key][0],$mountArray[$key][1]])->get()->where('registers_count','>=',10);
+                                      
                                     // $courseCount=\App\Models\Course::query()->where('price','!=',0)->where('pre_registration',0)->whereBetween('start_date',[$mountArray[$key][0],$mountArray[$key][1]])->count();
                                     // $register=\App\Models\Register::query()->whereHas('course',function ($query){return  $query->where('price','!=',0)->where('pre_registration',0);})->whereBetween('register_date',[$mountArray[$key][0],$mountArray[$key][1]])->count();
                                     // $courseMinFive=$courseMinGet->count();
@@ -230,27 +233,27 @@
                                     <td
                                         class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
                                         <a
-                                            href="{{ App\Filament\Admin\Resources\PayrollResource::getUrl('index') }}">{{ $totalPaid }}</a>
+                                            href="{{ App\Filament\Admin\Resources\PayrollResource::getUrl('index') }}">{{ number_format($totalPaid) }}</a>
                                     </td>
                                     <td
                                         class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
                                         <a
-                                            href="{{ App\Filament\Admin\Resources\AccountResource::getUrl('index') }}">{{ $incomeData }}</a>
+                                            href="{{ App\Filament\Admin\Resources\AccountResource::getUrl('index') }}">{{ number_format($incomeData[$key]) }}</a>
                                     </td>
                                     <td
                                         class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
                                         <a
-                                            href="{{ App\Filament\Admin\Resources\AccountResource::getUrl('index') }}">{{ $expenseData }}</a>
+                                            href="{{ App\Filament\Admin\Resources\AccountResource::getUrl('index') }}">{{ number_format($expenseData[$key]) }}</a>
                                     </td>
                                     <td
                                         class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
                                         <a
-                                            href="{{ App\Filament\Admin\Resources\AccountResource::getUrl('index') }}">{{ $countPR }}</a>
+                                            href="{{ App\Filament\Admin\Resources\AccountResource::getUrl('index') }}">{{ number_format($countPR) }}</a>
                                     </td>
                                     <td
                                         class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
                                         <a
-                                            href="{{ App\Filament\Admin\Resources\AccountResource::getUrl('index') }}">{{ $sumPO }}</a>
+                                            href="{{ App\Filament\Admin\Resources\AccountResource::getUrl('index') }}">{{ number_format($sumPO) }}</a>
                                     </td>
                                     {{-- <td class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
                                     <a href="{{\App\Filament\Resources\CourseResource::getUrl('index', $arrayCourse)}}">{{$courseMinFive}}</a>
@@ -305,11 +308,11 @@
                                 </td>
                                 <td
                                     class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
-                                    {{ number_format($totalExpenses) }}
+                                    {{ number_format(collect($incomeData)->sum()) }}
                                 </td>
                                 <td
                                     class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
-                                    {{ number_format($totalRevenue) }}
+                                    {{ number_format(collect($expenseData)->sum()) }}
                                 </td>
                                 <td
                                     class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
