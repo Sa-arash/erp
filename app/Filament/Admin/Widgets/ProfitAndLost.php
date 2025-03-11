@@ -38,21 +38,21 @@ class ProfitAndLost extends ApexChartWidget
             'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
         ]);
 
-        $incomeData = $months->map(function ($month, $index) {
-            return getCompany()->accounts
-                ->where('group', 'Income')
-                ->flatMap(fn($account) => $account->transactions)
-                ->filter(fn($transaction) => Carbon::parse($transaction->created_at)->month == $index + 1)
-                ->sum(fn($transaction) => $transaction->creditor - $transaction->debtor);
-        })->toArray();
+            $incomeData = $months->map(function ($month, $index) {
+                return getCompany()->accounts
+                    ->where('group', 'Income')
+                    ->flatMap(fn($account) => $account->transactions)
+                    ->filter(fn($transaction) => Carbon::parse($transaction->created_at)->month == $index + 1)
+                    ->sum(fn($transaction) => $transaction->creditor - $transaction->debtor);
+            })->toArray();
 
-        $expenseData = $months->map(function ($month, $index) {
-            return getCompany()->accounts
-                ->where('group', 'Expense')
-                ->flatMap(fn($account) => $account->transactions)
-                ->filter(fn($transaction) => Carbon::parse($transaction->created_at)->month == $index + 1)
-                ->sum(fn($transaction) => $transaction->debtor - $transaction->creditor);
-        })->toArray();
+            $expenseData = $months->map(function ($month, $index) {
+                return getCompany()->accounts
+                    ->where('group', 'Expense')
+                    ->flatMap(fn($account) => $account->transactions)
+                    ->filter(fn($transaction) => Carbon::parse($transaction->created_at)->month == $index + 1)
+                    ->sum(fn($transaction) => $transaction->debtor - $transaction->creditor);
+            })->toArray();
 
         return [
             'chart' => [

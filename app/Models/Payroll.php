@@ -6,11 +6,11 @@ use App\Enums\PayrollStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Payroll extends Model
-{
-    use HasFactory;
+    class Payroll extends Model
+    {
+        use HasFactory;
 
-    protected $fillable=['total_allowance','total_deduction','account_id','employee_id','amount_pay','payment_date','start_date','end_date','status','user_id','company_id'];
+        protected $fillable=['total_allowance','total_deduction','account_id','employee_id','amount_pay','payment_date','start_date','end_date','status','user_id','company_id'];
 
     protected $casts=['status'=>PayrollStatus::class];
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
