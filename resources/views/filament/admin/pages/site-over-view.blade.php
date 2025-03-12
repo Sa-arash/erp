@@ -57,9 +57,6 @@
         $totalRevenue = 0;
         $totalPR = 0;
         $totalPO = 0;
-        $totalAccountsPayable = 0;
-        $totalAccountsReceivable = 0;
-        $totalLoansGiven = 0;
     @endphp
 
     {{--    <style> --}}
@@ -105,10 +102,7 @@
                                     class="px-6 py-3 text-xs font-medium text-gray-500 uppercase text-center">
                                     Total Accounts Receivable
                                 </th>
-                                <th scope="col"
-                                    class="px-6 py-3 text-xs font-medium text-gray-500 uppercase text-center">
-                                    Total Loans Given
-                                </th>
+                               
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-200">
@@ -116,21 +110,20 @@
                                 {{-- @dd($fillerArray, $monthArray, $monthArray[$key][0]); --}}
                                 @php
                                     $totalPaid = getCompany()
-                                        ->payrolls
-                                        ->where('start_date', '>=', $monthArray[$key][0])
+                                        ->payrolls->where('start_date', '>=', $monthArray[$key][0])
                                         ->where('end_date', '<=', $monthArray[$key][1])
                                         ->sum('amount_pay');
-                                        $totalSalariesPaid+=$totalPaid ;
+                                    $totalSalariesPaid += $totalPaid;
 
-                                    $countPR = getCompany()->purchaseRequests->whereBetween('request_date', [
-                                        $monthArray[$key][0],
-                                        $monthArray[$key][1],
-                                    ])->count();
-  $totalPR +=$countPR;
-                                    $sumPO = App\Models\PurchaseOrder::where('company_id', getCompany()->id)->whereBetween('date_of_po', [
-                                        $monthArray[$key][0],
-                                        $monthArray[$key][1],
-                                    ])
+                                    $countPR = getCompany()
+                                        ->purchaseRequests->whereBetween('request_date', [
+                                            $monthArray[$key][0],
+                                            $monthArray[$key][1],
+                                        ])
+                                        ->count();
+                                    $totalPR += $countPR;
+                                    $sumPO = App\Models\PurchaseOrder::where('company_id', getCompany()->id)
+                                        ->whereBetween('date_of_po', [$monthArray[$key][0], $monthArray[$key][1]])
                                         ->with('items')
                                         ->get()
                                         ->flatMap(fn($po) => $po->items)
@@ -146,7 +139,7 @@
                                                     100,
                                         )
                                         ->sum();
-        $totalPO +=$sumPO;
+                                    $totalPO += $sumPO;
                                     $incomeData = collect(range(0, count($fillerArray) - 1)) // ایجاد کالکشن از تعداد آیتم‌های fillerArray
                                         ->map(function ($index) use ($monthArray) {
                                             return getCompany()
@@ -177,7 +170,103 @@
                                         })
                                         ->toarray();
 
-                                      
+                                    $RecivableData = collect(range(0, count($fillerArray) - 1))
+                                        ->map(function ($index) use ($monthArray) {
+                                            // دریافت حساب‌های Receivable
+                                            $receivableAccounts = getCompany()->accounts->where(
+                                                'stamp',
+                                                'Accounts Receivable',
+                                            );
+
+                                            // دریافت ID همه‌ی حساب‌های مرتبط
+                                            $receivableIds = $receivableAccounts->pluck('id')->toArray();
+
+                                            // پیدا کردن حساب‌های زیرمجموعه
+                                            $allReceivableIds = collect($receivableIds);
+                                            $newIds = $receivableIds;
+
+                                            do {
+                                                $subAccounts = getCompany()
+                                                    ->accounts->whereIn('parent_id', $newIds)
+                                                    ->pluck('id')
+                                                    ->toArray();
+
+                                                $newIds = array_diff($subAccounts, $allReceivableIds->toArray());
+                                                $allReceivableIds = $allReceivableIds->merge($newIds);
+                                            } while (!empty($newIds));
+
+                                            // دریافت تراکنش‌ها برای تمام حساب‌های مرتبط
+                                            return getCompany()
+                                                ->accounts->whereIn('id', $allReceivableIds)
+                                                ->flatMap(fn($account) => $account->transactions)
+                                                ->whereBetween('created_at', [
+                                                    $monthArray[$index][0],
+                                                    $monthArray[$index][1],
+                                                ])
+                                                ->sum(
+                                                    fn($transaction) => $transaction->creditor - $transaction->debtor,
+                                                );
+                                        })
+                                        ->toArray();
+
+
+                                    $PayableData = collect(range(0, count($fillerArray) - 1))
+                                        ->map(function ($index) use ($monthArray) {
+                                            // دریافت حساب‌های Payable
+                                            $payableAccounts = getCompany()->accounts->where(
+                                                'stamp',
+                                                'Accounts Payable',
+                                            );
+
+                                            // دریافت ID همه‌ی حساب‌های مرتبط
+                                            $payableIds = $payableAccounts->pluck('id')->toArray();
+
+                                            // پیدا کردن حساب‌های زیرمجموعه
+                                            $allPayableIds = collect($payableIds);
+                                            $newIds = $payableIds;
+
+                                            do {
+                                                $subAccounts = getCompany()
+                                                    ->accounts->whereIn('parent_id', $newIds)
+                                                    ->pluck('id')
+                                                    ->toArray();
+
+                                                $newIds = array_diff($subAccounts, $allPayableIds->toArray());
+                                                $allPayableIds = $allPayableIds->merge($newIds);
+                                            } while (!empty($newIds));
+
+                                            // دریافت تراکنش‌ها برای تمام حساب‌های مرتبط
+                                            return getCompany()
+                                                ->accounts->whereIn('id', $allPayableIds)
+                                                ->flatMap(fn($account) => $account->transactions)
+                                                ->whereBetween('created_at', [
+                                                    $monthArray[$index][0],
+                                                    $monthArray[$index][1],
+                                                ])
+                                                ->sum(
+                                                    fn($transaction) => $transaction->creditor - $transaction->debtor,
+                                                );
+                                        })
+                                        ->toArray();
+
+                                    // dd($PayableData);
+
+                                    // $receivable_accounts = App\Models\Account::query()
+                                    //     ->whereIn('id', $receivable_id)
+                                    //     ->orWhereIn('parent_id', $receivable_id)
+                                    //     ->orWhereHas('account', function ($query) use ($receivable_id) {
+                                    //         return $query
+                                    //             ->whereIn('parent_id', $receivable_id)
+                                    //             ->orWhereHas('account', function ($query) use ($receivable_id) {
+                                    //                 return $query->whereIn('parent_id', $receivable_id);
+                                    //             });
+                                    //     })
+                                    //     ->get();
+
+                                    //     $sumRecivable = $receivable_accounts->map(fn($account)=>$account->transactions->sum(fn($transaction) =>  $transaction->creditor - $transaction->debtor))->sum();
+
+                                    //     $sumPayable = $payable_accounts->map(fn($account)=>$account->transactions->sum(fn($transaction) =>  $transaction->creditor - $transaction->debtor))->sum();
+
                                     // $courseCount=\App\Models\Course::query()->where('price','!=',0)->where('pre_registration',0)->whereBetween('start_date',[$mountArray[$key][0],$mountArray[$key][1]])->count();
                                     // $register=\App\Models\Register::query()->whereHas('course',function ($query){return  $query->where('price','!=',0)->where('pre_registration',0);})->whereBetween('register_date',[$mountArray[$key][0],$mountArray[$key][1]])->count();
                                     // $courseMinFive=$courseMinGet->count();
@@ -254,6 +343,16 @@
                                         class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
                                         <a
                                             href="{{ App\Filament\Admin\Resources\AccountResource::getUrl('index') }}">{{ number_format($sumPO) }}</a>
+                                    </td> 
+                                     <td
+                                        class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
+                                        <a
+                                            href="{{ App\Filament\Admin\Resources\AccountResource::getUrl('index') }}">{{ number_format($RecivableData[$key]) }}</a>
+                                    </td>
+                                    <td
+                                        class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
+                                        <a
+                                            href="{{ App\Filament\Admin\Resources\AccountResource::getUrl('index') }}">{{ number_format($PayableData[$key]) }}</a>
                                     </td>
                                     {{-- <td class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
                                     <a href="{{\App\Filament\Resources\CourseResource::getUrl('index', $arrayCourse)}}">{{$courseMinFive}}</a>
@@ -323,17 +422,15 @@
                                     {{ number_format($totalPO) }}
                                 </td>
                                 <td
-                                    class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
-                                    {{ number_format($totalAccountsPayable) }}
-                                </td>
-                                <td
-                                    class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
-                                    {{ number_format($totalAccountsReceivable) }}
-                                </td>
-                                <td
-                                    class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
-                                    {{ number_format($totalLoansGiven) }}
-                                </td>
+                                class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
+                                {{ number_format(collect($RecivableData)->sum()) }}
+                            </td>
+                            <td
+                                class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
+                                {{ number_format(collect($PayableData)->sum()) }}
+                            </td>
+                             
+                        
                             </tr>
                         </tfoot>
                         </tbody>
