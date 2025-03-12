@@ -14,6 +14,7 @@ use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
 use Filament\Tables;
+use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 
@@ -117,7 +118,10 @@ class CompanyResource extends Resource
                    }
                 })->visible(function ($record){
                     return  FinancialPeriod::query()->where('company_id',$record->id)->where('status','During')->first();
-                })
+                }),
+                ActionGroup::make([
+                    Tables\Actions\Action::make('Comprehensive Report')->label('Comprehensive Report')->url(fn($record)=>route('filament.super-admin.pages.company-over-view',)."?filters[year]=".now()->format('Y')."&filters[company_id]=".$record->id)
+                ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
