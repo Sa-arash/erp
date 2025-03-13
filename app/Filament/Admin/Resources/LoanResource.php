@@ -176,7 +176,7 @@ class LoanResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('payLoan')
-                ->visible(fn($record)=>$record->status)
+                ->visible(fn($record)=>$record->status->value === "accepted"&& getPeriod())
                 ->modalWidth(MaxWidth::FiveExtraLarge)->form([
                     Forms\Components\Section::make([
                         Forms\Components\TextInput::make('number')
@@ -193,8 +193,8 @@ class LoanResource extends Resource
                             ->required()->default(now()),
                     ])->columns(7),
                     Forms\Components\Section::make([
-                        SelectTree::make('account_pay')->required()->model(Transaction::class)->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('company_id', getCompany()->id))->searchable(),
-                        SelectTree::make('account_resive')->required()->model(Transaction::class)->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('company_id', getCompany()->id))->searchable(),
+                        SelectTree::make('account_pay')->required()->model(Transaction::class)->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('group','Asset')->where('company_id', getCompany()->id))->searchable(),
+                        SelectTree::make('account_resive')->required()->model(Transaction::class)->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('group','Asset')->where('company_id', getCompany()->id))->searchable(),
                     ])->columns(2),
 
                 ])->action(function (array $data, Loan $record): void {
@@ -237,7 +237,7 @@ class LoanResource extends Resource
                     // ];
 
 
-                    $record->update(['status' => 'finished']);
+                    $record->update(['status' => 'progressed']);
 
                     $invoice = Invoice::query()->create([
                         'name' => $data['name'],
