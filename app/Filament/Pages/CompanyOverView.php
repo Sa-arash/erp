@@ -46,7 +46,7 @@ class CompanyOverView extends Page
                 return route('filament.super-admin.pages.company-over-view');
             })
         ];
-    } 
+    }
 
     public function filtersForm(Form $form): Form
     {
@@ -60,13 +60,13 @@ class CompanyOverView extends Page
                     ->options($years)
                     ->live()
                     ->columnSpanFull()
-                    ->default($currentYear)
+                    ->default($currentYear)->searchable()
                     ,
                     Select::make('company_id')
                     ->options(Company::all()->pluck('title','id'))
                     ->live()
                     ->columnSpanFull()
-                    ->default($currentYear)
+                    ->default($currentYear)->searchable()
             ])->columns()
         ]);
     }
