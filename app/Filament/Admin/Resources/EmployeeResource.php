@@ -63,10 +63,10 @@ class EmployeeResource extends Resource
             'update',
             'delete',
             'delete_any',
-            'user',
-            'password',
-            'role',
-            'email',
+//            'user',
+//            'password',
+//            'role',
+//            'email',
             'clearanceApproval'
         ];
     }
