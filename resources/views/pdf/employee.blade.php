@@ -3,7 +3,7 @@
     'css'=>false,
     'company'=>$employee->company,
     'titles' => ['Employee Information Form'],
-    'customImage'=>$employee->pic,
+    'customImage'=> $employee->media->where('collection_name','signature')->first()?->getPath() ,
     ]
     )
 

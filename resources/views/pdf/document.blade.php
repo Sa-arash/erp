@@ -3,7 +3,7 @@
 <div style="text-align: left; padding: 0; margin: 0;">
     <p style="margin: 0; padding: 0;">Voc No: {{ $document->number }}</p>
     <p style="margin: 0; padding: 0;">Date: {{ \Carbon\Carbon::parse($document->date)->format('Y-m-d') }}</p>
-    <p style="margin: 0; padding: 0;">Voc Desctiption: {{ $document->name }}</p>
+    <p style="margin: 0; padding: 0;">Voc Description: {{ $document->name }}</p>
 </div>
 <table>
     <thead>

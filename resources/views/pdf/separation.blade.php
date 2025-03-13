@@ -51,8 +51,8 @@
     <tr>
         <td >Signature: (employee)</td>
         <td >
-            @if($employee?->signature_pic)
-            <img src="{{public_path('images/'.$employee->signature_pic)}}" style="border-radius: 50px ; width: 80px;">
+            @if($approve->employee->media->where('collection_name','signature')->first()?->original_url)
+            <img src="{!! $employee->media->where('collection_name','signature')->first()->getPath() !!}" style="border-radius: 50px ; width: 80px;">
             @endif
         </td>
     </tr>

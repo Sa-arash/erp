@@ -193,7 +193,8 @@
             <tr >
                 <td style="border: none;width: 33%; text-align: left; padding-left: 10px;">
                     @if ($customImage??false)
-                        <img src="{!! public_path('images/' . $customImage??null) !!}" style="width: 70px;">
+
+                        <img src="{{$customImage}}" style="width: 70px;">
                     @endif
                 </td>
                 <td style="border: none;text-align: center; vertical-align: middle;">

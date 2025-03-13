@@ -10,13 +10,16 @@ use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\DatabaseNotification;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\Permission\Models\Role;
 use TomatoPHP\FilamentMediaManager\Models\Folder;
 use TomatoPHP\FilamentMediaManager\Models\Media;
 
-class Company extends Model implements HasAvatar, HasName
+class Company extends Model implements HasAvatar, HasName , HasMedia
 {
     use HasFactory;
+    use InteractsWithMedia;
 
     public function getFilamentName(): string
     {
