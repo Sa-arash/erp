@@ -275,17 +275,10 @@ class EmployeeResource extends Resource
                     MediaManagerInput::make('images')->orderable(false)->folderTitleFieldName("fullName")->image(true)
                         ->disk('public')
                         ->schema([
-                            Forms\Components\TextInput::make('title')
-                                ->required()
-                                ->maxLength(255),
-
                         ])->maxItems(1),
                     MediaManagerInput::make('signature')->orderable(false)->image(true)->folderTitleFieldName("fullName")
                         ->disk('public')
                         ->schema([
-                            Forms\Components\TextInput::make('title')
-                                ->required()
-                                ->maxLength(255),
                         ])->maxItems(1),
 
                     Forms\Components\TextInput::make('fullName')
