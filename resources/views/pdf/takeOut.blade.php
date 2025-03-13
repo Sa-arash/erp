@@ -169,9 +169,8 @@
                 <td>{{$approve->employee->fullName}}</td>
                 <td>{{$approve->position}}</td>
                 <td>
-                    @if($approve->employee?->signature_pic) <img
-                        src="{{public_path('images/'.$approve->employee?->signature_pic)}}"
-                        style="width: 100px;height: 60px" alt="">
+                    @if($approve->employee->media->where('collection_name','signature')->first()?->original_url)
+                        <img src="{{$employee->media->where('collection_name','signature')->first()->getPath()}}" style="width: 100px;height: 60px" alt="">
                     @endif
                 </td>
             </tr>

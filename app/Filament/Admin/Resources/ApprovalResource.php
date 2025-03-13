@@ -305,7 +305,7 @@ class ApprovalResource extends Resource
                             'status'=>'rejected'
                         ]);
                     }
-                        Notification::make('success')->title('Success Submitted')->success()->send();
+                    Notification::make('success')->title('Success Submitted')->success()->send();
                 })->requiresConfirmation()->modalWidth(MaxWidth::TwoExtraLarge),
                 Action::make('viewLoan')->visible(fn($record)=>substr($record->approvable_type, 11) === "Loan" and $record->status->value ==="Pending")->infolist([
                         Fieldset::make('')->relationship('approvable')->schema([
@@ -313,7 +313,6 @@ class ApprovalResource extends Resource
                             TextEntry::make('request_date')->dateTime()->label('Request Date'),
                             TextEntry::make('request_amount')->numeric()->label('Request Amount'),
                             TextEntry::make('description')->columnSpanFull()->label('Description'),
-
                         ])
                 ])
             ])

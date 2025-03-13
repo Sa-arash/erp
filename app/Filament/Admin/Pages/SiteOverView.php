@@ -15,7 +15,7 @@ use Illuminate\Support\Carbon;
 
 class SiteOverView extends Page
 {
-    use HasPageShield;  
+    use HasPageShield;
     use HasFiltersForm;
     use HasFilters;
 
@@ -68,7 +68,7 @@ class SiteOverView extends Page
                     ->options($years)
                     ->live()
                     ->columnSpanFull()
-                    ->default($currentYear)
+                    ->default($currentYear)->searchable()->label('Company')
             ])->columns()
         ]);
     }

@@ -147,17 +147,6 @@
 </table>
 
 <table style="background: #ffffff !important;">
-    <tr>
-        <td style="text-align: start">
-            <p>Attested by: {{$pr->employee?->department?->employee?->fullName}} </p>
-
-        </td>
-        <td style="text-align: start">
-            @if($pr->employee->department?->employee?->signature_pic)
-            <img src="{!!   public_path('images/'.$pr->employee->department?->employee?->signature_pic)!!}" style="border-radius: 50px ; width: 80px;" alt="">
-            @endif
-        </td>
-    </tr>
 
     @foreach ($pr?->approvals as $approve)
 
@@ -166,8 +155,8 @@
             <p>Approved by: {{$approve->employee?->fullName}}</p>
         </td>
         <td style="text-align: start">
-            @if ($approve?->employee?->signature_pic)
-            <img src="{!!   public_path('images/'.$approve?->employee?->signature_pic)!!}" style="border-radius: 50px ; width: 80px;" alt="">
+            @if ($approve->employee->media->where('collection_name','signature')->first()?->original_url and $approve->status==="Approve" )
+                <img src="{!! $approve->employee->media->where('collection_name','signature')->first()->getPath() !!}" style="border-radius: 50px ; width: 80px;" alt="">
             @else
 
             @endif
