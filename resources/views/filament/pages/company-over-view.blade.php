@@ -329,11 +329,11 @@
                                     </td>
                                     <td
                                         class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
-                                        <a>{{ number_format($incomeData[$key]) }}</a>
+                                        <a>{{ number_format($expenseData[$key]) }}</a>
                                     </td>
                                     <td
                                         class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
-                                        <a>{{ number_format($expenseData[$key]) }}</a>
+                                        <a>{{ number_format($incomeData[$key]) }}</a>
                                     </td>
                                     <td
                                         class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
