@@ -96,7 +96,7 @@ class CompanyResource extends Resource
                 Tables\Columns\TextColumn::make('title')->label('Company')->searchable()->alignCenter(),
                 Tables\Columns\TextColumn::make('country')->searchable()->alignCenter(),
                 Tables\Columns\TextColumn::make('user.name')->label('CEO')->sortable()->alignCenter(),
-                Tables\Columns\TextColumn::make('incomes')->label('Total Income')
+                Tables\Columns\TextColumn::make('incomes')->label('Total Income')->badge()->color('success')
                     ->state(function ($record) {
 
 
@@ -110,7 +110,7 @@ class CompanyResource extends Resource
                         return $incaccounts;
                     })
                     ->alignCenter(),
-                Tables\Columns\TextColumn::make('expences')->label('Total Expence')
+                Tables\Columns\TextColumn::make('expences')->label('Total Expence')->badge()->color('danger')
                     ->state(function ($record) {
 
                         $exaccounts = Account::with('transactions')
