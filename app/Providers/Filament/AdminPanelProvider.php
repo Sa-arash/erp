@@ -196,7 +196,6 @@ class AdminPanelProvider extends PanelProvider
                 SyncShieldTenant::class,
             ], isPersistent: true)
             ->plugins([
-                \TomatoPHP\FilamentMediaManager\FilamentMediaManagerPlugin::make()->allowUserAccess()->allowSubFolders(),
                 FilamentShieldPlugin::make()
                     ->gridColumns([
                         'default' => 1,

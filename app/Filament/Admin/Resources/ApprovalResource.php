@@ -237,7 +237,7 @@ class ApprovalResource extends Resource
                     return  false;
                 }),
                 Tables\Actions\Action::make('approve')->hidden(function ($record) {
-                    if (substr($record->approvable_type, 11) === "PurchaseRequest") {
+                    if (substr($record->approvable_type, 11) === "PurchaseRequest" or substr($record->approvable_type, 11) === "Loan") {
                         return true;
                     }
                 })->icon('heroicon-o-check-badge')->iconSize(IconSize::Large)->color('success')->form([
@@ -277,11 +277,49 @@ class ApprovalResource extends Resource
                         }
                     }
                     Notification::make('success')->success()->title($data['status'])->send();
-                })->requiresConfirmation()->visible(fn($record) => $record->status->name === "Pending")
+                })->requiresConfirmation()->visible(fn($record) => $record->status->name === "Pending"),
+                Tables\Actions\Action::make('loanApprove')->visible(fn($record)=>substr($record->approvable_type, 11) === "Loan" and $record->status->value ==="Pending")->label('Approve Loan')->color('success')->form([
+                   Forms\Components\Section::make([
+                       Forms\Components\ToggleButtons::make('status')->live()->columnSpanFull()->default('Approve')->colors(['Approve' => 'success', 'NotApprove' => 'danger', 'Pending' => 'primary'])->options(['Approve' => 'Approve', 'Pending' => 'Pending', 'NotApprove' => 'NotApprove'])->grouped(),
+                       Forms\Components\Textarea::make('comment')->columnSpanFull()->nullable(),
+                       TextInput::make('amount')->label('Loan Amount')->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required(fn(Get $get)=>$get('status')!=='NotApprove')->numeric(),
+                       TextInput::make('number_of_installments')->label('Number of Installments')->required(fn(Get $get)=>$get('status')!=='NotApprove')->numeric(),
+                       Forms\Components\DatePicker::make('first_installment_due_date')->required(fn(Get $get)=>$get('status')!=='NotApprove')->columnSpanFull()->label('First Installment Due Date')->afterOrEqual(now())
+
+                   ])->columns()
+                ])->action(function ($data,$record){
+                    $record->update([
+                        'status'=>$data['status'],
+                        'comment'=>$data['comment'],
+                        'approve_date'=>now()
+                    ]);
+                    if ($data['status']==="Approve"){
+                        $record->approvable->update([
+                            'first_installment_due_date'=>$data['first_installment_due_date'],
+                            'number_of_installments'=>$data['number_of_installments'],
+                            'amount'=>$data['amount'],
+                            'status'=>'accepted'
+                        ]);
+                    }elseif ($data['status']==="NotApprove"){
+                        $record->approvable->update([
+                            'status'=>'rejected'
+                        ]);
+                    }
+                        Notification::make('success')->title('Success Submitted')->success()->send();
+                })->requiresConfirmation()->modalWidth(MaxWidth::TwoExtraLarge),
+                Action::make('viewLoan')->visible(fn($record)=>substr($record->approvable_type, 11) === "Loan" and $record->status->value ==="Pending")->infolist([
+                        Fieldset::make('')->relationship('approvable')->schema([
+                            TextEntry::make('loan_code')->label('Loan Code'),
+                            TextEntry::make('request_date')->dateTime()->label('Request Date'),
+                            TextEntry::make('request_amount')->numeric()->label('Request Amount'),
+                            TextEntry::make('description')->columnSpanFull()->label('Description'),
+
+                        ])
+                ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+//                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }
