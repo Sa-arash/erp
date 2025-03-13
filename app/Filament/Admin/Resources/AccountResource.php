@@ -59,7 +59,6 @@ class AccountResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('name')->required()->maxLength(255),
-
                 SelectTree::make('parent_id')
                 ->required()
                 ->label('Parent')->disabledOptions(function () {
