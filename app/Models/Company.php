@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\DatabaseNotification;
 use Spatie\Permission\Models\Role;
+use TomatoPHP\FilamentMediaManager\Models\Folder;
+use TomatoPHP\FilamentMediaManager\Models\Media;
 
 class Company extends Model implements HasAvatar, HasName
 {
@@ -337,5 +339,13 @@ class Company extends Model implements HasAvatar, HasName
     public function tasks(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Task::class);
+    }
+    public function folders(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Folder::class);
+    }
+    public function medias(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Media::class);
     }
 }

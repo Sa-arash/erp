@@ -138,6 +138,7 @@ class CompanyResource extends Resource
                     return  redirect(route('filament.admin.pages.dashboard', ['tenant' => $record->id]));
                 })->icon('heroicon-s-user-circle')->iconSize(IconSize::Large)->requiresConfirmation()->modalHeading('Do want to login ?')->modalIcon('heroicon-s-user-circle')->modalSubmitActionLabel('Login'),
                 Tables\Actions\EditAction::make(),
+
                 Tables\Actions\Action::make('balance')->url(function ($record) {
                     $financialPeriod = FinancialPeriod::query()->where('company_id', $record->id)->where('status', 'During')->first();
                     if ($financialPeriod) {
@@ -149,6 +150,7 @@ class CompanyResource extends Resource
                 ActionGroup::make([
                     Tables\Actions\Action::make('Comprehensive Report')->label('Comprehensive Report')->url(fn($record) => route('filament.super-admin.pages.company-over-view',) . "?filters[year]=" . now()->format('Y') . "&filters[company_id]=" . $record->id)
                 ])
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

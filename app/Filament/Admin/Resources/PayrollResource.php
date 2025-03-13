@@ -6,6 +6,7 @@ use App\Enums\LeaveStatus;
 use App\Enums\PayrollStatus;
 use App\Filament\Admin\Resources\PayrollResource\Pages;
 use App\Filament\Exports\PayrollExporter;
+use App\Filament\Resources\HolidayResource;
 use App\Models\Account;
 use App\Models\Bank_category;
 use App\Models\Benefit;
@@ -28,6 +29,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Notifications\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
@@ -41,6 +43,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\HtmlString;
 use Malzariey\FilamentDaterangepickerFilter\Fields\DateRangePicker;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
+use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
 
 
 class PayrollResource extends Resource
@@ -459,7 +462,10 @@ class PayrollResource extends Resource
                                 $totalOvertime = ($overtimes * $hoursPay) * $company->overtime_rate;
                             }else{
 
-                                Notification::make('error')->danger()->title('Daily Salary  Or Company Daily Working Hours Is 0' )->send();
+                                Notification::make('error')->danger()->actions([
+                                    Action::make('setting')->url(route('filament.admin.hr-settings.resources.holidays.index',['tenant'=>getCompany()->id])),
+                                    Action::make('employee')->url(EmployeeResource::getUrl('edit',['record'=>$employee->id])),
+                                ])->title('Daily Salary  Or Company Daily Working Hours Is 0' )->send();
                                 return ;
                             }
                             // افزودن اضافه‌کاری به مزایا و مرخصی به کسورات
@@ -577,7 +583,15 @@ class PayrollResource extends Resource
                                     if ($employee) {
                                         $leaves = Leave::query()->where('status', 'accepted')->where('employee_id', $employee->id)->whereBetween('start_leave', [$get('start_date'), $get('end_date')])->whereBetween('end_leave', [$get('start_date'), $get('end_date')])->get();
                                         $overtimes = Overtime::query()->where('status', 'accepted')->where('employee_id', $employee->id)->whereBetween('overtime_date', [$get('start_date'), $get('end_date')])->sum('hours');
-                                        $hoursPay = $employee->daily_salary / $company->daily_working_hours;
+                                        if ($company->daily_working_hours and $employee->daily_salary  ){
+                                            $hoursPay = $employee->daily_salary / $company->daily_working_hours;
+                                        }else{
+                                            Notification::make('error')->danger()->actions([
+                                                Action::make('setting')->url(route('filament.admin.hr-settings.resources.holidays.index',['tenant'=>getCompany()->id])),
+                                                Action::make('employee')->url(EmployeeResource::getUrl('edit',['record'=>$employee->id])),
+                                            ])->title('Daily Salary  Or Company Daily Working Hours Is 0' )->send();
+                                            return ;
+                                        }
                                         $totalAllowance = number_format($overtimes * $hoursPay * $company->overtime_rate, 2) . $company->currency;
                                         $contentOvertime = "
                                 <div style='color: green; display: flex; border: 1px solid whitesmoke; text-align: center; width: 48%;'>
@@ -723,7 +737,7 @@ class PayrollResource extends Resource
 
 
                     $invoice = Invoice::query()->create([
-                        'name' => $data['name'], 'number' => $data['number'], 'date' => $data['date'], 'description' => $data['description'], 'reference' => $data['reference'], 'status' => 'final', 'company_id' => getCompany()->id, 'document' => $data['document']
+                        'name' => $data['name'], 'number' => $data['number'], 'date' => $data['date'], 'description' => $data['description'], 'reference' => $data['reference'], 'status' => 'final', 'company_id' => getCompany()->id
                     ]);
                     foreach ($data['transactions'] as $transaction) {
                         $transaction['financial_period_id'] = $period->id;
@@ -748,12 +762,16 @@ class PayrollResource extends Resource
                 })->form(function ($record) {
                     return [
                         Forms\Components\Section::make([
-                            Forms\Components\TextInput::make('name')->default($record->employee->fullName . " " . Carbon::make($record->start_date)->format('Y/m/d') . " - " . Carbon::make($record->end_date)->format('Y/m/d') . " Payroll")->required()->maxLength(255),
-                            Forms\Components\TextInput::make('number')->numeric()->required()->maxLength(255)->readOnly()->default(getCompany()->financialPeriods->where('status', "During")->first()?->invoices()->get()->last()?->number != null ? getCompany()->financialPeriods()->where('status', "During")->first()?->invoices()?->get()->last()->number + 1 : 1),
-                            Forms\Components\DateTimePicker::make('date')->required()->default(now()),
-                            Forms\Components\TextInput::make('reference')->maxLength(255),
-                            Forms\Components\FileUpload::make('document')->nullable()->columnSpanFull(),
-                            Forms\Components\Textarea::make('description')->nullable()->columnSpanFull(),
+                            Forms\Components\Fieldset::make('invoice')->model(Invoice::class)->schema([
+                                Forms\Components\TextInput::make('name')->default($record->employee->fullName . " " . Carbon::make($record->start_date)->format('Y/m/d') . " - " . Carbon::make($record->end_date)->format('Y/m/d') . " Payroll")->required()->maxLength(255),
+                                Forms\Components\TextInput::make('number')->numeric()->required()->maxLength(255)->readOnly()->default(getCompany()->financialPeriods->where('status', "During")->first()?->invoices()->get()->last()?->number != null ? getCompany()->financialPeriods()->where('status', "During")->first()?->invoices()?->get()->last()->number + 1 : 1),
+                                Forms\Components\DateTimePicker::make('date')->required()->default(now()),
+                                Forms\Components\TextInput::make('reference')->maxLength(255),
+                                MediaManagerInput::make('document')->orderable(false)->folderTitleFieldName("title")
+                                    ->disk('public')
+                                    ->schema([])->maxItems(1)->columnSpanFull(),
+                                Forms\Components\Textarea::make('description')->nullable()->columnSpanFull(),
+                            ]),
                             Forms\Components\Section::make([
                                 Forms\Components\Repeater::make('transactions')->label('')->schema([
                                     SelectTree::make('account_id')->formatStateUsing(function ($state, Forms\Set $set) {

@@ -78,6 +78,8 @@ class CreateFactor extends CreateRecord
                 $this->record->invoice->update([
                     'name' => $this->record->invoice->name . "(Total:" . number_format($total) . ")",
                 ]);
+
+
                 //     // ذخیره تراکنش‌های فاکتور (Transactions)
                 foreach ($this->data['invoice']['transactions'] as $transaction) {
                     // dd(str_replace(',', '', $transaction['exchange_rate']));

@@ -9,14 +9,12 @@ use App\Filament\Admin\Resources\EmployeeResource\RelationManagers\OverTimesRela
 use App\Filament\Admin\Resources\EmployeeResource\RelationManagers\PayrollsRelationManager;
 use App\Filament\Exports\EmployeeExporter;
 use App\Models\Benefit;
-use App\Models\CompanyUser;
 use App\Models\Contract;
 use App\Models\Department;
 use App\Models\Duty;
 use App\Models\Employee;
 use App\Models\Position;
 use App\Models\Structure;
-use App\Models\User;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Facades\Filament;
@@ -24,7 +22,6 @@ use Filament\Forms;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
-use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
 use Filament\Support\RawJs;
@@ -35,14 +32,14 @@ use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use OpenSpout\Common\Entity\Style\CellAlignment;
-use Spatie\Permission\Models\Role;
+use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
 
 class EmployeeResource extends Resource
     implements HasShieldPermissions
 {
+
 
     protected static ?string $model = Employee::class;
 
@@ -81,8 +78,14 @@ class EmployeeResource extends Resource
                 Forms\Components\Wizard::make([
                     Forms\Components\Wizard\Step::make('Information')
                         ->schema([
-                            Forms\Components\FileUpload::make('pic')->label('Profile Picture')->image()->columnSpan(1)->imageEditor()->extraAttributes(['style' => 'width:150px!important;border-radius:10px !important']),
-                            Forms\Components\FileUpload::make('signature_pic')->label('Signature')->image()->columnSpan(1)->imageEditor()->extraAttributes(['style' => 'width:150px!important;border-radius:10px !important']),
+                            MediaManagerInput::make('images')->orderable(false)->folderTitleFieldName("fullName")->image(true)
+                                ->disk('public')
+                                ->schema([
+                                ])->maxItems(1),
+                            MediaManagerInput::make('signature')->orderable(false)->image(true)->folderTitleFieldName("fullName")
+                                ->disk('public')
+                                ->schema([
+                                ])->maxItems(1),
                             Forms\Components\TextInput::make('fullName')->required()->maxLength(255),
                             Forms\Components\DatePicker::make('birthday')->label('Date Birthday'),
                             Forms\Components\TextInput::make('phone_number')->tel()->required()->maxLength(255),
@@ -228,15 +231,14 @@ class EmployeeResource extends Resource
                                     return $data;
                                 }),
                             Forms\Components\Hidden::make('benefit_salary')->default(0),
-                            Forms\Components\Section::make('')->schema([
-                                Forms\Components\Repeater::make('Documents Attachment')->label('Documents Attachment')->relationship('documents')->schema([
-                                    Forms\Components\TextInput::make('title')->required(),
-                                    Forms\Components\FileUpload::make('file')->downloadable()->required()
-                                ])->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
-                                    $data['company_id'] = Filament::getTenant()->id;
-                                    return $data;
-                                })->columns(2)
-                            ])
+                            MediaManagerInput::make('attachments')->label('Documents Attachment')->orderable(false)->folderTitleFieldName("fullName")
+                                ->disk('public')
+                                ->schema([
+                                    Forms\Components\TextInput::make('title')
+                                        ->required()
+                                        ->maxLength(255),
+
+                                ])->columnSpanFull()->columns(),
                         ])->columns(2),
                     Forms\Components\Wizard\Step::make('Bank Information')
                         ->schema([
@@ -270,9 +272,21 @@ class EmployeeResource extends Resource
 
             Forms\Components\Wizard\Step::make('Information')
                 ->schema([
+                    MediaManagerInput::make('images')->orderable(false)->folderTitleFieldName("fullName")->image(true)
+                        ->disk('public')
+                        ->schema([
+                            Forms\Components\TextInput::make('title')
+                                ->required()
+                                ->maxLength(255),
 
-                    Forms\Components\FileUpload::make('pic')->label('Profile Picture')->image()->columnSpan(1)->imageEditor()->extraAttributes(['style' => 'width:150px!important;border-radius:10px !important']),
-                    Forms\Components\FileUpload::make('signature_pic')->label('Signature')->image()->columnSpan(1)->imageEditor()->extraAttributes(['style' => 'width:150px!important;border-radius:10px !important']),
+                        ])->maxItems(1),
+                    MediaManagerInput::make('signature')->orderable(false)->image(true)->folderTitleFieldName("fullName")
+                        ->disk('public')
+                        ->schema([
+                            Forms\Components\TextInput::make('title')
+                                ->required()
+                                ->maxLength(255),
+                        ])->maxItems(1),
 
                     Forms\Components\TextInput::make('fullName')
                         ->required()
@@ -423,15 +437,14 @@ class EmployeeResource extends Resource
                             return $data;
                         }),
                     Forms\Components\Hidden::make('benefit_salary')->default(0),
-                    Forms\Components\Section::make('')->schema([
-                        Forms\Components\Repeater::make('Documents Attachment')->label('Documents Attachment')->relationship('documents')->schema([
-                            Forms\Components\TextInput::make('title')->required(),
-                            Forms\Components\FileUpload::make('file')->required()
-                        ])->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
-                            $data['company_id'] = Filament::getTenant()->id;
-                            return $data;
-                        })->columns(2)
-                    ])
+                    MediaManagerInput::make('attachments')->label('Documents Attachment')->orderable(false)->folderTitleFieldName("fullName")
+                        ->disk('public')
+                        ->schema([
+                            Forms\Components\TextInput::make('title')
+                                ->required()
+                                ->maxLength(255),
+
+                        ]),
                 ])->columns(2),
             Forms\Components\Wizard\Step::make('Bank Information')
                 ->schema([
@@ -465,17 +478,19 @@ class EmployeeResource extends Resource
             ->searchable()
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
-                Tables\Columns\ImageColumn::make('pic')->defaultImageUrl(fn($record)=>$record->gender==="male" ?  asset('img/user.png') :asset('img/female.png'))->alignLeft()->label('Profile Picture')->width(50)->height(50)->extraAttributes(['style' => 'border-radius:50px!important']),
+                Tables\Columns\ImageColumn::make('media.original_url')->state(function ($record) {
+                       return $record->media->where('collection_name','images')->first()?->original_url;
+                })->disk('public')->defaultImageUrl(fn($record) => $record->gender === "male" ? asset('img/user.png') : asset('img/female.png'))->alignLeft()->label('Profile Picture')->width(50)->height(50)->extraAttributes(['style' => 'border-radius:50px!important']),
                 Tables\Columns\TextColumn::make('fullName')->sortable()->alignLeft()->searchable(),
-                Tables\Columns\TextColumn::make('gender')->state(function($record){
-                    if ($record->gender==="male"){
+                Tables\Columns\TextColumn::make('gender')->state(function ($record) {
+                    if ($record->gender === "male") {
                         return "Male";
-                    }elseif ($record->gender==="female"){
+                    } elseif ($record->gender === "female") {
                         return "Female";
-                    }else{
-                        return  "Other";
+                    } else {
+                        return "Other";
                     }
-                } )->alignLeft()->sortable(),
+                })->alignLeft()->sortable(),
                 Tables\Columns\TextColumn::make('phone_number')->alignLeft()->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('duty.title')->alignLeft()->numeric()->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('base_salary')->label('Base Salary' . "(" . defaultCurrency()?->symbol . ")")->alignLeft()->numeric()->sortable()->badge(),

@@ -25,6 +25,7 @@ use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\File;
 
 class MyAsset extends BaseWidget
 {
@@ -45,7 +46,9 @@ class MyAsset extends BaseWidget
             )
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
-                Tables\Columns\ImageColumn::make('asset.product.image')->label('Item Photo'),
+                Tables\Columns\ImageColumn::make('asset.product.image')->defaultImageUrl(asset('img/images.jpeg'))->state(function ($record){
+                    return $record->asset->product->media->first()?->original_url;
+                })->label('Item Photo'),
                 Tables\Columns\TextColumn::make('asset.titlen')->label('Product'),
                 Tables\Columns\TextColumn::make('warehouse.title')->label('Warehouse/Building')->sortable(),
                 Tables\Columns\TextColumn::make('structure.title')->label('Location')->sortable(),
@@ -79,9 +82,17 @@ class MyAsset extends BaseWidget
                          ])->columns()
                      ];
                  })->action(function ($data){
-                     $data['company_id']=getCompany()->id;
-                     $data['employee_id']=getEmployee()->id;
-                     Service::query()->create($data);
+                     $service = Service::query()->create([
+                         'company_id'=>getCompany()->id,
+                         'employee_id'=>getEmployee()->id,
+                         'request_date'=>$data['request_date'],
+                         'asset_id'=>$data['asset_id'],
+                         'note'=>$data['note']
+                     ]);
+                         $mediaItems = $data['images'] ?? [];
+                         foreach ($mediaItems as $mediaItem) {
+                             $service->addMedia(public_path('images/'.$mediaItem))->toMediaCollection('images');
+                         }
                      Notification::make('success')->title('Service Request Is Sent')->color('success')->success()->send();
                  })
              ])

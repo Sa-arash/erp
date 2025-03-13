@@ -90,7 +90,9 @@ class  ViewEmployee extends ViewRecord
             Section::make('Employee Overview')->schema([
                 section::make()
                     ->schema([
-                        ImageEntry::make('pic')
+                        ImageEntry::make('pic')->state(function ($record){
+                            return $record->media->where('collection_name','images')->first()?->original_url;
+                        })
                             ->defaultImageUrl(fn($record)=>$record->gender==="male" ?  asset('img/user.png') :asset('img/female.png'))
                             ->label('')
                             ->extraAttributes(['style' => 'border-radius: 10px;  padding: 0px;margin:0px;'])
@@ -99,7 +101,10 @@ class  ViewEmployee extends ViewRecord
                             ->height(200)
                             ->alignLeft()
                             ->columnSpan(1),
-                        ImageEntry::make('signature_pic')
+                        ImageEntry::make('signature_pic')->state(function ($record){
+                            return $record->media->where('collection_name','signature')->first()?->original_url;
+
+                        })
                             ->label('Employee Signature ')
                             ->extraAttributes(['style' => 'border-radius: 10px;  padding: 0px;margin:0px;'])
                             ->width(100)

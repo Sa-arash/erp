@@ -31,6 +31,7 @@ use Spatie\Permission\Models\Role;
 
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
 
 class EmployeeProfile extends Page implements HasForms, HasInfolists
 {
@@ -48,20 +49,14 @@ class EmployeeProfile extends Page implements HasForms, HasInfolists
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('change Information')
+            Action::make('change Information')->record(getEmployee())
                 ->form(
                     function () {
                         $record = auth()->user();
                         return [
                             ComponentsSection::make('Employee info')->schema([
-                                FileUpload::make('pic')
-                                    ->default($record->employee?->pic)
-
-                                    ->label('Profile Picture')->image()->columnSpan(1)->imageEditor()->extraAttributes(['style' => 'width:150px!important;border-radius:10px !important']),
-                                FileUpload::make('signature_pic')
-                                    ->default($record->employee?->signature_pic)
-                                    ->label('Signature')->image()->columnSpan(1)->imageEditor()->extraAttributes(['style' => 'width:150px!important;border-radius:10px !important']),
-
+                                MediaManagerInput::make('images')->extraAttributes(['style' => 'width:150px!important;border-radius:10px !important'])->orderable(false)->folderTitleFieldName("fullName")->image(true)->disk('public')->maxItems(1)->schema([]),
+                                MediaManagerInput::make('signature')->extraAttributes(['style' => 'width:150px!important;border-radius:10px !important'])->orderable(false)->image(true)->folderTitleFieldName("fullName")->disk('public')->maxItems(1)->schema([]),
                                 TextInput::make('email')->default($record->email)->email()->rule(Rule::unique('users', 'email')->whereNot('email', $record->email))->required()->maxLength(255),
                                 TextInput::make('password')->hintAction(ComponentsActionsAction::make('generate_password')->action(function (Set $set) {
                                     $password = Str::password(8);
@@ -74,7 +69,6 @@ class EmployeeProfile extends Page implements HasForms, HasInfolists
                     }
                 )
 
-
                 ->action(function ($data, $record) {
                     $record = auth()->user();
                     $record->update([
@@ -83,8 +77,6 @@ class EmployeeProfile extends Page implements HasForms, HasInfolists
                     ]);
                     $record->employee->update([
                         'email' => $data['email']??$record->employee->email,
-                        'pic' => $data['pic'],
-                        'signature_pic' => $data['signature_pic'],
                     ]);
                     Notification::make('successfull')->success()->title('Success Full')->send()->sendToDatabase(auth()->user());
                 }),
@@ -154,9 +146,9 @@ class EmployeeProfile extends Page implements HasForms, HasInfolists
                         ->schema([
                             ImageEntry::make('pic')
                                 ->defaultImageUrl(fn($record) => $record->gender === "male" ?  asset('img/user.png') : asset('img/female.png'))
-                                ->label('')
-                                ->extraAttributes(['style' => 'border-radius: 10px;  padding: 0px;margin:0px;'])
-                                ->width(200)
+                                ->label('')->state(function ($record){
+                                    return $record->media->where('collection_name','images')->first()?->original_url;
+                                })->extraAttributes(['style' => 'border-radius: 10px;  padding: 0px;margin:0px;'])->width(200)
 
                                 ->height(200)
                                 ->alignLeft()
@@ -165,7 +157,9 @@ class EmployeeProfile extends Page implements HasForms, HasInfolists
                                 ->label('Employee Signature ')
                                 ->extraAttributes(['style' => 'border-radius: 10px;  padding: 0px;margin:0px;'])
                                 ->width(100)
-
+                                ->state(function ($record){
+                                    return $record->media->where('collection_name','signature')->first()?->original_url;
+                                })
                                 ->height(100)
                                 ->alignLeft()
                                 ->columnSpan(1),

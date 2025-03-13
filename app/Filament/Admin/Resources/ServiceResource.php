@@ -18,6 +18,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
 
 class ServiceResource extends Resource
 {
@@ -64,8 +65,10 @@ class ServiceResource extends Resource
                         ->required(),
                         ToggleButtons::make('type')->options(['On-site Service' => 'On-site Service', 'Purchase Order' => 'Purchase Order', 'TakeOut For Reaper' => 'TakeOut For Reaper',])->inline(),
                         ToggleButtons::make('status')->options(['Complete' => 'Complete', 'Canceled' => 'Canceled' ])->default('Complete')->inline(),
-
-                    Forms\Components\FileUpload::make('images'),
+                    MediaManagerInput::make('images')->orderable(false)
+                        ->disk('public')
+                        ->schema([
+                        ])->maxItems(1),
                     Forms\Components\DatePicker::make('answer_date'),
                     Forms\Components\DatePicker::make('service_date'),
                     Forms\Components\Textarea::make('note')
