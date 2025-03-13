@@ -68,7 +68,7 @@ class SiteOverView extends Page
                     ->options($years)
                     ->live()
                     ->columnSpanFull()
-                    ->default($currentYear)->searchable()
+                    ->default($currentYear)->searchable()->label('Company')
             ])->columns()
         ]);
     }

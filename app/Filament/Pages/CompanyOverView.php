@@ -66,7 +66,7 @@ class CompanyOverView extends Page
                     ->options(Company::all()->pluck('title','id'))
                     ->live()
                     ->columnSpanFull()
-                    ->default($currentYear)->searchable()
+                    ->default($currentYear)->searchable()->label('Company')
             ])->columns()
         ]);
     }
