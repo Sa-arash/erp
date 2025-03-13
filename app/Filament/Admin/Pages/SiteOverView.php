@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Pages;
 
 use App\Models\Account;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Pages\Page;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Section;
@@ -14,12 +15,12 @@ use Illuminate\Support\Carbon;
 
 class SiteOverView extends Page
 {
-
+    use HasPageShield;  
     use HasFiltersForm;
     use HasFilters;
 
-    protected static ?string $navigationIcon = 'heroicon-o-document-text';
-
+    protected static ?string $navigationIcon = 'heroicon-m-table-cells';
+    protected static ?int $navigationSort = -2;
     protected static string $view = 'filament.admin.pages.site-over-view';
     protected static ?string $navigationLabel = "Comprehensive Report";
     protected static ?string $title = "Comprehensive Report";
