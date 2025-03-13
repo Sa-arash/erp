@@ -176,7 +176,7 @@ class LoanResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('payLoan')
-                ->visible(fn($record)=>$record->status)
+                ->visible(fn($record)=>$record->status->value === "accepted"&& getPeriod())
                 ->modalWidth(MaxWidth::FiveExtraLarge)->form([
                     Forms\Components\Section::make([
                         Forms\Components\TextInput::make('number')
@@ -237,7 +237,7 @@ class LoanResource extends Resource
                     // ];
 
 
-                    $record->update(['status' => 'finished']);
+                    $record->update(['status' => 'progressed']);
 
                     $invoice = Invoice::query()->create([
                         'name' => $data['name'],
