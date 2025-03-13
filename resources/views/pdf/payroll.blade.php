@@ -107,8 +107,8 @@
     <h2>{{$payroll->company->title}}</h2>
     <div style="width: 100%;display: flex">
         <div style="display: inline;">
-            @if($payroll->employee?->pic )
-            <img  src="{!! public_path('images/' . $payroll->employee?->pic) !!}" style="width: 95px;margin-bottom: 20px">
+            @if($payroll->employee->media->where('collection_name','images')->first()?->original_url )
+            <img  src="{!! $payroll->employee->media->where('collection_name','images')->first()?->original_url!!}" style="width: 95px;margin-bottom: 20px">
             @endif
             @if($payroll->company?->logo)
             <img src="{!! public_path('images/' . $payroll->company?->logo) !!}" style="width: 95px;padding-left: 440px;margin-bottom: 20px">

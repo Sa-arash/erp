@@ -115,7 +115,7 @@ class CompanyResource extends Resource
                    if ($financialPeriod){
                        return route('pdf.balance',['period'=>$financialPeriod->id]);
                    }
-                })->visible(function ($record){
+                })->openUrlInNewTab()->visible(function ($record){
                     return  FinancialPeriod::query()->where('company_id',$record->id)->where('status','During')->first();
                 })
             ])

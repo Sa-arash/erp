@@ -55,7 +55,9 @@ class SuperAdminPanelProvider extends PanelProvider
             ])
             ->plugins([
                 // FilamentShieldPlugin::make(),
-                FilamentApexChartsPlugin::make()
+                FilamentApexChartsPlugin::make(),
+                \TomatoPHP\FilamentMediaManager\FilamentMediaManagerPlugin::make()->allowUserAccess()->allowSubFolders(),
+
 
             ])
             ->authMiddleware([

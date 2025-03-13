@@ -9,6 +9,7 @@ use App\Filament\Admin\Resources\ChequeResource;
 use App\Filament\Admin\Resources\EmployeeResource\Pages\ViewEmployee;
 use App\Filament\Admin\Resources\InvoiceResource;
 use App\Filament\Admin\Resources\PartiesResource;
+use App\Filament\Pages\Auth\Login;
 use App\Filament\Pages\Tenancy\EditTeamProfile;
 use App\Filament\Resources\EmployeeResource;
 use App\Models\Cheque;
@@ -143,7 +144,7 @@ class AdminPanelProvider extends PanelProvider
         return $panel->brandName(fn()=>getCompany()?->title? getCompany()?->title." -ERP":"ERP System")
             ->id('admin')->maxContentWidth(MaxWidth::Full)->favicon(asset('img/my.png'))
             ->path('admin')->sidebarCollapsibleOnDesktop()
-            ->login()
+            ->login(Login::class)
             // ->favicon(fn()=>(asset('images/' . Company::first()?->logo)))
             ->font(
                 'Inter',
@@ -195,6 +196,7 @@ class AdminPanelProvider extends PanelProvider
                 SyncShieldTenant::class,
             ], isPersistent: true)
             ->plugins([
+                \TomatoPHP\FilamentMediaManager\FilamentMediaManagerPlugin::make()->allowUserAccess()->allowSubFolders(),
                 FilamentShieldPlugin::make()
                     ->gridColumns([
                         'default' => 1,
@@ -204,7 +206,7 @@ class AdminPanelProvider extends PanelProvider
                     ->sectionColumnSpan(1)
                     ->checkboxListColumns([
                         'default' => 1,
-                        'sm' => 2,+
+                        'sm' => 2,
                         'lg' => 4,
                     ])
                     ->resourceCheckboxListColumns([

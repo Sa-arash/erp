@@ -18,6 +18,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Validation\Rules\Unique;
+use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
 
 class ProductResource extends Resource
 {
@@ -104,7 +105,10 @@ class ProductResource extends Resource
                 ,
 
                 Forms\Components\Textarea::make('description')->columnSpanFull(),
-                Forms\Components\FileUpload::make('image')->image(),
+                MediaManagerInput::make('image')->orderable(false)
+                    ->disk('public')
+                    ->schema([
+                    ])->maxItems(1),
                 Forms\Components\TextInput::make('stock_alert_threshold')->numeric()->default(5)->required(),
 
                 // Forms\Components\TextInput::make('price')
@@ -122,7 +126,9 @@ class ProductResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
-                Tables\Columns\ImageColumn::make('image'),
+                Tables\Columns\ImageColumn::make('image')->defaultImageUrl(asset('img/images.jpeg'))->state(function ($record){
+                    return $record->media->first()?->original_url;
+                }),
                 Tables\Columns\TextColumn::make('title')->label('Product Name')->searchable(),
                 Tables\Columns\TextColumn::make('account.title')->label('Category Title')->sortable(),
                 Tables\Columns\TextColumn::make('subAccount.title')->label('Sub Category Title')->sortable(),

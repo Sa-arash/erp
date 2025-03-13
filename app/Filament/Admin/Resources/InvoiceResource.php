@@ -26,6 +26,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
 
 class InvoiceResource extends Resource
 {
@@ -66,20 +67,22 @@ class InvoiceResource extends Resource
             ->schema([
                 Forms\Components\Section::make([
                     Forms\Components\TextInput::make('number')
-                        ->columnSpan(1)
+                        ->columnSpan(['default'=>8,'md'=>1,'lg'=>1,'2xl'=>1,'xl'=>1])
                         ->default(getCompany()->financialPeriods()->where('status', "During")?->first()?->invoices()?->get()->last()?->number != null ? getCompany()->financialPeriods()->where('status', "During")->first()->invoices()->get()->last()->number + 1 : 1)->label('Voucher Number')->required()->maxLength(255)->readOnly(),
                     Forms\Components\TextInput::make('name')
-                        ->columnSpan(3)
+                        ->columnSpan(['default'=>8,'md'=>3,'lg'=>3,'2xl'=>3,'xl'=>3])
                         ->label('Voucher Title')->required()->maxLength(255),
                     Forms\Components\TextInput::make('reference')
-                        ->columnSpan(1)
+                        ->columnSpan(['default'=>8,'md'=>1,'lg'=>1,'2xl'=>1,'xl'=>1])
                         ->maxLength(255),
                     Forms\Components\DateTimePicker::make('date')
-                        ->columnSpan(2)
+                        ->columnSpan(['default'=>8,'md'=>2,'lg'=>2,'2xl'=>2,'xl'=>2])
                         ->required()->default(now()),
-                    Forms\Components\FileUpload::make('document')->placeholder('Browse')->extraInputAttributes(['style' => 'height:30px!important;'])
-                        ->nullable(),
-                ])->columns(8),
+                ])->columns(7),
+                MediaManagerInput::make('document')->orderable(false)->folderTitleFieldName("name")
+                    ->disk('public')
+                    ->schema([
+                    ])->defaultItems(0)->columnSpanFull()->maxItems(1),
 
                 Forms\Components\Section::make([
                     Forms\Components\Repeater::make('transactions')->label('')->relationship('transactions')->schema([

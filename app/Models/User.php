@@ -16,11 +16,13 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\PermissionRegistrar;
 use Spatie\Permission\Traits\HasRoles;
+use TomatoPHP\FilamentMediaManager\Traits\InteractsWithMediaFolders;
 
 class User extends Authenticatable implements HasTenants, FilamentUser , HasName
 {
     use HasRoles,Notifiable;
     use HasFactory;
+    use InteractsWithMediaFolders;
 
 
 

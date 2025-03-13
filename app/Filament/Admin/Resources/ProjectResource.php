@@ -15,6 +15,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
 
 class ProjectResource extends Resource
 {
@@ -40,8 +41,11 @@ class ProjectResource extends Resource
                     Forms\Components\TextInput::make('budget')->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->numeric(),
                 ])->columns(4),
                 Forms\Components\Textarea::make('description')->columnSpanFull(),
-                Forms\Components\FileUpload::make('files')->multiple()->downloadable()->columnSpanFull(),
                 Forms\Components\TagsInput::make('tags')->columnSpanFull(),
+                MediaManagerInput::make('document')->orderable(false)->folderTitleFieldName("name")
+                    ->disk('public')
+                    ->schema([
+                    ])->columnSpanFull()->grid()->defaultItems(0),
 
             ]);
     }
