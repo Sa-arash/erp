@@ -118,7 +118,7 @@ class CompanyResource extends Resource
                         ->where('group', 'Expense')
                         ->get()
                         ->flatMap(fn($account) => $account->transactions)
-                        ->sum(fn($transaction) => $transaction->creditor - $transaction->debtor);
+                        ->sum(fn($transaction) =>  $transaction->debtor - $transaction->creditor);
                     return $exaccounts;
                     })
                     ->alignCenter(),
