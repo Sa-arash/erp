@@ -21,6 +21,8 @@ return new class extends Migration
             $table->integer('number_of_payed_installments')->default(0);
             $table->timestamp('request_date');
             $table->timestamp('answer_date')->nullable();
+            $table->timestamp('first_installment_due_date')->nullable(); 
+            $table->text('description')->nullable();
             $table->enum('status',['waiting','progressed','rejected','accepted','finished']);
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();

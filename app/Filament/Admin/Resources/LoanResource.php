@@ -28,32 +28,55 @@ class LoanResource extends Resource
 
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
-                Forms\Components\Select::make('employee_id')->suffixIcon('employee')->suffixIconColor('primary')->label('Employee')->options(Employee::query()->where('company_id',getCompany()->id)->pluck('fullName','id'))->searchable()->preload()
-                    ->required(),
-                Forms\Components\TextInput::make('loan_code')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('request_amount')->mask(RawJs::make('$money($input)'))->stripCharacters(',')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('amount')->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)
-                    ->nullable()
-                    ->numeric(),
-                Forms\Components\TextInput::make('number_of_installments')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('number_of_payed_installments')
-                    ->required()
-                    ->numeric()
-                    ->default(0),
-                Forms\Components\DatePicker::make('request_date')
-                    ->required(),
-                Forms\Components\DatePicker::make('answer_date')->label('Approval Date'),
-                Forms\Components\ToggleButtons::make('status')->options(LoanStatus::class)->inline()
-                    ->required(),
-            ]);
+                return $form
+                ->schema([
+                    Forms\Components\Select::make('employee_id')
+                        ->suffixIcon('employee')
+                        ->suffixIconColor('primary')
+                        ->label('Employee')
+                        ->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))
+                        ->searchable()
+                        ->preload()
+                        ->required(),
+                    Forms\Components\TextInput::make('loan_code')
+                        ->required()
+                        ->numeric(),
+                    Forms\Components\TextInput::make('request_amount')
+                        ->mask(RawJs::make('$money($input)'))
+                        ->stripCharacters(',')
+                        ->required()
+                        ->numeric(),
+                    Forms\Components\TextInput::make('amount')
+                        ->mask(RawJs::make('$money($input)'))
+                        ->stripCharacters(',')
+                        ->suffixIcon('cash')
+                        ->suffixIconColor('success')
+                        ->minValue(0)
+                        ->nullable()
+                        ->numeric(),
+                    Forms\Components\TextInput::make('number_of_installments')
+                        ->required()
+                        ->numeric(),
+                    Forms\Components\TextInput::make('number_of_payed_installments')
+                        ->required()
+                        ->numeric()
+                        ->default(0),
+                    Forms\Components\DatePicker::make('request_date')
+                        ->required(),
+                    Forms\Components\DatePicker::make('answer_date')
+                        ->label('Approval Date'),
+                    Forms\Components\DatePicker::make('first_installment_due_date') // فیلد تاریخ سررسید اولین قسط
+                        ->label('First Installment Due Date')
+                        ->required(), // اگر می‌خواهید این فیلد الزامی باشد
+                    Forms\Components\TextInput::make('description') // فیلد توضیحات
+                        ->label('Description')
+                        ->nullable() // این فیلد می‌تواند خالی باشد
+                        ->maxLength(255), // حداکثر طول ورودی
+                    Forms\Components\ToggleButtons::make('status')
+                        ->options(LoanStatus::class)
+                        ->inline()
+                        ->required(),
+                ]);
     }
 
     public static function table(Table $table): Table
