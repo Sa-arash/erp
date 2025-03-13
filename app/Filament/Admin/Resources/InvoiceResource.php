@@ -82,7 +82,7 @@ class InvoiceResource extends Resource
                 MediaManagerInput::make('document')->orderable(false)->folderTitleFieldName("name")
                     ->disk('public')
                     ->schema([
-                    ])->defaultItems(0)->columnSpanFull()->maxItems(1),
+                    ])->defaultItems(0)->addActionLabel('Add Document')->columnSpanFull()->maxItems(1),
 
                 Forms\Components\Section::make([
                     Forms\Components\Repeater::make('transactions')->label('')->relationship('transactions')->schema([

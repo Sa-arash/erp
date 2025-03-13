@@ -10,9 +10,15 @@ class Loan extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['employee_id','loan_code', 'answer_date','request_amount','request_date', 'number_of_installments', 'number_of_payed_installments','status', 'user_id', 'company_id','amount'];
+    protected $fillable = ['first_installment_due_date', 'description', 'employee_id', 'loan_code', 'answer_date', 'request_amount', 'request_date', 'number_of_installments', 'number_of_payed_installments', 'status', 'user_id', 'company_id', 'amount'];
 
-    protected $casts=['status'=>LoanStatus::class];
+    protected $casts = ['status' => LoanStatus::class];
+
+    public function approvals(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(Approval::class, 'approvable', 'approvable_type', 'approvable_id');
+    }
+
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);
