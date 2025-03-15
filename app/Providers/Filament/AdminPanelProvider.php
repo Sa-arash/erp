@@ -50,9 +50,8 @@ class AdminPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         $reportNavigationItems = [];
-
         $financialPeriod =
-            FinancialPeriod::query()->where('company_id', getCompany())->where('status', 'During')->first();
+            FinancialPeriod::query()->where('company_id', getCompanyUrl())->where('status', 'During')->first();
         if ($financialPeriod) {
             $reportNavigationItems = [
 
