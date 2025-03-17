@@ -212,7 +212,9 @@ class AdminPanelProvider extends PanelProvider
                         'default' => 1,
                         'sm' => 2,
                     ]),
-                FilamentApexChartsPlugin::make()
+                FilamentApexChartsPlugin::make(),
+                \TomatoPHP\FilamentMediaManager\FilamentMediaManagerPlugin::make()->allowUserAccess()->allowSubFolders(),
+
 
             ])
             ->tenantProfile(EditTeamProfile::class)

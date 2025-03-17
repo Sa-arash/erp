@@ -16,6 +16,7 @@ use Filament\Widgets\TableWidget as BaseWidget;
 
 class MyLoan extends BaseWidget
 {
+
     protected int | string | array $columnSpan='full';
     public function table(Table $table): Table
     {
@@ -24,9 +25,9 @@ class MyLoan extends BaseWidget
                     Loan::query()->where('employee_id',getEmployee()?->id)->orderBy('id','desc')
             )
             ->headerActions([
-                Tables\Actions\Action::make('new')->label('Request Loan')->form([
+                Tables\Actions\Action::make('new')->label('Loan Request ')->form([
                     Section::make([
-                        TextInput::make('request_amount')->label('Request Amount')->columnSpanFull()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->numeric(),
+                        TextInput::make('request_amount')->label('Required Amount  ')->columnSpanFull()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->numeric(),
                         Textarea::make('description')->nullable()->columnSpanFull()
                     ])->columns()
                 ])->action(function ($data){
@@ -49,12 +50,12 @@ class MyLoan extends BaseWidget
                         ]);
                     }
                     Notification::make('success')->success()->title('Successfully Submitted')->send();
-                })->requiresConfirmation()
+                })
             ])
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('loan_code')->label('Loan Code'),
-                Tables\Columns\TextColumn::make('request_amount')->numeric()->label('Request Amount'),
+                Tables\Columns\TextColumn::make('request_amount')->numeric()->label('Requested Amount  '),
                 Tables\Columns\TextColumn::make('request_date')->label('Request Date'),
                 Tables\Columns\TextColumn::make('answer_date')->label('Answer Date'),
                 Tables\Columns\TextColumn::make('amount')->numeric()->label('Loan Amount'),

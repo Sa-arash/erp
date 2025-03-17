@@ -234,11 +234,11 @@ class EmployeeResource extends Resource
                             MediaManagerInput::make('attachments')->label('Documents Attachment')->orderable(false)->folderTitleFieldName("fullName")
                                 ->disk('public')
                                 ->schema([
-                                    Forms\Components\TextInput::make('title')
+                                    Forms\Components\Textarea::make('title')
                                         ->required()
                                         ->maxLength(255),
 
-                                ])->columnSpanFull()->columns(),
+                                ])->columnSpanFull()->columns()->addActionLabel('Add Attachment'),
                         ])->columns(2),
                     Forms\Components\Wizard\Step::make('Bank Information')
                         ->schema([
@@ -433,11 +433,11 @@ class EmployeeResource extends Resource
                     MediaManagerInput::make('attachments')->label('Documents Attachment')->orderable(false)->folderTitleFieldName("fullName")
                         ->disk('public')
                         ->schema([
-                            Forms\Components\TextInput::make('title')
+                            Forms\Components\Textarea::make('title')
                                 ->required()
                                 ->maxLength(255),
 
-                        ]),
+                        ])->addActionLabel('Add Attachment'),
                 ])->columns(2),
             Forms\Components\Wizard\Step::make('Bank Information')
                 ->schema([
