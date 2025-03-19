@@ -19,7 +19,7 @@ class ListWarehouses extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()->label('New Warehouse'),
+            Actions\CreateAction::make()->label('New Location'),
             Actions\Action::make('setWarehouse')->label('Set Default Location and Address')->form([
                 Select::make('warehouse_id')->default(getCompany()->warehouse_id)->label('Location')->live()->required()->options(Warehouse::query()->where('company_id',getCompany()->id)->pluck('title','id'))->searchable()->preload(),
                 SelectTree::make('structure_id')->default(getCompany()->structure_asset_id)->label('Address')->required()->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id',modifyQueryUsing: function($query,Get $get){

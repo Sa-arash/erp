@@ -150,7 +150,7 @@ class PurchaseRequestResource extends Resource
                 Tables\Columns\TextColumn::make('purchase_number')->label('PR NO')->searchable(),
                 Tables\Columns\TextColumn::make('request_date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('employee.fullName')->searchable(),
-                Tables\Columns\TextColumn::make('department')->state(fn($record) => $record->employee->department->title)->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('department')->state(fn($record) => $record->employee->department->title),
                 // Tables\Columns\TextColumn::make('location')->state(fn($record) => $record->employee?->structure?->title)->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('status'),
                 Tables\Columns\TextColumn::make('bid.quotation.party.name')->label('Vendor'),

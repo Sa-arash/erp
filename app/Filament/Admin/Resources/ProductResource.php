@@ -85,7 +85,7 @@ class ProductResource extends Resource
                     }
                     return $data;
                 }
-                })->required()->model(Transaction::class)->searchable()->label('Categoy'),
+                })->required()->model(Transaction::class)->searchable()->label('Category'),
 
                 select::make('sub_account_id')->required()->searchable()->label('SubCategory')->options(fn(Get $get)=>  $get('account_id') !== null? getCompany()->accounts()->where('parent_id',$get('account_id'))->pluck('name', 'id'):[])
 //                    ->createOptionForm([
@@ -130,8 +130,8 @@ class ProductResource extends Resource
                     return $record->media->first()?->original_url;
                 }),
                 Tables\Columns\TextColumn::make('title')->label('Product Name')->searchable(),
-                Tables\Columns\TextColumn::make('account.title')->label('Category Title')->sortable(),
-                Tables\Columns\TextColumn::make('subAccount.title')->label('Sub Category Title')->sortable(),
+                Tables\Columns\TextColumn::make('account.title')->label('Category ')->sortable(),
+                Tables\Columns\TextColumn::make('subAccount.title')->label('Sub Category ')->sortable(),
                 Tables\Columns\TextColumn::make('product_type'),
                 Tables\Columns\TextColumn::make('count')->numeric()->state(fn($record) => $record->assets->count())->label('Quantity')->badge()
                 ->color(fn($record)=>$record->assets->count()>$record->stock_alert_threshold ? 'success' : 'danger')->tooltip(fn($record)=>'Stock Alert:'.$record->stock_alert_threshold),

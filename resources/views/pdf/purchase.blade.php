@@ -39,7 +39,7 @@
     </style>
 
 <body>
-<h1>Purchase Request Form</h1>
+<h1>Purchase Request (PR) Form</h1>
 <table>
 
 
@@ -48,14 +48,20 @@
         <td style="text-align: left">PR No: {{$pr->purchase_number}}</td>
     </tr>
     <tr>
-        <td style="text-align: left">Employee name: {{$pr->employee?->fullName}}</td>
+        <td style="text-align: left">Employee Name: {{$pr->employee?->fullName}}</td>
         <td style="text-align: left">Employee
 
              Position: {{$pr->employee?->position?->title}}</td>
     </tr>
     <tr>
         <td style="text-align: left">Department: {{$pr->employee->department?->title}}</td>
-        <td style="text-align: left">Location: {{$pr->employee?->structure?->title}}</td>
+        <td style="text-align: left">Location: {{$pr->employee?->warehouse?->title ." , ".  $pr->employee?->structure?->title}}</td>
+    </tr>
+
+</table>
+<table>
+    <tr>
+        <td colspan="2" style="text-align: left">Description : {{$pr->description}}</td>
     </tr>
 </table>
 
@@ -63,11 +69,11 @@
     <thead>
     <tr>
         <th>SKU</th>
-        <th>Item Description</th>
+
         <th>Unit</th>
         <th>Qty</th>
-        <th>Estimated Cost</th>
-        <th>Total Estimated Cost</th>
+        <th>EST Cost</th>
+        <th>Total EST Cost</th>
         <th>Stock In</th>
     </tr>
     </thead>
@@ -84,18 +90,20 @@
         @endphp
         <tr>
             <td>{{$item->product->title."-".$item->product?->sku}}</td>
-            <td>{{$item->description}}</td>
             <td>{{$item->unit->title}}</td>
             <td>{{$item->quantity}}</td>
             <td>{{number_format($item->estimated_unit_cost)}}</td>
             <td>{{number_format($item->quantity *$item->estimated_unit_cost)}}</td>
             <td>{{$item->product?->assets->where('status','inStorageUsable')->count()}}</td>
         </tr>
+        <tr>
+            <td colspan="6" style="text-align: left">Item Description : {{ $item->description }} </td>
+        </tr>
     @endforeach
     </tbody>
     <tfoot>
     <tr>
-        <td colspan="4">Total Cost</td>
+        <td colspan="3">Total Cost</td>
         <td>{{number_format($totalEstimated)}}</td>
         <td>{{number_format($totalBudget)   }}</td>
         <td></td>
@@ -134,10 +142,10 @@
     <tr>
         <td style="text-align: center"><p>{{$pr->employee?->fullName}}</p></td>
         <td style="text-align: center"><p> {{$pr->employee?->position?->title}}</p></td>
-        <td style="text-align: center   "><p> {{$pr->employee->structure?->title}}</p></td>
+        <td style="text-align: center   "><p> {{$pr->employee?->warehouse?->title." , ". $pr->employee->structure?->title}}</p></td>
         <td style="text-align: center" colspan="2">
-            @if(file_exists($pr->employee->signature_pic))
-                <img src="{!!   public_path('images/'.$pr->employee->signature_pic)!!}"
+            @if($pr->employee->media->where('collection_name','signature')->first()?->getPath() !== null)
+                <img src="{!!   $pr->employee->media->where('collection_name','signature')->first()->getPath()!!}"
                      style="border-radius: 50px ; width: 80px;" alt="">
             @endif
         </td>

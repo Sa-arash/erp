@@ -10,7 +10,6 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 class Product extends Model implements HasMedia
 {
     use InteractsWithMedia;
-    /** @use HasFactory<\Database\Factories\ProductFactory> */
     use HasFactory;
     protected $fillable = [
         'title',

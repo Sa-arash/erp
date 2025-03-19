@@ -17,7 +17,7 @@ class ListProducts extends ListRecords
     {
         return [
             Actions\CreateAction::make()->label('New Product'),
-            Actions\Action::make('Set Category')->form([
+            Actions\Action::make('Set Category')->label('Set Categories For Consumable Products')->form([
                 Select::make('accounts')->default(getCompany()->product_accounts)->options(function (){
                     $data=[];
                     $accounts=Account::query()->where('company_id',getCompany()->id)->orderBy('code')->get();
@@ -31,10 +31,10 @@ class ListProducts extends ListRecords
 
                 getCompany()->update(['product_accounts'=>$data['accounts']]);
 
-                Notification::make('accountssuccess')->success()->title('Set accounts successfull')->send();
+                Notification::make('accountssuccess')->success()->title('Set accounts successfully')->send();
             }),
 
-            Actions\Action::make('Set Expense')->form([
+            Actions\Action::make('Set Expense')->label('Set Categories For Unconformable Products')->form([
                 Select::make('expense')->default(getCompany()->product_expence_accounts)->options(function (){
                     $data=[];
                     $accounts=Account::query()->where('company_id',getCompany()->id)->where('group','Expense')->orderBy('code')->get();

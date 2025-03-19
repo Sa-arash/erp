@@ -31,8 +31,8 @@ class WarehouseResource extends Resource
     protected static ?string $navigationGroup = 'Logistic Management';
     protected static ?string $navigationIcon = 'heroicon-c-home-modern';
     protected static ?string $cluster = StackManagementSettings::class;
-    protected static ?string $label="Warehouse (Logistic Setting)";
-    protected static ?string $pluralLabel="Warehouse";
+    protected static ?string $label="Location (Logistic Setting)";
+    protected static ?string $pluralLabel="Location";
 
 
     public static function form(Form $form): Form
@@ -66,7 +66,7 @@ class WarehouseResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
-                Tables\Columns\TextColumn::make('title')->label('Warehouse Name')->searchable(),
+                Tables\Columns\TextColumn::make('title')->label('Location Name')->searchable(),
                 Tables\Columns\TextColumn::make('employee.fullName')->label('Manager')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('phone')->searchable(),
                 Tables\Columns\TextColumn::make('country')->searchable(),
