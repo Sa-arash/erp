@@ -6,9 +6,9 @@ use App\Filament\Admin\Resources\ApprovalResource\Pages;
 use App\Filament\Admin\Resources\ApprovalResource\RelationManagers;
 use App\Models\Approval;
 use App\Models\Employee;
-use App\Models\Payroll;
 use App\Models\Product;
 use App\Models\PurchaseRequestItem;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
@@ -28,12 +28,26 @@ use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 use Illuminate\Support\HtmlString;
 
-class ApprovalResource extends Resource
+class ApprovalResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = Approval::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-check-badge';
 
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
+            'PR Inventory/Stock Clarification',
+            'PR Verification',
+            'PR Approval'
+        ];
+    }
 
     public static function table(Table $table): Table
     {
@@ -42,8 +56,8 @@ class ApprovalResource extends Resource
                 Tables\Columns\TextColumn::make('approvable.employee.info')->label('Employee')->searchable()->badge(),
                 Tables\Columns\TextColumn::make('created_at')->label('Request Date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('approvable_type')->label('Request Type')->state(function ($record) {
-                    $type=substr($record->approvable_type, 11);
-                    if ($type==="Separation"){
+                    $type = substr($record->approvable_type, 11);
+                    if ($type === "Separation") {
                         return "Clearance";
                     }
                     return $type;
@@ -137,11 +151,13 @@ class ApprovalResource extends Resource
                                 TextEntry::make('estimated_unit_cost')->numeric(),
                                 TextEntry::make('project.name')->badge(),
                                 TextEntry::make('description')->columnSpanFull(),
-                                TextEntry::make('head_decision')->badge()->label('Operation Decision'),
-                                TextEntry::make('head_comment')->limit(50)->tooltip(fn($record) => $record->head_comment)->label('Operation Comment'),
-                                TextEntry::make('ceo_decision')->badge()->label('CEO Decision'),
-                                TextEntry::make('ceo_comment')->tooltip(fn($record) => $record->ceo_comment)->label('CEO Comment'),
-                            ])->columns(5)->columnSpanFull(),
+                                TextEntry::make('clarification_decision')->badge()->label('Clarification Decision'),
+                                TextEntry::make('clarification_comment')->limit(50)->tooltip(fn($record) => $record->clarification_comment)->label('Clarification Comment'),
+                                TextEntry::make('verification_decision')->badge()->label('Verification Decision'),
+                                TextEntry::make('verification_comment')->tooltip(fn($record) => $record->verification_decision)->label('Verification Comment'),
+                                TextEntry::make('approval_decision')->badge()->label('Approval Decision'),
+                                TextEntry::make('approval_comment')->tooltip(fn($record) => $record->approval_comment)->label('Approval Comment'),
+                            ])->columns(6)->columnSpanFull(),
                             RepeatableEntry::make('approvals')->schema([
                                 TextEntry::make('employee.fullName'),
                                 TextEntry::make('created_at')->label('Request Date')->date(),
@@ -191,43 +207,41 @@ class ApprovalResource extends Resource
 
                     $record->update(['comment' => $data['comment'], 'status' => $data['status'], 'approve_date' => now()]);
                     $PR = $record->approvable;
+                    $PR->approvals()->whereNot('id', $record->id)->where('position', $record->position)->delete();
                     if ($data['status'] === "NotApprove") {
-                        if ($record->position === "CEO") {
                             $PR->update(['is_quotation' => $data['is_quotation'], 'status' => "Rejected"]);
-                        } else {
-                            $PR->update(['is_quotation' => $data['is_quotation'], 'status' => 'Rejected']);
-                        }
-
                     } else {
-                        if ($record->position === "CEO") {
-                            $PR->update(['is_quotation' => $data['is_quotation'], 'status' => 'FinishedCeo']);
-                        } else {
-                            $PR->update(['is_quotation' => $data['is_quotation'], 'status' => 'FinishedOperation']);
+                        if ($PR->status->name === "Requested") {
+                            $PR->update(['is_quotation' => $data['is_quotation'], 'status' => 'Clarification']);
+
+                        } else if ($PR->status->name === "Clarification") {
+                            $PR->update(['is_quotation' => $data['is_quotation'], 'status' => 'Verification']);
+                        } elseif ($PR->status->name === "Verification") {
+                            $PR->update(['is_quotation' => $data['is_quotation'], 'status' => 'Approval']);
                         }
                     }
                         foreach ($data['items'] as $item) {
                             $item['status'] = $item['decision'] === "reject" ? "rejected" : "approve";
-                            if ($record->position === "CEO") {
-                                $item['ceo_comment'] = $item['comment'];
-                                $item['ceo_decision'] = $item['decision'];
-                            } else {
-                                $item['head_comment'] = $item['comment'];
-                                $item['head_decision'] = $item['decision'];
+                            if ($PR->status->name === "Clarification") {
+                                $item['clarification_comment'] = $item['comment'];
+                                $item['clarification_decision'] = $item['decision'];
+                            } else if ($PR->status->name === "Verification") {
+                                $item['verification_comment'] = $item['comment'];
+                                $item['verification_decision'] = $item['decision'];
+                            } elseif ($PR->status->name === "Approval") {
+                                $item['approval_comment'] = $item['comment'];
+                                $item['approval_decision'] = $item['decision'];
                             }
                             $prItem = PurchaseRequestItem::query()->firstWhere('id', $item['id']);
                             $prItem->update($item);
                         }
                         if ($data['status'] === "Approve") {
-                            if ($record->position !== "CEO") {
-                                $CEO = Employee::query()->firstWhere('user_id', getCompany()->user_id);
-                                $PR->approvals()->create([
-                                    'employee_id' => $CEO->id,
-                                    'company_id' => getCompany()->id,
-                                    'position' => 'CEO',
-                                    'status' => "Pending"
-                                ]);
+                            if ($PR->status->name === "Clarification") {
+                                sendApprove($PR, 'PR Verification_approval');
+                            } else if ($PR->status->name === "Verification") {
+                                sendApprove($PR, 'PR Approval_approval');
                             }
-                    }
+                        }
                 })->visible(function ($record) {
                     if ($record->status->name !== "Approve") {
                         if (substr($record->approvable_type, 11) === "PurchaseRequest") {

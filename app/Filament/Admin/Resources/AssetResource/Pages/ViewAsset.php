@@ -3,7 +3,6 @@
 namespace App\Filament\Admin\Resources\AssetResource\Pages;
 
 use App\Filament\Admin\Resources\AssetResource;
-use Filament\Actions;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
@@ -22,8 +21,8 @@ class ViewAsset extends ViewRecord
                TextEntry::make('serial_number')->badge()->inlineLabel(),
                TextEntry::make('status')->badge()->inlineLabel(),
                TextEntry::make('price')->numeric()->inlineLabel(),
-               TextEntry::make('warehouse.title')->badge()->color('aColor')->inlineLabel(),
-               TextEntry::make('structure.title')->badge()->color('aColor')->inlineLabel(),
+               TextEntry::make('warehouse.title')->badge()->inlineLabel(),
+               TextEntry::make('structure.title')->badge()->label('Location')->inlineLabel(),
                 TextEntry::make('buy_date')->inlineLabel(),
  TextEntry::make('depreciation_years')->inlineLabel(),
  TextEntry::make('depreciation_amount')->inlineLabel(),

@@ -105,7 +105,7 @@ class ProductResource extends Resource
                 ,
 
                 Forms\Components\Textarea::make('description')->columnSpanFull(),
-                MediaManagerInput::make('image')->orderable(false)
+                MediaManagerInput::make('photo')->orderable(false)
                     ->disk('public')
                     ->schema([
                     ])->maxItems(1),

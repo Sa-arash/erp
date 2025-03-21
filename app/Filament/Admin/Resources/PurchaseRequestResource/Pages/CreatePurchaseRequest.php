@@ -12,9 +12,8 @@ class CreatePurchaseRequest extends CreateRecord
     protected static string $resource = PurchaseRequestResource::class;
     public function afterCreate(){
         $request=$this->record;
-        $company=getCompany();
-        $employee=Employee::query()->firstWhere('id',$request->employee_id);
-        sendOperation($employee,$request,$company);
+        sendApprove($request,'PR Inventory/Stock Clarification_approval');
+
 
     }
 }

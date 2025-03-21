@@ -17,14 +17,19 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('quantity');
             $table->float('estimated_unit_cost')->nullable();
-            $table->text('ceo_comment')->nullable();
-            $table->text('head_comment')->nullable();
+            $table->text('clarification_comment')->nullable();
+            $table->text('verification_comment')->nullable();
+            $table->text('approval_comment')->nullable();
 
-            $table->enum('ceo_decision', [
+            $table->enum('clarification_decision', [
                 'approve',
                 'reject',
             ])->nullable();
-            $table->enum('head_decision', [
+            $table->enum('verification_decision', [
+                'approve',
+                'reject',
+            ])->nullable();
+            $table->enum('approval_decision', [
                 'approve',
                 'reject',
             ])->nullable();

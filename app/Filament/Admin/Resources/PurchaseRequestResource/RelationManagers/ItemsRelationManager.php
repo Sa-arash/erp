@@ -59,28 +59,6 @@ class ItemsRelationManager extends RelationManager
                     ->label('Project')
                     ->options(getCompany()->projects->pluck('name', 'id')),
 
-
-                // Forms\Components\Select::make('warehouse_decision')
-                //     ->label('Warehouse Decision')
-                //     ->options([
-                //         'available_in_stock' => 'Available in Stock',
-                //         'needs_purchase' => 'Needs Purchase',
-                //     ])
-                //     ->default('needs_purchase')
-                //     ->required(),
-
-                // Forms\Components\Select::make('status')
-                //     ->label('Status')
-                //     ->options([
-                //         'purchased' => 'Purchased',
-                //         'assigned' => 'Assigned',
-                //         'not_purchased' => 'Not Purchased',
-                //         'rejected' => 'Rejected',
-                //     ])
-                //     ->default('not_purchased')
-                //     ->required(),
-
-
                 Forms\Components\Hidden::make('company_id')
                     ->default(Filament::getTenant()->id)
                     ->required(),
@@ -101,10 +79,12 @@ class ItemsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('estimated_unit_cost')->numeric(),
                 Tables\Columns\TextColumn::make('total')->state(fn ($record) => $record->estimated_unit_cost * $record->quantity)->numeric(),
                 Tables\Columns\TextColumn::make('project.name'),
-                Tables\Columns\TextColumn::make('head_decision')->label('HOD Decision')->badge(),
-                Tables\Columns\TextColumn::make('head_comment')->label('HOD Comment')->badge(),
-                Tables\Columns\TextColumn::make('ceo_decision')->label('CEO Decision')->badge(),
-                Tables\Columns\TextColumn::make('ceo_comment')->label('CEO Comment')->badge(),
+                Tables\Columns\TextColumn::make('clarification_decision')->label('Clarification Decision')->alignCenter()->badge(),
+                Tables\Columns\TextColumn::make('clarification_comment')->label('Clarification Comment'),
+                Tables\Columns\TextColumn::make('verification_decision')->label('Verification Decision')->alignCenter()->badge(),
+                Tables\Columns\TextColumn::make('verification_comment')->label('Verification Comment'),
+                Tables\Columns\TextColumn::make('approval_decision')->label('Approval Decision')->alignCenter()->badge(),
+                Tables\Columns\TextColumn::make('approval_comment')->label('Approval Comment'),
                 Tables\Columns\TextColumn::make('status')->badge(),
 
             ])

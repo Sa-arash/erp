@@ -102,7 +102,10 @@ class AssetResource extends Resource
                         ->placeholder('Enter amount'),
 
                     Forms\Components\Hidden::make('status')->default('inStorageUsable')->required(),
-                    KeyValue::make('attributes')->keyLabel('title')->columnSpanFull(),
+                    Forms\Components\Repeater::make('attributes')->defaultItems(0)->addActionLabel('Add To  Attribute')->schema([
+                        Forms\Components\TextInput::make('title')->required(),
+                        Forms\Components\TextInput::make('value')->required(),
+                    ])->columnSpanFull()->columns()
                 ])->columns(4)->columnSpanFull()->collapsed()->default(function () {
                     if (isset($_GET['po'])) {
                         $asset = Asset::query()->where('company_id', getCompany()->id)->latest()->first();
@@ -294,7 +297,6 @@ class AssetResource extends Resource
                             ->label('Depreciation Amount')
                             ->numeric()
                             ->mask(RawJs::make('$money($input)'))->stripCharacters(',')
-                            ->required()
                             ->placeholder('Enter amount'),
 
                         Forms\Components\Select::make('status')->default('inStorageUsable')->options(['inuse' => "Inuse", 'inStorageUsable' => "InStorageUsable", 'storageUnUsable' => "StorageUnUsable", 'outForRepair' => "OutForRepair", 'loanedOut' => "LoanedOut"])->required()->searchable(),

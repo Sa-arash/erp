@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Widgets;
 use App\Filament\Admin\Resources\PurchaseRequestResource\Pages\ViewPurcheseRequest;
 use App\Models\Employee;
 use App\Models\PurchaseRequest;
+use App\Models\Separation;
 use App\Models\Structure;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\DatePicker;
@@ -28,6 +29,7 @@ use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 use Illuminate\Validation\Rules\Unique;
+use Spatie\Permission\Models\Role;
 
 class MyPurchaseRequest extends BaseWidget
 {
@@ -167,33 +169,7 @@ class MyPurchaseRequest extends BaseWidget
                         $requestedItem['company_id']=$company->id;
                         $request->items()->create($requestedItem);
                     }
-                    if (getOperation()){
-                        if (getOperation()->id ===$employee->id){
-                            $request->approvals()->create([
-                                'employee_id'=>getOperation()->id,
-                                'company_id'=>$company->id,
-                                'position'=>'Operation',
-                                'status'=>"Approve",
-                                'approve_date'=>now()
-                            ]);
-                            $request->update(['status'=>'FinishedOperation']);
-                            $CEO=Employee::query()->firstWhere('user_id',$company->user_id);
-                            $request->approvals()->create([
-                                'employee_id'=>$CEO->id,
-                                'company_id'=>$company->id,
-                                'position'=>'CEO',
-                                'status'=>"Pending"
-                            ]);
-
-                        }else{
-                            $request->approvals()->create([
-                                'employee_id'=>getOperation()?->id,
-                                'company_id'=>$company->id,
-                                'position'=>'Operation'
-                            ]);
-                        }
-                    }
-
+                  sendApprove($request,'PR Inventory/Stock Clarification_approval');
                 })
             ])
 

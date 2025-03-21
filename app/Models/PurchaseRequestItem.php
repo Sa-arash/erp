@@ -15,15 +15,17 @@ class PurchaseRequestItem extends Model
         'description',
         'quantity',
         'estimated_unit_cost',
-        'ceo_comment',
-        'ceo_decision',
         'status',
         'unit_id',
-        'head_comment',
-        'head_decision',
         'purchase_request_id',
         'project_id',
         'company_id',
+        'clarification_comment',
+        'verification_comment',
+        'approval_comment',
+        'clarification_decision',
+        'verification_decision',
+        'approval_decision',
     ];
     protected $casts=[
         'status'=>ItemStatus::class

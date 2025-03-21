@@ -17,7 +17,7 @@ class Login extends \Filament\Pages\Auth\Login
                         $this->getEmailFormComponent(),
                         $this->getPasswordFormComponent(),
                         $this->getRememberFormComponent(),
-                        GRecaptcha::make('captcha')
+//                        GRecaptcha::make('captcha')
                     ])
                     ->statePath('data'),
             ),

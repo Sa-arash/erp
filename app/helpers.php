@@ -9,6 +9,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\Section;
 use Filament\Notifications\Notification;
 use Filament\Support\RawJs;
+use Spatie\Permission\Models\Role;
 
 function getCompany(): ?\Illuminate\Database\Eloquent\Model
 {
@@ -815,4 +816,27 @@ function getAllPermission(): array
 {
     $roll=\Spatie\Permission\Models\Role::query()->firstWhere('id',7);
     return $roll->permissions->pluck('id')->toArray();
+}
+
+function sendApprove($record, $permission){
+    $company=getCompany();
+    $roles=Role::query()->with('users')->whereHas('permissions',function ($query)use($permission){
+        return $query->where('name',$permission);
+    })->where('company_id',$company->id)->get();
+    $userIDs=[];
+
+    foreach ($roles as $role){
+        foreach ($role->users->pluck('id')->toArray() as $userID ){
+            $userIDs[]=$userID ;
+        }
+    }
+    $employees= Employee::query()->whereIn('user_id',$userIDs)->where('company_id',$company->id)->get();
+    foreach ($employees as $employee){
+        $record->approvals()->create([
+            'employee_id' => $employee->id,
+            'company_id' => $company->id,
+            'position' => str_replace('_approval','',$permission),
+            'status' => "Pending"
+        ]);
+    }
 }
