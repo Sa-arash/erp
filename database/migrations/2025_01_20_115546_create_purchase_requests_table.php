@@ -24,6 +24,7 @@ return new class extends Migration
             'Clarification',
             'Verification',
             'Approval',
+            'Finished',
             'Rejected',
         ])->default('Requested');
 

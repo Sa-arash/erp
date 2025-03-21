@@ -46,7 +46,7 @@ class ProductResource extends Resource
                             }
                         })
                     ->required()->maxLength(255),
-                    Select::make('product_type')->searchable()->options(['consumable' => 'consumable', 'unConsumable' => 'unConsumable'])->default('consumable')
+                    Select::make('product_type')->searchable()->options(['consumable' => 'consumable', 'unConsumable' => 'non-consumable'])->default('consumable')
                     ->live()->afterStateUpdated(function(Set $set){
                         $set('account_id',null);
                     }),
@@ -150,7 +150,7 @@ class ProductResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+//                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

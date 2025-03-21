@@ -417,9 +417,9 @@ class PurchaseOrderResource extends Resource
                                                 return $get('isCurrency');
                                             })
                                             ->live(true)->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
-                                                
+
                                                     $set('cheque.amount', $state);
-                                                
+
                                             })
                                             ->mask(RawJs::make('$money($input)'))->stripCharacters(',')
                                             ->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)
@@ -528,7 +528,7 @@ class PurchaseOrderResource extends Resource
                                                     if ($get('debtor') > 0) {
                                                         return $get('debtor');
                                                     }
-                                                    else 
+                                                    else
                                                     if ($get('creditor') > 0) {
                                                         return $get('creditor');
                                                     } else {
@@ -666,8 +666,11 @@ class PurchaseOrderResource extends Resource
 
             ], getModelFilter())
             ->actions([
+
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('GRN')->label('GRN')->url(fn($record) => AssetResource::getUrl('create', ['po' => $record->id]))
+                Tables\Actions\Action::make('GRN')->label('GRN')->url(fn($record) => AssetResource::getUrl('create', ['po' => $record->id])),
+//                Tables\Actions\DeleteAction::make()->visible(fn($record)=>$record->status==="pending" )
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

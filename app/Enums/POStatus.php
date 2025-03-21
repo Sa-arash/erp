@@ -12,6 +12,7 @@ enum POStatus:string implements HasColor,HasLabel
     case Clarification = 'Clarification';
     case Verification = 'Verification';
     case Approval = 'Approval';
+    case Finished = 'Finished';
     case Rejected = 'Rejected';
     public function getLabel(): ?string
     {
@@ -20,6 +21,7 @@ enum POStatus:string implements HasColor,HasLabel
             self::Clarification => 'Clarification',
             self::Verification => 'Verification',
             self::Approval => 'Approval',
+            self::Finished => 'Finished',
             self::Rejected => 'Rejected',
         };
     }
@@ -30,6 +32,7 @@ enum POStatus:string implements HasColor,HasLabel
             self::Clarification => 'success',
             self::Verification => 'success',
             self::Approval => 'success',
+            self::Finished => 'success',
             self::Rejected => 'danger',
         };
     }

@@ -415,7 +415,7 @@ class PurchaseRequestResource extends Resource
                     Tables\Actions\Action::make('prPDF')->label('PR ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.purchase', ['id' => $record->id]))->openUrlInNewTab(),
                 ]),
 
-
+                Tables\Actions\DeleteAction::make()->visible(fn($record)=>$record->status->name==="Requested" )
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([]),
