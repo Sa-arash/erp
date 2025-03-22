@@ -138,7 +138,13 @@ class PayrollResource extends Resource
                                     $dayCount = Carbon::create($startDate)->daysInMonth;
                                     $dailySalary =$employee->base_salary /$dayCount ;
                                 }
-                                $hoursPay = $dailySalary / $company->daily_working_hours;
+
+                                if ($dailySalary and $company->daily_working_hours ){
+                                    $hoursPay = $dailySalary / $company->daily_working_hours;
+                                }else{
+                                    $hoursPay=0;
+                                    Notification::make('error')->danger()->title('Daily Salary Or Company is Zero')->send();
+                                }
                                 $totalAllowance = number_format(($overtimes * $hoursPay) * $company->overtime_rate, 2) . $company->currency;
                                 $contentOvertime = "
                                 <div style='color: green; display: flex; border: 1px solid whitesmoke; text-align: center; width: 48%;'>
@@ -458,7 +464,12 @@ class PayrollResource extends Resource
                                     $dayCount = Carbon::create($data['year'], $data['month'] + 1, 1)->daysInMonth;
                                     $dailySalary =$employee->base_salary /$dayCount ;
                                 }
-                                $hoursPay = $dailySalary / $company->daily_working_hours;
+                                if ($dailySalary and $company->daily_working_hours ){
+                                    $hoursPay = $dailySalary / $company->daily_working_hours;
+                                }else{
+                                    $hoursPay=0;
+                                    Notification::make('error')->danger()->title('Daily Salary Or Company is Zero')->send();
+                                }
                                 $totalOvertime = ($overtimes * $hoursPay) * $company->overtime_rate;
                             }else{
 
