@@ -48,8 +48,8 @@
         <td style="text-align: left">PR No: {{$pr->purchase_number}}</td>
     </tr>
     <tr>
-        <td style="text-align: left">Employee Name: {{$pr->employee?->fullName}}</td>
-        <td style="text-align: left">Employee
+        <td style="text-align: left">Requestor Name: {{$pr->employee?->fullName}}</td>
+        <td style="text-align: left">
 
              Position: {{$pr->employee?->position?->title}}</td>
     </tr>
@@ -68,8 +68,8 @@
 <table>
     <thead>
     <tr>
+        <th>NO</th>
         <th>SKU</th>
-
         <th>Unit</th>
         <th>Qty</th>
         <th>EST Cost</th>
@@ -81,7 +81,7 @@
     @php
         $totalEstimated=0;
         $totalBudget=0;
-
+        $i=1;
     @endphp
     @foreach($pr->items as $item)
         @php
@@ -89,6 +89,7 @@
             $totalBudget+=$item->quantity *$item->estimated_unit_cost;
         @endphp
         <tr>
+            <td rowspan="2">{{$i++}}</td>
             <td>{{$item->product->title."-".$item->product?->sku}}</td>
             <td>{{$item->unit->title}}</td>
             <td>{{$item->quantity}}</td>
@@ -103,7 +104,7 @@
     </tbody>
     <tfoot>
     <tr>
-        <td colspan="3">Total Cost</td>
+        <td colspan="4">Total Cost</td>
         <td>{{number_format($totalEstimated)}}</td>
         <td>{{number_format($totalBudget)   }}</td>
         <td></td>

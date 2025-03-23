@@ -9,6 +9,7 @@ use App\Models\Separation;
 use App\Models\Structure;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
@@ -109,10 +110,12 @@ class MyPurchaseRequest extends BaseWidget
             TextEntry::make('estimated_unit_cost')->numeric(),
             TextEntry::make('project.name')->badge(),
             TextEntry::make('description')->columnSpanFull(),
-            TextEntry::make('head_decision')->badge()->label('Head Of Department Decision'),
-            TextEntry::make('head_comment')->tooltip(fn($record)=>$record->head_comment)->label('Head Of Department Comment')->badge(),
-            TextEntry::make('ceo_decision')->badge()->label('CEO Decision'),
-            TextEntry::make('ceo_comment')->tooltip(fn($record)=>$record->ceo_comment)->badge()->label('CEO Comment'),
+            TextEntry::make('clarification_decision')->badge()->label('Clarification Decision'),
+            TextEntry::make('clarification_comment')->limit(50)->tooltip(fn($record) => $record->clarification_comment)->label('Clarification Comment'),
+            TextEntry::make('verification_decision')->badge()->label('Verification Decision'),
+            TextEntry::make('verification_comment')->tooltip(fn($record) => $record->verification_decision)->label('Verification Comment'),
+            TextEntry::make('approval_decision')->badge()->label('Approval Decision'),
+            TextEntry::make('approval_comment')->tooltip(fn($record) => $record->approval_comment)->label('Approval Comment'),
         ])->columns(5),
         RepeatableEntry::make('approvals')->schema([
             TextEntry::make('employee.fullName'),
@@ -134,7 +137,7 @@ class MyPurchaseRequest extends BaseWidget
                                 return "0001";
                             }
                         })->readOnly()->label('PR Number')->unique(modifyRuleUsing: function (Unique $rule) {return $rule->where('company_id', getCompany()->id);})->unique('purchase_requests', 'purchase_number')->required()->numeric(),
-                        DatePicker::make('request_date')->default(now())->label('Request Date')->required(),
+                        DateTimePicker::make('request_date')->readOnly()->afterOrEqual(now())->default(now())->label('Request Date')->required(),
                         Select::make('currency_id')->live()->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload(),
                         Textarea::make('description')->columnSpanFull()->label('Description'),
                         Repeater::make('Requested Items')

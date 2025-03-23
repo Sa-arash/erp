@@ -62,7 +62,7 @@ class PurchaseRequestResource extends Resource
                         ->options(getCompany()->employees->pluck('fullName', 'id'))
                         ->default(fn() => auth()->user()->employee->id),
 
-                    Forms\Components\TextInput::make('purchase_number')
+                    Forms\Components\TextInput::make('purchase_number')->readOnly()
                         ->label('PR Number')->default(function () {
                             $puncher = PurchaseRequest::query()->where('company_id', getCompany()->id)->latest()->first();
                             if ($puncher) {
@@ -76,9 +76,9 @@ class PurchaseRequestResource extends Resource
                         })
                         ->required()
                         ->numeric(),
-                    Forms\Components\DatePicker::make('request_date')->default(now())->label('Request Date')->required(),
+                    Forms\Components\DateTimePicker::make('request_date')->readOnly()->afterOrEqual(now())->default(now())->label('Request Date')->required(),
                     Forms\Components\Hidden::make('status')->label('Status')->default('Requested')->required(),
-                    getSelectCurrency(),
+                    Select::make('currency_id')->live()->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload(),
                     Forms\Components\TextInput::make('description')->label('Description')->columnSpanFull(),
                     Repeater::make('Requested Items')
                         ->addActionLabel('Add')
@@ -100,7 +100,7 @@ class PurchaseRequestResource extends Resource
                             Forms\Components\TextInput::make('quantity')->required()->live()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
 
                             Forms\Components\TextInput::make('estimated_unit_cost')
-                                ->label('Estimated Unit Cost')->live(true)
+                                ->label('EST Unit Cost')->live(true)
                                 ->numeric()->required()
                                 ->mask(RawJs::make('$money($input)'))
                                 ->stripCharacters(','),
@@ -146,16 +146,21 @@ class PurchaseRequestResource extends Resource
     {
         return $table->defaultSort('request_date', 'desc')
             ->columns([
-                Tables\Columns\TextColumn::make('')->rowIndex(),
+                Tables\Columns\TextColumn::make('')->rowIndex()->label('NO'),
+                Tables\Columns\TextColumn::make('description')->tooltip(fn($record)=>$record->description)->limit(30),
                 Tables\Columns\TextColumn::make('purchase_number')->label('PR NO')->searchable(),
-                Tables\Columns\TextColumn::make('request_date')->date()->sortable(),
-                Tables\Columns\TextColumn::make('employee.fullName')->searchable(),
+                Tables\Columns\TextColumn::make('request_date')->dateTime('Y/m/d H:i')->sortable(),
+                Tables\Columns\TextColumn::make('employee.fullName')->tooltip(fn($record)=>$record->employee->position->title)
+//                    ->state(function ($record){
+//                    $record->
+//                })
+                    ->label('Requestor')->searchable(),
                 Tables\Columns\TextColumn::make('department')->state(fn($record) => $record->employee->department->title),
                 // Tables\Columns\TextColumn::make('location')->state(fn($record) => $record->employee?->structure?->title)->numeric()->sortable(),
-                Tables\Columns\TextColumn::make('status'),
+                Tables\Columns\TextColumn::make('status')->badge(),
                 Tables\Columns\TextColumn::make('bid.quotation.party.name')->label('Vendor'),
-                Tables\Columns\TextColumn::make('total')->label('Total Estimated')
-                    ->label('Total(' . defaultCurrency()?->symbol . ")")
+                Tables\Columns\TextColumn::make('total')->alignCenter()->label('Total EST Price'."(". defaultCurrency()?->symbol . ")")
+
                     ->state(function ($record) {
                         $total = 0;
                         foreach ($record->items as $item) {
@@ -163,24 +168,20 @@ class PurchaseRequestResource extends Resource
                         }
                         return $total;
                     })->numeric(),
-                Tables\Columns\TextColumn::make('bid.total_cost')->label('Total Price')->numeric(),
+                Tables\Columns\TextColumn::make('bid.total_cost')->alignCenter()->label('Total Final Price'." ( ".defaultCurrency()?->symbol." )")->numeric(),
 
             ])
 
             ->filters([
 
-                SelectFilter::make('purchase_number')->searchable()->preload()->options(PurchaseRequest::where('company_id', getCompany()->id)->get()->pluck('purchase_number', 'id'))
+                SelectFilter::make('employee_id')->label('Requestor')->options(getCompany()->employees->pluck('fullName','id'))->searchable()->preload(),
+                SelectFilter::make('id')->searchable()->preload()->options(PurchaseRequest::where('company_id', getCompany()->id)->get()->pluck('purchase_number', 'id'))
                     ->label("PR NO"),
-                SelectFilter::make('vendor_id')->searchable()->preload()->options(Parties::where('company_id', getCompany()->id)->where('account_code_vendor', '!=', null)->get()->pluck('name', 'id'))
-                    ->label("Vendor"),
+//                SelectFilter::make('bid.vendor_id')->searchable()->preload()->options(Parties::where('company_id', getCompany()->id)->where('account_code_vendor', '!=', null)->get()->pluck('name', 'id'))
+//                    ->label("Vendor"),
                 DateRangeFilter::make('request_date'),
-
-
-
-
             ], getModelFilter())
             ->actions([
-                Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('Order')
                 ->disabled(fn()=>getPeriod()===null)->tooltip(fn()=>getPeriod()!==null?:'Financial Period Required')

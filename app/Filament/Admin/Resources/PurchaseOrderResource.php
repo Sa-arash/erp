@@ -138,7 +138,7 @@ class PurchaseOrderResource extends Resource
                                     ->options(getCompany()->purchaseRequests->pluck('purchase_number', 'id')),
 
                                 Forms\Components\DatePicker::make('date_of_po')->default(now())
-                                    ->label('Date of PO')
+                                    ->label('Date of PO')->afterOrEqual(now())
                                     ->required(),
 
                                 Forms\Components\Select::make('vendor_id')->label('Vendor')
@@ -178,7 +178,7 @@ class PurchaseOrderResource extends Resource
                                 Forms\Components\Select::make('prepared_by')->live()
                                     ->searchable()
                                     ->preload()
-                                    ->required()
+                                    ->required()->label('Processed By')
                                     ->options(getCompany()->employees->pluck('fullName', 'id'))
                                     ->default(fn() => auth()->user()->employee->id),
 

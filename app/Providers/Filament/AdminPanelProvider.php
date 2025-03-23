@@ -142,10 +142,10 @@ class AdminPanelProvider extends PanelProvider
 
 
         return $panel->brandName(fn()=>getCompany()?->title? getCompany()?->title." -ERP":"ERP System")
-            ->id('admin')->maxContentWidth(MaxWidth::Full)->favicon(asset('img/my.png'))
+            ->id('admin')->maxContentWidth(MaxWidth::Full)
             ->path('admin')->sidebarCollapsibleOnDesktop()
             ->login(Login::class)
-            // ->favicon(fn()=>(asset('images/' . Company::first()?->logo)))
+             ->favicon(fn()=>( getCompany()?->logo ? asset('images/' .getCompany()?->logo ):asset('img/my.png')))
             ->font(
                 'Inter',
                 url: asset('css/app/custom-stylesheet.css'),
