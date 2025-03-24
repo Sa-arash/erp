@@ -23,7 +23,7 @@ class ItemsRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('product_id')->label('Product')->options(function () {
+                Forms\Components\Select::make('product_id')->label('Product/Service')->options(function () {
                     $products = getCompany()->products;
                     $data = [];
                     foreach ($products as $product) {
@@ -72,7 +72,7 @@ class ItemsRelationManager extends RelationManager
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('product.sku')->label('SKU'),
-                Tables\Columns\TextColumn::make('product.title'),
+                Tables\Columns\TextColumn::make('product.title')->label('Product/Service'),
                 Tables\Columns\TextColumn::make('description'),
                 Tables\Columns\TextColumn::make('unit.title'),
                 Tables\Columns\TextColumn::make('quantity'),

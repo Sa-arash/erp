@@ -16,7 +16,7 @@ class ListProductServices extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\CreateAction::make()->label('New Service'),
             Actions\Action::make('Set Expense')->label('Set Categories For Service')->form([
                 Select::make('expense')->default(getCompany()->product_service_accounts)->options(function (){
                     $data=[];

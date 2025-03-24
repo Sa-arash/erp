@@ -84,7 +84,7 @@ class PurchaseRequestResource extends Resource
                         ->addActionLabel('Add')
                         ->relationship('items')
                         ->schema([
-                            Forms\Components\Select::make('product_id')
+                            Forms\Components\Select::make('product_id')->label('Product/Service')
                                 ->label('Product')->options(function () {
                                     return getCompany()->products->pluck('info', 'id');
                                 })->required()->searchable()->preload(),

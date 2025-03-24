@@ -3,10 +3,10 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\Product;
+use TomatoPHP\FilamentMediaManager\Models\Media;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class ProductPolicy
+class MediaPolicy
 {
     use HandlesAuthorization;
 
@@ -15,15 +15,15 @@ class ProductPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_product::service');
+        return $user->can('view_any_media');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Product $product): bool
+    public function view(User $user, Media $media): bool
     {
-        return $user->can('view_product::service');
+        return $user->can('view_media');
     }
 
     /**
@@ -31,23 +31,23 @@ class ProductPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_product::service');
+        return $user->can('create_media');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Product $product): bool
+    public function update(User $user, Media $media): bool
     {
-        return $user->can('update_product::service');
+        return $user->can('update_media');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Product $product): bool
+    public function delete(User $user, Media $media): bool
     {
-        return $user->can('delete_product::service');
+        return $user->can('delete_media');
     }
 
     /**
@@ -55,15 +55,15 @@ class ProductPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_product::service');
+        return $user->can('delete_any_media');
     }
 
     /**
      * Determine whether the user can permanently delete.
      */
-    public function forceDelete(User $user, Product $product): bool
+    public function forceDelete(User $user, Media $media): bool
     {
-        return $user->can('force_delete_product::service');
+        return $user->can('force_delete_media');
     }
 
     /**
@@ -77,9 +77,9 @@ class ProductPolicy
     /**
      * Determine whether the user can restore.
      */
-    public function restore(User $user, Product $product): bool
+    public function restore(User $user, Media $media): bool
     {
-        return $user->can('restore_product::service');
+        return $user->can('restore_media');
     }
 
     /**
@@ -93,7 +93,7 @@ class ProductPolicy
     /**
      * Determine whether the user can replicate.
      */
-    public function replicate(User $user, Product $product): bool
+    public function replicate(User $user, Media $media): bool
     {
         return $user->can('{{ Replicate }}');
     }

@@ -9,4 +9,6 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateProductService extends CreateRecord
 {
     protected static string $resource = ProductServiceResource::class;
+    protected static ?string $title='New Service';
+
 }
