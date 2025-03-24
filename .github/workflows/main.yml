@@ -11,8 +11,8 @@ jobs:
     - name: 📂 Sync files
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
-        server: erp3.bit.af
-        username: erp3bit
+        server: erp4.bit.af
+        username: erp4bit
         password: ${{ secrets.ftp_pass }}
         server-dir: /public_html/
 
