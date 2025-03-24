@@ -15,6 +15,7 @@ use App\Models\Unit;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Facades\Filament;
 use Filament\Forms;
+use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
@@ -27,6 +28,7 @@ use Filament\Support\Enums\IconSize;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Support\RawJs;
 use Filament\Tables;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\HtmlString;
@@ -46,7 +48,7 @@ class PurchaseRequestResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-c-document-arrow-down';
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::where('status','Requested')->count();
+        return static::getModel()::where('status', 'Requested')->count();
     }
 
     public static function form(Form $form): Form
@@ -76,7 +78,7 @@ class PurchaseRequestResource extends Resource
                         })
                         ->required()
                         ->numeric(),
-                    Forms\Components\DateTimePicker::make('request_date')->readOnly()->afterOrEqual(now())->default(now())->label('Request Date')->required(),
+                    Forms\Components\DateTimePicker::make('request_date')->readOnly()->default(now())->label('Request Date')->required(),
                     Forms\Components\Hidden::make('status')->label('Status')->default('Requested')->required(),
                     Select::make('currency_id')->live()->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload(),
                     Forms\Components\TextInput::make('description')->label('Description')->columnSpanFull(),
@@ -147,19 +149,19 @@ class PurchaseRequestResource extends Resource
         return $table->defaultSort('request_date', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex()->label('NO'),
-                Tables\Columns\TextColumn::make('description')->tooltip(fn($record)=>$record->description)->limit(30),
+                Tables\Columns\TextColumn::make('description')->tooltip(fn($record) => $record->description)->limit(30),
                 Tables\Columns\TextColumn::make('purchase_number')->label('PR NO')->searchable(),
                 Tables\Columns\TextColumn::make('request_date')->dateTime('Y/m/d H:i')->sortable(),
-                Tables\Columns\TextColumn::make('employee.fullName')->tooltip(fn($record)=>$record->employee->position->title)
-//                    ->state(function ($record){
-//                    $record->
-//                })
+                Tables\Columns\TextColumn::make('employee.fullName')->tooltip(fn($record) => $record->employee->position->title)
+                    //                    ->state(function ($record){
+                    //                    $record->
+                    //                })
                     ->label('Requestor')->searchable(),
                 Tables\Columns\TextColumn::make('department')->state(fn($record) => $record->employee->department->title),
                 // Tables\Columns\TextColumn::make('location')->state(fn($record) => $record->employee?->structure?->title)->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('status')->badge(),
                 Tables\Columns\TextColumn::make('bid.quotation.party.name')->label('Vendor'),
-                Tables\Columns\TextColumn::make('total')->alignCenter()->label('Total EST Price'."(". defaultCurrency()?->symbol . ")")
+                Tables\Columns\TextColumn::make('total')->alignCenter()->label('Total EST Price' . "(" . defaultCurrency()?->symbol . ")")
 
                     ->state(function ($record) {
                         $total = 0;
@@ -168,23 +170,40 @@ class PurchaseRequestResource extends Resource
                         }
                         return $total;
                     })->numeric(),
-                Tables\Columns\TextColumn::make('bid.total_cost')->alignCenter()->label('Total Final Price'." ( ".defaultCurrency()?->symbol." )")->numeric(),
+                Tables\Columns\TextColumn::make('bid.total_cost')->alignCenter()->label('Total Final Price' . " ( " . defaultCurrency()?->symbol . " )")->numeric(),
 
             ])
 
             ->filters([
 
-                SelectFilter::make('employee_id')->label('Requestor')->options(getCompany()->employees->pluck('fullName','id'))->searchable()->preload(),
+                SelectFilter::make('employee_id')->label('Requestor')->options(getCompany()->employees->pluck('fullName', 'id'))->searchable()->preload(),
                 SelectFilter::make('id')->searchable()->preload()->options(PurchaseRequest::where('company_id', getCompany()->id)->get()->pluck('purchase_number', 'id'))
                     ->label("PR NO"),
-//                SelectFilter::make('bid.vendor_id')->searchable()->preload()->options(Parties::where('company_id', getCompany()->id)->where('account_code_vendor', '!=', null)->get()->pluck('name', 'id'))
-//                    ->label("Vendor"),
+
+                    Filter::make('vendor')
+                    ->form([
+                        Select::make('vendor_id')
+                            ->options(Parties::where('company_id', getCompany()->id)
+                                ->whereNotNull('account_code_vendor')
+                                ->pluck('name', 'id'))
+                            ->label("Vendor")->searchable()->preload(),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query->when(
+                            $data['vendor_id'],
+                            fn(Builder $query, $vendorId): Builder => $query->whereHas('bid.quotation.party', function (Builder $query) use ($vendorId) {
+                                $query->where('id', $vendorId);
+                            })
+                        );
+                    }),
+
                 DateRangeFilter::make('request_date'),
+
             ], getModelFilter())
             ->actions([
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('Order')
-                ->disabled(fn()=>getPeriod()===null)->tooltip(fn()=>getPeriod()!==null?:'Financial Period Required')
+                    ->disabled(fn() => getPeriod() === null)->tooltip(fn() => getPeriod() !== null ?: 'Financial Period Required')
                     ->visible(fn($record) => $record->status->value == 'FinishedCeo')
                     ->icon('heroicon-s-shopping-cart')
                     ->url(fn($record) => PurchaseOrderResource::getUrl('create') . "?prno=" . $record->id),
@@ -416,7 +435,7 @@ class PurchaseRequestResource extends Resource
                     Tables\Actions\Action::make('prPDF')->label('PR ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.purchase', ['id' => $record->id]))->openUrlInNewTab(),
                 ]),
 
-                Tables\Actions\DeleteAction::make()->visible(fn($record)=>$record->status->name==="Requested" )
+                Tables\Actions\DeleteAction::make()->visible(fn($record) => $record->status->name === "Requested")
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([]),
