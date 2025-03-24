@@ -104,7 +104,7 @@ class MyPurchaseRequest extends BaseWidget
             TextEntry::make('description')->columnSpanFull()->label('Description'),
         ])->columns(3),
         RepeatableEntry::make('items')->schema([
-            TextEntry::make('product.info')->badge(),
+            TextEntry::make('product.info')->label('Product/Service')->badge(),
             TextEntry::make('unit.title')->badge(),
             TextEntry::make('quantity'),
             TextEntry::make('estimated_unit_cost')->numeric(),
@@ -137,13 +137,13 @@ class MyPurchaseRequest extends BaseWidget
                                 return "0001";
                             }
                         })->readOnly()->label('PR Number')->unique(modifyRuleUsing: function (Unique $rule) {return $rule->where('company_id', getCompany()->id);})->unique('purchase_requests', 'purchase_number')->required()->numeric(),
-                        DateTimePicker::make('request_date')->readOnly()->afterOrEqual(now())->default(now())->label('Request Date')->required(),
+                        DateTimePicker::make('request_date')->readOnly()->default(now())->label('Request Date')->required(),
                         Select::make('currency_id')->live()->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload(),
                         Textarea::make('description')->columnSpanFull()->label('Description'),
                         Repeater::make('Requested Items')
                         ->addActionLabel('Add Item')
                             ->schema([
-                                Select::make('product_id')->searchable()->preload()->label('Product')->options(function (){
+                                Select::make('product_id')->searchable()->preload()->label('Product/Service')->options(function (){
                                     $data=[];
                                     foreach (getCompany()->products as $product){
                                         $data[$product->id]=$product->info;

@@ -561,6 +561,7 @@ function generateNextCodeAsset($code): string
 
 function generateNextCodeProduct($code): string
 {
+
     if (preg_match('/^([A-Za-z]+)(\d+)$/', $code, $matches)) {
 
         $prefix = $matches[1]; // پیشوند (مثلاً IT یا هر چیز دیگر)
@@ -575,7 +576,10 @@ function generateNextCodeProduct($code): string
         // ترکیب پیشوند و عدد جدید
         return $prefix . $nextNumberFormatted;
     } else {
-        return '0001';
+        $lastNumber = $code;
+        $lastNumber = (int)$lastNumber;
+        $nextNumber = $lastNumber + 1;
+        return str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
     }
 }
 

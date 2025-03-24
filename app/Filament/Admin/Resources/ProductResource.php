@@ -123,7 +123,7 @@ class ProductResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
+        return $table->query(Product::query()->whereIn('product_type',['unConsumable','consumable']))
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\ImageColumn::make('image')->defaultImageUrl(asset('img/images.jpeg'))->state(function ($record){

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('title', 255);
             $table->string('image', 255)->nullable();
-            $table->enum('product_type', ['consumable', 'unConsumable']);
+            $table->enum('product_type', ['consumable', 'unConsumable','service']);
             $table->integer('stock_alert_threshold')->nullable();
             $table->string('sku')->nullable();
             $table->text('description')->nullable();
