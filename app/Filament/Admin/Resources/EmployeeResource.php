@@ -437,7 +437,7 @@ class EmployeeResource extends Resource
                                 ->required()
                                 ->maxLength(255),
 
-                        ])->addActionLabel('Add Attachment'),
+                        ])->addActionLabel('Add Attachment')->columns(2)->columnSpanFull(),
                 ])->columns(2),
             Forms\Components\Wizard\Step::make('Bank Information')
                 ->schema([

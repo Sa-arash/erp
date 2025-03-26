@@ -49,6 +49,7 @@ class  DatabaseSeeder extends Seeder
             'name' => 'CEO',
             'email' => 'ceo@gmail.com',
             'password' => 'admin',
+            'is_super'=>1
         ]);
 
         Company::factory()->create([

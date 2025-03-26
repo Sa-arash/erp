@@ -78,7 +78,7 @@ class EmployeeProfile extends Page implements HasForms, HasInfolists
                     $record->employee->update([
                         'email' => $data['email']??$record->employee->email,
                     ]);
-                    Notification::make('successfull')->success()->title('Success Full')->send()->sendToDatabase(auth()->user());
+                    Notification::make('successfull')->success()->title('Successfully')->send()->sendToDatabase(auth()->user());
                 }),
             Action::make('separation')->label('Clearance')->form([
                 DatePicker::make('date')->default(now())->label('Date of Resignation ')->required(),

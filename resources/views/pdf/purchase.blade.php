@@ -70,10 +70,11 @@
     <tr>
         <th>NO</th>
         <th>SKU</th>
+        <th>Description</th>
         <th>Unit</th>
         <th>Qty</th>
         <th>EST Cost</th>
-        <th>Total EST Cost</th>
+        <th>TES</th>
         <th>Stock In</th>
     </tr>
     </thead>
@@ -88,23 +89,27 @@
             $totalEstimated+=$item->estimated_unit_cost;
             $totalBudget+=$item->quantity *$item->estimated_unit_cost;
         @endphp
+
+
         <tr>
-            <td rowspan="2">{{$i++}}</td>
-            <td>{{$item->product->title."-".$item->product?->sku}}</td>
+            <td rowspan="1">{{$i++}}</td>
+
+            <td>   {{  $item->product->title."-".$item->product?->sku}}</td>
+            <td>
+           {{ $item->description }}
+            </td>
             <td>{{$item->unit->title}}</td>
             <td>{{$item->quantity}}</td>
             <td>{{number_format($item->estimated_unit_cost)}}</td>
             <td>{{number_format($item->quantity *$item->estimated_unit_cost)}}</td>
             <td>{{$item->product?->assets->where('status','inStorageUsable')->count()}}</td>
         </tr>
-        <tr>
-            <td colspan="6" style="text-align: left">Item Description : {{ $item->description }} </td>
-        </tr>
+
     @endforeach
     </tbody>
     <tfoot>
     <tr>
-        <td colspan="4">Total Cost</td>
+        <td colspan="5">Total Cost</td>
         <td>{{number_format($totalEstimated)}}</td>
         <td>{{number_format($totalBudget)   }}</td>
         <td></td>
@@ -155,23 +160,30 @@
 
 </table>
 
-<table style="background: #ffffff !important;">
+<table style="border: none!important;" >
+    <tr  style="border: none!important;">
+        @foreach($pr?->approvals->where('status','Approve') as $approve)
+        <th style="border: none!important;background: white !important;color: #1a202c">   {{$approve->employee?->position->title}} <br>  {{$approve->employee?->fullName}}</th>
 
-    @foreach ($pr?->approvals as $approve)
-
-    <tr>
-        <td style="text-align: start">
-            <p>Approved by: {{$approve->employee?->fullName}}</p>
-        </td>
-        <td style="text-align: start">
-            @if ($approve->employee->media->where('collection_name','signature')->first()?->original_url and $approve->status==="Approve" )
+{{--        @if($pr?->approvals->where('position','PR Verification'))--}}
+{{--        <th>   {{$approve->employee?->position->title}} </th>--}}
+{{--        @endif--}}
+{{--        @if($pr?->approvals->where('position','PR Approval'))--}}
+{{--        <th>   {{$approve->employee?->position->title}} </th>--}}
+{{--        @endif--}}
+        @endforeach
+    </tr>
+    <tr style="border: none!important;background: white !important;">
+        @foreach($pr?->approvals->where('status','Approve') as $approve)
+        <td style="border: none!important;text-align: center;background: white !important;color: #1a202c">
+            @if ($approve->employee->media->where('collection_name','signature')->first()?->original_url  )
                 <img src="{!! $approve->employee->media->where('collection_name','signature')->first()->getPath() !!}" style="border-radius: 50px ; width: 80px;" alt="">
-            @else
 
             @endif
         </td>
+        @endforeach
     </tr>
-    @endforeach
+
 </table>
 </body>
 </html>

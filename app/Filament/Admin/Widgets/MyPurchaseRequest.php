@@ -97,7 +97,7 @@ class MyPurchaseRequest extends BaseWidget
 ->actions([
     Action::make('view')->modalWidth(MaxWidth::Full)->infolist([
         ComponentsSection::make('request')->schema([
-            TextEntry::make('request_date')->date(),
+            TextEntry::make('request_date')->dateTime(),
             TextEntry::make('purchase_number')->label('PR NO')->badge(),
             TextEntry::make('employee.fullName'),
 
@@ -118,11 +118,11 @@ class MyPurchaseRequest extends BaseWidget
             TextEntry::make('approval_comment')->tooltip(fn($record) => $record->approval_comment)->label('Approval Comment'),
         ])->columns(5),
         RepeatableEntry::make('approvals')->schema([
-            TextEntry::make('employee.fullName'),
-            TextEntry::make('created_at')->label('Request Date')->date(),
+            TextEntry::make('employee.fullName')->label(fn($record)=>$record->employee?->position?->title),
+            TextEntry::make('created_at')->label('Request Date')->dateTime(),
             TextEntry::make('status')->badge(),
             TextEntry::make('comment')->badge(),
-            TextEntry::make('approve_date')->date(),
+            TextEntry::make('approve_date')->dateTime(),
         ])->columns(5)
     ]),
 ])
@@ -172,7 +172,7 @@ class MyPurchaseRequest extends BaseWidget
                         $requestedItem['company_id']=$company->id;
                         $request->items()->create($requestedItem);
                     }
-                  sendApprove($request,'PR Inventory/Stock Clarification_approval');
+                  sendApprove($request,'PR Warehouse/Storage Clarification_approval');
                 })
             ])
 

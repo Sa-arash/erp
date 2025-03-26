@@ -18,7 +18,7 @@ class ViewPurcheseRequest extends ViewRecord
         return $infolist->schema([
             Section::make('Request')->schema([
                 Section::make('')->schema([
-                    TextEntry::make('request_date')->date(),
+                    TextEntry::make('request_date')->dateTime(),
                     TextEntry::make('purchase_number')->badge(),
                     TextEntry::make('employee.department.title')->label('Department'),
                     TextEntry::make('employee.fullName'),

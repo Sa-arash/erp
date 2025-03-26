@@ -34,6 +34,7 @@ use Filament\Tables\Table;
 use Illuminate\Support\HtmlString;
 use Illuminate\Validation\Rules\Unique;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
+use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
 
 class PurchaseRequestResource extends Resource
 {
@@ -44,6 +45,7 @@ class PurchaseRequestResource extends Resource
     protected static ?string $modelLabel = 'Purchase Request';
     protected static ?string $Label = 'Purchase Request';
     protected static ?string $navigationGroup = 'Logistic Management';
+
 
     protected static ?string $navigationIcon = 'heroicon-c-document-arrow-down';
     public static function getNavigationBadge(): ?string
@@ -121,8 +123,12 @@ class PurchaseRequestResource extends Resource
                                 ->required(),
                             Forms\Components\Textarea::make('description')
                                 ->label(' Product Name And Description')
-                                ->columnSpanFull()
+                                ->columnSpan(5)
                                 ->required(),
+                            MediaManagerInput::make('document')->orderable(false)->folderTitleFieldName("purchase_request_id")
+                                ->disk('public')
+                                ->schema([
+                                ])->defaultItems(0) ->columnSpan(1),
 
                         ])
                         ->columns(6)
@@ -151,11 +157,8 @@ class PurchaseRequestResource extends Resource
                 Tables\Columns\TextColumn::make('')->rowIndex()->label('NO'),
                 Tables\Columns\TextColumn::make('description')->tooltip(fn($record) => $record->description)->limit(30),
                 Tables\Columns\TextColumn::make('purchase_number')->label('PR NO')->searchable(),
-                Tables\Columns\TextColumn::make('request_date')->dateTime('Y/m/d H:i')->sortable(),
-                Tables\Columns\TextColumn::make('employee.fullName')->tooltip(fn($record) => $record->employee->position->title)
-                    //                    ->state(function ($record){
-                    //                    $record->
-                    //                })
+                Tables\Columns\TextColumn::make('request_date')->dateTime()->sortable(),
+                Tables\Columns\TextColumn::make('employee.fullName')->tooltip(fn($record)=>$record->employee->position->title)
                     ->label('Requestor')->searchable(),
                 Tables\Columns\TextColumn::make('department')->state(fn($record) => $record->employee->department->title),
                 // Tables\Columns\TextColumn::make('location')->state(fn($record) => $record->employee?->structure?->title)->numeric()->sortable(),

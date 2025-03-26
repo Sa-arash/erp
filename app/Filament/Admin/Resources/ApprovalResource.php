@@ -43,7 +43,7 @@ class ApprovalResource extends Resource implements HasShieldPermissions
             'update',
             'delete',
             'delete_any',
-            'PR Inventory/Stock Clarification',
+            'PR Warehouse/Storage Clarification',
             'PR Verification',
             'PR Approval'
         ];
@@ -159,11 +159,11 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                                 TextEntry::make('approval_comment')->tooltip(fn($record) => $record->approval_comment)->label('Approval Comment'),
                             ])->columns(6)->columnSpanFull(),
                             RepeatableEntry::make('approvals')->schema([
-                                TextEntry::make('employee.fullName'),
-                                TextEntry::make('created_at')->label('Request Date')->date(),
+                                TextEntry::make('employee.fullName')->label(fn($record)=>$record->employee?->position?->title),
+                                TextEntry::make('created_at')->label('Request Date')->dateTime(),
                                 TextEntry::make('status')->badge(),
                                 TextEntry::make('comment')->tooltip(fn($record) => $record->comment)->limit(50),
-                                TextEntry::make('approve_date')->date(),
+                                TextEntry::make('approve_date')->dateTime(),
                             ])->columns(5)->columnSpanFull()
                         ])->columns(3),
 

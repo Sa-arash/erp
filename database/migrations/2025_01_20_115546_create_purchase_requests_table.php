@@ -13,7 +13,7 @@ return new class extends Migration
 {
     Schema::create('purchase_requests', function (Blueprint $table) {
         $table->id();
-        $table->date('request_date');
+        $table->dateTime('request_date');
         $table->string('purchase_number')->unique();
         $table->text('description')->nullable();
         $table->boolean('is_quotation')->default(0);
