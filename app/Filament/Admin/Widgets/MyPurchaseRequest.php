@@ -4,12 +4,14 @@ namespace App\Filament\Admin\Widgets;
 
 use App\Filament\Admin\Resources\PurchaseRequestResource\Pages\ViewPurcheseRequest;
 use App\Models\Employee;
+use App\Models\Product;
 use App\Models\PurchaseRequest;
 use App\Models\Separation;
 use App\Models\Structure;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
@@ -17,11 +19,13 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Infolists\Components\Fieldset;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\Section as ComponentsSection;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Notifications\Notification;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Support\RawJs;
 use Filament\Tables;
@@ -134,9 +138,9 @@ class MyPurchaseRequest extends BaseWidget
                             if ($puncher){
                                 return  generateNextCodePO($puncher->purchase_number);
                             }else{
-                                return "0001";
+                                return "00001";
                             }
-                        })->readOnly()->label('PR Number')->unique(modifyRuleUsing: function (Unique $rule) {return $rule->where('company_id', getCompany()->id);})->unique('purchase_requests', 'purchase_number')->required()->numeric(),
+                        })->readOnly()->label('PR Number')->prefix('ATGT/UNC/')->unique(modifyRuleUsing: function (Unique $rule) {return $rule->where('company_id', getCompany()->id);})->unique('purchase_requests', 'purchase_number')->required()->numeric(),
                         DateTimePicker::make('request_date')->readOnly()->default(now())->label('Request Date')->required(),
                         Select::make('currency_id')->live()->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload(),
                         Textarea::make('description')->columnSpanFull()->label('Description'),
@@ -149,12 +153,18 @@ class MyPurchaseRequest extends BaseWidget
                                         $data[$product->id]=$product->info;
                                     }
                                     return $data;
-                                })->required(),
+                                })->afterStateUpdated(function (Set $set,$state){
+                                    $product=Product::query()->firstWhere('id',$state);
+                                    if ($product){
+                                        $set('unit_id',$product->unit_id);
+                                    }
+                                })->live(true)->required(),
                                 Select::make('unit_id')->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id'))->required(),
                                 TextInput::make('quantity')->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                                 TextInput::make('estimated_unit_cost')->label('Estimated Unit Cost')->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required(),
                                 Select::make('project_id')->searchable()->preload()->label('Project')->options(getCompany()->projects->pluck('name', 'id')),
                                 Textarea::make('description')->columnSpan(5)->label('Product Name and Description ')->required(),
+                                FileUpload::make('images')->label('document')->columnSpanFull()->image()->nullable()
 
                             ])
                             ->columns(5)
@@ -170,9 +180,16 @@ class MyPurchaseRequest extends BaseWidget
                     $request= PurchaseRequest::query()->create($data);
                     foreach ($data['Requested Items'] as $requestedItem) {
                         $requestedItem['company_id']=$company->id;
-                        $request->items()->create($requestedItem);
+                        $item= $request->items()->create($requestedItem);
+                        $mediaItem = $requestedItem['images'] ?? [];
+                        if (isset($mediaItem)){
+                            $item->addMedia(public_path('images/'.$mediaItem))->toMediaCollection('document');
+                        }
+
                     }
+
                   sendApprove($request,'PR Warehouse/Storage Clarification_approval');
+                    Notification::make('success')->title('Successfully Submitted')->send();
                 })
             ])
 

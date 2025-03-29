@@ -137,8 +137,8 @@ class PurchaseOrderResource extends Resource
                                     })
                                     ->options(getCompany()->purchaseRequests->pluck('purchase_number', 'id')),
 
-                                Forms\Components\DatePicker::make('date_of_po')->default(now())
-                                    ->label('Date of PO')->afterOrEqual(now())
+                                Forms\Components\DateTimePicker::make('date_of_po')->default(now())
+                                    ->label('Date of PO')->afterOrEqual(now()->startOfHour())
                                     ->required(),
 
                                 Forms\Components\Select::make('vendor_id')->label('Vendor')
@@ -187,9 +187,9 @@ class PurchaseOrderResource extends Resource
                                     if ($puncher) {
                                         return  generateNextCodePO($puncher->purchase_orders_number);
                                     } else {
-                                        return "0001";
+                                        return "00001";
                                     }
-                                })->label('PO NO')
+                                })->label('PO NO')->prefix('ATGT/UNC/')->readOnly()
                                     ->required()
                                     ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
                                         return $rule->where('company_id', getCompany()->id);

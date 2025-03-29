@@ -8,6 +8,7 @@ use App\Models\Account;
 use App\Models\Bid;
 use App\Models\Employee;
 use App\Models\Parties;
+use App\Models\Product;
 use App\Models\PurchaseRequest;
 use App\Models\Quotation;
 use App\Models\Transaction;
@@ -67,12 +68,12 @@ class PurchaseRequestResource extends Resource
                         ->default(fn() => auth()->user()->employee->id),
 
                     Forms\Components\TextInput::make('purchase_number')->readOnly()
-                        ->label('PR Number')->default(function () {
+                        ->label('PR Number')->prefix('ATGT/UNC/')->default(function () {
                             $puncher = PurchaseRequest::query()->where('company_id', getCompany()->id)->latest()->first();
                             if ($puncher) {
                                 return  generateNextCodePO($puncher->purchase_number);
                             } else {
-                                return "0001";
+                                return "00001";
                             }
                         })
                         ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
@@ -91,7 +92,12 @@ class PurchaseRequestResource extends Resource
                             Forms\Components\Select::make('product_id')->label('Product/Service')
                                 ->label('Product')->options(function () {
                                     return getCompany()->products->pluck('info', 'id');
-                                })->required()->searchable()->preload(),
+                                })->required()->searchable()->preload()->afterStateUpdated(function (Forms\Set $set,$state){
+                                    $product=Product::query()->firstWhere('id',$state);
+                                    if ($product){
+                                        $set('unit_id',$product->unit_id);
+                                    }
+                                })->live(true),
                             Forms\Components\Select::make('unit_id')->createOptionForm([
                                 Forms\Components\TextInput::make('title')->label('Unit Name')->unique('units', 'title')->required()->maxLength(255),
                                 Forms\Components\Toggle::make('is_package')->live()->required(),
@@ -128,7 +134,7 @@ class PurchaseRequestResource extends Resource
                             MediaManagerInput::make('document')->orderable(false)->folderTitleFieldName("purchase_request_id")
                                 ->disk('public')
                                 ->schema([
-                                ])->defaultItems(0) ->columnSpan(1),
+                                ])->defaultItems(0)->maxItems(1) ->columnSpan(1),
 
                         ])
                         ->columns(6)
@@ -156,7 +162,7 @@ class PurchaseRequestResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex()->label('NO'),
                 Tables\Columns\TextColumn::make('description')->tooltip(fn($record) => $record->description)->limit(30),
-                Tables\Columns\TextColumn::make('purchase_number')->label('PR NO')->searchable(),
+                Tables\Columns\TextColumn::make('purchase_number')->prefix('ATGT/UNC/')->label('PR NO')->searchable(),
                 Tables\Columns\TextColumn::make('request_date')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('employee.fullName')->tooltip(fn($record)=>$record->employee->position->title)
                     ->label('Requestor')->searchable(),
@@ -164,7 +170,7 @@ class PurchaseRequestResource extends Resource
                 // Tables\Columns\TextColumn::make('location')->state(fn($record) => $record->employee?->structure?->title)->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('status')->badge(),
                 Tables\Columns\TextColumn::make('bid.quotation.party.name')->label('Vendor'),
-                Tables\Columns\TextColumn::make('total')->alignCenter()->label('Total EST Price' . "(" . defaultCurrency()?->symbol . ")")
+                Tables\Columns\TextColumn::make('total')->alignCenter()->label('Total EST Price' )
 
                     ->state(function ($record) {
                         $total = 0;
@@ -173,7 +179,7 @@ class PurchaseRequestResource extends Resource
                         }
                         return $total;
                     })->numeric(),
-                Tables\Columns\TextColumn::make('bid.total_cost')->alignCenter()->label('Total Final Price' . " ( " . defaultCurrency()?->symbol . " )")->numeric(),
+                Tables\Columns\TextColumn::make('bid.total_cost')->alignCenter()->label('Total Final Price' )->numeric(),
 
             ])
 
@@ -211,10 +217,11 @@ class PurchaseRequestResource extends Resource
                     ->icon('heroicon-s-shopping-cart')
                     ->url(fn($record) => PurchaseOrderResource::getUrl('create') . "?prno=" . $record->id),
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\Action::make('prQuotation')->visible(fn($record) => $record->is_quotation)->color('warning')->label('Quotation ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.quotation', ['id' => $record->id]))->openUrlInNewTab(),
-                    Tables\Actions\Action::make('insertQuotation')->modalWidth(MaxWidth::Full)->icon('heroicon-s-newspaper')->color('info')->label('InsertQuotation')->visible(fn($record) => $record->is_quotation)->form(function ($record) {
+                    Tables\Actions\Action::make('prQuotation')->visible(fn($record) => $record->is_quotation)->color('warning')->label('RFQ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.quotation', ['id' => $record->id]))->openUrlInNewTab(),
+                    Tables\Actions\Action::make('insertQuotation')->modalWidth(MaxWidth::Full)->icon('heroicon-s-newspaper')->color('info')->label('Quotation')->visible(fn($record) => $record->is_quotation)->form(function ($record) {
                         return [
                             Section::make([
+                                Forms\Components\TextInput::make('purchase_number')->prefix('ATGT/UNC')->readOnly()->label('PR NO')->default($record->purchase_number),
                                 Forms\Components\Select::make('party_id')->createOptionUsing(function ($data) {
                                     $parentAccount = Account::query()->where('id', $data['parent_vendor'])->where('company_id', getCompany()->id)->first();
                                     $account = Account::query()->create([
@@ -252,12 +259,12 @@ class PurchaseRequestResource extends Resource
                                     ])->columns(3)->model(Parties::class),
                                 ])->label('Vendor')->options(Parties::query()->where('company_id', getCompany()->id)->where('type', 'vendor')->get()->pluck('info', 'id'))->searchable()->preload()->required(),
                                 Forms\Components\DatePicker::make('date')->default(now())->required(),
-                                Forms\Components\Select::make('employee_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Logistic'),
+                                Forms\Components\Select::make('employee_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Logistic By'),
                                 Forms\Components\Select::make('employee_operation_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Operation'),
                                 getSelectCurrency(),
                                 Forms\Components\FileUpload::make('file')->downloadable()->columnSpanFull(),
                                 Forms\Components\Textarea::make('description')->columnSpanFull()->nullable()
-                            ])->columns(5),
+                            ])->columns(6),
                             Repeater::make('Requested Items')->required()
                                 ->addActionLabel('Add')
                                 ->schema([
@@ -393,9 +400,11 @@ class PurchaseRequestResource extends Resource
 
                                              ";
                                     foreach ($item->quotationItems as $quotationItem) {
-                                        $total = number_format($quotationItem->item->quantity * $quotationItem->unit_rate);
+                                        $total = number_format($quotationItem->total);
                                         $rate = number_format($quotationItem->unit_rate);
-                                        $tr .= "<td style='border: 1px solid black;padding: 8px;text-align: center'>  {$rate} Per Unit  |  {$total} Total</td>";
+                                        $tax = number_format($quotationItem->taxes);
+
+                                        $tr .= "<td style='border: 1px solid black;padding: 8px;text-align: center'>  {$rate} Per Unit | {$tax}%  Tax |  {$total} Total</td>";
                                     }
                                     $tr .= "<td style='border: 1px solid black;padding: 8px;text-align: center'></td>";
                                     $tr .= "</tr>";
@@ -434,8 +443,8 @@ class PurchaseRequestResource extends Resource
                         $data['total_cost'] = $totalSum;
                         Bid::query()->create($data);
                         Notification::make('make bid')->success()->title('Submitted Successfully')->send()->sendToDatabase(auth()->user());
-                    })->modalWidth(MaxWidth::Full)->visible(fn($record) => $record->quotations->count() > 0),
-                    Tables\Actions\Action::make('prPDF')->label('PR ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.purchase', ['id' => $record->id]))->openUrlInNewTab(),
+                    })->modalWidth(MaxWidth::Full)->visible(fn($record) => $record->quotations->count() > 0 and empty($record->bid)),
+                    Tables\Actions\Action::make('prPDF')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.purchase', ['id' => $record->id]))->openUrlInNewTab(),
                 ]),
 
                 Tables\Actions\DeleteAction::make()->visible(fn($record) => $record->status->name === "Requested")

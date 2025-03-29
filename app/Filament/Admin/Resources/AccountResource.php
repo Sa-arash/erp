@@ -35,11 +35,9 @@ class AccountResource extends Resource
     protected static ?string $cluster = FinanceSettings::class;
     protected static ?string $navigationIcon = 'heroicon-o-document-chart-bar';
     protected static ?string $navigationGroup = 'Finance Management';
-    protected static ?string $label = 'Chart Of Account';
-    public static ?string $description="dwawddwawaw";
-    public  static function  getDecription(){
-        return "dwawddwawaw";
-    }
+    protected static ?string $label = 'Finance/Chart Of Account';
+    protected static ?string $pluralLabel = 'Chart Of Account';
+
 
 
     public static function getCluster(): ?string

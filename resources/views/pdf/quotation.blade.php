@@ -86,7 +86,7 @@
     </table>
 </div>
 <div class="container">
-    <h2 style="text-align: center;">Request for Quotation</h2>
+    <h2 style="text-align: center;">RFQ</h2>
     @php
     $i=0;
     @endphp

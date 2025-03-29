@@ -31,7 +31,7 @@ class WarehouseResource extends Resource
     protected static ?string $navigationGroup = 'Logistic Management';
     protected static ?string $navigationIcon = 'heroicon-c-home-modern';
     protected static ?string $cluster = StackManagementSettings::class;
-    protected static ?string $label="Location (Logistic Setting)";
+    protected static ?string $label="Location";
     protected static ?string $pluralLabel="Location";
 
 

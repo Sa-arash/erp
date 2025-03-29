@@ -45,7 +45,7 @@
 
     <tr>
         <td style="text-align: left">PR Date: {{\Illuminate\Support\Carbon::create($pr->request_date)->format('Y/m/d')}}</td>
-        <td style="text-align: left">PR No: {{$pr->purchase_number}}</td>
+        <td style="text-align: left">PR No: ATGT/UNC {{$pr->purchase_number}}</td>
     </tr>
     <tr>
         <td style="text-align: left">Requestor Name: {{$pr->employee?->fullName}}</td>
@@ -163,14 +163,18 @@
 <table style="border: none!important;" >
     <tr  style="border: none!important;">
         @foreach($pr?->approvals->where('status','Approve') as $approve)
-        <th style="border: none!important;background: white !important;color: #1a202c">   {{$approve->employee?->position->title}} <br>  {{$approve->employee?->fullName}}</th>
-
-{{--        @if($pr?->approvals->where('position','PR Verification'))--}}
-{{--        <th>   {{$approve->employee?->position->title}} </th>--}}
-{{--        @endif--}}
-{{--        @if($pr?->approvals->where('position','PR Approval'))--}}
-{{--        <th>   {{$approve->employee?->position->title}} </th>--}}
-{{--        @endif--}}
+        <th style="border: none!important;background: white !important;color: #1a202c">
+            @if($approve->position==="PR Verification")
+                Verified By:
+                <br>  {{$approve->employee?->position->title}}
+            @elseif($approve->position==="PR Warehouse/Storage Clarification")
+                Warehouse/Storage
+                <br>  {{$approve->employee?->fullName}}
+            @else
+                {{str_replace('PR','',$approve->position)}}
+                <br>  {{$approve->employee?->position->title}}
+            @endif
+               </th>
         @endforeach
     </tr>
     <tr style="border: none!important;background: white !important;">

@@ -5,5 +5,8 @@
     border-top-left-radius: 7px;
     border-top-right-radius: 7px;
     background-color: rgb(56, 189, 248) !important; /* رنگ پس‌زمینه آبی */
-    color: white; /* رنگ متن (اختیاری) */
+    color: white !important; /* رنگ متن (اختیاری) */
+}
+.custom-section header div div h3 {
+    color: white !important; /* رنگ متن (اختیاری) */
 }

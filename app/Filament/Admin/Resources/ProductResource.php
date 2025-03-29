@@ -8,12 +8,14 @@ use App\Filament\Clusters\StackManagementSettings;
 use App\Models\Account;
 use App\Models\Product;
 use App\Models\Transaction;
+use App\Models\Unit;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -25,7 +27,7 @@ class ProductResource extends Resource
     protected static ?string $model = Product::class;
     protected static ?string $navigationGroup = 'Logistic Management';
     protected static ?string $pluralLabel = "Product";
-    protected static ?string $label="Product (Logistic Setting)";
+    protected static ?string $label="Product";
 
     protected static ?string $navigationIcon = 'heroicon-m-cube';
     protected static ?string $cluster = StackManagementSettings::class;
@@ -35,7 +37,6 @@ class ProductResource extends Resource
         return $form
             ->schema([
                 Section::make([
-                    Forms\Components\TextInput::make('title')->label('Product Name')->required()->maxLength(255),
                     Forms\Components\TextInput::make('sku')->label(' SKU')
                         ->unique(ignoreRecord:true ,modifyRuleUsing: function (Unique $rule) {
                             return $rule->where('company_id', getCompany()->id);
@@ -45,12 +46,22 @@ class ProductResource extends Resource
                                 return generateNextCodeProduct($product->sku);
                             }
                         })
-                    ->required()->maxLength(255),
+                        ->required()->maxLength(255),
+                    Forms\Components\TextInput::make('title')->label('Material Description')->required()->maxLength(255),
+                    Select::make('unit_id')->required()->relationship('unit','title',fn($query)=>$query->where('company_id',getCompany()->id))->searchable()->preload()->createOptionForm([
+                        Forms\Components\TextInput::make('title')->label('Unit Name')->unique('units', 'title')->required()->maxLength(255),
+                        Forms\Components\Toggle::make('is_package')->live()->required(),
+                        Forms\Components\TextInput::make('items_per_package')->numeric()->visible(fn(Get $get) => $get('is_package'))->default(null),
+                    ])->createOptionUsing(function ($data) {
+                        $data['company_id'] = getCompany()->id;
+                        Notification::make('success')->success()->title('Create Unit')->send();
+                        return  Unit::query()->create($data)->getKey();
+                    }),
                     Select::make('product_type')->searchable()->options(['consumable' => 'consumable', 'unConsumable' => 'non-consumable'])->default('consumable')
                     ->live()->afterStateUpdated(function(Set $set){
                         $set('account_id',null);
                     }),
-                ])->columns(3),
+                ])->columns(4),
 
                 Select::make('account_id')->options(function (Get $get) {
 

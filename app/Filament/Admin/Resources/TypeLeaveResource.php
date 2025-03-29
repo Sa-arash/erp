@@ -24,7 +24,8 @@ class TypeLeaveResource extends Resource
     protected static ?string $model = Typeleave::class;
     protected static ?string $cluster = HrSettings::class;
     protected static ?string $pluralLabel='Leave Type';
-    protected static ?string $label='Leave Type(HR Setting)';
+    protected static ?string $label='Leave Type';
+    protected static ?string $navigationGroup = 'HR Management System';
 
     protected static ?string $navigationIcon = 'heroicon-s-arrow-uturn-left';
 

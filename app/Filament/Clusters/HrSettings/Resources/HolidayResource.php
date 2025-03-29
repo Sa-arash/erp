@@ -27,8 +27,9 @@ class HolidayResource extends Resource
     protected static ?string $model = Holiday::class;
 
     protected static ?string $navigationIcon = 'heroicon-c-calendar-date-range';
-    protected static ?string $label="Holiday (HR Setting) ";
+    protected static ?string $label="Holiday";
     protected static ?string $pluralLabel="Holiday  ";
+    protected static ?string $navigationGroup = 'HR Management System';
 
     protected static ?string $cluster = HrSettings::class;
 

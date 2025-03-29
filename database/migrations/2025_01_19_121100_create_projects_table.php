@@ -19,6 +19,7 @@ return new class extends Migration
             $table->timestamp('start_date')->nullable();
             $table->timestamp('end_date')->nullable();
             $table->foreignId('employee_id')->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('unit_id')->constrained('units')->cascadeOnDelete()->cascadeOnUpdate();
             $table->text('members')->nullable();
             $table->enum('priority_level',['High','Medium','Low'])->nullable();
             $table->float('budget')->nullable();

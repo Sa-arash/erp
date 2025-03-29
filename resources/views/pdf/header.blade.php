@@ -191,25 +191,26 @@
 
         <table >
             <tr >
-                <td style="border: none;width: 33%; text-align: left; padding-left: 10px;">
+                <td style="border: none;width: 20%; text-align: left; padding-left: 10px;">
                     @if ($customImage??false)
 
                         <img src="{{$customImage}}" style="width: 70px;">
                     @endif
                 </td>
-                <td style="border: none;text-align: center; vertical-align: middle;">
-                    <h2 style="margin: 0; padding: 0; display: inline-block; font-size: 20px">
+                <td  style="text-align: center; vertical-align: middle; width: 40%;">
+                    <h4 style="margin: 0; padding: 0; font-size: 14px; white-space: nowrap; display: inline-block;">
                         {{ $company->title }}
-
-                        @foreach ($titles as $title)
-                            <h2 style="margin: 0; padding: 0; display: inline-block; font-size: 15px">{{ $title }}
-                            </h2>
-                        @endforeach
-                    </h2>
+                    </h4>
+                    @foreach ($titles as $title)
+                        <h2 style="margin: 0; padding: 0; font-size: 11px; white-space: nowrap; display: inline;">
+                            {{ $title }}
+                        </h2>
+                    @endforeach
                 </td>
-                <td style="border: none;width: 33%; text-align: right; padding-right: 10px;">
+
+                <td style="border: none;width: 20%; text-align: right; padding-right: 10px;">
                     @if($company?->logo)
-                        <img src="{!! public_path('images/' . $company?->logo) !!}" style="border-radius: 50px ; width: 70px;">
+                        <img src="{!! public_path('images/' . $company?->logo) !!}" style="padding: 0; border-radius: 50px ; width: 100px;">
                     @endif
                 </td>
             </tr>

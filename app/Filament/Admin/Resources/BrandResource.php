@@ -20,7 +20,7 @@ class BrandResource extends Resource
     protected static ?string $navigationGroup = 'Logistic Management';
     protected static ?string $cluster = StackManagementSettings::class;
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-    protected static ?string $label="Brand (Logistic Setting)";
+    protected static ?string $label="Brand";
     protected static ?string $pluralLabel="Brand ";
 
     public static function form(Form $form): Form

@@ -22,7 +22,7 @@ use Illuminate\Validation\Rules\Unique;
 class ProductServiceResource extends Resource
 {
     protected static ?string $model = Product::class;
-    protected static ?string $label="Service (Logistic Setting)";
+    protected static ?string $label="Service";
     protected static ?string $navigationGroup = 'Logistic Management';
     protected static ?string $pluralLabel = "Service";
     protected static ?string $cluster = StackManagementSettings::class;

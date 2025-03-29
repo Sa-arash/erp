@@ -21,9 +21,10 @@ class PositionResource extends Resource
     protected static ?string $model = Position::class;
     protected static ?string $cluster = HrSettings::class;
     protected static ?int $navigationSort=-2;
-    protected static ?string $label='Designation (HR Setting)';
+    protected static ?string $label='Designation';
     protected static ?string $pluralLabel='Designation';
     protected static ?string $navigationIcon = 'position';
+    protected static ?string $navigationGroup = 'HR Management System';
 
     public static function form(Form $form): Form
     {

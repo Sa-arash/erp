@@ -104,7 +104,17 @@ class ITemployeeResource extends Resource
 
             ])
             ->filters([
-
+                TernaryFilter::make('Have Account')->queries(
+                    true: fn (Builder $query) => $query->whereHas('user',function ($query){
+                        return $query;
+                    }),
+                    false: fn (Builder $query) =>$query->whereHas('user',function ($query){
+                        return $query;
+                    },0),
+                    blank: fn (Builder $query) => $query->whereHas('user',function ($query){
+                        return $query;
+                    }),
+                )->searchable()->default(1)->label('Have Account'),
                 SelectFilter::make('department_id')->searchable()->preload()->options(Department::where('company_id', getCompany()->id)->get()->pluck('title', 'id'))
                     ->label('Department'),
                     SelectFilter::make('position_id')->searchable()->preload()->options(Position::where('company_id', getCompany()->id)->get()->pluck('title', 'id'))

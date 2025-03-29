@@ -19,7 +19,7 @@ class ViewPurcheseRequest extends ViewRecord
             Section::make('Request')->schema([
                 Section::make('')->schema([
                     TextEntry::make('request_date')->dateTime(),
-                    TextEntry::make('purchase_number')->badge(),
+                    TextEntry::make('purchase_number')->prefix('ATGT/UNC')->badge(),
                     TextEntry::make('employee.department.title')->label('Department'),
                     TextEntry::make('employee.fullName'),
                     TextEntry::make('position.title'),

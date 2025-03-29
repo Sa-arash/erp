@@ -13,6 +13,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class ItemsRelationManager extends RelationManager
 {
@@ -74,6 +75,11 @@ class ItemsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('product.sku')->label('SKU'),
                 Tables\Columns\TextColumn::make('product.title')->label('Product/Service'),
                 Tables\Columns\TextColumn::make('description'),
+                Tables\Columns\TextColumn::make('document')->action(Tables\Actions\Action::make('wa')->action(function ($record){
+
+                    return dd(Storage::download($record->media[0]->getPath()));
+                })),
+
                 Tables\Columns\TextColumn::make('unit.title'),
                 Tables\Columns\TextColumn::make('quantity'),
                 Tables\Columns\TextColumn::make('estimated_unit_cost')->numeric(),

@@ -27,9 +27,10 @@ class BenefitResource extends Resource
 
     protected static ?string $model = Benefit::class;
     protected static ?string $cluster = HrSettings::class;
-    protected static ?string $label='Allowance/Deduction (HR Setting)';
+    protected static ?string $label='Allowance/Deduction';
      protected static ?string $pluralLabel='Allowance/Deduction';
     protected static ?string $navigationIcon = 'heroicon-c-squares-plus';
+    protected static ?string $navigationGroup = 'HR Management System';
 
     public static function form(Form $form): Form
     {

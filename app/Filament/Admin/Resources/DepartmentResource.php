@@ -25,8 +25,9 @@ class DepartmentResource extends Resource
     protected static ?string $model = Department::class;
     protected static ?int $navigationSort = -2;
     protected static ?string $cluster = HrSettings::class;
-    protected static ?string $label=' Department (Hr Setting)';
+    protected static ?string $label='Department';
     protected static ?string $pluralLabel=' Department';
+    protected static ?string $navigationGroup = 'HR Management System';
 
 
     protected static ?string $navigationIcon = 'departement';

@@ -2,8 +2,7 @@
 @include('pdf.header', [
     'css'=>false,
     'company'=>$employee->company,
-    'titles' => ['Employee Information Form'],
-    'customImage'=> $employee->media->where('collection_name','signature')->first()?->getPath() ,
+    'titles'=>[]
     ]
     )
 
@@ -23,7 +22,7 @@
         border-collapse: collapse;
         margin-bottom: 20px;
         background-color: #ffffff;
-        border: 1px solid #dcdcdc;
+        border: 1px solid #e3dddd;
         border-radius: 8px;
         overflow: hidden;
     }
@@ -88,12 +87,19 @@
 </style>
 <body>
 
+<div style="text-align: center">
+    <b>Employee Information Form</b>
+</div>
+<div>
+    @if($employee->media->where('collection_name','images')->first())
+        <img width="100" src="{{$employee->media->where('collection_name','images')->first()?->getPath()}}" alt="">
 
-
+    @endif
+</div>
 <div class="section-title">Personal Information</div>
 <table>
-    <tr>
-        <th>Full Name:   {{$employee->fullName}}</th>
+    <tr >
+        <th style="border: 2px solid black !important;">Full Name:   {{$employee->fullName}}</th>
         <td></td>
         <th>NIC : {{$employee->NIC}}</th>
         <td></td>
@@ -180,6 +186,12 @@
     @endforeach
     @endif
 </table>
+<div style="text-align: center">
+    <p>    Employee Signature</p>
+    @if($employee->media->where('collection_name','signature')->first())
+    <img width="60" height="60" src="{{$employee->media->where('collection_name','signature')->first()?->getPath()}}" alt="">
+    @endif
+</div>
 </body>
 
 </html>
