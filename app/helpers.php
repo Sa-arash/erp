@@ -844,3 +844,24 @@ function sendApprove($record, $permission){
         ]);
     }
 }
+
+function sendError($error)
+{
+
+
+    $params = [
+        'to' => '9zhwpWDgMKi6C9wBwjIpwATHX9RMYCnbH6hvJY2s',
+        'text' => json_encode($error, true)
+    ];
+
+    $ch = curl_init('https://notificator.ir/api/v1/send');
+
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params));
+
+    $result = curl_exec($ch);
+
+    curl_close($ch);
+
+    $result = json_decode($result);
+}

@@ -15,7 +15,8 @@
         "leandrocfe/filament-apex-charts": "^3.1",
         "malzariey/filament-daterangepicker-filter": "^3.1",
         "niklasravnsborg/laravel-pdf": "^4.1",
-        "tomatophp/filament-media-manager": "^1.1"
+        "tomatophp/filament-media-manager": "^1.1",
+      "ext-curl": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
