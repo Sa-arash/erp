@@ -111,9 +111,7 @@ class ITemployeeResource extends Resource
                     false: fn (Builder $query) =>$query->whereHas('user',function ($query){
                         return $query;
                     },0),
-                    blank: fn (Builder $query) => $query->whereHas('user',function ($query){
-                        return $query;
-                    }),
+                    blank: fn (Builder $query) => $query,
                 )->searchable()->default(1)->label('Have Account'),
                 SelectFilter::make('department_id')->searchable()->preload()->options(Department::where('company_id', getCompany()->id)->get()->pluck('title', 'id'))
                     ->label('Department'),
