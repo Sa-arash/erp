@@ -688,7 +688,7 @@ function getAdmin()
 
 function getSecurity()
 {
-    $roles = getCompany()->roles->where('name', 'Security')->first();
+    $roles = getCompany()->roles->where('name', 'SECURITY')->first();
     if (isset($roles->users[0])) {
         if ($roles->users[0]->employee) {
             return $roles->users[0]->employee;

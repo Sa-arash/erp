@@ -27,7 +27,7 @@ return new class extends Migration
             $table->boolean('has_bank')->default(0);
             $table->date('birthday')->nullable();
             $table->timestamp('joining_date')->nullable();
-            $table->timestamp('leave_date')->nullable();
+            $table->date('leave_date')->nullable();
             $table->string('country')->nullable();
             $table->string('state')->nullable();
             $table->string('city')->nullable();

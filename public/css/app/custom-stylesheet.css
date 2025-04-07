@@ -4,9 +4,24 @@
 .custom-section header {
     border-top-left-radius: 7px;
     border-top-right-radius: 7px;
-    background-color: rgb(56, 189, 248) !important; /* رنگ پس‌زمینه آبی */
-    color: white !important; /* رنگ متن (اختیاری) */
+    background-color: rgb(56, 189, 248) !important;
+    color: white !important;
 }
 .custom-section header div div h3 {
-    color: white !important; /* رنگ متن (اختیاری) */
+    color: white !important;
 }
+
+
+.fi-sidebar-group-label {
+    background-color: rgb(56, 189, 248) !important;
+    padding: 5px;
+    color: white !important;
+    border-radius: 10px;
+    margin: 0;
+}
+
+/*.fi-sidebar-group-collapse-button{*/
+/*    background-color: #1cc6b9; !* رنگ آبی برای بخش HR *!*/
+/*    color: white;*/
+
+/*}*/

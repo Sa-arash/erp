@@ -497,7 +497,7 @@ class CreateCompany extends CreateRecord
                 'company_id'=>$company->id,
                 'guard_name'=>'web',
                 'is_show'=>1,
-                'name'=>'Security'
+                'name'=>'SECURITY'
             ]);
             $user=Role::query()->create([
                 'company_id'=>$company->id,

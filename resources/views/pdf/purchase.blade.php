@@ -39,12 +39,12 @@
     </style>
 
 <body>
-<h1>Purchase Request (PR) Form</h1>
+<h1 >Purchase Request (PR)</h1>
 <table>
 
 
     <tr>
-        <td style="text-align: left">PR Date: {{\Illuminate\Support\Carbon::create($pr->request_date)->format('Y/m/d')}}</td>
+        <td style="text-align: left">PR Date: {{\Illuminate\Support\Carbon::create($pr->request_date)->format('M j, Y / h:iA ')}}</td>
         <td style="text-align: left">PR No: ATGT/UNC {{$pr->purchase_number}}</td>
     </tr>
     <tr>

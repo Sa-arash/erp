@@ -47,6 +47,8 @@ class EmployeeResource extends Resource
     protected static ?string $navigationGroup = 'HR Management System';
     protected static ?string $navigationIcon = 'heroicon-c-user-group';
 
+
+
     public static function canView(Model $record): bool
     {
         if (auth()->user()->employee?->id === $record->id) {
@@ -503,7 +505,7 @@ class EmployeeResource extends Resource
                 SelectFilter::make('duty_id')->searchable()->preload()->options(Duty::where('company_id', getCompany()->id)->get()->pluck('title', 'id'))
                     ->label('duty'),
 
-                TernaryFilter::make('gender')->searchable()->preload()->trueLabel('Man')->falseLabel('Woman'),
+                SelectFilter::make('gender')->options(['male'=>'Male','female'=>'Female','other'=>'Other'])->searchable()->preload(),
 
                 DateRangeFilter::make('birthday'),
                 DateRangeFilter::make('joining_date'),

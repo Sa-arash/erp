@@ -122,7 +122,7 @@ class ITemployeeResource extends Resource
                 SelectFilter::make('duty_id')->searchable()->preload()->options(Duty::where('company_id', getCompany()->id)->get()->pluck('title', 'id'))
                     ->label('duty'),
 
-                TernaryFilter::make('gender')->searchable()->preload()->trueLabel('Man')->falseLabel('Woman'),
+                SelectFilter::make('gender')->options(['male'=>'Male','female'=>'Female','other'=>'Other'])->searchable()->preload(),
 
                 DateRangeFilter::make('birthday'),
                 DateRangeFilter::make('joining_date'),

@@ -192,9 +192,10 @@
                     <th>{{$approve->employee->fullName}}</th>
                     <th>{{$approve->position}}</th>
                     <th>{{$approve->status}}</th>
-                    <th>{{ $approve->approve_date ? \Carbon\Carbon::make($approve->approve_date)->format('Y-m-d H:i'):""}}</th>
+                    <th>{{ $approve->approve_date ? \Carbon\Carbon::make($approve->approve_date)->format('M j, Y / h:iA'):""}}</th>
                     <th>
-                        @if($approve->employee->media->where('collection_name','signature')->first()?->original_url and $approve->status==="Approve")
+
+                        @if($approve->employee->media->where('collection_name','signature')->first()?->original_url and $approve->status->name==="Approve")
                         <img src="{{ $approve->employee->media->where('collection_name','signature')->first()->getPath() }}" style="width: 70px;height: 30px" alt="">
                         @endif
                     </th>

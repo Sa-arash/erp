@@ -17,38 +17,39 @@ class ListProducts extends ListRecords
     {
         return [
             Actions\CreateAction::make()->label('New Product'),
-            Actions\Action::make('Set Category')->label('Set Categories For Unconformable Products')->form([
-                Select::make('accounts')->default(getCompany()->product_accounts)->options(function (){
-                    $data=[];
-                    $accounts=Account::query()->where('company_id',getCompany()->id)->orderBy('code')->get();
-                    foreach ( $accounts as $account){
-                        $data[$account->id]=$account->name." (".$account->code .")";
+            Actions\Action::make('Set  Expense')->label('Set Categories For Unconformable Products')->form([
+                Select::make('expense')->default(getCompany()->product_expence_accounts)->options(function () {
+                    $data = [];
+                    $accounts = Account::query()->where('company_id', getCompany()->id)->where('group', 'Expense')->orderBy('code')->get();
+                    foreach ($accounts as $account) {
+                        $data[$account->id] = $account->name . " (" . $account->code . ")";
                     }
                     return $data;
                 })->searchable()->preload()->multiple()
 
-            ])->action(function ($data){
+            ])->action(function ($data) {
 
-                getCompany()->update(['product_accounts'=>$data['accounts']]);
-
-                Notification::make('accountssuccess')->success()->title('Set accounts successfully')->send();
-            }),
-
-            Actions\Action::make('Set Expense')->label('Set Categories For Consumable Products')->form([
-                Select::make('expense')->default(getCompany()->product_expence_accounts)->options(function (){
-                    $data=[];
-                    $accounts=Account::query()->where('company_id',getCompany()->id)->where('group','Expense')->orderBy('code')->get();
-                    foreach ( $accounts as $account){
-                        $data[$account->id]=$account->name." (".$account->code .")";
-                    }
-                    return $data;
-                })->searchable()->preload()->multiple()
-
-            ])->action(function ($data){
-
-                getCompany()->update(['product_expence_accounts'=>$data['expense']]);
+                getCompany()->update(['product_expence_accounts' => $data['expense']]);
 
                 Notification::make('success expense')->success()->title('Set Expense Accounts Successfully')->send();
+            }),
+
+            Actions\Action::make('Set Category ')->label('Set Categories For Consumable Products')->form([
+                Select::make('accounts')->default(getCompany()->product_accounts)->options(
+                    function () {
+                        $data = [];
+                        $accounts = Account::query()->where('company_id', getCompany()->id)->orderBy('code')->get();
+                        foreach ($accounts as $account) {
+                            $data[$account->id] = $account->name . " (" . $account->code . ")";
+                        }
+                        return $data;
+                    }
+                )->searchable()->preload()->multiple()
+
+            ])->action(function ($data) {
+
+                getCompany()->update(['product_accounts' => $data['accounts']]);
+                Notification::make('accounts success')->success()->title('Set accounts successfully')->send();
             })
         ];
     }

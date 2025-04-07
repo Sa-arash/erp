@@ -28,7 +28,7 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
-            border: 1px solid #ddd;
+            border: 1px solid ;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
         }
 
@@ -197,12 +197,12 @@
                         <img src="{{$customImage}}" style="width: 70px;">
                     @endif
                 </td>
-                <td  style="text-align: center; vertical-align: middle; width: 40%;">
-                    <h4 style="margin: 0; padding: 0; font-size: 14px; white-space: nowrap; display: inline-block;">
+                <td  style="border: none;text-align: center; vertical-align: middle; width: 40%;">
+                    <h4 style="margin: 0; padding: 0; font-size: 18px; white-space: nowrap; display: inline-block;">
                         {{ $company->title }}
                     </h4>
                     @foreach ($titles as $title)
-                        <h2 style="margin: 0; padding: 0; font-size: 11px; white-space: nowrap; display: inline;">
+                        <h2 style="margin: 0; padding: 0; font-size: 13px; white-space: nowrap; display: inline;">
                             {{ $title }}
                         </h2>
                     @endforeach
