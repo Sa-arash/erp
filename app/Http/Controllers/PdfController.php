@@ -9,6 +9,7 @@ use App\Models\Employee;
 use App\Models\FinancialPeriod;
 use App\Models\Payroll;
 use App\Models\Invoice;
+use App\Models\PurchaseOrder;
 use App\Models\PurchaseRequest;
 use App\Models\TakeOut;
 use App\Models\Transaction;
@@ -389,11 +390,21 @@ class PdfController extends Controller
     public function purchase($id)
     {
         $pr = PurchaseRequest::query()->with(['company', 'items'])->findOrFail($id);
-        $company = auth()->user()->employee->company;
+        $company = $pr->company;
 
         $pdf = Pdf::loadView(
             'pdf.purchase',
             compact('company', 'pr')
+        );
+        return $pdf->stream('purchase.pdf');
+    }
+    public function purchaseOrder($id){
+        $po = PurchaseOrder::query()->with(['company', 'items'])->findOrFail($id);
+        $company = $po->company;
+
+        $pdf = Pdf::loadView(
+            'pdf.po',
+            compact('company', 'po')
         );
         return $pdf->stream('purchase.pdf');
     }

@@ -28,6 +28,7 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\IconSize;
 use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Filters\Filter;
@@ -666,7 +667,7 @@ class PurchaseOrderResource extends Resource
 
             ], getModelFilter())
             ->actions([
-
+                Tables\Actions\Action::make('prPDF')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.po', ['id' => $record->id]))->openUrlInNewTab(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('GRN')->label('GRN')->url(fn($record) => AssetResource::getUrl('create', ['po' => $record->id])),
 //                Tables\Actions\DeleteAction::make()->visible(fn($record)=>$record->status==="pending" )

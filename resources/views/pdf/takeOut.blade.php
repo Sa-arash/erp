@@ -1,6 +1,6 @@
 <title>Gate Pass</title>
 @include('pdf.header',
-   ['titles'=>['Gate Pass']])
+   ['titles'=>['Gate Pass'],'title'=>'TakeOut'])
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">

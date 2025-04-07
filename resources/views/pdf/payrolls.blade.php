@@ -1,9 +1,6 @@
 
-    <title>Employee Salary </title>
-
-
 @include('pdf.header',
-   ['titles'=>['Payroll Report']])
+   ['titles'=>['Payroll Report'],'title'=>'Employee Salary '])
 <div class="table-container">
 
     <table>

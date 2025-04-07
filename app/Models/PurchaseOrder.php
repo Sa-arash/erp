@@ -30,7 +30,10 @@ class PurchaseOrder extends Model
     {
         return $this->belongsTo(Quotation::class, 'quotation_id');
     }
-
+    public function employee(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Employee::class,'prepared_by');
+    }
 
     public function purchaseRequest(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

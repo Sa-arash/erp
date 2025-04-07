@@ -1,4 +1,4 @@
-@include('pdf.header', ['titles' => ['Staff Clearance/Separation Form'], 'css'=>false] )
+@include('pdf.header', ['title'=>'Clearance','titles' => ['Staff Clearance/Separation Form'], 'css'=>false] )
 
 
     <style>

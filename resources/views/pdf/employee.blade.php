@@ -2,7 +2,8 @@
 @include('pdf.header', [
     'css'=>false,
     'company'=>$employee->company,
-    'titles'=>[]
+    'titles'=>[],
+    'title'=>'Journal Report'
     ]
     )
 

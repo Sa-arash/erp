@@ -6,7 +6,7 @@
     <link rel="icon" type="image/x-icon" href="{{ public_path('img/my.png') }}">
     <link rel="icon" type="image/x-icon" href="{!! public_path('images/' . $company?->logo) !!}">
 
-    <title>Report</title>
+    <title>{{$title}}</title>
 
     @if($css??true)
     <style>
@@ -179,6 +179,9 @@
             tr:nth-child(odd) td {
                 background-color: #ffffff !important;
             }
+        }
+        @page {
+            margin: 20px;
         }
     </style>
     @endif

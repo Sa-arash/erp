@@ -1,6 +1,6 @@
 
     @include('pdf.header',
-    ['titles'=>[$accountTitle??'Account Report']])
+    ['titles'=>[$accountTitle??'Account Report'],'title'=>'Account Report'])
 
     <br>
 

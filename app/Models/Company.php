@@ -27,13 +27,14 @@ class Company extends Model implements HasAvatar, HasName , HasMedia
     }
 
 
-    protected $fillable = ['product_service_accounts','security_id', 'warehouse_id', 'structure_asset_id', 'product_expence_accounts', 'account_cash', 'product_accounts', 'category_account', 'customer_account', 'vendor_account', 'account_bank', 'weekend_days', 'daily_working_hours', 'overtime_rate', 'title', 'logo', 'description', 'user_id', 'country', 'address', 'contact_information', 'company_registration_document'];
+    protected $fillable = ['agency','logo_security','title_security','product_service_accounts','security_id', 'warehouse_id', 'structure_asset_id', 'product_expence_accounts', 'account_cash', 'product_accounts', 'category_account', 'customer_account', 'vendor_account', 'account_bank', 'weekend_days', 'daily_working_hours', 'overtime_rate', 'title', 'logo', 'description', 'user_id', 'country', 'address', 'contact_information', 'company_registration_document'];
 
     protected $casts = [
         'weekend_days' => 'array',
         'product_accounts' => 'array',
         'product_expence_accounts' => 'array',
         'product_service_accounts' => 'array',
+        'agency' => 'array',
 
     ];
 

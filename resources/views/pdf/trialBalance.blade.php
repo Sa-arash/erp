@@ -1,7 +1,7 @@
 @ -0,0 +1,118 @@
 
 
-    @include('pdf.header', ['titles' => ['Trial Balance']])
+    @include('pdf.header', ['titles' => ['Trial Balance'],'title'=>'Trial Balance'])
     <div style="text-align: left; padding: 0; margin: 0;">
 
         <p style="margin: 0; padding: 0;text-align:center">As of {{ $endDate ? \Carbon\Carbon::parse($endDate)->format('Y-m-d') : \Carbon\Carbon::parse(now())->format('Y-m-d') }}</p>

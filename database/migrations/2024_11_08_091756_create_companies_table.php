@@ -34,6 +34,9 @@ return new class extends Migration
             $table->integer('warehouse_id')->nullable();
             $table->integer('structure_asset_id')->nullable();
             $table->integer('security_id')->nullable();
+            $table->string('title_security')->nullable();
+            $table->string('logo_security')->nullable();
+            $table->string('agency')->nullable();
 //          $table->text('company_type');
             $table->text('logo')->nullable();
             $table->timestamps();

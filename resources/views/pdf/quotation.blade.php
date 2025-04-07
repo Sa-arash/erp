@@ -1,6 +1,6 @@
 @include('pdf.header',
   ['titles'=>[''],
-  'css'=>true
+  'css'=>true,'title'=>'Quotation'
   ])
 
 <style>

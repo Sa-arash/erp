@@ -1,5 +1,5 @@
 @include('pdf.header',
-   ['titles'=>['']])
+   ['titles'=>[''],'title'=>'Purchase Request'])
 
 
     <style>

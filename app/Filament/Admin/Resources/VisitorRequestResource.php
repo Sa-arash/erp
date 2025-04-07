@@ -18,6 +18,7 @@ use Filament\Support\Enums\IconSize;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
+use function PHPUnit\Framework\isArray;
 
 class VisitorRequestResource extends Resource implements HasShieldPermissions
 {
@@ -37,6 +38,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
             'delete',
             'delete_any',
             'reception',
+            'logo_and_name'
         ];
     }
 
@@ -52,33 +54,20 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                             ->required()
                             ->options(getCompany()->employees->pluck('fullName', 'id'))
                             ->default(fn() => auth()->user()->employee->id),
-                            Select::make('agency')->options([
-                                'UNC' => 'UNC',
-                                'FAO' => 'FAO',
-                                'IFAD' => 'IFAD',
-                                'ILO' => 'ILO',
-                                'IOM' => 'IOM',
-                                'OCHA' => 'OCHA',
-                                'UN-Habitat' => 'UN-Habitat',
-                                'UN Women' => 'UN Women',
-                                'UNAIDS' => 'UNAIDS',
-                                'UNAMA' => 'UNAMA',
-                                'UNCTAD' => 'UNCTAD',
-                                'UNDP' => 'UNDP',
-                                'UNESCO' => 'UNESCO',
-                                'UNFPA' => 'UNFPA',
-                                'UNHCR' => 'UNHCR',
-                                'UNICEF' => 'UNICEF',
-                                'UNIDO' => 'UNIDO',
-                                'UNITAR' => 'UNITAR',
-                                'UNMAS' => 'UNMAS',
-                                'UNODC' => 'UNODC',
-                                'UNOPS' => 'UNOPS',
-                                'WFP' => 'WFP',
-                                'WHO' => 'WHO',
-                                'World Bank' => 'World Bank',
-                            ])->searchable()->preload(),
-                            
+                            Select::make('agency')->options(getCompany()->agency)->createOptionForm([
+                                Forms\Components\TextInput::make('title')->required()
+                            ])->createOptionUsing(function ($data){
+                                $array=getCompany()->agency;
+                                if (isset($array)){
+                                    $array[$data['title']]=$data['title'];
+
+                                }else{
+                                    $array=[$data['title']=>$data['title']];
+                                }
+                                getCompany()->update(['agency'=>$array]);
+                                return $data['title'];
+                            })->searchable()->preload(),
+
                         Forms\Components\DatePicker::make('visit_date')->default(now()->addDay())->required(),
                         Forms\Components\TimePicker::make('arrival_time')
                             ->seconds(false)
@@ -272,7 +261,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                         Forms\Components\TextInput::make('id')->label('ID/Passport')->required(),
                         Forms\Components\TextInput::make('phone')->label('Phone'),
                         Forms\Components\TextInput::make('organization')->label('Organization'),
-                        Forms\Components\Select::make('type')->label('Type')->options(['National' => 'National', 'International' => 'International', 'De-facto Security Forces' => 'De-facto Security Forces',]),
+                        Forms\Components\Select::make('type')->searchable()->label('Type')->options(['National' => 'National', 'International' => 'International', 'De-facto Security Forces' => 'De-facto Security Forces',]),
                         Forms\Components\TextInput::make('remarks')->label('Remarks'),
                     ])->columns(6)->columnSpanFull(),
                 Forms\Components\Repeater::make('driver_vehicle_detail')

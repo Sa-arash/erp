@@ -1,4 +1,4 @@
-@include('pdf.header', ['titles' => ['Voucher Report'],'css'=>true])
+@include('pdf.header', ['title'=>'Voucher Report','titles' => ['Voucher Report'],'css'=>true])
 
 <div style="text-align: left; padding: 0; margin: 0;">
     <p style="margin: 0; padding: 0;">Voc No: {{ $document->number }}</p>
