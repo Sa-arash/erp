@@ -15,7 +15,7 @@ class StructurePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_structure');
+        return true;
     }
 
     /**
@@ -23,7 +23,7 @@ class StructurePolicy
      */
     public function view(User $user, Structure $structure): bool
     {
-        return $user->can('view_structure');
+        return true;
     }
 
     /**
@@ -31,7 +31,7 @@ class StructurePolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_structure');
+        return true;
     }
 
     /**
@@ -39,7 +39,7 @@ class StructurePolicy
      */
     public function update(User $user, Structure $structure): bool
     {
-        return $user->can('update_structure');
+        return true;
     }
 
     /**
@@ -47,7 +47,7 @@ class StructurePolicy
      */
     public function delete(User $user, Structure $structure): bool
     {
-        return $user->can('delete_structure');
+        return true;
     }
 
     /**
@@ -55,7 +55,7 @@ class StructurePolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_structure');
+        return true;
     }
 
     /**

@@ -19,7 +19,6 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class StructuresRelationManager extends RelationManager
 {
     protected static string $relationship = 'structures';
-    protected static ?string $label = 'Structures';
 
     public function form(Form $form): Form
     {
@@ -75,11 +74,11 @@ class StructuresRelationManager extends RelationManager
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()->hidden(fn($record)=>$record->chiller->count() ===0 or $record->assets->count()===0),
+                Tables\Actions\DeleteAction::make()->hidden(fn($record)=>$record->chiller->count() !==0 or $record->assets->count()!==0 or $record->employees->count()!==0),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+//                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

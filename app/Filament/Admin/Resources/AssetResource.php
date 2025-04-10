@@ -184,44 +184,35 @@ class AssetResource extends Resource
 
             ])
             ->filters([
-
                 Tables\Filters\SelectFilter::make('product_id')->searchable()->options(getCompany()->products->pluck('title', 'id'))->label('Product'),
-
-
                 Tables\Filters\SelectFilter::make('status')->searchable()->options(['inuse' => "Inuse", 'inStorageUsable' => "InStorageUsable", 'storageUnUsable' => "StorageUnUsable", 'outForRepair' => 'OutForRepair', 'loanedOut' => "LoanedOut"]),
                 DateRangeFilter::make('buy_date')->label('Purchase Date'),
-                DateRangeFilter::make('guarantee_data'),
+                DateRangeFilter::make('guarantee_data')->label('Guarantee Data'),
                 Tables\Filters\Filter::make('employee')
                     ->form([
-                        Forms\Components\Select::make('employee_id')
-                            ->label('Employee')
-                            ->options(fn() => getCompany()->employees()->pluck('fullName', 'id'))
-                            ->searchable()
-                            ->preload(),
-                    ])
+                        Forms\Components\Select::make('employee_id')->label('Employee')->options(fn() => getCompany()->employees()->pluck('fullName', 'id'))->searchable()->preload(),
+                        Forms\Components\Select::make('department_id')->label('Department')->options(fn() => getCompany()->departments()->pluck('title', 'id'))->searchable()->preload(),
+                        ])
                     ->query(function (Builder $query, array $data) {
                         return $query->when($data['employee_id'] ?? null, function ($query, $employeeId) {
                             return $query->whereHas('assetEmployee', function ($subQuery) use ($employeeId) {
                                 $subQuery->where('employee_id', $employeeId);
                             });
+                        })->when($data['department_id'],function ($query,$department){
+                            return $query->whereHas('assetEmployee', function ($subQuery) use ($department) {
+                                $subQuery->whereHas('employee', function ($query)use($department){
+                                    $query->where('department_id',$department);
+                                });
+                            });
                         });
                     }),
                 Tables\Filters\Filter::make('price_range')
                     ->form([
-                        Forms\Components\TextInput::make('min_price')
-                            ->label('Minimum Price')
-                            ->numeric()
-                            ->placeholder('Enter min price'),
-
-                        Forms\Components\TextInput::make('max_price')
-                            ->label('Maximum Price')
-                            ->numeric()
-                            ->placeholder('Enter max price'),
+                        Forms\Components\TextInput::make('min_price')->label('Minimum Price')->numeric()->placeholder('Enter min price'),
+                        Forms\Components\TextInput::make('max_price')->label('Maximum Price')->numeric()->placeholder('Enter max price'),
                     ])
                     ->query(function (Builder $query, array $data) {
-                        return $query
-                            ->when($data['min_price'] ?? null, fn($query, $min) => $query->where('price', '>=', $min))
-                            ->when($data['max_price'] ?? null, fn($query, $max) => $query->where('price', '<=', $max));
+                        return $query->when($data['min_price'] ?? null, fn($query, $min) => $query->where('price', '>=', $min))->when($data['max_price'] ?? null, fn($query, $max) => $query->where('price', '<=', $max));
                     })
                     ->columns(2)
                     ->columnSpanFull(),

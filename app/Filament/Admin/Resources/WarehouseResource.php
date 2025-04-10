@@ -23,8 +23,6 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-use function Laravel\Prompts\select;
-
 class WarehouseResource extends Resource
 {
     protected static ?string $model = Warehouse::class;
@@ -39,25 +37,13 @@ class WarehouseResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('title')->label('Warehouse Name')
-                    ->required()
-                    ->maxLength(255),
-                Select::make('employee_id')->required()->label('Manager')
-                    ->searchable()
-                    ->preload()
-                    ->options(getCompany()->employees()->get()->pluck('fullName', 'id')),
-                Forms\Components\TextInput::make('phone')
-                    ->tel()
-                    ->maxLength(255),
-                Forms\Components\Select::make('country')
-                    ->options(getCountry())->searchable()->preload(),
-                Forms\Components\TextInput::make('state')->label('State/Province')
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('city')
-                    ->maxLength(255),
+                Forms\Components\TextInput::make('title')->label('Warehouse Name')->required()->maxLength(255),
+                Select::make('employee_id')->required()->label('Manager')->searchable()->preload()->options(getCompany()->employees()->get()->pluck('fullName', 'id')),
+                Forms\Components\TextInput::make('phone')->tel()->maxLength(255),
+                Forms\Components\Select::make('country')->options(getCountry())->searchable()->preload(),
+                Forms\Components\TextInput::make('state')->label('State/Province')->maxLength(255),
+                Forms\Components\TextInput::make('city')->maxLength(255),
                 Forms\Components\Textarea::make('address')->maxLength(255)->columnSpanFull(),
-
-
             ]);
     }
 
@@ -98,7 +84,8 @@ class WarehouseResource extends Resource
                             'company_id'=>getCompany()->id,
                         ]);
                     Notification::make('save')->success()->title('Save ')->send();
-                })
+                }),
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -110,11 +97,10 @@ class WarehouseResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\StructuresRelationManager::class
+            RelationManagers\StructuresRelationManager::class,
+            RelationManagers\ProductsRelationManager::class
         ];
     }
-
-
     public static function getPages(): array
     {
         return [

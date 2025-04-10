@@ -32,15 +32,12 @@ class Warehouse extends Model
     {
         return $this->hasMany(Inventory::class);
     }
+    public function assets(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Asset::class);
+    }
     public function structures(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(Structure::class);
-    }
-
-    public function products()
-    {
-        return $this->belongsToMany(Product::class, 'inventories')
-            ->withPivot(['quantity', 'structure_id', 'company_id'])
-            ->withTimestamps();
+        return $this->hasMany(Structure::class,'warehouse_id','id');
     }
 }
