@@ -137,6 +137,42 @@
             </table>
         </div>
         <div class="section">
+            <div class="section-title">
+                
+            </div>
+            <table>
+                <tr>
+                  
+                    <th colspan="5" style="text-align:center">Armed Close Protection Officers (If Applicable)</th>
+                </tr>
+                <tr>
+                  
+                    <th>Type</th>
+                    <th>National</th>
+                    <th>International</th>
+                    <th>De-facto Security Forces</th>
+                    <th>Total</th>
+                </tr>
+                <tr>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                    <td>&nbsp;</td>
+                </tr>
+               
+            </table>
+        </div>
+
+
+      
+        
+        
+        
+
+
+
+        <div class="section">
             <div class="section-title">Driver and Vehicle Details</div>
             <table style="">
                 <tr>
