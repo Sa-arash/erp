@@ -50,8 +50,11 @@ class CurrencyResource extends Resource
 
     public static function table(Table $table): Table
     {
+      
         return $table
             ->columns([
+
+                Tables\Columns\TextColumn::make('id')->searchable(),
                 Tables\Columns\TextColumn::make('name')->searchable(),
                 Tables\Columns\TextColumn::make('symbol')->searchable(),
                 Tables\Columns\TextColumn::make('exchange_rate')->numeric()->sortable()->label('Exchange Rate'),
@@ -62,6 +65,12 @@ class CurrencyResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make()->visible(fn($record)=>(
+                     $record->accounts->isEmpty()&&
+                $record->transactions->isEmpty()&&
+                $record->parties->isEmpty()&&
+                $record->purchaseRequest->isEmpty()&&
+                $record->banks->isEmpty()))
             ])
             ->bulkActions([
 
