@@ -11,7 +11,6 @@ use App\Models\Department;
 use App\Models\Duty;
 use App\Models\Position;
 use App\Models\User;
-use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -22,8 +21,6 @@ use Filament\Support\Enums\IconSize;
 use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Str;
 
 class UserResource extends Resource
@@ -241,10 +238,10 @@ class UserResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\DeleteAction::make()->hidden(fn($record)=>$record->id===auth()->id()),
+                Tables\Actions\DeleteAction::make()->hidden(fn($record) => $record->id === auth()->id()),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('super')->icon('heroicon-s-shield-check')->iconSize(IconSize::Large)->label('Grant Supper Admin')->action(function ($record) {
-                    $companies = Company::query()->get();
+                Tables\Actions\Action::make('super')->icon('heroicon-s-shield-check')->iconSize(IconSize::Large)->label('Grant Supper Admin')->action(function ($record, $data) {
+                    $companies = Company::query()->whereIn('id', $data['companies'])->get();
                     foreach ($companies as $company) {
                         if ($company->roles->where('is_show', 0)->first()) {
                             $roleID = $company->roles->where('is_show', 0)->first()->id;
@@ -257,23 +254,33 @@ class UserResource extends Resource
                             }
                         }
                     }
+                    $record->companies()->sync($companies->pluck('id')->toArray());
                     $record->update(['is_super' => 1]);
                     Notification::make('success')->success()->title('Submitted Successfully')->send();
-                })->requiresConfirmation()->visible(fn($record)=>!$record->is_super)->hidden(fn($record)=>$record->id ===auth()->user()->id),
-                Tables\Actions\Action::make('unSuper')->label('Revoke Supper Admin')->action(function ($record) {
-                    $companies = Company::query()->get();
+                })->requiresConfirmation()->form(function ($record) {
+                   return [
+                        Forms\Components\Select::make('companies')->default($record->companies->pluck('id')->toArray())->multiple()->required()->label('Companies')->options(Company::query()->pluck('title', 'id'))->searchable()->preload()
+                    ];
+                })->visible(fn($record) => !$record->is_super)->hidden(fn($record) => $record->id === auth()->user()->id),
+                Tables\Actions\Action::make('unSuper')->label('Revoke Supper Admin')->action(function ($record, $data) {
+                    $companies = Company::query()->whereIn('id', $data['companies'])->get();
                     foreach ($companies as $company) {
                         if ($company->roles->where('is_show', 0)->first()) {
                             $roleID = $company->roles->where('is_show', 0)->first()->id;
-                            $role=$record->allRoles->where('id', $roleID)->first();
+                            $role = $record->allRoles->where('id', $roleID)->first();
                             if ($role) {
-                               $role->pivot->delete();
+                                $role->pivot->delete();
                             }
                         }
                     }
+                    $record->companies()->sync($companies->pluck('id')->toArray());
                     $record->update(['is_super' => 0]);
                     Notification::make('success')->success()->title('Submitted Successfully')->send();
-                })->requiresConfirmation()->visible(fn($record)=>$record->is_super)->hidden(fn($record)=>$record->id ===auth()->user()->id),
+                })->requiresConfirmation()->form(function ($record) {
+                    return [
+                        Forms\Components\Select::make('companies')->default($record->companies->pluck('id')->toArray())->multiple()->label('Companies')->options(Company::query()->pluck('title', 'id'))->searchable()->preload()
+                    ];
+                })->visible(fn($record)=>$record->is_super)->hidden(fn($record)=>$record->id ===auth()->user()->id),
                 Tables\Actions\Action::make('setPassword')->label('Reset Password')->form([
                     Forms\Components\TextInput::make('password')->required()->autocomplete(false)
                 ])->requiresConfirmation()->action(function ($record, $data) {

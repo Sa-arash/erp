@@ -73,32 +73,19 @@ class VisitRequest extends BaseWidget
                     [
                         Section::make('Visitor Access Request')->schema([
                             Section::make('Visit’s Details')->schema([
-                                Select::make('agency')->options([
-                                    'UNC' => 'UNC',
-                                    'FAO' => 'FAO',
-                                    'IFAD' => 'IFAD',
-                                    'ILO' => 'ILO',
-                                    'IOM' => 'IOM',
-                                    'OCHA' => 'OCHA',
-                                    'UN-Habitat' => 'UN-Habitat',
-                                    'UN Women' => 'UN Women',
-                                    'UNAIDS' => 'UNAIDS',
-                                    'UNAMA' => 'UNAMA',
-                                    'UNCTAD' => 'UNCTAD',
-                                    'UNDP' => 'UNDP',
-                                    'UNESCO' => 'UNESCO',
-                                    'UNFPA' => 'UNFPA',
-                                    'UNHCR' => 'UNHCR',
-                                    'UNICEF' => 'UNICEF',
-                                    'UNIDO' => 'UNIDO',
-                                    'UNITAR' => 'UNITAR',
-                                    'UNMAS' => 'UNMAS',
-                                    'UNODC' => 'UNODC',
-                                    'UNOPS' => 'UNOPS',
-                                    'WFP' => 'WFP',
-                                    'WHO' => 'WHO',
-                                    'World Bank' => 'World Bank',
-                                ])->searchable()->preload(),
+                                Select::make('agency')->options(getCompany()->agency)->createOptionForm([
+                                    TextInput::make('title')->required()
+                                ])->createOptionUsing(function ($data){
+                                    $array=getCompany()->agency;
+                                    if (isset($array)){
+                                        $array[$data['title']]=$data['title'];
+
+                                    }else{
+                                        $array=[$data['title']=>$data['title']];
+                                    }
+                                    getCompany()->update(['agency'=>$array]);
+                                    return $data['title'];
+                                })->searchable()->preload(),
                                 DatePicker::make('visit_date')->default(now()->addDay())->required(),
                                 TimePicker::make('arrival_time')->seconds(false)->before('departure_time')->required(),
                                 TimePicker::make('departure_time')->seconds(false)->after('arrival_time')->required(),

@@ -100,8 +100,8 @@
             <td>{{$item->unit->title}}</td>
             <td>{{$item->quantity}}</td>
             <td>{{number_format($item->unit_price)}}</td>
-            <td>{{$item->taxes}}</td>
-            <td>{{$item->freights}}</td>
+            <td>{{$item->taxes}}%</td>
+            <td>{{$item->freights}}%</td>
             <td>{{number_format($item->total)}}</td>
 
         </tr>
@@ -150,8 +150,8 @@
             <td>{{ $transaction->account->code }}</td>
             <td>{{ $transaction->description }}</td>
             <td>{{ $transaction->currency->name }}</td>
-            <td>{{ number_format($transaction->dreditor_foreign) }}</td>
-            <td>{{ number_format($transaction->creditor_foreign) }}</td>
+            <td>{{ number_format($transaction->debtor_foreign,2) }}</td>
+            <td>{{ number_format($transaction->creditor_foreign,2) }}</td>
             <td>{{ number_format($transaction->exchange_rate,5) }}</td>
             <td>{{ number_format($transaction->debtor) }}</td>
             <td>{{ number_format($transaction->creditor) }}</td>
@@ -159,9 +159,16 @@
     @endforeach
 
     <tr>
-        <td colspan="8">
+        <td colspan="5">
             Total
         </td>
+        <td>
+            {{ number_format($document->transactions->sum('debtor_foreign')) }}
+        </td>
+        <td>
+            {{ number_format($document->transactions->sum('creditor_foreign')) }}
+        </td>
+        <td></td>
         <td>
             {{ number_format($document->transactions->sum('debtor')) }}
         </td>
