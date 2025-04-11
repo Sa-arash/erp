@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('title');
             $table->timestamp('overtime_date');
             $table->integer('hours');
-            $table->enum('status',['pending','rejected','accepted'])->default('pending');
+            $table->enum('status',['pending','rejected','accepted','approveHead'])->default('pending');
             $table->foreignId('employee_id')->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('user_id')->nullable()->constrained('users')->cascadeOnDelete()->cascadeOnUpdate();

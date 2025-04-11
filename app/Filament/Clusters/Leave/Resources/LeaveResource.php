@@ -17,6 +17,7 @@ use Filament\Forms;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
 use Filament\Support\RawJs;
@@ -169,11 +170,12 @@ class LeaveResource extends Resource
                         'approval_date'=>now(),
                         'user_id'=>auth()->id()
                     ]);
-                })
+                        Notification::make('approveLeave')->title('Approved Leave')->success()->send()->sendToDatabase(auth()->user(),true);
+                    })->visible(fn($record)=>$record->status->value=="approveHead")
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+//                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

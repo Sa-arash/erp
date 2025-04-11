@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Account;
+use App\Models\Asset;
 use App\Models\Bid;
 use App\Models\Company;
 use App\Models\Employee;
@@ -466,6 +467,16 @@ class PdfController extends Controller
         $pdf = Pdf::loadView(
             'pdf.requestVisit',
             compact('company', 'requestVisit')
+        );
+        return $pdf->stream('requestVisit.pdf');
+    }
+
+    public function assets($ids){
+        $assets= Asset::query()->with(['product','employees'])->whereIn('id',explode('-',$ids))->get();
+        $company=$assets[0]->company;
+        $pdf = Pdf::loadView(
+            'pdf.assets',
+            compact('company', 'assets')
         );
         return $pdf->stream('requestVisit.pdf');
     }

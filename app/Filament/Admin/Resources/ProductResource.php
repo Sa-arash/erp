@@ -9,6 +9,7 @@ use App\Models\Account;
 use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\Unit;
+use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -96,30 +97,21 @@ class ProductResource extends Resource
                     }
                     return $data;
                 }
-                })->required()->model(Transaction::class)->searchable()->label('Category'),
+                })->required()->model(Transaction::class)->searchable()->label('Category')->live(),
 
-                select::make('sub_account_id')->required()->searchable()->label('SubCategory')->options(fn(Get $get)=>  $get('account_id') !== null? getCompany()->accounts()->where('parent_id',$get('account_id'))->pluck('name', 'id'):[])
-//                    ->createOptionForm([
-//                        Forms\Components\Section::make([
-//                            Forms\Components\TextInput::make('title')->label('Sub Category Name')->required()->maxLength(255),
-////                            select::make('product_category_id')->searchable()->label('Parent')->required()->options(getCompany()->productCategories()->pluck('title', 'id')),
-//
-//                        ])
-//                    ])
-//                    ->createOptionUsing(function (array $data): int {
-//                        return Account::query()->create([
-//                            'title' => $data['title'],
-//                            'product_category_id' => $data['product_category_id'],
-//                            'company_id' => getCompany()->id
-//                        ])->getKey();
-//                    })
-                ,
-
+                SelectTree::make('account_id')->formatStateUsing(function ($state, Forms\Set $set) {
+                    $account = Account::query()->where('id', $state)->whereNot('currency_id', defaultCurrency()?->id)->first();
+                    if ($account) {
+                        $set('currency_id', $account->currency_id);
+                        $set('exchange_rate', number_format($account->currency->exchange_rate));
+                        $set('isCurrency', 1);
+                        return $state;
+                    }
+                    $set('isCurrency', 0);
+                    return $state;
+                })->defaultOpenLevel(3)->label('SubCategory')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('group','Asset')->where('company_id', getCompany()->id),modifyChildQueryUsing: fn($query,Get $get)=>$query->where('parent_id',$get('account_id') ? $get('account_id'):"-1"))->searchable(),
                 Forms\Components\Textarea::make('description')->columnSpanFull(),
-                MediaManagerInput::make('photo')->orderable(false)
-                    ->disk('public')
-                    ->schema([
-                    ])->maxItems(1),
+                MediaManagerInput::make('photo')->orderable(false)->disk('public')->schema([])->maxItems(1),
                 Forms\Components\TextInput::make('stock_alert_threshold')->numeric()->default(5)->required(),
 
                 // Forms\Components\TextInput::make('price')

@@ -85,15 +85,14 @@ class OvertimeResource extends Resource
                     ];
                 }
                 )->action(function ($data,$record) {
-
                     $record->update([
                         'comment'=>$data['comment'],
                         'status'=>$data['status']->value,
                         'approval_date'=>now(),
                         'user_id'=>auth()->id()
                     ]);
-                   return Notification::make('approveOvertime')->title('Approved Overtime')->success()->send()->sendToDatabase(auth()->user(),true);
-                })
+                    Notification::make('approveOvertime')->title('Approved Overtime')->success()->send()->sendToDatabase(auth()->user(),true);
+                })->visible(fn($record)=>$record->status->value==="approveHead")
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

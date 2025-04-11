@@ -165,7 +165,7 @@
         @foreach($pr?->approvals->where('status','Approve') as $approve)
         <th style="border: none!important;background: white !important;color: #1a202c">
             @if($approve->position==="PR Verification")
-                Verified By:
+                Verified By
                 <br>  {{$approve->employee?->position->title}}
             @elseif($approve->position==="PR Warehouse/Storage Clarification")
                 Warehouse/Storage

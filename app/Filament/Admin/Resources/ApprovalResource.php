@@ -54,7 +54,7 @@ class ApprovalResource extends Resource implements HasShieldPermissions
         return $table->query(Approval::query()->where('employee_id', getEmployee()->id)->orderBy('id', 'desc'))
             ->columns([
                 Tables\Columns\TextColumn::make('approvable.employee.info')->label('Employee')->searchable()->badge(),
-                Tables\Columns\TextColumn::make('created_at')->label('Request Date')->date()->sortable(),
+                Tables\Columns\TextColumn::make('created_at')->label('Request Date')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('approvable_type')->label('Request Type')->state(function ($record) {
                     $type = substr($record->approvable_type, 11);
                     if ($type === "Separation") {
@@ -78,6 +78,27 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                 })->searchable()
             ], getModelFilter())
             ->actions([
+                Tables\Actions\Action::make('viewLeave')->visible(fn($record) => substr($record->approvable_type, 11) === "Leave")->infolist(function ($record){
+                    return [
+                      Fieldset::make('')->schema([
+                          TextEntry::make('employee.info')->label('Employee'),
+                          TextEntry::make('typeLeave.title')->label('Leave Type'),
+                          TextEntry::make('start_leave')->date()->label('Start Leave'),
+                          TextEntry::make('end_leave')->date()->label('End Leave'),
+                      ])->columns()->relationship('approvable')
+                    ];
+                }),
+                Tables\Actions\Action::make('viewOvertime')->visible(fn($record) => substr($record->approvable_type, 11) === "Overtime")->infolist(function ($record){
+                    return [
+                        Fieldset::make('')->schema([
+                            TextEntry::make('employee.info')->label('Employee'),
+                            TextEntry::make('title')->label('Description'),
+                            TextEntry::make('overtime_date')->date()->label('Start Leave'),
+                            TextEntry::make('hours')->label('Hours'),
+                        ])->columns()->relationship('approvable')
+                    ];
+                }),
+
                 Tables\Actions\Action::make('viewTakeOut')->visible(fn($record) => substr($record->approvable_type, 11) === "TakeOut")->infolist(function ($record) {
                     return [
                         Fieldset::make('Take Out')->schema([
@@ -97,7 +118,6 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                         ])->relationship('approvable')->columns()
                     ];
                 }),
-
                 Tables\Actions\Action::make('viewVisitorRequest')->label('View')->visible(fn($record) => substr($record->approvable_type, 11) === "VisitorRequest")->infolist(function () {
                     return [
                         Fieldset::make('Visitor Access')->schema([
@@ -136,7 +156,6 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                         ])->relationship('approvable')->columns()
                     ];
                 })->modalWidth(MaxWidth::SevenExtraLarge),
-
                 Action::make('viewPurchaseRequest')->label('View')->modalWidth(MaxWidth::Full)->infolist(function () {
                     return [
                         Fieldset::make('PR')->relationship('approvable')->schema([
@@ -287,6 +306,26 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                         }else{
                             $record->approvable->update([
                                 'mood' => 'NotApproved'
+                            ]);
+                        }
+                    }elseif (substr($record->approvable_type, 11) === "Leave"){
+                        if ($data['status'] === "Approve") {
+                                $record->approvable->update([
+                                    'status' => 'approveHead'
+                                ]);
+                        }else{
+                            $record->approvable->update([
+                                'status' => 'rejected'
+                            ]);
+                        }
+                    }elseif (substr($record->approvable_type, 11) === "Overtime"){
+                        if ($data['status'] === "Approve") {
+                            $record->approvable->update([
+                                'status' => 'approveHead'
+                            ]);
+                        }else{
+                            $record->approvable->update([
+                                'status' => 'rejected'
                             ]);
                         }
                     }

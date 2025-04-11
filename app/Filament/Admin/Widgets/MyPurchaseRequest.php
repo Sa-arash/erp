@@ -26,6 +26,7 @@ use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\Section as ComponentsSection;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
+use Filament\Support\Enums\IconSize;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Support\RawJs;
 use Filament\Tables;
@@ -129,6 +130,8 @@ class MyPurchaseRequest extends BaseWidget
             TextEntry::make('approve_date')->dateTime(),
         ])->columns(5)
     ]),
+    Tables\Actions\Action::make('prPDF')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.purchase', ['id' => $record->id]))->openUrlInNewTab(),
+
 ])
             ->headerActions([
                 Action::make('Purchase Request ')->label(' Purchase Request ') ->modalWidth(MaxWidth::FitContent  )->form([
