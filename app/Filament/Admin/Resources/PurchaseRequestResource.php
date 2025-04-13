@@ -90,8 +90,11 @@ class PurchaseRequestResource extends Resource
                         ->relationship('items')
                         ->schema([
                             Forms\Components\Select::make('product_id')->label('Product/Service')
-                                ->label('Product')->options(function () {
-                                    return getCompany()->products->pluck('info', 'id');
+                                ->label('Product')->options(function (Get $get) {
+                                    $employee=Employee::query()->firstWhere('id',$get('employee_id'));
+                                    if ($employee){
+                                        return getCompany()->products->where('department_id',$employee->department_id)->pluck('info', 'id');
+                                    }
                                 })->required()->searchable()->preload()->afterStateUpdated(function (Forms\Set $set,$state){
                                     $product=Product::query()->firstWhere('id',$state);
                                     if ($product){
