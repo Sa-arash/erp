@@ -8,6 +8,7 @@ use App\Filament\Clusters\StackManagementSettings;
 use App\Models\Account;
 use App\Models\Product;
 use App\Models\Transaction;
+use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
@@ -60,7 +61,17 @@ class ProductServiceResource extends Resource
                         return $data;
                     }
                 )->required()->model(Transaction::class)->searchable()->label('Category'),
-                select::make('sub_account_id')->required()->searchable()->label('SubCategory')->options(fn(Get $get)=>  $get('account_id') !== null? getCompany()->accounts()->where('parent_id',$get('account_id'))->pluck('name', 'id'):[]),
+                SelectTree::make('account_id')->formatStateUsing(function ($state, Forms\Set $set) {
+                    $account = Account::query()->where('id', $state)->whereNot('currency_id', defaultCurrency()?->id)->first();
+                    if ($account) {
+                        $set('currency_id', $account->currency_id);
+                        $set('exchange_rate', number_format($account->currency->exchange_rate));
+                        $set('isCurrency', 1);
+                        return $state;
+                    }
+                    $set('isCurrency', 0);
+                    return $state;
+                })->defaultOpenLevel(3)->label('SubCategory')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('group','Expanse')->where('company_id', getCompany()->id),modifyChildQueryUsing: fn($query,Get $get)=>$query->where('parent_id',$get('account_id') ? $get('account_id'):"-1"))->searchable(),
                 Forms\Components\Textarea::make('description')->columnSpanFull(),
                 Forms\Components\Hidden::make('product_type')->default('service')->columnSpanFull(),
             ]);

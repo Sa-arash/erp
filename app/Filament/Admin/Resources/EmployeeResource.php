@@ -32,6 +32,7 @@ use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Validation\Rules\Unique;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use OpenSpout\Common\Entity\Style\CellAlignment;
 use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
@@ -126,7 +127,9 @@ class EmployeeResource extends Resource
                         ->schema([
                             Forms\Components\Select::make('department_id')->createOptionForm([
                                 Forms\Components\TextInput::make('title')
-                                    ->required()
+                                    ->required()->unique('departments',modifyRuleUsing: function (Unique $rule) {
+                                        return $rule->where('company_id', getCompany()->id);
+                                    })
                                     ->maxLength(255)->columnSpanFull(),
                                 Forms\Components\Textarea::make('description')->columnSpanFull()
                             ])
@@ -143,7 +146,9 @@ class EmployeeResource extends Resource
                                 ->createOptionForm([
                                     Forms\Components\TextInput::make('title')
                                         ->required()->columnSpanFull()
-                                        ->maxLength(255),
+                                        ->maxLength(255)->unique('positions',modifyRuleUsing: function (Unique $rule) {
+                                            return $rule->where('company_id', getCompany()->id);
+                                        }),
                                     Forms\Components\FileUpload::make('document')->columnSpanFull(),
                                     Forms\Components\Textarea::make('description')
                                         ->columnSpanFull(),
@@ -324,7 +329,9 @@ class EmployeeResource extends Resource
                 ->schema([
                     Forms\Components\Select::make('department_id')->createOptionForm([
                         Forms\Components\TextInput::make('title')
-                            ->required()
+                            ->required()->unique('departments',modifyRuleUsing: function (Unique $rule) {
+                                return $rule->where('company_id', getCompany()->id);
+                            })
                             ->maxLength(255)->columnSpanFull(),
                         Forms\Components\Textarea::make('description')->columnSpanFull()
                     ])
@@ -339,7 +346,9 @@ class EmployeeResource extends Resource
 
                     Forms\Components\Select::make('position_id')
                         ->createOptionForm([
-                            Forms\Components\TextInput::make('title')
+                            Forms\Components\TextInput::make('title')->unique('positions',modifyRuleUsing: function (Unique $rule) {
+                                return $rule->where('company_id', getCompany()->id);
+                            })
                                 ->required()->columnSpanFull()
                                 ->maxLength(255),
                             Forms\Components\FileUpload::make('document')->columnSpanFull(),
