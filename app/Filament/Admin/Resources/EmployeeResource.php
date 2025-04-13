@@ -129,14 +129,15 @@ class EmployeeResource extends Resource
                                 Forms\Components\TextInput::make('title')
                                     ->required()->unique('departments',modifyRuleUsing: function (Unique $rule) {
                                         return $rule->where('company_id', getCompany()->id);
-                                    })
-                                    ->maxLength(255)->columnSpanFull(),
+                                    })->maxLength(255)->columnSpanFull(),
+                                Forms\Components\TextInput::make('abbreviation')->maxLength(10)->columnSpanFull() ->required(),
                                 Forms\Components\Textarea::make('description')->columnSpanFull()
                             ])
                                 ->createOptionUsing(function (array $data): int {
                                     return Department::query()->create([
                                         'title' => $data['title'],
                                         'description' => $data['description'],
+                                        'abbreviation' => $data['abbreviation'],
                                         'company_id' => getCompany()->id
                                     ])->getKey();
                                 })->label('Department')->options(Department::query()->where('company_id', getCompany()->id)->pluck('title', 'id'))
@@ -333,12 +334,14 @@ class EmployeeResource extends Resource
                                 return $rule->where('company_id', getCompany()->id);
                             })
                             ->maxLength(255)->columnSpanFull(),
+                        Forms\Components\TextInput::make('abbreviation')->maxLength(10)->columnSpanFull() ->required(),
                         Forms\Components\Textarea::make('description')->columnSpanFull()
                     ])
                         ->createOptionUsing(function (array $data): int {
                             return Department::query()->create([
                                 'title' => $data['title'],
                                 'description' => $data['description'],
+                                'abbreviation'=>$data['abbreviation'],
                                 'company_id' => getCompany()->id
                             ])->getKey();
                         })->label('Department')->options(Department::query()->where('company_id', getCompany()->id)->pluck('title', 'id'))

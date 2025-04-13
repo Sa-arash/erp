@@ -4,8 +4,10 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\ProductResource\Pages;
 use App\Filament\Admin\Resources\ProductResource\RelationManagers;
+use App\Filament\Admin\Widgets\Accounting;
 use App\Filament\Clusters\StackManagementSettings;
 use App\Models\Account;
+use App\Models\Department;
 use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\Unit;
@@ -38,14 +40,21 @@ class ProductResource extends Resource
         return $form
             ->schema([
                 Section::make([
-                    Forms\Components\TextInput::make('sku')->label(' SKU')
+                    Select::make('department_id')->live()->label('Department')->required()->options(getCompany()->departments->pluck('title','id'))->searchable()->preload()->afterStateUpdated(function (Get $get,Set $set,$state){
+                        $department=Department::query()->firstWhere('id',$state);
+                        if ($department){
+                            $product = Product::query()->where('department_id   ',$state)->where('company_id',getCompany()->id)->latest()->first();
+                            if ($product) {
+                                $set('sku',generateNextCodeProduct($product->sku));
+                            }else{
+                                $set('sku',$department->abbreviation."-0001");
+                            }
+                        }
+
+                    }),
+                    Forms\Components\TextInput::make('sku')->readOnly()->label(' SKU')
                         ->unique(ignoreRecord:true ,modifyRuleUsing: function (Unique $rule) {
                             return $rule->where('company_id', getCompany()->id);
-                        })->default(function () {
-                            $product = Product::query()->where('company_id',getCompany()->id)->latest()->first();
-                            if ($product) {
-                                return generateNextCodeProduct($product->sku);
-                            }
                         })
                         ->required()->maxLength(255),
                     Forms\Components\TextInput::make('title')->label('Material Description')->required()->maxLength(255),
@@ -62,7 +71,7 @@ class ProductResource extends Resource
                     ->live()->afterStateUpdated(function(Set $set){
                         $set('account_id',null);
                     }),
-                ])->columns(4),
+                ])->columns(5),
 
                 Select::make('account_id')->options(function (Get $get) {
 
@@ -99,17 +108,25 @@ class ProductResource extends Resource
                 }
                 })->required()->model(Transaction::class)->searchable()->label('Category')->live(),
 
-                SelectTree::make('account_id')->formatStateUsing(function ($state, Forms\Set $set) {
-                    $account = Account::query()->where('id', $state)->whereNot('currency_id', defaultCurrency()?->id)->first();
-                    if ($account) {
-                        $set('currency_id', $account->currency_id);
-                        $set('exchange_rate', number_format($account->currency->exchange_rate));
-                        $set('isCurrency', 1);
-                        return $state;
-                    }
-                    $set('isCurrency', 0);
-                    return $state;
-                })->defaultOpenLevel(3)->label('SubCategory')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->whereIn('group',['Asset','Expanse'])->where('company_id', getCompany()->id),modifyChildQueryUsing: fn($query,Get $get)=>$query->where('parent_id',$get('account_id') ? $get('account_id'):"-1"))->searchable(),
+                Select::make('sub_account_id')->label('SubCategory')->required()->options(function (Get $get){
+                    $parent=$get('account_id');
+                 if ($parent){
+                     $accounts =  Account::query()
+                         ->where('parent_id', $parent)
+                         ->orWhereHas('account', function ($query) use ($parent) {
+                             return $query->where('parent_id', $parent)->orWhereHas('account', function ($query) use ($parent) {
+                                 return $query->where('parent_id', $parent);
+                             });
+                         })
+                         ->get();
+                     $data=[];
+                     foreach ($accounts as $account){
+                         $data[$account->id]=$account->title;
+                     }
+                     return $data;
+                 }
+                   return  [];
+                })->searchable(),
                 Forms\Components\Textarea::make('description')->columnSpanFull(),
                 MediaManagerInput::make('photo')->orderable(false)->disk('public')->schema([])->maxItems(1),
                 Forms\Components\TextInput::make('stock_alert_threshold')->numeric()->default(5)->required(),
@@ -129,6 +146,7 @@ class ProductResource extends Resource
         return $table->query(Product::query()->whereIn('product_type',['unConsumable','consumable']))
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
+                Tables\Columns\TextColumn::make('sku')->label('SKU')->searchable(),
                 Tables\Columns\ImageColumn::make('image')->defaultImageUrl(asset('img/images.jpeg'))->state(function ($record){
                     return $record->media->first()?->original_url;
                 }),

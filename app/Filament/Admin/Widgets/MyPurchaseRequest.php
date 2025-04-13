@@ -152,7 +152,7 @@ class MyPurchaseRequest extends BaseWidget
                             ->schema([
                                 Select::make('product_id')->searchable()->preload()->label('Product/Service')->options(function (){
                                     $data=[];
-                                    foreach (getCompany()->products as $product){
+                                    foreach (getCompany()->products->where('department_id',getEmployee()->department_id) as $product){
                                         $data[$product->id]=$product->info;
                                     }
                                     return $data;
