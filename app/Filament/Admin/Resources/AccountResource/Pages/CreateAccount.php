@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\AccountResource\Pages;
 use App\Filament\Admin\Resources\AccountResource;
 use App\Models\Account;
 use Filament\Actions;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Support\Exceptions\Halt;
 use Filament\Support\Facades\FilamentView;
@@ -33,6 +34,8 @@ class CreateAccount extends CreateRecord
 
             $this->callHook('afterValidate');
 
+
+
             $data = $this->mutateFormDataBeforeCreate($data);
 
             $this->callHook('beforeCreate');
@@ -42,7 +45,12 @@ class CreateAccount extends CreateRecord
 
             if ($account) {
                 $data['code'] = $account->code . $data['code'];
+                $exits = Account::query()->where('company_id',getCompany()->id)->where('code', $data['code'])->first();
 
+                if ($exits){
+                    Notification::make('error')->danger()->title('Account Code Exists')->send();
+                    return;
+                }
 
                 $level = "group";
                 switch ($account->level) {

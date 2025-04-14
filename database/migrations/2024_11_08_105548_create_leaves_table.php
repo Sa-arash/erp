@@ -20,7 +20,7 @@ return new class extends Migration
             $table->integer('days');
             $table->text('document')->nullable();
             $table->text('description')->nullable();
-            $table->enum('status',['pending','rejected','accepted'])->default('pending');
+            $table->enum('status',['pending','rejected','accepted','approveHead'])->default('pending');
             $table->text('comment')->nullable();
             $table->timestamp('approval_date')->nullable();
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();

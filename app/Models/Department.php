@@ -9,7 +9,7 @@ class Department extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title', 'company_id', 'description','employee_id'];
+    protected $fillable = ['title','abbreviation', 'company_id', 'description','employee_id'];
 
 
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -24,6 +24,10 @@ class Department extends Model
     public function employees(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Employee::class);
+    }
+    public function products(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Product::class);
     }
 
 

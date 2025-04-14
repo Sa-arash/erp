@@ -89,15 +89,26 @@ class PurchaseRequestResource extends Resource
                         ->addActionLabel('Add')
                         ->relationship('items')
                         ->schema([
-                            Forms\Components\Select::make('product_id')->label('Product/Service')
-                                ->label('Product')->options(function () {
-                                    return getCompany()->products->pluck('info', 'id');
+                            Select::make('department_id')->label('Section')->live()->options(getCompany()->departments->pluck('title','id'))->searchable()->preload(),
+                            Forms\Components\Select::make('product_id')->disableOptionsWhenSelectedInSiblingRepeaterItems()->label('Product/Service')
+                                ->options(function (Get $get) {
+                                    if ($get('department_id')){
+                                        $data=[];
+                                        $products=getCompany()->products->where('department_id',$get('department_id'))->pluck('title', 'id');
+                                        $i=1;
+                                        foreach ($products as $key=> $product){
+
+                                            $data[$key]=$i.". ". $product;
+                                            $i++;
+                                        }
+                                        return $data ;
+                                    }
                                 })->required()->searchable()->preload()->afterStateUpdated(function (Forms\Set $set,$state){
                                     $product=Product::query()->firstWhere('id',$state);
                                     if ($product){
                                         $set('unit_id',$product->unit_id);
                                     }
-                                })->live(true),
+                                })->live(true)->columnSpan(2),
                             Forms\Components\Select::make('unit_id')->createOptionForm([
                                 Forms\Components\TextInput::make('title')->label('Unit Name')->unique('units', 'title')->required()->maxLength(255),
                                 Forms\Components\Toggle::make('is_package')->live()->required(),
@@ -129,15 +140,15 @@ class PurchaseRequestResource extends Resource
                                 ->required(),
                             Forms\Components\Textarea::make('description')
                                 ->label(' Product Name And Description')
-                                ->columnSpan(5)
+                                ->columnSpan(6)
                                 ->required(),
                             MediaManagerInput::make('document')->orderable(false)->folderTitleFieldName("purchase_request_id")
                                 ->disk('public')
                                 ->schema([
-                                ])->defaultItems(0)->maxItems(1) ->columnSpan(1),
+                                ])->defaultItems(0)->maxItems(1) ->columnSpan(2),
 
                         ])
-                        ->columns(6)
+                        ->columns(8)
                         ->columnSpanFull(),
                     // Section::make('estimated_unit_cost')->schema([
                     //     Placeholder::make('Total')->live()

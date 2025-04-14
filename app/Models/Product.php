@@ -14,6 +14,7 @@ class Product extends Model implements HasMedia
     protected $fillable = [
         'title',
         'image',
+        'department_id',
         'account_id',
         'sku',
         'sub_account_id',
@@ -24,7 +25,7 @@ class Product extends Model implements HasMedia
         'company_id',
     ];
     public function getInfoAttribute(){
-        return $this->title . "(SKU#".$this->sku.")";
+        return "(SKU#".$this->sku.") ". $this->title  ;
     }
 
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo

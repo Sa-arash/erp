@@ -66,7 +66,7 @@ class AccountResource extends Resource
                         $account = Account::query()->where('parent_id', $state)->orderBy('id', 'desc')->first();
                         $parent = Account::query()->where('id', $state)->first();
                         if ($account) {
-                            $set('code', generateNextCode(str_replace($parent->code, '', $account->code)));
+                            $set('code', generateNextCode(str_replace($parent?->code, '', $account?->code)));
                         } else {
                             $set('code', "001");
                         }
@@ -87,7 +87,7 @@ class AccountResource extends Resource
                     return  $state;
                 })->live()->unique(ignoreRecord: true,modifyRuleUsing: function (Unique $rule, $state, Get $get) {
                     $parent = Account::query()->firstWhere('id', $get('parent_id'));
-                    return $rule->where('code', $parent . $state)->where('company_id', getCompany()->id);
+                    return $rule->where('code', $parent?->code . $state)->where('company_id', getCompany()->id);
                 })->required()->maxLength(255)->prefix(fn(Get $get) => Account::query()->firstWhere('id', $get('parent_id'))?->code),
                 Select::make('currency_id')->live()->label('Currency')->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([
                     \Filament\Forms\Components\Section::make([

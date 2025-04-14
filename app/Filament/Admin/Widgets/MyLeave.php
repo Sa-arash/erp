@@ -24,7 +24,7 @@ use Filament\Widgets\TableWidget as BaseWidget;
 
 class MyLeave extends BaseWidget
 {
-    
+
     protected int | string | array $columnSpan='full';
     public function table(Table $table): Table
     {
@@ -33,7 +33,16 @@ class MyLeave extends BaseWidget
                 Tables\Actions\Action::make('New Leave')->action(function ($data){
                     $data['company_id']=getCompany()->id;
                     $data['employee_id']=getEmployee()->id;
-                    Leave::query()->create($data);
+
+                    $leave= Leave::query()->create($data);
+                    $employee=getEmployee();
+                    if ($employee->department->employee_id){
+                        $leave->approvals()->create([
+                            'position'=>'Head Department',
+                            'employee_id'=>$employee->department->employee_id,
+                            'company_id'=>getCompany()->id
+                        ]);
+                    }
                     Notification::make('success')->title('Created')->send();
                 })->label('New Leave')->form([
                    Section::make([

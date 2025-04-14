@@ -11,12 +11,14 @@ enum LeaveStatus2:string implements HasColor,HasLabel
     case Pending = 'pending';
     case Rejected = 'rejected';
     case Accepted = 'accepted';
+    case ApproveHead = 'approveHead';
     public function getLabel(): ?string
     {
         return match ($this){
             self::Pending => 'Pending',
             self::Rejected => 'Rejected',
             self::Accepted => 'Approved',
+            self::ApproveHead => 'ApproveHead',
         };
     }
     public function getColor(): string|array|null
@@ -25,6 +27,7 @@ enum LeaveStatus2:string implements HasColor,HasLabel
             self::Pending => 'info',
             self::Rejected => 'danger',
             self::Accepted => 'success',
+            self::ApproveHead => 'success',
         };
     }
 

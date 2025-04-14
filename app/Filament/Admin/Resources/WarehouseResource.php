@@ -49,7 +49,14 @@ class WarehouseResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
+        return $table->query(function (){
+            $warehouse=Warehouse::query()->firstWhere('employee_id',getEmployee()->id);
+            if ($warehouse){
+                return Warehouse::query()->where('company_id',getCompany()->id)->where('employee_id',getEmployee()->id);
+            }else{
+              return  Warehouse::query()->where('company_id',getCompany()->id);
+            }
+        })
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('title')->label('Location Name')->searchable(),

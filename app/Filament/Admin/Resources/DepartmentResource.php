@@ -41,7 +41,9 @@ class DepartmentResource extends Resource
                     ->maxLength(255)->columnSpanFull()->unique(ignoreRecord: true,modifyRuleUsing: function (Unique $rule) {
                         return $rule->where('company_id', getCompany()->id);
                     }),
-                Forms\Components\Textarea::make('description')->columnSpanFull()
+                Forms\Components\TextInput::make('abbreviation')->maxLength(10)->columnSpanFull() ->required(),
+                Forms\Components\Textarea::make('description')->columnSpanFull(),
+
 
             ]);
     }
@@ -52,6 +54,7 @@ class DepartmentResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('title')->label('Department Name')->sortable(),
+                Tables\Columns\TextColumn::make('abbreviation')->label('Abbreviation')->sortable(),
                 Tables\Columns\TextColumn::make('employee.fullName')->label('Head Of Department ')->badge(),
                 TextColumn::make('employees')->color('aColor')->alignCenter()->state(fn($record)=> $record->employees->count())->url(fn($record)=>EmployeeResource::getUrl().'?tableFilters[department_id][value]='.$record->id),
 
@@ -60,6 +63,7 @@ class DepartmentResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\DeleteAction::make()->visible(fn($record)=>$record->employees->count()===0 and $record->products->count()===0  ),
                 Tables\Actions\EditAction::make()->modelLabel('Edit '),
                 Tables\Actions\Action::make('head')->icon('heroicon-m-user-circle')->iconSize(IconSize::Large)->tooltip('Set Head of Department')->label('Set Head of Department')->form(function ($record){
                     return [

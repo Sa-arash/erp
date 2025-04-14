@@ -59,7 +59,9 @@
     <table >
         <tr >
             <td style="border: none;width: 20%; text-align: left; padding-left: 10px;">
-
+                @if($company?->logo_security)
+                    <img src="{!! public_path('images/' . $company?->logo_security) !!}" style="padding: 0; border-radius: 50px ; width: 100px;">
+                @endif
             </td>
             <td  style="border: none;text-align: center; vertical-align: middle; width: 40%;">
                 <h4 style="margin: 0; padding: 0; font-size: 18px; white-space: nowrap; display: inline-block;">
@@ -138,15 +140,15 @@
         </div>
         <div class="section">
             <div class="section-title">
-                
+
             </div>
             <table>
                 <tr>
-                  
+
                     <th colspan="5" style="text-align:center">Armed Close Protection Officers (If Applicable)</th>
                 </tr>
                 <tr>
-                  
+
                     <th>Type</th>
                     <th>National</th>
                     <th>International</th>
@@ -160,15 +162,15 @@
                     <td>&nbsp;</td>
                     <td>&nbsp;</td>
                 </tr>
-               
+
             </table>
         </div>
 
 
-      
-        
-        
-        
+
+
+
+
 
 
 
