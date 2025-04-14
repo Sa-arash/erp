@@ -63,6 +63,7 @@ class DepartmentResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\DeleteAction::make()->visible(fn($record)=>$record->employees->count()===0 and $record->products->count()===0  ),
                 Tables\Actions\EditAction::make()->modelLabel('Edit '),
                 Tables\Actions\Action::make('head')->icon('heroicon-m-user-circle')->iconSize(IconSize::Large)->tooltip('Set Head of Department')->label('Set Head of Department')->form(function ($record){
                     return [

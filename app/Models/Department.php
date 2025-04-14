@@ -25,6 +25,10 @@ class Department extends Model
     {
         return $this->hasMany(Employee::class);
     }
+    public function products(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
 
 
 }

@@ -43,7 +43,7 @@ class ProductResource extends Resource
                     Select::make('department_id')->live()->label('Department')->required()->options(getCompany()->departments->pluck('title','id'))->searchable()->preload()->afterStateUpdated(function (Get $get,Set $set,$state){
                         $department=Department::query()->firstWhere('id',$state);
                         if ($department){
-                            $product = Product::query()->where('department_id   ',$state)->where('company_id',getCompany()->id)->latest()->first();
+                            $product = Product::query()->where('department_id',$state)->where('company_id',getCompany()->id)->latest()->first();
                             if ($product) {
                                 $set('sku',generateNextCodeProduct($product->sku));
                             }else{
@@ -57,7 +57,7 @@ class ProductResource extends Resource
                             return $rule->where('company_id', getCompany()->id);
                         })
                         ->required()->maxLength(255),
-                    Forms\Components\TextInput::make('title')->label('Material Description')->required()->maxLength(255),
+                    Forms\Components\TextInput::make('title')->label('Material Specification')->required()->maxLength(255),
                     Select::make('unit_id')->required()->relationship('unit','title',fn($query)=>$query->where('company_id',getCompany()->id))->searchable()->preload()->createOptionForm([
                         Forms\Components\TextInput::make('title')->label('Unit Name')->unique('units', 'title')->required()->maxLength(255),
                         Forms\Components\Toggle::make('is_package')->live()->required(),
@@ -160,6 +160,7 @@ class ProductResource extends Resource
 
             ])
             ->filters([
+                Tables\Filters\SelectFilter::make('department_id')->label('Department')->options(getCompany()->departments->pluck('title','id'))->searchable()->preload()
 
 //                SelectFilter::make('unit_id')->searchable()->preload()->options(Unit::where('company_id', getCompany()->id)->get()->pluck('title', 'id'))
 //                    ->label('Unit'),

@@ -150,27 +150,34 @@ class MyPurchaseRequest extends BaseWidget
                         Repeater::make('Requested Items')
                         ->addActionLabel('Add Item')
                             ->schema([
-                                Select::make('product_id')->searchable()->preload()->label('Product/Service')->options(function (){
-                                    $data=[];
-                                    foreach (getCompany()->products->where('department_id',getEmployee()->department_id) as $product){
-                                        $data[$product->id]=$product->info;
-                                    }
-                                    return $data;
-                                })->afterStateUpdated(function (Set $set,$state){
-                                    $product=Product::query()->firstWhere('id',$state);
-                                    if ($product){
-                                        $set('unit_id',$product->unit_id);
-                                    }
-                                })->live(true)->required(),
+                                Select::make('department_id')->label('Section')->live()->options(getCompany()->departments->pluck('title','id'))->searchable()->preload(),
+                                Select::make('product_id')->disableOptionsWhenSelectedInSiblingRepeaterItems()->label('Product/Service')
+                                    ->options(function (Get $get) {
+                                        if ($get('department_id')){
+                                            $data=[];
+                                            $products=getCompany()->products->where('department_id',$get('department_id'))->pluck('title', 'id');
+                                            $i=1;
+                                            foreach ($products as $key=> $product){
+                                                $data[$key]=$i.". ". $product;
+                                                $i++;
+                                            }
+                                            return $data ;
+                                        }
+                                    })->required()->searchable()->preload()->afterStateUpdated(function (Set $set,$state){
+                                        $product=Product::query()->firstWhere('id',$state);
+                                        if ($product){
+                                            $set('unit_id',$product->unit_id);
+                                        }
+                                    })->live(true)->columnSpan(2),
                                 Select::make('unit_id')->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id'))->required(),
                                 TextInput::make('quantity')->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                                 TextInput::make('estimated_unit_cost')->label('Estimated Unit Cost')->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required(),
                                 Select::make('project_id')->searchable()->preload()->label('Project')->options(getCompany()->projects->pluck('name', 'id')),
-                                Textarea::make('description')->columnSpan(5)->label('Product Name and Description ')->required(),
+                                Textarea::make('description')->columnSpan(7)->label('Product Name and Description ')->required(),
                                 FileUpload::make('images')->label('document')->columnSpanFull()->image()->nullable()
 
                             ])
-                            ->columns(5)
+                            ->columns(7)
                             ->columnSpanFull(),
                     ])->columns(3)
                 ])->action(function ($data){

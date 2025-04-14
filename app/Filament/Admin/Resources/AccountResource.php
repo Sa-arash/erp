@@ -66,7 +66,7 @@ class AccountResource extends Resource
                         $account = Account::query()->where('parent_id', $state)->orderBy('id', 'desc')->first();
                         $parent = Account::query()->where('id', $state)->first();
                         if ($account) {
-                            $set('code', generateNextCode(str_replace($parent->code, '', $account->code)));
+                            $set('code', generateNextCode(str_replace($parent?->code, '', $account?->code)));
                         } else {
                             $set('code', "001");
                         }

@@ -4,9 +4,12 @@ namespace App\Filament\Admin\Resources\ProductResource\Pages;
 
 use App\Filament\Admin\Resources\ProductResource;
 use App\Models\Account;
+use App\Models\Department;
+use App\Models\Product;
 use Filament\Actions;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
+use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
 
 class ListProducts extends ListRecords
@@ -53,4 +56,17 @@ class ListProducts extends ListRecords
             })
         ];
     }
+    public function getTabs(): array
+    {
+        $departments = Department::query()->whereHas('products',function ($query){
+        return $query;
+        })->get()->pluck('abbreviation','id');
+        $tabs=['All'=>Tab::make()];
+
+        foreach ($departments as $key=> $department) {
+            $tabs[$department]=Tab::make()->query(fn($query)=>$query->where('department_id',$key));
+        }
+        return $tabs;
+    }
+
 }
