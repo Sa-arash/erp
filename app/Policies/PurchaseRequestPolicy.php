@@ -95,7 +95,7 @@ class PurchaseRequestPolicy
      */
     public function replicate(User $user, PurchaseRequest $purchaseRequest): bool
     {
-        return $user->can('{{ Replicate }}');
+        return true;
     }
 
     /**

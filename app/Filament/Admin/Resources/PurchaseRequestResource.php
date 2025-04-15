@@ -13,9 +13,11 @@ use App\Models\PurchaseRequest;
 use App\Models\Quotation;
 use App\Models\Transaction;
 use App\Models\Unit;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Facades\Filament;
 use Filament\Forms;
+use Filament\Pages\Actions\ReplicateAction;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
@@ -32,12 +34,14 @@ use Filament\Tables;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\HtmlString;
 use Illuminate\Validation\Rules\Unique;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
 
 class PurchaseRequestResource extends Resource
+    implements HasShieldPermissions
 {
     protected static ?string $model = PurchaseRequest::class;
 
@@ -46,9 +50,19 @@ class PurchaseRequestResource extends Resource
     protected static ?string $modelLabel = 'Purchase Request';
     protected static ?string $Label = 'Purchase Request';
     protected static ?string $navigationGroup = 'Logistic Management';
-
-
     protected static ?string $navigationIcon = 'heroicon-c-document-arrow-down';
+
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'duplicate'
+        ];
+    }
     public static function getNavigationBadge(): ?string
     {
         return static::getModel()::where('status', 'Requested')->count();
@@ -142,6 +156,7 @@ class PurchaseRequestResource extends Resource
                                 ->label(' Product Name And Description')
                                 ->columnSpan(6)
                                 ->required(),
+
                             MediaManagerInput::make('document')->orderable(false)->folderTitleFieldName("purchase_request_id")
                                 ->disk('public')
                                 ->schema([
@@ -169,7 +184,7 @@ class PurchaseRequestResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->defaultSort('request_date', 'desc')
+        return $table->defaultSort('id', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex()->label('NO'),
                 Tables\Columns\TextColumn::make('description')->tooltip(fn($record) => $record->description)->limit(30),
@@ -221,6 +236,7 @@ class PurchaseRequestResource extends Resource
 
             ], getModelFilter())
             ->actions([
+
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('Order')
                     ->disabled(fn() => getPeriod() === null)->tooltip(fn() => getPeriod() !== null ?: 'Financial Period Required')
@@ -458,7 +474,9 @@ class PurchaseRequestResource extends Resource
                     Tables\Actions\Action::make('prPDF')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.purchase', ['id' => $record->id]))->openUrlInNewTab(),
                 ]),
 
-                Tables\Actions\DeleteAction::make()->visible(fn($record) => $record->status->name === "Requested")
+                Tables\Actions\DeleteAction::make()->visible(fn($record) => $record->status->name === "Requested"),
+                Tables\Actions\Action::make('Duplicate')->visible(fn()=>auth()->user()->can('duplicate_purchase::request'))->iconSize(IconSize::Large)->icon('heroicon-o-clipboard-document-check')->label('Duplicate')->url(fn($record)=>PurchaseRequestResource::getUrl('replicate',['tk'=>'resource','id'=>$record->id]))
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([]),
@@ -478,8 +496,9 @@ class PurchaseRequestResource extends Resource
         return [
             'index' => Pages\ListPurchaseRequests::route('/'),
             'create' => Pages\CreatePurchaseRequest::route('/create'),
-            'edit' => Pages\EditPurchaseRequest::route('/{record}/edit'),
+//            'edit' => Pages\EditPurchaseRequest::route('/{record}/edit'),
             'view' => Pages\ViewPurcheseRequest::route('/{record}/view'),
+            'replicate' => Pages\Replicate::route('/{id}/replicate/{tk}'),
         ];
     }
 }

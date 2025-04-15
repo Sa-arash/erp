@@ -13,7 +13,5 @@ class CreatePurchaseRequest extends CreateRecord
     public function afterCreate(){
         $request=$this->record;
         sendApprove($request,'PR Warehouse/Storage Clarification_approval');
-
-
     }
 }

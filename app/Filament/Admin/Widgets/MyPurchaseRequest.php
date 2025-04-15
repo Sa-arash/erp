@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Filament\Admin\Resources\PurchaseRequestResource;
 use App\Filament\Admin\Resources\PurchaseRequestResource\Pages\ViewPurcheseRequest;
 use App\Models\Employee;
 use App\Models\Product;
@@ -131,6 +132,7 @@ class MyPurchaseRequest extends BaseWidget
         ])->columns(5)
     ]),
     Tables\Actions\Action::make('prPDF')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.purchase', ['id' => $record->id]))->openUrlInNewTab(),
+    Tables\Actions\Action::make('Duplicate')->iconSize(IconSize::Large)->icon('heroicon-o-clipboard-document-check')->label('Duplicate')->url(fn($record)=>PurchaseRequestResource::getUrl('replicate',['my','id'=>$record->id]))
 
 ])
             ->headerActions([
@@ -195,15 +197,11 @@ class MyPurchaseRequest extends BaseWidget
                         if (isset($mediaItem)){
                             $item->addMedia(public_path('images/'.$mediaItem))->toMediaCollection('document');
                         }
-
                     }
-
                   sendApprove($request,'PR Warehouse/Storage Clarification_approval');
                     Notification::make('success')->title('Successfully Submitted')->send();
                 })
-            ])
-
-        ;
+            ]);
     }
 
     public static function getPages(): array

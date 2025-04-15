@@ -15,7 +15,7 @@ class QuotationPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_quotation');
+        return true;
     }
 
     /**
@@ -23,7 +23,7 @@ class QuotationPolicy
      */
     public function view(User $user, Quotation $quotation): bool
     {
-        return $user->can('view_quotation');
+        return true;
     }
 
     /**
@@ -31,7 +31,7 @@ class QuotationPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_quotation');
+        return true;
     }
 
     /**
@@ -39,7 +39,7 @@ class QuotationPolicy
      */
     public function update(User $user, Quotation $quotation): bool
     {
-        return $user->can('update_quotation');
+        return true;
     }
 
     /**
@@ -47,8 +47,8 @@ class QuotationPolicy
      */
     public function delete(User $user, Quotation $quotation): bool
     {
-        return $user->can('delete_quotation');
-    }
+        return true;
+        }
 
     /**
      * Determine whether the user can bulk delete.

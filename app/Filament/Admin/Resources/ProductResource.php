@@ -128,7 +128,7 @@ class ProductResource extends Resource
                    return  [];
                 })->searchable(),
                 Forms\Components\Textarea::make('description')->columnSpanFull(),
-                MediaManagerInput::make('photo')->orderable(false)->disk('public')->schema([])->maxItems(1),
+                MediaManagerInput::make('photo')->label('Upload Image')->image(true)->orderable(false)->disk('public')->schema([])->maxItems(1),
                 Forms\Components\TextInput::make('stock_alert_threshold')->numeric()->default(5)->required(),
 
                 // Forms\Components\TextInput::make('price')

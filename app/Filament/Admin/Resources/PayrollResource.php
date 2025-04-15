@@ -530,7 +530,9 @@ class PayrollResource extends Resource
                     Notification::make('success')->success()->title('Generate Payroll')->send()->sendToDatabase(auth()->user());
                 }),
                 Tables\Actions\Action::make('print')->label('Print')->action(function(Table $table){
-                    return redirect(route('pdf.payrolls',['ids'=>implode('-',$table->getRecords()->pluck('id')->toArray())]));
+                    if ($table->getRecords()->pluck('id')->toArray()){
+                        return redirect(route('pdf.payrolls',['ids'=>implode('-',$table->getRecords()->pluck('id')->toArray())]));
+                    }
                 })
             ])
             ->columns([
