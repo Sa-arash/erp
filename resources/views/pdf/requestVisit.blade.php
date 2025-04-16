@@ -1,4 +1,4 @@
-    <!doctype html>
+    {{-- <!doctype html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -69,7 +69,9 @@
                 </h4>
             </td>
             <td style="border: none;width: 20%; text-align: right; padding-right: 10px;">
-
+                @if ($company?->logo_security)
+                    <img src="{!! public_path('images/' . $company?->logo_security) !!}" style="padding: 0; border-radius: 50px ; width: 100px;">
+                @endif
             </td>
         </tr>
     </table>
@@ -124,7 +126,7 @@
                     <th>Remarks</th>
                 </tr>
                 @foreach ($requestVisit->visitors_detail as $visitor)
-                    {{-- @dd($visitor) --}}
+                
                     <tr>
                         <td>{{$visitor['name']??'---'}}</td>
                         <td>{{$visitor['id'??'---']}}</td>
@@ -241,7 +243,7 @@
                     <td style="width: auto;">Date : &nbsp;&nbsp;&nbsp;&nbsp;</td>
                 </tr>
             </table>
-            @if(isset($requestVisit->approvals[0]))
+            @if (isset($requestVisit->approvals[0]))
                 <table>
                     <thead>
                     <tr>
@@ -252,7 +254,7 @@
                         <th>Signature</th>
                     </tr>
                     </thead>
-                    @foreach($requestVisit->approvals   as $approve)
+                    @foreach ($requestVisit->approvals as $approve)
                         <tr>
                             <th>{{$approve->employee->fullName}}</th>
                             <th>{{$approve->position}}</th>
@@ -260,7 +262,7 @@
                             <th>{{ $approve->approve_date ? \Carbon\Carbon::make($approve->approve_date)->format('M j, Y / h:iA'):""}}</th>
                             <th>
 
-                                @if($approve->employee->media->where('collection_name','signature')->first()?->original_url and $approve->status->name==="Approve")
+                                @if ($approve->employee->media->where('collection_name', 'signature')->first()?->original_url and $approve->status->name === 'Approve')
                                     <img src="{{ $approve->employee->media->where('collection_name','signature')->first()->getPath() }}" style="width: 70px;height: 30px" alt="">
                                 @endif
                             </th>
@@ -273,8 +275,285 @@
 </div>
 </body>
 </html>
+--}}
 
 
+    <!DOCTYPE html>
+    <html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <title>Visitor Access Request Form</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                font-size: 14px;
+                margin: 20px;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            td,
+            th {
+                border: 1px solid #000;
+                padding: 4px;
+                vertical-align: top;
+            }
+
+            .header {
+                text-align: center;
+                font-weight: bold;
+            }
+
+            .sub-header {
+                text-align: center;
+                font-size: 12px;
+            }
+
+            .section-title {
+                background-color: #dbe5f1;
+                font-weight: bold;
+                text-align: center;
+            }
+
+            .no-border {
+                border: none;
+            }
+
+            .small-text {
+                font-size: 12px;
+            }
+
+            .approved-box,
+            .not-approved-box {
+                width: 12px;
+                height: 12px;
+                border: 1px solid #000;
+                display: inline-block;
+                margin-right: 5px;
+            }
+
+            .light-blue {
+                background-color: #dbe5f1;
+            }
+
+            .gray-bg {
+                background-color: #f2f2f2;
+            }
+
+            .center {
+                text-align: center;
+            }
+
+            .approved-box,
+            .not-approved-box {
+                width: 12px;
+                height: 12px;
+                border: 1px solid #000;
+                display: inline-block;
+                margin-right: 5px;
+            }
+
+            @media print {
+                body {
+                    margin: 0;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+
+        <table>
+            <tr>
+                <td colspan="2" style="border: none;">
+                    @if ($company?->logo_security)
+                        <img src="{!! public_path('images/' . $company?->logo_security) !!}" style="padding: 0; border-radius: 50px ; width: 200px;">
+                    @endif
+                </td>
+                <td colspan="4" class="header" style="border: none;">
+                    HART<br>
+                    UNHCR Guard Force Unit, Kabul, Afghanistan<br>
+                    <span class="small-text">SOP No.002 Annex {{ str_pad($requestVisit->id, 3, '0', STR_PAD_LEFT) }} dated {{$requestVisit->visit_date}}<br>
+                        Supersedes: Visitors Access Request {{ str_pad($requestVisit->id, 3, '0', STR_PAD_LEFT) }} Dated dated {{$requestVisit->visit_date}}<br>
+                        Effective Date: {{$requestVisit->visit_date}}</span>
+                </td>
+            </tr>
+        </table>
+
+        <table>
+            <tr>
+                <td colspan="6" class="section-title">ICON COMPOUND - VISITOR ACCESS REQUEST FORM</td>
+            </tr>
+        </table>
+
+        <table>
+            <tr class="section-title">
+                <td colspan="6">Requestor’s Details</td>
+            </tr>
+            
+            <tr>
+                <td>Requestor’s Name</td>
+                <td>Title</td>
+                <td>UN Agency</td>
+                <td>Cell Phone</td>
+                <td colspan="2">Email</td>
+            </tr>
+            
+            <tr>
+                <td> {{$requestVisit->employee->fullName}}</td>
+                <td> {{$requestVisit->employee->agency}}</td>
+                <td> {{$requestVisit->agency}}</td>
+                <td> {{$requestVisit->employee->phone_number}}</td>
+                <td colspan="2">{{$requestVisit->employee->email}}</td>
+            </tr>
+        </table>
+
+        <table>
+            <tr class="section-title">
+                <td colspan="6">Specific Visit Details</td>
+            </tr>
+            <tr>
+                <td>Date of Visit</td>
+                <td>Time of Arrival</td>
+                <td>Time of Departure</td>
+                <td colspan="3">Purpose of visit (Be specific)</td>
+            </tr>
+            <tr>
+                <td>{{\Illuminate\Support\Carbon::create($requestVisit->visit_date)->format('Y/m/d')}}</td>
+                <td>{{$requestVisit->arrival_time}}</td>
+                <td>{{$requestVisit->departure_time}}</td>
+                <td colspan="3">{{$requestVisit->purpose}}</td>
+            </tr>
+        </table>
+
+        <table>
+            <tr class="section-title">
+                <td colspan="6">Visitor(s) Details</td>
+            </tr>
+            <tr>
+                <td>Name</td>
+                <td>ID/Passport</td>
+                <td>Cell Phone</td>
+                <td>Type</td>
+                <td>Organization</td>
+                <td >Remarks</td>
+            </tr>
+            @foreach ($requestVisit->visitors_detail as $visitor)
+                
+                    <tr>
+                        <td>{{$visitor['name']??'---'}}</td>
+                        <td>{{$visitor['id'??'---']}}</td>
+                        <td>{{$visitor['phone']??'---'}}</td>
+                        <td>{{$visitor['type']??'---'}}</td>
+                        <td>{{$visitor['organization']??'---'}}</td>
+                        <td >{{$visitor['remarks']??'---'}}</td>
+                    </tr>
+                @endforeach
+            <tr>
+                <td colspan="6" style="height: 30px;"></td>
+            </tr>
+        </table>
+
+        <table>
+            <tr class="section-title">
+                <td colspan="6">Armed Close Protection Officers (If Applicable)</td>
+            </tr>
+            <tr>
+                <td><strong>Type</strong></td>
+                <td>□ National</td>
+                <td>□ International</td>
+                <td colspan="3">□ De-facto Security Forces</td>
+               
+            </tr>
+            <tr>
+                <td><strong>Total</strong></td>
+                
+                <td colspan="5">&nbsp;</td>
+            </tr>
+        </table>
+
+        <table>
+            <tr class="section-title">
+                <td colspan="6">Driver(s)/Vehicle(s) Details</td>
+            </tr>
+            <tr>
+                <td colspan="3"><strong>Driver’s Details</strong></td>
+                <td colspan="3"><strong>Vehicle Details</strong></td>
+            </tr>
 
 
+           
 
+            <tr>
+                <td>Full Name</td>
+                <td>ID Type & No.</td>
+                <td>Cell Phone</td>
+                <td>Type/Model</td>
+                <td>Color</td>
+                <td>Registration Plate</td>
+            </tr>
+            {{-- @dd($requestVisit) --}}
+            @foreach ($requestVisit->driver_vehicle_detail as $driver)
+            <tr>
+                <td>{{$driver['name']??'---'}}</td>
+                <td>{{$driver['id']??'---'}}</td>
+                <td>{{$driver['phone']??'---'}}</td>
+                <td>{{$vehicle['model']??'---'}}</td>
+                <td>{{$vehicle['color']??'---'}}</td>
+                <td>{{$vehicle['Registration_Plate']??'---'}}</td>
+            </tr>
+            @endforeach
+
+            <tr>
+                <td colspan="6" class="no-border" style="text-align: right;">   &nbsp;</td>
+            </tr>
+        </table>
+
+        @if (isset($requestVisit->approvals[0]))
+        <table>
+            <tr class="section-title">
+                <td colspan="6">Endorsement and Approval</td>
+            </tr>
+            <tr>
+             
+                        <th>Name</th>
+                        <th>Position</th>
+                        <th>Status</th>
+                        <th>Approval Date</th>
+                        <th>Signature</th>
+                    </tr>
+                    </thead>
+                    @foreach ($requestVisit->approvals as $approve)
+                        <tr>
+                            <th>{{$approve->employee->fullName}}</th>
+                            <th>{{$approve->position}}</th>
+                            <th>{{$approve->status}}</th>
+                            <th>{{ $approve->approve_date ? \Carbon\Carbon::make($approve->approve_date)->format('M j, Y / h:iA'):""}}</th>
+                            <th>
+
+                                @if ($approve->employee->media->where('collection_name', 'signature')->first()?->original_url and $approve->status->name === 'Approve')
+                                    <img src="{{ $approve->employee->media->where('collection_name','signature')->first()->getPath() }}" style="width: 70px;height: 30px" alt="">
+                                @endif
+                            </th>
+                        </tr>
+                    @endforeach
+            </table>
+            @endif
+
+        <br><br>
+
+
+        <table>
+            <tr>
+                <td class="no-border">Requestor’s Signature: __________________</td>
+                <td class="no-border">Date: ________________</td>
+            </tr>
+        </table>
+
+    </body>
+
+    </html>
