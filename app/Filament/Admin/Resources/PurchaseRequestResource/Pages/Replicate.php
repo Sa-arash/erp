@@ -146,32 +146,16 @@ class Replicate extends CreateRecord
     {
         return $form->schema([
             Section::make('')->schema([
-                Select::make('employee_id')->live()
-                    ->searchable()
-                    ->preload()
-                    ->label('Requested By')
-                    ->required()
-                    ->options(getCompany()->employees->pluck('fullName', 'id'))
-                    ->default(fn() => auth()->user()->employee->id),
+                Select::make('employee_id')->live()->searchable()->preload()->label('Requested By')->required()->options(getCompany()->employees->pluck('fullName', 'id'))->default(fn() => auth()->user()->employee->id),
 
-                TextInput::make('purchase_number')->readOnly()
-                    ->label('PR Number')->prefix('ATGT/UNC/')
-                    ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
-                        return $rule->where('company_id', getCompany()->id);
-                    })
-                    ->required()
-                    ->numeric(),
+                TextInput::make('purchase_number')->readOnly()->label('PR Number')->prefix('ATGT/UNC/')->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {return $rule->where('company_id', getCompany()->id);})->required()->numeric(),
                 DateTimePicker::make('request_date')->readOnly()->default(now())->label('Request Date')->required(),
                 Hidden::make('status')->label('Status')->default('Requested')->required(),
                 Select::make('currency_id')->live()->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload(),
                 TextInput::make('description')->label('Description')->columnSpanFull(),
-                Repeater::make('items')
-                    ->addActionLabel('Add')
-                    ->relationship('items')
-                    ->schema([
-                        Select::make('department_id')->label('Section')->options(getCompany()->departments->pluck('title', 'id'))->searchable()->preload()->live(),
-                        Select::make('product_id')->disableOptionsWhenSelectedInSiblingRepeaterItems()->label('Product/Service')
-                            ->options(function (Get $get) {
+                Repeater::make('items')->addActionLabel('Add')->relationship('items')->schema([
+                        Select::make('department_id')->columnSpan(['default'=>8,'md'=>2,'xl'=>2,'2xl'=>1])->label('Section')->options(getCompany()->departments->pluck('title', 'id'))->searchable()->preload()->live(),
+                        Select::make('product_id')->columnSpan(['default'=>8,'md'=>2])->disableOptionsWhenSelectedInSiblingRepeaterItems()->label('Product/Service')->options(function (Get $get) {
 
                                 if ($get('department_id')) {
                                     $data = [];
@@ -194,8 +178,8 @@ class Replicate extends CreateRecord
                                 $product = Product::query()->firstWhere('id', $state);
 
                                 $set('department_id', $product?->department_id);
-                            })->live(true)->columnSpan(2),
-                        Select::make('unit_id')->createOptionForm([
+                            })->live(true),
+                        Select::make('unit_id')->columnSpan(['default'=>8,'md'=>2,'xl'=>2,'2xl'=>1])->createOptionForm([
                             TextInput::make('title')->label('Unit Name')->unique('units', 'title')->required()->maxLength(255),
                             Toggle::make('is_package')->live()->required(),
                             TextInput::make('items_per_package')->numeric()->visible(fn(Get $get) => $get('is_package'))->default(null),
@@ -204,34 +188,15 @@ class Replicate extends CreateRecord
                             Notification::make('success')->success()->title('Create Unit')->send();
                             return Unit::query()->create($data)->getKey();
                         })->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id'))->required(),
-                        TextInput::make('quantity')->required()->live()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-                        TextInput::make('estimated_unit_cost')
-                            ->label('EST Unit Cost')->live(true)
-                            ->numeric()->required()
-                            ->mask(RawJs::make('$money($input)'))
-                            ->stripCharacters(','),
-                        Select::make('project_id')
-                            ->searchable()
-                            ->preload()
-                            ->label('Project')
-                            ->options(getCompany()->projects->pluck('name', 'id')),
-
-                        Placeholder::make('total')
-                            ->content(fn($state, Get $get) => number_format((((int)str_replace(',', '', $get('quantity'))) * ((int)str_replace(',', '', $get('estimated_unit_cost')))))),
-
-                        Hidden::make('company_id')
-                            ->default(Filament::getTenant()->id)
-                            ->required(),
-                        Textarea::make('description')
-                            ->label(' Product Name And Description')
-                            ->columnSpan(6)
-                            ->required(),
-                        MediaManagerInput::make('document')->orderable(false)->folderTitleFieldName("purchase_request_id")
-                            ->disk('public')
-                            ->schema([
-                            ])->defaultItems(0)->maxItems(1)->columnSpan(2),
+                        TextInput::make('quantity')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->required()->live()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                        TextInput::make('estimated_unit_cost')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->label('EST Unit Cost')->live(true)->numeric()->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                        Select::make('project_id')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->searchable()->preload()->label('Project')->options(getCompany()->projects->pluck('name', 'id')),
+                        Placeholder::make('total')->columnSpan(['default'=>8,'md'=>1,'xl'=>1])->content(fn($state, Get $get) => number_format((((int)str_replace(',', '', $get('quantity'))) * ((int)str_replace(',', '', $get('estimated_unit_cost')))))),
+                        Hidden::make('company_id')->default(Filament::getTenant()->id)->required(),
+                        Textarea::make('description')->columnSpan(['default'=>4,'sm'=>3,'md'=>3,'xl'=>5])->label(' Product Name And Description')->columnSpan(6)->required(),
+                        MediaManagerInput::make('document') ->columnSpan(['default'=>4,'sm'=>2,'md'=>2,'xl'=>3])->orderable(false)->folderTitleFieldName("purchase_request_id")->disk('public')->schema([])->defaultItems(0)->maxItems(1)->columnSpan(2),
                     ])
-                    ->columns(8)
+                    ->columns(['default'=>4,'sm'=>6,'md'=>6,'xl'=>8])
                     ->columnSpanFull(),
 
             ])->columns(4)

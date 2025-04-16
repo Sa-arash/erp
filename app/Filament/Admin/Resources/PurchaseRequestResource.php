@@ -103,9 +103,8 @@ class PurchaseRequestResource extends Resource
                         ->addActionLabel('Add')
                         ->relationship('items')
                         ->schema([
-                            Select::make('department_id')->label('Section')->live()->options(getCompany()->departments->pluck('title','id'))->searchable()->preload(),
-                            Forms\Components\Select::make('product_id')->disableOptionsWhenSelectedInSiblingRepeaterItems()->label('Product/Service')
-                                ->options(function (Get $get) {
+                            Select::make('department_id')->label('Section')->columnSpan(['default'=>8,'md'=>2,'xl'=>2,'2xl'=>1])->live()->options(getCompany()->departments->pluck('title','id'))->searchable()->preload(),
+                            Forms\Components\Select::make('product_id')->columnSpan(['default'=>8,'md'=>2])->disableOptionsWhenSelectedInSiblingRepeaterItems()->label('Product/Service')->options(function (Get $get) {
                                     if ($get('department_id')){
                                         $data=[];
                                         $products=getCompany()->products->where('department_id',$get('department_id'))->pluck('title', 'id');
@@ -122,8 +121,8 @@ class PurchaseRequestResource extends Resource
                                     if ($product){
                                         $set('unit_id',$product->unit_id);
                                     }
-                                })->live(true)->columnSpan(2),
-                            Forms\Components\Select::make('unit_id')->createOptionForm([
+                                })->live(true),
+                            Forms\Components\Select::make('unit_id')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->createOptionForm([
                                 Forms\Components\TextInput::make('title')->label('Unit Name')->unique('units', 'title')->required()->maxLength(255),
                                 Forms\Components\Toggle::make('is_package')->live()->required(),
                                 Forms\Components\TextInput::make('items_per_package')->numeric()->visible(fn(Get $get) => $get('is_package'))->default(null),
@@ -132,38 +131,15 @@ class PurchaseRequestResource extends Resource
                                 Notification::make('success')->success()->title('Create Unit')->send();
                                 return  Unit::query()->create($data)->getKey();
                             })->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id'))->required(),
-                            Forms\Components\TextInput::make('quantity')->required()->live()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-
-                            Forms\Components\TextInput::make('estimated_unit_cost')
-                                ->label('EST Unit Cost')->live(true)
-                                ->numeric()->required()
-                                ->mask(RawJs::make('$money($input)'))
-                                ->stripCharacters(','),
-
-                            Forms\Components\Select::make('project_id')
-                                ->searchable()
-                                ->preload()
-                                ->label('Project')
-                                ->options(getCompany()->projects->pluck('name', 'id')),
-
-                            Placeholder::make('total')
-                                ->content(fn($state, Get $get) => number_format((((int)str_replace(',', '', $get('quantity'))) * ((int)str_replace(',', '', $get('estimated_unit_cost')))))),
-
-                            Forms\Components\Hidden::make('company_id')
-                                ->default(Filament::getTenant()->id)
-                                ->required(),
-                            Forms\Components\Textarea::make('description')
-                                ->label(' Product Name And Description')
-                                ->columnSpan(6)
-                                ->required(),
-
-                            MediaManagerInput::make('document')->orderable(false)->folderTitleFieldName("purchase_request_id")
-                                ->disk('public')
-                                ->schema([
-                                ])->defaultItems(0)->maxItems(1) ->columnSpan(2),
-
+                            Forms\Components\TextInput::make('quantity')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->required()->live()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                            Forms\Components\TextInput::make('estimated_unit_cost')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->label('EST Unit Cost')->live(true)->numeric()->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                            Forms\Components\Select::make('project_id')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->searchable()->preload()->label('Project')->options(getCompany()->projects->pluck('name', 'id')),
+                            Placeholder::make('total')->columnSpan(['default'=>8,'md'=>1,'xl'=>1])->content(fn($state, Get $get) => number_format((((int)str_replace(',', '', $get('quantity'))) * ((int)str_replace(',', '', $get('estimated_unit_cost')))))),
+                            Forms\Components\Hidden::make('company_id')->default(Filament::getTenant()->id)->required(),
+                            Forms\Components\Textarea::make('description')->label(' Product Name And Description')->columnSpan(['default'=>4,'sm'=>3,'md'=>3,'xl'=>5])->required(),
+                            MediaManagerInput::make('document')->orderable(false)->folderTitleFieldName("purchase_request_id")->disk('public')->schema([])->defaultItems(0)->maxItems(1) ->columnSpan(['default'=>4,'sm'=>2,'md'=>2,'xl'=>3]),
                         ])
-                        ->columns(8)
+                        ->columns(['default'=>4,'sm'=>6,'md'=>6,'xl'=>8])
                         ->columnSpanFull(),
                     // Section::make('estimated_unit_cost')->schema([
                     //     Placeholder::make('Total')->live()

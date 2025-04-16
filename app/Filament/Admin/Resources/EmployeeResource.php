@@ -359,12 +359,14 @@ class EmployeeResource extends Resource
                                 ->columnSpanFull(),
                         ])
                         ->createOptionUsing(function (array $data): int {
-                            return Position::query()->create([
-                                'title' => $data['title'],
-                                'description' => $data['description'],
-                                'document' => $data['document'],
-                                'company_id' => getCompany()->id
-                            ])->getKey();
+                            if ($data['title']) {
+                                return Position::query()->create([
+                                    'title' => $data['title'],
+                                    'description' => $data['description'],
+                                    'document' => $data['document'],
+                                    'company_id' => getCompany()->id
+                                ])->getKey();
+                            }
                         })
                         ->label('Position')->options(Position::query()->where('company_id', getCompany()->id)->pluck('title', 'id'))->searchable()->preload()
                         ->required(),

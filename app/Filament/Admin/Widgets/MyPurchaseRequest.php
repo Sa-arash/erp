@@ -152,9 +152,8 @@ class MyPurchaseRequest extends BaseWidget
                         Repeater::make('Requested Items')
                         ->addActionLabel('Add Item')
                             ->schema([
-                                Select::make('department_id')->label('Section')->live()->options(getCompany()->departments->pluck('title','id'))->searchable()->preload(),
-                                Select::make('product_id')->disableOptionsWhenSelectedInSiblingRepeaterItems()->label('Product/Service')
-                                    ->options(function (Get $get) {
+                                Select::make('department_id')->columnSpan(['default'=>8,'md'=>2,'xl'=>2,'2xl'=>1])->label('Section')->live()->options(getCompany()->departments->pluck('title','id'))->searchable()->preload(),
+                                Select::make('product_id')->columnSpan(['default'=>8,'md'=>2])->disableOptionsWhenSelectedInSiblingRepeaterItems()->label('Product/Service')->options(function (Get $get) {
                                         if ($get('department_id')){
                                             $data=[];
                                             $products=getCompany()->products->where('department_id',$get('department_id'))->pluck('title', 'id');
@@ -170,16 +169,15 @@ class MyPurchaseRequest extends BaseWidget
                                         if ($product){
                                             $set('unit_id',$product->unit_id);
                                         }
-                                    })->live(true)->columnSpan(2),
-                                Select::make('unit_id')->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id'))->required(),
-                                TextInput::make('quantity')->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-                                TextInput::make('estimated_unit_cost')->label('Estimated Unit Cost')->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required(),
-                                Select::make('project_id')->searchable()->preload()->label('Project')->options(getCompany()->projects->pluck('name', 'id')),
+                                    })->live(true),
+                                Select::make('unit_id')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id'))->required(),
+                                TextInput::make('quantity')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                                TextInput::make('estimated_unit_cost')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->label('Estimated Unit Cost')->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required(),
+                                Select::make('project_id')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->searchable()->preload()->label('Project')->options(getCompany()->projects->pluck('name', 'id')),
                                 Textarea::make('description')->columnSpan(7)->label('Product Name and Description ')->required(),
                                 FileUpload::make('images')->label('document')->columnSpanFull()->image()->nullable()
-
                             ])
-                            ->columns(7)
+                            ->columns(6)
                             ->columnSpanFull(),
                     ])->columns(3)
                 ])->action(function ($data){
