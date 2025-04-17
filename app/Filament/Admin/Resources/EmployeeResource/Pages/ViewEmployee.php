@@ -124,9 +124,11 @@ class  ViewEmployee extends ViewRecord
                     ->schema([
                         TextEntry::make('fullName')
                             ->label('Full Name')
-                            ->state(fn($record) => $record->fullName . "(" . $record?->user?->roles->pluck('name')->join(', ') . ")")
+                            ->state(fn($record) => $record->fullName)
                             ->size(TextEntry\TextEntrySize::Large)
-                            ->inlineLabel(),
+                            ,
+                        textEntry::make('position.title'),
+
                         TextEntry::make('email')
                             ->label('Email'),
                         TextEntry::make('address')
@@ -147,7 +149,7 @@ class  ViewEmployee extends ViewRecord
 
             Section::make('Profile')->schema([
                 Split::make([
-                    Section::make('Information')->icon('heroicon-c-identification')->iconColor('success')->schema([
+                    Section::make('Personal Information')->icon('heroicon-c-identification')->iconColor('success')->schema([
                         TextEntry::make('fullName')->copyable(),
                         textEntry::make('birthday')->date(),
                         textEntry::make('phone_number')->copyable(),
@@ -186,13 +188,13 @@ class  ViewEmployee extends ViewRecord
                 Split::make([
                     Section::make('Salary and Bank Information')->icon('cart')->iconColor('success')->schema([
                         textEntry::make('base_salary')->numeric()->badge(),
-                        textEntry::make('benefits.title')->badge()->label('Allowances/Deductions'),
-
-                        textEntry::make('cart')->label('Bank Account'),
-                        textEntry::make('bank'),
+                        textEntry::make('daily_salary')->numeric()->badge(),
                         textEntry::make('branch'),
+                        textEntry::make('bank'),
+                        textEntry::make('benefits.title')->badge()->label('Allowances/Deductions'),
+                        textEntry::make('cart')->label('Bank Account'),
                         textEntry::make('tin')->label('TIN'),
-                    ])->columns(2),
+                    ])->columns(4),
 
                 ])->from('md'),
                 RepeatableEntry::make('Relatives Emergency Contact')

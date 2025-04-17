@@ -204,7 +204,10 @@ class EmployeeResource extends Resource
                             }),
                             Forms\Components\DatePicker::make('joining_date')->required(),
                             Forms\Components\DatePicker::make('leave_date')->label('Ending Date'),
-                            Forms\Components\TextInput::make('base_salary')->required()->label('Base Salary' . '(' .defaultCurrency()?->symbol . ")")->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->default(0)->numeric(),
+                            Forms\Components\TextInput::make('base_salary')->required()->label('Base Salary' . '(' .defaultCurrency()?->symbol . ")")->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->default(0)->numeric()->afterStateUpdated(function ($state,Forms\Set $set){
+                                $baseSalary=str_replace(',','',$state);
+                                $set('daily_salary',number_format($baseSalary/30));
+                            })->live(true),
                             Forms\Components\TextInput::make('daily_salary')->label('Daily Salary' . '(' . defaultCurrency()?->symbol . ")")->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0),
 
                             Forms\Components\Select::make('benefits')->relationship('benefits', 'title')->label('Allowance')
@@ -410,7 +413,10 @@ class EmployeeResource extends Resource
                     }),
                     Forms\Components\DatePicker::make('joining_date')->required(),
                     Forms\Components\DatePicker::make('leave_date')->label('Ending Date'),
-                    Forms\Components\TextInput::make('base_salary')->required()->label('Base Salary' . '(' . defaultCurrency()?->symbol . ")")->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0),
+                    Forms\Components\TextInput::make('base_salary')->required()->label('Base Salary' . '(' . defaultCurrency()?->symbol . ")")->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->afterStateUpdated(function ($state,Forms\Set $set){
+                        $baseSalary=str_replace(',','',$state);
+                        $set('daily_salary',number_format($baseSalary/30));
+                    })->live(true),
                     Forms\Components\TextInput::make('daily_salary')->label('Daily Salary' . '(' . defaultCurrency()?->symbol . ")")->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)
                         ->default(0)
                         ->numeric(),

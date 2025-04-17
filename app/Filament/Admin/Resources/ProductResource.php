@@ -43,7 +43,7 @@ class ProductResource extends Resource
                     Select::make('department_id')->live()->label('Department')->required()->options(getCompany()->departments->pluck('title','id'))->searchable()->preload()->afterStateUpdated(function (Get $get,Set $set,$state){
                         $department=Department::query()->firstWhere('id',$state);
                         if ($department){
-                            $product = Product::query()->where('department_id',$state)->where('company_id',getCompany()->id)->latest()->first();
+                            $product = Product::query()->where('department_id',$state)->where('company_id',getCompany()->id)->latest('sku')->first();
                             if ($product) {
                                 $set('sku',generateNextCodeProduct($product->sku));
                             }else{
@@ -128,8 +128,10 @@ class ProductResource extends Resource
                    return  [];
                 })->searchable(),
                 Forms\Components\Textarea::make('description')->columnSpanFull(),
-                MediaManagerInput::make('photo')->label('Upload Image')->image(true)->orderable(false)->disk('public')->schema([])->maxItems(1),
-                Forms\Components\TextInput::make('stock_alert_threshold')->numeric()->default(5)->required(),
+               Section::make([
+                   MediaManagerInput::make('photo')->columnSpan(1)->label('Upload Image')->image(true)->orderable(false)->disk('public')->schema([])->maxItems(1),
+                   Forms\Components\TextInput::make('stock_alert_threshold')->numeric()->default(5)->required(),
+               ])->columns(4)
 
                 // Forms\Components\TextInput::make('price')
                 // ->mask(RawJs::make('$money($input)'))->stripCharacters(',')
@@ -153,7 +155,13 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('title')->label('Product Name')->searchable(),
                 Tables\Columns\TextColumn::make('account.title')->label('Category ')->sortable(),
                 Tables\Columns\TextColumn::make('subAccount.title')->label('Sub Category ')->sortable(),
-                Tables\Columns\TextColumn::make('product_type'),
+                Tables\Columns\TextColumn::make('product_type')->state(function($record){
+                    if ($record->product_type==='consumable'){
+                        return 'Consumable';
+                    }elseif($record->product_type==='unConsumable'){
+                        return 'Non-Consumable';
+                    }
+                }),
                 Tables\Columns\TextColumn::make('count')->numeric()->state(fn($record) => $record->assets->count())->label('Quantity')->badge()
                 ->color(fn($record)=>$record->assets->count()>$record->stock_alert_threshold ? 'success' : 'danger')->tooltip(fn($record)=>'Stock Alert:'.$record->stock_alert_threshold),
                 Tables\Columns\TextColumn::make('price')->numeric()->state(fn($record) => $record->assets->sum('price'))->label('Total Value')->badge()->color('success')

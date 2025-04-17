@@ -17,6 +17,8 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
+use Filament\Pages\Page;
+use Filament\Resources\RelationManagers\RelationGroup;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -92,6 +94,7 @@ class WarehouseResource extends Resource
                         ]);
                     Notification::make('save')->success()->title('Save ')->send();
                 }),
+                Tables\Actions\Action::make('inventory')->url(fn($record)=>WarehouseResource::getUrl('inventory',['record'=>$record->id]))
 
             ])
             ->bulkActions([
@@ -104,9 +107,16 @@ class WarehouseResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\StructuresRelationManager::class,
-            RelationManagers\ProductsRelationManager::class
+                RelationManagers\StructuresRelationManager::class,
+                RelationManagers\ProductsRelationManager::class,
         ];
+    }
+    public static function getRecordSubNavigation(Page $page): array
+    {
+        return $page->generateNavigationItems([
+            Pages\Inventory::class,
+            Pages\InventoryStock::class
+        ]);
     }
     public static function getPages(): array
     {
@@ -114,6 +124,8 @@ class WarehouseResource extends Resource
             'index' => Pages\ListWarehouses::route('/'),
             'create' => Pages\CreateWarehouse::route('/create'),
             'edit' => Pages\EditWarehouse::route('/{record}/edit'),
+            'inventory'=>Pages\Inventory::route('/{record}/inventory'),
+            'stock'=>Pages\InventoryStock::route('/{record}/stock')
         ];
     }
 }

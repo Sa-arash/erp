@@ -4,9 +4,12 @@ namespace App\Models;
 
 use App\Enums\TaskStatus;
 use Illuminate\Database\Eloquent\Model;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Task extends Model
+class Task extends Model implements HasMedia
 {
+    use InteractsWithMedia;
 
     protected $guarded = ['id'];
     protected $casts=['status'=>TaskStatus::class];

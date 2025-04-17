@@ -24,13 +24,17 @@ class Warehouse extends Model
     {
         return $this->belongsTo(Company::class);
     }
-    public function employee()
+    public function employee(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Employee::class);
     }
-    public function inventories()
+    public function inventories(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Inventory::class);
+    }
+    public function stocks(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
+    {
+        return $this->hasManyThrough(Stock::class,Inventory::class);
     }
     public function assets(): \Illuminate\Database\Eloquent\Relations\HasMany
     {

@@ -21,17 +21,16 @@ class Inventory extends Model
     {
         return $this->belongsTo(Company::class);
     }
-    public function warehouse()
+    public function warehouse(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Warehouse::class);
     }
 
-    public function product()
+    public function product(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
-
-    public function structure()
+    public function structure(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Structure::class);
     }

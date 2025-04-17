@@ -30,7 +30,7 @@ class StockAlert extends BaseWidget
                 Tables\Columns\TextColumn::make('title')->label('Material Specification')->searchable(),
                 Tables\Columns\ImageColumn::make('image')->defaultImageUrl(asset('img/images.jpeg'))->state(function ($record){
                     return $record->media->first()?->original_url;
-                }),
+                })->url(fn($record)=>$record->media->first()?->original_url,true),
                 Tables\Columns\TextColumn::make('account.title')->label('Category Title')->sortable(),
                 Tables\Columns\TextColumn::make('subAccount.title')->label('Sub Category Title')->sortable(),
                 Tables\Columns\TextColumn::make('product_type'),

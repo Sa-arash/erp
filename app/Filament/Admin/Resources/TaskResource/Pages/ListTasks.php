@@ -17,13 +17,13 @@ class ListTasks extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
-//    public function getTabs(): array
-//    {
-//        return [
-//            'All'=>  Tab::make()->query(fn($query) => $query),
-//            'Pending'=>  Tab::make()->query(fn($query) => $query->where('status','pending')),
-//            'Approved'=>  Tab::make()->query(fn($query) => $query->where('status','accepted')),
-//            'NotApproved'=>  Tab::make()->query(fn($query) => $query->where('status','NotApproved')),
-//        ];
-//    }
+    public function getTabs(): array
+    {
+        return [
+            'Assigned Tasks'=>  Tab::make()->query(fn($query) => $query->where('employee_id',getEmployee()->id)),
+            'My Tasks'=>  Tab::make()->query(fn($query) => $query->whereHas('employees',function ($query){
+                $query->where('employee_id',getEmployee()->id);
+            })),
+        ];
+    }
 }

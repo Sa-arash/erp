@@ -6,7 +6,7 @@ use Filament\Support\Contracts\HasColor;
 use Filament\Support\Contracts\HasIcon;
 use Filament\Support\Contracts\HasLabel;
 
-enum TaskStatus:string implements HasColor,HasLabel
+enum TaskStatus:string implements HasColor,HasLabel,HasIcon
 {
     case Processing = 'Processing';
     case Canceled = 'Canceled';
@@ -25,6 +25,14 @@ enum TaskStatus:string implements HasColor,HasLabel
             self::Processing => 'info',
             self::Canceled => 'danger',
             self::Completed => 'success',
+        };
+    }
+    public function getIcon(): ?string
+    {
+        return match($this){
+            self::Processing => 'heroicon-o-no-symbol',
+            self::Canceled => 'heroicon-o-x-circle',
+            self::Completed => 'heroicon-o-check-circle',
         };
     }
 
