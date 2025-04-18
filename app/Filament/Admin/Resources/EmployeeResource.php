@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources;
 use App\Filament\Admin\Resources\EmployeeResource\Pages;
 use App\Filament\Admin\Resources\EmployeeResource\RelationManagers\AssetEmployeeItemsRelationManager;
 use App\Filament\Admin\Resources\EmployeeResource\RelationManagers\LeavesRelationManager;
+use App\Filament\Admin\Resources\EmployeeResource\RelationManagers\MediasRelationManager;
 use App\Filament\Admin\Resources\EmployeeResource\RelationManagers\OverTimesRelationManager;
 use App\Filament\Admin\Resources\EmployeeResource\RelationManagers\PayrollsRelationManager;
 use App\Filament\Exports\EmployeeExporter;
@@ -577,6 +578,7 @@ class EmployeeResource extends Resource
     public static function getRelations(): array
     {
         return [
+            MediasRelationManager::class,
             PayrollsRelationManager::class,
             LeavesRelationManager::class,
             OverTimesRelationManager::class,

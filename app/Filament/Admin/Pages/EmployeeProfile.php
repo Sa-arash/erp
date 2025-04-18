@@ -27,6 +27,7 @@ use Filament\Infolists\Contracts\HasInfolists;
 use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Support\Enums\IconSize;
 use Spatie\Permission\Models\Role;
 
 use Illuminate\Support\Str;
@@ -191,8 +192,15 @@ class EmployeeProfile extends Page implements HasForms, HasInfolists
                 Section::make('Profile')->schema([
                     Split::make([
                         Section::make('Information')->icon('heroicon-c-identification')->iconColor('success')->schema([
-                            TextEntry::make('fullName')->copyable(),
-                            textEntry::make('birthday')->date(),
+                            TextEntry::make('fullName')->hintAction(
+                                \Filament\Infolists\Components\Actions\Action::make('pdf')
+                                    ->tooltip('Print Information')
+                                    ->icon('heroicon-s-printer')
+                                    ->iconSize(IconSize::Large)
+                                    ->label('')
+                                    ->url(fn($record) => route('pdf.employee', ['id' => $record->id]))
+                                    ->openUrlInNewTab()->label('Print')
+                            )->copyable(),                            textEntry::make('birthday')->date(),
                             textEntry::make('phone_number')->copyable(),
                             textEntry::make('emergency_phone_number'),
                             textEntry::make('NIC')->copyable()->label('NIC'),

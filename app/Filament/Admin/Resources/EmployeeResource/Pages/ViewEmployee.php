@@ -4,12 +4,10 @@ namespace App\Filament\Admin\Resources\EmployeeResource\Pages;
 
 use App\Filament\Admin\Resources\EmployeeResource;
 use App\Models\Employee;
-use App\Models\Permission;
-use Filament\Forms\Components\Textarea;
-use Spatie\Permission\Models\Role;
 use App\Models\Separation;
 use Filament\Actions;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Textarea;
 use Filament\Infolists\Components\Actions\Action;
 use Filament\Infolists\Components\Fieldset;
 use Filament\Infolists\Components\ImageEntry;
@@ -20,7 +18,9 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Filament\Support\Enums\IconSize;
 use Illuminate\Contracts\Support\Htmlable;
+use Spatie\Permission\Models\Role;
 
 class  ViewEmployee extends ViewRecord
 {
@@ -150,17 +150,25 @@ class  ViewEmployee extends ViewRecord
             Section::make('Profile')->schema([
                 Split::make([
                     Section::make('Personal Information')->icon('heroicon-c-identification')->iconColor('success')->schema([
-                        TextEntry::make('fullName')->copyable(),
+                        TextEntry::make('fullName')->hintAction(
+                            Action::make('pdf')
+                                ->tooltip('Print Information')
+                                ->icon('heroicon-s-printer')
+                                ->iconSize(IconSize::Large)
+                                ->label('')
+                                ->url(fn($record) => route('pdf.employee', ['id' => $record->id]))
+                                ->openUrlInNewTab()->label('Print')
+                        )->copyable(),
                         textEntry::make('birthday')->date(),
                         textEntry::make('phone_number')->copyable(),
                         textEntry::make('emergency_phone_number'),
                         textEntry::make('NIC')->copyable()->label('NIC'),
                         textEntry::make('marriage'),
                         textEntry::make('count_of_child'),
-                        textEntry::make('gender')->state(function($record){
-                            if ($record->gender==="male"){
+                        textEntry::make('gender')->state(function ($record) {
+                            if ($record->gender === "male") {
                                 return "Male";
-                            }elseif ($record->gender==="female"){
+                            } elseif ($record->gender === "female") {
                                 return "Female";
                             }else{
                                 return  "Other";

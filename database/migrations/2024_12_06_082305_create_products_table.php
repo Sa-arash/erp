@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->string('title', 255);
+            $table->string('second_title', 255)->nullable();
             $table->string('image', 255)->nullable();
             $table->enum('product_type', ['consumable', 'unConsumable','service']);
             $table->integer('stock_alert_threshold')->nullable();

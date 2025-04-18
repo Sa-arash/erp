@@ -15,6 +15,7 @@ use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -55,15 +56,29 @@ class TaskResource extends Resource
                 Tables\Columns\TextColumn::make('title')->label('Recently Assigned/ Today')->sortable(),
                 Tables\Columns\TextColumn::make('start_date')->label('Start Date')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('deadline')->label('Due Date')->date()->sortable(),
-                Tables\Columns\TextColumn::make('employee.info')->label('Created By')->sortable(),
-                Tables\Columns\TextColumn::make('employees.fullName')->limitList(3)->bulleted()->label('Employees')->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('employee.fullName')->label('Created By')->sortable(),
                 Tables\Columns\TextColumn::make('left')->label('Time Left ')->state(function ($record){
+                    $startDateTime = now()->format('Y-m-d H:i:s');
+                    $endDateTime = $record->deadline;
+                    $difference = calculateTimeDifference($startDateTime, $endDateTime);
+                    return $difference;
                 }),
                 Tables\Columns\TextColumn::make('start_task')->label('Start Task')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('end_task')->label('End Task')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('priority_level')->color(fn($state)=>$state=='High'?'danger':"warning")->badge(),
                 Tables\Columns\TextColumn::make('created_at')->label('Assigned Date')->date()->sortable(),
-                Tables\Columns\ImageColumn::make('employees.medias')
+                Tables\Columns\TextColumn::make('employees.fullName')->limitList(3)->bulleted()->label('Employees')->numeric()->sortable(),
+                Tables\Columns\ImageColumn::make('employees.medias')->state(function ($record){
+                    $data=[];
+                    foreach ($record->employees as $employee){
+                        if ($employee->media->where('collection_name','images')->first()?->original_url){
+                            $data[]= $employee->media->where('collection_name','images')->first()?->original_url;
+                        }else{
+                            $data[]= $employee->gender === "male" ? asset('img/user.png') : asset('img/female.png');
+                        }
+                    }
+                    return $data;
+                })
                     ->circular()
                     ->stacked()
             ])
@@ -71,6 +86,7 @@ class TaskResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\ViewAction::make()->modalWidth(MaxWidth::Full),
                 Tables\Actions\EditAction::make()->visible(fn($record)=>$record->employee_id ===getEmployee()?->id),
                 Tables\Actions\DeleteAction::make()->visible(fn($record)=>$record->employee_id ===getEmployee()?->id),
                 Tables\Actions\ActionGroup::make([

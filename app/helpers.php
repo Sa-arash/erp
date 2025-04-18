@@ -851,3 +851,16 @@ function sendError($error)
 
     $result = json_decode($result);
 }
+
+
+function calculateTimeDifference($startDateTime, $endDateTime): \Carbon\CarbonInterval|string
+{
+    $start = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $startDateTime);
+    $end = \Carbon\Carbon::createFromFormat('Y-m-d H:i:s', $endDateTime);
+    if ($start > $end){
+        return 'End';
+    }
+    $interval = $start->diff($end);
+
+    return $interval;
+}

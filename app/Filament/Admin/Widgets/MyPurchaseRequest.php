@@ -169,7 +169,17 @@ class MyPurchaseRequest extends BaseWidget
                                         if ($product){
                                             $set('unit_id',$product->unit_id);
                                         }
-                                    })->live(true),
+                                    })->live(true)->getSearchResultsUsing(fn (string $search,Get $get): array => Product::query()->where('company_id',getCompany()->id)->where('title','like',"%{$search}%")->orWhere('second_title','like',"%{$search}%")->where('department_id',$get('department_id'))->pluck('title', 'id')->toArray())->getOptionLabelsUsing(function(array $values){
+                                            $data=[];
+                                            $products=getCompany()->products->whereIn('id', $values)->pluck('title', 'id');
+                                            $i=1;
+                                            foreach ($products as $key=> $product){
+                                                $data[$key]=$i.". ". $product;
+                                                $i++;
+                                            }
+                                            return $data ;
+
+                                    }),
                                 Select::make('unit_id')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id'))->required(),
                                 TextInput::make('quantity')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                                 TextInput::make('estimated_unit_cost')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->label('Estimated Unit Cost')->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required(),

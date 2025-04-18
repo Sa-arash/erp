@@ -50,14 +50,15 @@ class ProductResource extends Resource
                                 $set('sku',$department->abbreviation."-0001");
                             }
                         }
-
                     }),
-                    Forms\Components\TextInput::make('sku')->readOnly()->label(' SKU')
-                        ->unique(ignoreRecord:true ,modifyRuleUsing: function (Unique $rule) {
+                    Select::make('product_type')->searchable()->options(['consumable' => 'Consumable', 'unConsumable' => 'non-Consumable'])->default('consumable')->live()->afterStateUpdated(function(Set $set){
+                        $set('account_id',null);
+                    }),
+                    Forms\Components\TextInput::make('sku')->readOnly()->label(' SKU')->unique(ignoreRecord:true ,modifyRuleUsing: function (Unique $rule) {
                             return $rule->where('company_id', getCompany()->id);
-                        })
-                        ->required()->maxLength(255),
+                        })->required()->maxLength(255),
                     Forms\Components\TextInput::make('title')->label('Material Specification')->required()->maxLength(255),
+                    Forms\Components\TextInput::make('second_title')->label('Second Material Specification')->nullable()->maxLength(255),
                     Select::make('unit_id')->required()->relationship('unit','title',fn($query)=>$query->where('company_id',getCompany()->id))->searchable()->preload()->createOptionForm([
                         Forms\Components\TextInput::make('title')->label('Unit Name')->unique('units', 'title')->required()->maxLength(255),
                         Forms\Components\Toggle::make('is_package')->live()->required(),
@@ -67,11 +68,7 @@ class ProductResource extends Resource
                         Notification::make('success')->success()->title('Create Unit')->send();
                         return  Unit::query()->create($data)->getKey();
                     }),
-                    Select::make('product_type')->searchable()->options(['consumable' => 'consumable', 'unConsumable' => 'non-consumable'])->default('consumable')
-                    ->live()->afterStateUpdated(function(Set $set){
-                        $set('account_id',null);
-                    }),
-                ])->columns(5),
+                ])->columns(3),
 
                 Select::make('account_id')->options(function (Get $get) {
 
