@@ -95,7 +95,7 @@ class TaskPolicy
      */
     public function replicate(User $user, Task $task): bool
     {
-        return $user->can('{{ Replicate }}');
+        return true;
     }
 
     /**

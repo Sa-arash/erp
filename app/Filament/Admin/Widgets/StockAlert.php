@@ -4,6 +4,8 @@ namespace App\Filament\Admin\Widgets;
 
 use App\Models\Product;
 use BezhanSalleh\FilamentShield\Traits\HasWidgetShield;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\Section;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -28,9 +30,17 @@ class StockAlert extends BaseWidget
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('sku')->label('SKU'),
                 Tables\Columns\TextColumn::make('title')->label('Material Specification')->searchable(),
-                Tables\Columns\ImageColumn::make('image')->defaultImageUrl(asset('img/images.jpeg'))->state(function ($record){
+                Tables\Columns\ImageColumn::make('image')->action(Tables\Actions\Action::make('image')->modalSubmitAction(false)->infolist(function ($record){
+                    if ($record->media->first()?->original_url){
+                        return  [
+                            Section::make([
+                                ImageEntry::make('image')->label('')->width(650)->height(650)->columnSpanFull()->state($record->media->first()?->original_url)
+                            ])
+                        ];
+                    }
+                }))->defaultImageUrl(asset('img/images.jpeg'))->state(function ($record){
                     return $record->media->first()?->original_url;
-                })->url(fn($record)=>$record->media->first()?->original_url,true),
+                }),
                 Tables\Columns\TextColumn::make('account.title')->label('Category Title')->sortable(),
                 Tables\Columns\TextColumn::make('subAccount.title')->label('Sub Category Title')->sortable(),
                 Tables\Columns\TextColumn::make('product_type'),

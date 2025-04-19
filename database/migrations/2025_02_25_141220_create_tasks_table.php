@@ -17,7 +17,7 @@ return new class extends Migration
             $table->dateTime('start_date');
             $table->dateTime('start_task')->nullable();
             $table->dateTime('end_task')->nullable();
-            $table->date('deadline');
+            $table->dateTime('deadline');
             $table->string('title');
             $table->text('description')->nullable();
             $table->enum('priority_level',['Low','Medium','High']);

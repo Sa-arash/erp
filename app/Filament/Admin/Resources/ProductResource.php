@@ -18,6 +18,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Filament\Infolists\Components\ImageEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -148,7 +149,15 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('sku')->label('SKU')->searchable(),
                 Tables\Columns\ImageColumn::make('image')->defaultImageUrl(asset('img/images.jpeg'))->state(function ($record){
                     return $record->media->first()?->original_url;
-                }),
+                })->action(Tables\Actions\Action::make('image')->modalSubmitAction(false)->infolist(function ($record){
+                    if ($record->media->first()?->original_url){
+                        return  [
+                            \Filament\Infolists\Components\Section::make([
+                                ImageEntry::make('image')->label('')->width(650)->height(650)->columnSpanFull()->state($record->media->first()?->original_url)
+                            ])
+                        ];
+                    }
+                })),
                 Tables\Columns\TextColumn::make('title')->label('Product Name')->searchable(),
                 Tables\Columns\TextColumn::make('account.title')->label('Category ')->sortable(),
                 Tables\Columns\TextColumn::make('subAccount.title')->label('Sub Category ')->sortable(),

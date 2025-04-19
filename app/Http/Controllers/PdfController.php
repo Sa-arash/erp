@@ -13,6 +13,7 @@ use App\Models\Invoice;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseRequest;
 use App\Models\TakeOut;
+use App\Models\Task;
 use App\Models\Transaction;
 use App\Models\VisitorRequest;
 use Carbon\Carbon;
@@ -478,6 +479,15 @@ class PdfController extends Controller
             'pdf.assets',
             compact('company', 'assets')
         );
-        return $pdf->stream('requestVisit.pdf');
+        return $pdf->stream('pdf.assets');
+    }
+    public function tasks($ids){
+        $tasks= Task::query()->with(['employees'])->whereIn('id',explode('-',$ids))->orderBy('id','desc')->get();
+        $company=$tasks[0]->company;
+        $pdf = Pdf::loadView(
+            'pdf.tasks',
+            compact('company', 'tasks')
+        );
+        return $pdf->stream();
     }
 }
