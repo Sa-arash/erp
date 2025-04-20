@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('task_reports', function (Blueprint $table) {
             $table->id();
-            $table->date('date');
+            $table->datetime('date');
             $table->text('description');
             $table->text('document')->nullable();
             $table->foreignId('employee_id')->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();

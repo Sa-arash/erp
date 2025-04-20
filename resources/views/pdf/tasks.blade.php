@@ -10,6 +10,7 @@
         margin: 0 auto;
         padding: 20px;
         border: 1px solid #ccc;
+        font-size: 12px;
     }
     .header {
         text-align: center;
@@ -24,71 +25,73 @@
         margin: 0;
         font-size: 12px;
     }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 20px;
-        font-size: 11px;
-    }
-    table, th, td {
+    .task-card {
         border: 1px solid #000;
+        border-radius: 5px;
+        padding: 10px;
+        margin-bottom: 15px;
     }
-    th, td {
-        padding: 6px;
-        text-align: center;
+    .task-header {
+        font-weight: bold;
+        background-color: #f1f1f1;
+        padding: 5px;
+        margin-bottom: 10px;
     }
-    th {
-        background-color: #474646;
-        color: #fff;
+    .task-body {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
     }
-    .footer {
-        margin-top: 30px;
-        font-size: 12px;
-        text-align: center;
+    .task-col {
+        width: 50%;
+    }
+    .task-row {
+        margin: 4px 0;
+    }
+    .label {
+        font-weight: bold;
+        display: inline-block;
+        width: 120px;
     }
 </style>
 
 <body>
+
+
 <div class="container">
     <div class="header">
         <h1>Tasks Report</h1>
         <p>{{ now()->format('Y-m-d') }}</p>
     </div>
 
-    <table>
-        <thead>
-        <tr>
-            <th>#</th>
-            <th>Created By</th>
-            <th>Recently Assigned/ Today</th>
-            <th>Start Date</th>
-            <th>Start Task</th>
-            <th>Assigned Date</th>
-            <th>End Task</th>
-            <th>Due Date</th>
-            <th>Priority</th>
-            <th>Status</th>
-        </tr>
-        </thead>
-        <tbody>
-        @foreach($tasks as $index => $task)
-            <tr>
-                <td>{{ $index + 1 }}</td>
-                <td>{{ $task->employee->name ?? '—' }}</td>
-                <td>{{ $task->title }}</td>
-                <td>{{ $task->start_date }}</td>
-                <td>{{ $task->deadline }}</td>
-                <td>{{ $task->created_at }}</td>
-                <td>{{ optional($task->start_task)->format('Y-m-d H:i') ?? '—' }}</td>
-                <td>{{ optional($task->end_task)->format('Y-m-d H:i') ?? '—' }}</td>
-                <td>{{ $task->priority_level }}</td>
-                <td>{{ $task->status }}</td>
-            </tr>
-        @endforeach
-        </tbody>
-    </table>
+    @foreach($tasks as $index => $task)
+        <div class="task-card">
+            <div class="task-header">Task #{{ $index + 1 }}</div>
+            <table class="task-table">
+                <tr>
+                    <td width="50%">
+                        <div><span class="label">Created By:</span> {{ $task->employee->fullName ?? '—' }}</div>
+                        <div><span class="label">Title:</span> {{ $task->title }}</div>
+                        <div><span class="label">Start Date:</span> {{ $task->start_date }}</div>
+                        <div><span class="label">Deadline:</span> {{ $task->deadline }}</div>
+                        <div><span class="label">Assigned Date:</span> {{ $task->created_at }}</div>
+                    </td>
 
-
+                    <td width="50%">
+                        <div><span class="label">Start Task:</span> {{ $task->start_task ?? '—' }}</div>
+                        <div><span class="label">End Task:</span> {{ $task->end_task ?? '—' }}</div>
+                        <div><span class="label">Priority:</span> {{ $task->priority_level }}</div>
+                        <div><span class="label">Status:</span> {{ $task->status }}</div>
+                        <div><span class="label">Employees:</span> {{ $task->employees->map(fn($employee) => $employee->fullName)->join(', ') }}</div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">Detail:{{$task->description}}</td>
+                </tr>
+            </table>
+        </div>
+    @endforeach
 </div>
+
 </body>
 </html>

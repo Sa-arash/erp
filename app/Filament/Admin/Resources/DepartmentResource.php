@@ -55,7 +55,7 @@ class DepartmentResource extends Resource
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('title')->label('Department Name')->sortable(),
                 Tables\Columns\TextColumn::make('abbreviation')->label('Abbreviation')->sortable(),
-                Tables\Columns\TextColumn::make('employee.fullName')->label('Head Of Department ')->badge(),
+                Tables\Columns\TextColumn::make('employee.fullName')->label('Line Manager ')->badge(),
                 TextColumn::make('employees')->color('aColor')->alignCenter()->state(fn($record)=> $record->employees->count())->url(fn($record)=>EmployeeResource::getUrl().'?tableFilters[department_id][value]='.$record->id),
 
             ])
@@ -67,7 +67,7 @@ class DepartmentResource extends Resource
                 Tables\Actions\EditAction::make()->modelLabel('Edit '),
                 Tables\Actions\Action::make('head')->icon('heroicon-m-user-circle')->iconSize(IconSize::Large)->tooltip('Set Head of Department')->label('Set Head of Department')->form(function ($record){
                     return [
-                        Forms\Components\Select::make('employee_id')->label('Head of Department ')->searchable()->preload()->options(getCompany()->employees()->pluck('fullName','id'))->required()->default($record->employee_id)
+                        Forms\Components\Select::make('employee_id')->label('Line Manager ')->searchable()->preload()->options(getCompany()->employees()->pluck('fullName','id'))->required()->default($record->employee_id)
                     ];
                 })->action(function ($record,$data){
                     $record->update([

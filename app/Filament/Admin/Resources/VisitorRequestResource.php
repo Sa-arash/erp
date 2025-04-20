@@ -140,6 +140,12 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('visit_date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('arrival_time')->time('H:m'),
                 Tables\Columns\TextColumn::make('departure_time')->time('H:m'),
+//                Tables\Columns\TextColumn::make('Track Time')->state(function ($record){
+//                    $startDateTime = $record->arrival_time;
+//                    $endDateTime = $record->departure_time;
+//                    $difference = calculateTimeDifference($startDateTime, $endDateTime);
+//                    return $difference;
+//                })->label('Track Time'),
                 Tables\Columns\TextColumn::make('status')->color(function ($state) {
                     switch ($state) {
                         case "approved":
@@ -154,7 +160,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('employee_id')->options(getCompany()->employees->pluck('info', 'id'))->searchable()->preload()->label('Employee'),
+                Tables\Filters\SelectFilter::make('requested_by')->options(getCompany()->employees->pluck('info', 'id'))->searchable()->preload()->label('Employee'),
                 DateRangeFilter::make('visit_date')->label('Visit Date'),
                 Tables\Filters\SelectFilter::make('status')->options(['approved' => 'approved', 'notApproved' => 'notApproved'])->searchable()
             ], getModelFilter())

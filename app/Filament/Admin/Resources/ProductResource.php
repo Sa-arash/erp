@@ -59,7 +59,7 @@ class ProductResource extends Resource
                             return $rule->where('company_id', getCompany()->id);
                         })->required()->maxLength(255),
                     Forms\Components\TextInput::make('title')->label('Material Specification')->required()->maxLength(255),
-                    Forms\Components\TextInput::make('second_title')->label('Second Material Specification')->nullable()->maxLength(255),
+                    Forms\Components\TextInput::make('second_title')->label('Specification in Dari Language')->nullable()->maxLength(255),
                     Select::make('unit_id')->required()->relationship('unit','title',fn($query)=>$query->where('company_id',getCompany()->id))->searchable()->preload()->createOptionForm([
                         Forms\Components\TextInput::make('title')->label('Unit Name')->unique('units', 'title')->required()->maxLength(255),
                         Forms\Components\Toggle::make('is_package')->live()->required(),

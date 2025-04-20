@@ -120,8 +120,8 @@ class EmployeeResource extends Resource
                             Forms\Components\Repeater::make('emergency_contact')->columnSpanFull()->label('Emergency Contact')->schema([
                                 TextInput::make('name')->required(),
                                 TextInput::make('relation')->required(),
-                                TextInput::make('number')->required(),
-                            ])->columns(3)
+                                TextInput::make('number')->label('Phone Number')->required(),
+                            ])->columns(3)->addActionLabel('Add Emergency Contact')
                         ])->columns(2),
 
                     Forms\Components\Wizard\Step::make('Salary information')
@@ -199,8 +199,8 @@ class EmployeeResource extends Resource
                                         'company_id' => getCompany()->id
                                     ])->getKey();
                                 })->required(),
-                            Forms\Components\Select::make('warehouse_id')->live()->label('Duty Location(Building)')->options(getCompany()->warehouses()->pluck('title', 'id'))->searchable()->preload(),
-                            SelectTree::make('structure_id')->label('Address')->searchable()->label('Duty Location(Room)')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id',modifyQueryUsing: function($query, Forms\Get $get){
+                            Forms\Components\Select::make('warehouse_id')->live()->label('Duty Main Location')->options(getCompany()->warehouses()->pluck('title', 'id'))->searchable()->preload(),
+                            SelectTree::make('structure_id')->label('Address')->searchable()->label('Duty Sub Location')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id',modifyQueryUsing: function($query, Forms\Get $get){
                                 return $query->where('warehouse_id', $get('warehouse_id'));
                             }),
                             Forms\Components\DatePicker::make('joining_date')->required(),
@@ -326,8 +326,8 @@ class EmployeeResource extends Resource
                     Forms\Components\Repeater::make('emergency_contact')->columnSpanFull()->label('Emergency Contact')->schema([
                         TextInput::make('name')->required(),
                         TextInput::make('relation')->required(),
-                        TextInput::make('number')->required(),
-                    ])->columns(3)
+                        TextInput::make('number')->label('Phone Number')->required(),
+                    ])->columns(3)->addActionLabel('Add Emergency Contact')
                 ])->columns(2),
 
             Forms\Components\Wizard\Step::make('Salary information')
@@ -408,8 +408,8 @@ class EmployeeResource extends Resource
                                 'company_id' => getCompany()->id
                             ])->getKey();
                         })->required(),
-                    Forms\Components\Select::make('warehouse_id')->live()->label('Duty Location(Building) ')->options(getCompany()->warehouses()->pluck('title', 'id'))->searchable()->preload(),
-                    SelectTree::make('structure_id')->label('Address')->searchable()->label('Duty Location(Room)')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id',modifyQueryUsing: function($query, Forms\Get $get){
+                    Forms\Components\Select::make('warehouse_id')->live()->label('Duty Main Location')->options(getCompany()->warehouses()->pluck('title', 'id'))->searchable()->preload(),
+                    SelectTree::make('structure_id')->label('Address')->searchable()->label('Duty Sub Location')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id',modifyQueryUsing: function($query, Forms\Get $get){
                         return $query->where('warehouse_id', $get('warehouse_id'));
                     }),
                     Forms\Components\DatePicker::make('joining_date')->required(),

@@ -686,6 +686,10 @@ class PurchaseOrderResource extends Resource
             //
         ];
     }
+    public static function getNavigationBadge(): ?string
+    {
+        return PurchaseOrder::query()->where('company_id',getCompany()->id)->count();
+    }
 
     public static function getPages(): array
     {

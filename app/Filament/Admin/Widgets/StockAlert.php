@@ -27,7 +27,7 @@ class StockAlert extends BaseWidget
 //             ->havingRaw('assets_count < stock_alert_threshold')
               )
             ->columns([
-                Tables\Columns\TextColumn::make('')->rowIndex(),
+                Tables\Columns\TextColumn::make('')->label('#')->rowIndex(),
                 Tables\Columns\TextColumn::make('sku')->label('SKU'),
                 Tables\Columns\TextColumn::make('title')->label('Material Specification')->searchable(),
                 Tables\Columns\ImageColumn::make('image')->action(Tables\Actions\Action::make('image')->modalSubmitAction(false)->infolist(function ($record){
@@ -44,8 +44,8 @@ class StockAlert extends BaseWidget
                 Tables\Columns\TextColumn::make('account.title')->label('Category Title')->sortable(),
                 Tables\Columns\TextColumn::make('subAccount.title')->label('Sub Category Title')->sortable(),
                 Tables\Columns\TextColumn::make('product_type'),
-                Tables\Columns\TextColumn::make('count')->numeric()->state(fn($record) => $record->assets->count())->label('Quantity')->badge()
-                ->color(fn($record)=>$record->assets->count()>$record->stock_alert_threshold ? 'success' : 'danger')->tooltip(fn($record)=>'Stock Alert:'.$record->stock_alert_threshold),
+                Tables\Columns\TextColumn::make('count')->numeric()->state(fn($record) => $record->assets->count())->label('Quantity')->badge()->color(fn($record)=>$record->assets->count()>$record->stock_alert_threshold ? 'success' : 'danger')->tooltip(fn($record)=>'Stock Alert:'.$record->stock_alert_threshold),
+//                Tables\Columns\TextColumn::make('count')->numeric()->state(fn($record) => $record->assets->count())->label('Quantity')->badge()->color(fn($record)=>$record->assets->count()>$record->stock_alert_threshold ? 'success' : 'danger')->tooltip(fn($record)=>'Stock Alert:'.$record->stock_alert_threshold),
             ])->filters([
                 Tables\Filters\SelectFilter::make('department_id')->label('Department')->options(getCompany()->departments->pluck('title','id'))->searchable()->preload()
             ],getModelFilter());

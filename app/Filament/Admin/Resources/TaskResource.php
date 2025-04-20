@@ -88,15 +88,14 @@ class TaskResource extends Resource
             ], getModelFilter())
             ->actions([
                 Tables\Actions\Action::make('Duplicate')->iconSize(IconSize::Large)->icon('heroicon-o-clipboard-document-check')->label('Duplicate')->url(fn($record) => TaskResource::getUrl('replicate', ['id' => $record->id])),
-                Tables\Actions\Action::make('replicate')->url(fn($record) => TaskResource::getUrl('replicate', ['id' => $record->id])),
                 Tables\Actions\ViewAction::make()->modalWidth(MaxWidth::Full),
                 Tables\Actions\EditAction::make()->visible(fn($record) => $record->employee_id === getEmployee()?->id),
                 Tables\Actions\DeleteAction::make()->visible(fn($record) => $record->employee_id === getEmployee()?->id),
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\Action::make('start_task')->action(function ($record) {
+                    Tables\Actions\Action::make('start_task')->iconSize(IconSize::Medium)->icon('heroicon-o-clock')->color('success')->action(function ($record) {
                         $record->update(['start_task' => now()]);
                     })->hidden(fn($record) => $record->start_task),
-                    Tables\Actions\Action::make('Send Reports')->form([
+                    Tables\Actions\Action::make('Send Reports')->icon('heroicon-c-paper-clip')->color('warning')->form([
                         Section::make([
                             Textarea::make('description')->columnSpanFull()->required(),
                             FileUpload::make('document')->columnSpanFull()
@@ -133,8 +132,18 @@ class TaskResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\ReportRelationManager::class
         ];
+    }
+    public static function getNavigationBadge(): ?string
+    {
+        return Task::query()->where('company_id',getCompany()->id)->whereHas('employees',function ($query){
+            $query->where('employee_id',getEmployee()->id);
+        })->count();
+    }
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'danger';
     }
 
 
@@ -144,6 +153,7 @@ class TaskResource extends Resource
             'index' => Pages\ListTasks::route('/'),
             'create' => Pages\CreateTask::route('/create'),
             'edit' => Pages\EditTask::route('/{record}/edit'),
+            'view' => Pages\ViewTask::route('/{record}/view'),
             'replicate' => Pages\ReplicateTask::route('/{id}/replicate')
         ];
     }

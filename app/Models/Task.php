@@ -25,4 +25,8 @@ class Task extends Model implements HasMedia
     {
         return $this->belongsToMany(Employee::class,'task_employees');
     }
+    public function reports(): \Illuminate\Database\Eloquent\Relations\hasMany
+    {
+        return $this->hasMany(TaskReports::class);
+    }
 }

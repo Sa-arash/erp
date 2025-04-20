@@ -22,8 +22,15 @@ class MediasRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('name')
             ->columns([
-                Tables\Columns\TextColumn::make('custom_properties')->label('Description'),
-                Tables\Columns\TextColumn::make('original_url')->label('Link')->state('Download')->color('aColor')->url(fn($record)=>$record->original_url,true),
+                Tables\Columns\TextColumn::make('custom_properties')->label('Employee Documents'),
+                Tables\Columns\TextColumn::make('original_url')->label('Attachments')->state('Download')->color('aColor')->url(fn($record)=>$record->original_url,true),
+                Tables\Columns\TextColumn::make('mime_type')->label('File Format')->formatStateUsing(function ($state){
+                    $parts = explode('/', $state);
+                    if (count($parts) > 1) {
+                        return $parts[1];
+                    }
+                    return null;
+                })
             ])
             ->filters([
                 //
