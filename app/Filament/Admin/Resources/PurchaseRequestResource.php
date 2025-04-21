@@ -460,7 +460,10 @@ class PurchaseRequestResource extends Resource
                     Tables\Actions\Action::make('prPDF')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.purchase', ['id' => $record->id]))->openUrlInNewTab(),
                 ]),
 
-                Tables\Actions\DeleteAction::make()->visible(fn($record) => $record->status->name === "Requested"),
+                Tables\Actions\DeleteAction::make()->visible(fn($record) => $record->status->name === "Requested")->action(function ($record){
+                    $record->approvals()->delete();
+                    $record->delete();
+                }),
                 Tables\Actions\Action::make('Duplicate')->visible(fn()=>auth()->user()->can('duplicate_purchase::request'))->iconSize(IconSize::Large)->icon('heroicon-o-clipboard-document-check')->label('Duplicate')->url(fn($record)=>PurchaseRequestResource::getUrl('replicate',['tk'=>'resource','id'=>$record->id]))
 
             ])

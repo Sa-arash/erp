@@ -107,7 +107,7 @@
         <tbody>
 
         <!-- Empty rows for filling -->
-        @foreach($pr->items->whereIn('ceo_decision',['purchase','approve']) as $item)
+        @foreach($pr->items->whereIn('approval_decision',['purchase','approve']) as $item)
             {{$item}}
             <tr>
                 <td>{{++$i}}</td>

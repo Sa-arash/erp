@@ -25,6 +25,7 @@ use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class QuotationsRelationManager extends RelationManager
@@ -33,7 +34,6 @@ class QuotationsRelationManager extends RelationManager
     protected static ?string $label = 'Quotations';
     public function form(Form $form): Form
     {
-
         $record=$this->ownerRecord;
             return  $form->schema([
                 \Filament\Forms\Components\Section::make([
@@ -148,8 +148,25 @@ class QuotationsRelationManager extends RelationManager
                     ->columns(6)->addable(false)->columnSpanFull()
 
             ]);
-
     }
+    protected function configureDeleteAction(Tables\Actions\DeleteAction $action): void
+    {
+        $action
+            ->authorize(true);
+    }
+    protected function configureCreateAction(Tables\Actions\CreateAction $action): void
+    {
+        $action
+            ->authorize(true)
+            ->form(fn (Form $form): Form => $this->form($form->columns(2)));
+    }
+    protected function configureDeleteBulkAction(Tables\Actions\DeleteBulkAction $action): void
+    {
+
+        $action
+            ->authorize(true);
+    }
+
 
     public function table(Table $table): Table
     {
@@ -196,7 +213,7 @@ class QuotationsRelationManager extends RelationManager
                 }),
             ])
             ->actions([
-               Tables\Actions\ViewAction::make()->infolist(function ($record){
+               Tables\Actions\ViewAction::make()->infolist(function (){
 
                    return [
                        Section::make([
@@ -222,14 +239,13 @@ class QuotationsRelationManager extends RelationManager
                            ])->columns(6)->columnSpanFull()
                        ])->columns()
                    ];
-               }),
+               })->modalWidth(MaxWidth::ScreenExtraLarge),
 //                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make()->visible($this->ownerRecord->bid===null ),
+                    Tables\Actions\DeleteAction::make()->visible($this->ownerRecord->bid===null ),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                Tables\Actions\DeleteBulkAction::make()->visible($this->ownerRecord->bid===null ),
+
             ]);
     }
 }

@@ -201,13 +201,13 @@ class MyPurchaseRequest extends BaseWidget
                     foreach ($data['Requested Items'] as $requestedItem) {
                         $requestedItem['company_id']=$company->id;
                         $item= $request->items()->create($requestedItem);
-                        $mediaItem = $requestedItem['images'] ?? [];
+                        $mediaItem = $requestedItem['images'] ?? null;
                         if (isset($mediaItem)){
                             $item->addMedia(public_path('images/'.$mediaItem))->toMediaCollection('document');
                         }
                     }
                   sendApprove($request,'PR Warehouse/Storage Clarification_approval');
-                    Notification::make('success')->title('Successfully Submitted')->send();
+                    Notification::make('success')->success()->title('Successfully Submitted')->send();
                 })
             ]);
     }
