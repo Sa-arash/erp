@@ -15,6 +15,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
 use Filament\Infolists\Components\Fieldset;
+use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
@@ -151,6 +152,9 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                                         TextEntry::make('color')->label('Color'),
                                         TextEntry::make('Registration_Plate')->label('Registration Plate'),
                                     ])->columns(6)->columnSpanFull(),
+                                ImageEntry::make('file')->label('File Upload')->state(function ($record){
+                                    return $record->media->where('collection_name','attachment')->first()?->original_url;
+                                })
 
                             ])->columns(2)
                         ])->relationship('approvable')->columns()
@@ -277,18 +281,12 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                     Forms\Components\ToggleButtons::make('status')->default('Approve')->colors(['Approve' => 'success', 'NotApprove' => 'danger', 'Pending' => 'primary'])->options(['Approve' => 'Approve', 'Pending' => 'Pending', 'NotApprove' => 'NotApprove'])->grouped(),
                     Forms\Components\Textarea::make('comment')->nullable()
                 ])->action(function ($data, $record) {
-
                     $record->update(['comment' => $data['comment'], 'status' => $data['status'], 'approve_date' => now()]);
-                    $company = getCompany();
                     if (substr($record->approvable_type, 11) === "VisitorRequest") {
                         if ($data['status'] === "Approve") {
-                            if ($record->position === "Admin") {
-                                sendSecurity($record->approvable,$company);
-                            }else {
                                 $record->approvable->update([
                                     'status' => 'approved'
                                 ]);
-                            }
                         }else{
                             $record->approvable->update([
                                 'status' => 'notApproved'
@@ -296,13 +294,9 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                         }
                     }elseif (substr($record->approvable_type, 11) === "TakeOut"){
                         if ($data['status'] === "Approve") {
-                            if ($record->position === "Admin") {
-                                sendSecurity($record->approvable,$company);
-                            }else {
                                 $record->approvable->update([
                                     'mood' => 'Approved'
                                 ]);
-                            }
                         }else{
                             $record->approvable->update([
                                 'mood' => 'NotApproved'

@@ -18,6 +18,7 @@ class Warehouse extends Model
         'country',
         'state',
         'city',
+        'type',
         'address',
     ];
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -27,6 +28,10 @@ class Warehouse extends Model
     public function employee(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Employee::class);
+    }
+    public function employees(): \Illuminate\Database\Eloquent\Relations\hasMany
+    {
+        return $this->hasMany(Employee::class);
     }
     public function inventories(): \Illuminate\Database\Eloquent\Relations\HasMany
     {

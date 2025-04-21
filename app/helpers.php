@@ -864,3 +864,15 @@ function calculateTimeDifference($startDateTime, $endDateTime): \Carbon\CarbonIn
 
     return $interval;
 }
+function calculateTime($startDateTime, $endDateTime): \Carbon\CarbonInterval|string
+{
+
+    $start = \Carbon\Carbon::createFromFormat('H:i:s', $startDateTime);
+    $end = \Carbon\Carbon::createFromFormat('H:i:s', $endDateTime);
+    if ($start > $end){
+        return 'End';
+    }
+    $interval = $start->diff($end);
+
+    return $interval;
+}

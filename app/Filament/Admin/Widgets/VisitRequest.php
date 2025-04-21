@@ -6,6 +6,7 @@ use App\Filament\Admin\Resources\VisitorRequestResource;
 use App\Filament\Admin\Resources\VisitorRequestResource\Pages\EditVisitorRequest;
 use App\Models\VisitorRequest;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -109,6 +110,7 @@ class VisitRequest extends BaseWidget
                                     TextInput::make('color')->required(),
                                     TextInput::make('Registration_Plate')->required(),
                                 ])->columns(3)->columnSpanFull(),
+                            FileUpload::make('attachment')->columnSpanFull()->label('File Upload')
                         ])->columns(2)
                     ]
                 )->action(function (array $data): void {
@@ -123,7 +125,9 @@ class VisitRequest extends BaseWidget
                         'requested_by'=>getEmployee()->id,
                         'company_id'=>getCompany()->id,
                     ]);
-
+                    if ($data['attachment']){
+                        $visitorRequest->addMedia(public_path('images/'.$data['attachment']))->toMediaCollection('attachment');
+                    }
                     sendSecurity(getEmployee(),$visitorRequest,getCompany());
                     Notification::make('success')->color('success')->success()->title('Request  Sent')->send()->sendToDatabase(auth()->user());
 

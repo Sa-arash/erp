@@ -3,12 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class VisitorRequest extends Model
+class VisitorRequest extends Model implements HasMedia
 {
+    use InteractsWithMedia;
 
     protected $guarded = ['id'];
-
     protected $casts = [
         'visitors_detail' => 'array',
         'driver_vehicle_detail' => 'array',

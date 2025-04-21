@@ -139,5 +139,9 @@ class Employee extends Model implements HasMedia
     {
         return $this->hasMany(Approval::class , 'employee_id');
     }
+    public function medias(): MorphMany
+    {
+        return $this->morphMany($this->getMediaModel(), 'model')->whereNotIn('collection_name',['images','signature']);
+    }
 
 }

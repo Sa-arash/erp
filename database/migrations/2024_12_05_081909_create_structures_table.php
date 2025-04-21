@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->bigInteger('sort')->nullable();
-            $table->enum('type',['room','shelf','aisle','row']);
+            $table->enum('type',['room','shelf','aisle','row'])->nullable();
             $table->boolean('location')->default(0);
             $table->foreignId('parent_id')->nullable()->constrained('structures')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('warehouse_id')->constrained('warehouses')->cascadeOnDelete()->cascadeOnUpdate();

@@ -13,7 +13,7 @@ use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
 
 class MediasRelationManager extends RelationManager
 {
-    protected static string $relationship = 'media';
+    protected static string $relationship = 'medias';
 
 
 

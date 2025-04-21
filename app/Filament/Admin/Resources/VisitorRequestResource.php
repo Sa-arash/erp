@@ -18,7 +18,7 @@ use Filament\Support\Enums\IconSize;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
-use function PHPUnit\Framework\isArray;
+use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
 
 class VisitorRequestResource extends Resource implements HasShieldPermissions
 {
@@ -84,26 +84,12 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                         ->addActionLabel('Add')
                         ->label('Visitors Detail')
                         ->schema([
-                            Forms\Components\TextInput::make('name')
-                                ->label('Full Name')
-                                ->required(),
-                            Forms\Components\TextInput::make('id')
-                                ->label('ID/Passport')
-                                ->required(),
-                            Forms\Components\TextInput::make('phone')
-                                ->label('Phone'),
-                            Forms\Components\TextInput::make('organization')
-                                ->label('Organization'),
-                            Forms\Components\Select::make('type')
-                                ->label('Type')
-                                ->options([
-                                    'National' => 'National',
-                                    'International' => 'International',
-                                    'De-facto Security Forces' => 'De-facto Security Forces',
-                                ]),
-                            Forms\Components\TextInput::make('remarks')
-                                ->label('Remarks'),
-
+                            Forms\Components\TextInput::make('name')->label('Full Name')->required(),
+                            Forms\Components\TextInput::make('id')->label('ID/Passport')->required(),
+                            Forms\Components\TextInput::make('phone')->label('Phone'),
+                            Forms\Components\TextInput::make('organization')->label('Organization'),
+                            Forms\Components\Select::make('type')->label('Type')->options(['National' => 'National', 'International' => 'International', 'De-facto Security Forces' => 'De-facto Security Forces',]),
+                            Forms\Components\TextInput::make('remarks')->label('Remarks'),
                         ])->columns(6)->columnSpanFull(),
                     Forms\Components\Repeater::make('driver_vehicle_detail')
                         ->addActionLabel('Add')
@@ -118,34 +104,34 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                     Forms\Components\Hidden::make('company_id')
                         ->default(getCompany()->id)
                         ->required(),
+                    MediaManagerInput::make('attachment')->orderable(false)->folderTitleFieldName("requested_by")
+                        ->disk('public')
+                        ->schema([
+                        ])->maxItems(1)->columnSpanFull(),
                 ])->columns(2)
+
             ]);
     }
 
     public static function table(Table $table): Table
     {
-        return $table->defaultSort('visit_date', 'desc')
+        return $table->defaultSort('id', 'desc')
             ->columns([
 
                 Tables\Columns\TextColumn::make('')->rowIndex(),
-                Tables\Columns\TextColumn::make('employee.fullName')
-                    ->label('Requester')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('visitors_detail')
-                    ->label('Visitors')
-                    ->state(fn($record) => implode(', ', (array_map(fn($item) => $item['name'], $record->visitors_detail))))
-                    ->numeric()
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('employee.fullName')->label('Requester')->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('visitors_detail')->label('Visitors')->state(fn($record) => implode(', ', (array_map(fn($item) => $item['name'], $record->visitors_detail))))->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('visit_date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('arrival_time')->time('H:m'),
                 Tables\Columns\TextColumn::make('departure_time')->time('H:m'),
-//                Tables\Columns\TextColumn::make('Track Time')->state(function ($record){
-//                    $startDateTime = $record->arrival_time;
-//                    $endDateTime = $record->departure_time;
-//                    $difference = calculateTimeDifference($startDateTime, $endDateTime);
-//                    return $difference;
-//                })->label('Track Time'),
+                Tables\Columns\TextColumn::make('Track Time')->state(function ($record) {
+                    $startTime = $record->InSide_date;
+                    $endTime = $record->OutSide_date;
+                    if ($startTime and $endTime) {
+                        $difference = calculateTime($startTime, $endTime);
+                        return $difference;
+                    }
+                })->label('Track Time'),
                 Tables\Columns\TextColumn::make('status')->color(function ($state) {
                     switch ($state) {
                         case "approved":
@@ -235,10 +221,9 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
 
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+                Tables\Actions\BulkAction::make('print')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->color('primary')->action(function ($records) {
+                    return redirect(route('pdf.requestVisits', ['ids' => implode('-', $records->pluck('id')->toArray())]));
+                }),]);
     }
 
     public static function getRelations(): array

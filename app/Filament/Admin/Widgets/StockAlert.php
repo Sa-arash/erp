@@ -45,7 +45,7 @@ class StockAlert extends BaseWidget
                 Tables\Columns\TextColumn::make('subAccount.title')->label('Sub Category Title')->sortable(),
                 Tables\Columns\TextColumn::make('product_type'),
                 Tables\Columns\TextColumn::make('count')->numeric()->state(fn($record) => $record->assets->count())->label('Quantity')->badge()->color(fn($record)=>$record->assets->count()>$record->stock_alert_threshold ? 'success' : 'danger')->tooltip(fn($record)=>'Stock Alert:'.$record->stock_alert_threshold),
-//                Tables\Columns\TextColumn::make('count')->numeric()->state(fn($record) => $record->assets->count())->label('Quantity')->badge()->color(fn($record)=>$record->assets->count()>$record->stock_alert_threshold ? 'success' : 'danger')->tooltip(fn($record)=>'Stock Alert:'.$record->stock_alert_threshold),
+                Tables\Columns\TextColumn::make('storage')->numeric()->state(fn($record) => $record->assets->whereIn('status',['inStorageUsable','storageUnUsable'])->count())->label('In Storage')->badge()->color('warning'),
             ])->filters([
                 Tables\Filters\SelectFilter::make('department_id')->label('Department')->options(getCompany()->departments->pluck('title','id'))->searchable()->preload()
             ],getModelFilter());

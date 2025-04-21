@@ -471,6 +471,19 @@ class PdfController extends Controller
         );
         return $pdf->stream('requestVisit.pdf');
     }
+    public function requestVisits($ids)
+    {
+
+        $requestVisits = VisitorRequest::query()->whereIn('id', explode('-',$ids))->orderBy('id','desc')->get();
+        $company = $requestVisits[0]?->company;
+
+
+        $pdf = Pdf::loadView(
+            'pdf.requestVisits',
+            compact('company', 'requestVisits')
+        );
+        return $pdf->stream('requestVisits.pdf');
+    }
 
     public function assets($ids){
         $assets= Asset::query()->with(['product','employees'])->whereIn('id',explode('-',$ids))->get();

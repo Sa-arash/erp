@@ -132,7 +132,7 @@ class PurchaseRequestResource extends Resource
                                     return $data ;
 
                                 }),
-                            Forms\Components\Select::make('unit_id')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->createOptionForm([
+                            Forms\Components\Select::make('unit_id')->columnSpan(['default'=>8,'md'=>2,'xl'=>2])->createOptionForm([
                                 Forms\Components\TextInput::make('title')->label('Unit Name')->unique('units', 'title')->required()->maxLength(255),
                                 Forms\Components\Toggle::make('is_package')->live()->required(),
                                 Forms\Components\TextInput::make('items_per_package')->numeric()->visible(fn(Get $get) => $get('is_package'))->default(null),
@@ -146,7 +146,7 @@ class PurchaseRequestResource extends Resource
                             Forms\Components\Select::make('project_id')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->searchable()->preload()->label('Project')->options(getCompany()->projects->pluck('name', 'id')),
                             Placeholder::make('total')->columnSpan(['default'=>8,'md'=>1,'xl'=>1])->content(fn($state, Get $get) => number_format((((int)str_replace(',', '', $get('quantity'))) * ((int)str_replace(',', '', $get('estimated_unit_cost')))))),
                             Forms\Components\Hidden::make('company_id')->default(Filament::getTenant()->id)->required(),
-                            Forms\Components\Textarea::make('description')->label(' Product Name And Description')->columnSpan(['default'=>4,'sm'=>3,'md'=>3,'xl'=>5])->required(),
+                            Forms\Components\Textarea::make('description')->label(' Product Name And Description')->columnSpan(['default'=>4,'sm'=>3,'md'=>3,'xl'=>4])->required(),
                             MediaManagerInput::make('document')->orderable(false)->folderTitleFieldName("purchase_request_id")->disk('public')->schema([])->defaultItems(0)->maxItems(1) ->columnSpan(['default'=>4,'sm'=>2,'md'=>2,'xl'=>3]),
                         ])
                         ->columns(['default'=>4,'sm'=>6,'md'=>6,'xl'=>8])

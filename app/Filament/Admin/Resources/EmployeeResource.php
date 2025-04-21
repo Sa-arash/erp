@@ -199,7 +199,7 @@ class EmployeeResource extends Resource
                                         'company_id' => getCompany()->id
                                     ])->getKey();
                                 })->required(),
-                            Forms\Components\Select::make('warehouse_id')->live()->label('Duty Main Location')->options(getCompany()->warehouses()->pluck('title', 'id'))->searchable()->preload(),
+                            Forms\Components\Select::make('warehouse_id')->live()->label('Duty Main Location')->options(getCompany()->warehouses()->where('type',0)->pluck('title', 'id'))->searchable()->preload(),
                             SelectTree::make('structure_id')->label('Address')->searchable()->label('Duty Sub Location')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id',modifyQueryUsing: function($query, Forms\Get $get){
                                 return $query->where('warehouse_id', $get('warehouse_id'));
                             }),
@@ -408,7 +408,7 @@ class EmployeeResource extends Resource
                                 'company_id' => getCompany()->id
                             ])->getKey();
                         })->required(),
-                    Forms\Components\Select::make('warehouse_id')->live()->label('Duty Main Location')->options(getCompany()->warehouses()->pluck('title', 'id'))->searchable()->preload(),
+                    Forms\Components\Select::make('warehouse_id')->live()->label('Duty Main Location')->options(getCompany()->warehouses()->where('type',0)->pluck('title', 'id'))->searchable()->preload(),
                     SelectTree::make('structure_id')->label('Address')->searchable()->label('Duty Sub Location')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id',modifyQueryUsing: function($query, Forms\Get $get){
                         return $query->where('warehouse_id', $get('warehouse_id'));
                     }),

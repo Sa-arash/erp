@@ -31,8 +31,8 @@ class WarehouseResource extends Resource
     protected static ?string $navigationGroup = 'Logistic Management';
     protected static ?string $navigationIcon = 'heroicon-c-home-modern';
     protected static ?string $cluster = StackManagementSettings::class;
-    protected static ?string $label="Location";
-    protected static ?string $pluralLabel="Location";
+    protected static ?string $label="Warehouse";
+    protected static ?string $pluralLabel="Warehouse";
 
 
     public static function form(Form $form): Form
@@ -52,11 +52,11 @@ class WarehouseResource extends Resource
     public static function table(Table $table): Table
     {
         return $table->query(function (){
-            $warehouse=Warehouse::query()->firstWhere('employee_id',getEmployee()->id);
+            $warehouse=Warehouse::query()->where('type',1)->firstWhere('employee_id',getEmployee()->id);
             if ($warehouse){
-                return Warehouse::query()->where('company_id',getCompany()->id)->where('employee_id',getEmployee()->id);
+                return Warehouse::query()->where('type',1)->where('company_id',getCompany()->id)->where('employee_id',getEmployee()->id);
             }else{
-              return  Warehouse::query()->where('company_id',getCompany()->id);
+              return  Warehouse::query()->where('type',1)->where('company_id',getCompany()->id);
             }
         })
             ->columns([
@@ -94,7 +94,8 @@ class WarehouseResource extends Resource
                         ]);
                     Notification::make('save')->success()->title('Save ')->send();
                 }),
-                Tables\Actions\Action::make('inventory')->url(fn($record)=>WarehouseResource::getUrl('inventory',['record'=>$record->id]))
+                Tables\Actions\Action::make('inventory')->url(fn($record)=>WarehouseResource::getUrl('inventory',['record'=>$record->id])),
+                Tables\Actions\DeleteAction::make()->hidden(fn($record)=>$record->employees->count() or $record->assets->count() or $record->inventories->count())
 
             ])
             ->bulkActions([
