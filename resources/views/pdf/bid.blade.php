@@ -70,7 +70,7 @@
                                         $totalTrs .= "<td style='border: 1px solid black;padding: 8px;text-align: center'> {$totalSum}</td>";
                                     }
                                     $totalTrs .= "<td style='border: 1px solid black;padding: 8px;text-align: center'> </td></tr>";
-                                    foreach ($PR->items->whereIn('ceo_decision', ['purchase', 'approve']) as $item) {
+                                    foreach ($PR->items->whereIn('approval_decision', ['purchase', 'approve']) as $item) {
                                         $product = $item->product->title . " (" . $item->product->sku . ")";
                                         $description = $item->description;
                                         $quantity = $item->quantity;
