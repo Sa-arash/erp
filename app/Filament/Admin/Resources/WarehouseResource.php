@@ -40,7 +40,7 @@ class WarehouseResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('title')->label('Warehouse Name')->required()->maxLength(255),
-                Select::make('employee_id')->required()->label('Manager')->searchable()->preload()->options(getCompany()->employees()->get()->pluck('fullName', 'id')),
+                Select::make('employee_id')->required()->label('Manager By')->searchable()->preload()->options(getCompany()->employees()->get()->pluck('fullName', 'id')),
                 Forms\Components\TextInput::make('phone')->tel()->maxLength(255),
                 Forms\Components\Select::make('country')->options(getCountry())->searchable()->preload(),
                 Forms\Components\TextInput::make('state')->label('State/Province')->maxLength(255),
@@ -62,7 +62,7 @@ class WarehouseResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('title')->label('Location Name')->searchable(),
-                Tables\Columns\TextColumn::make('employee.fullName')->label('Manager')->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('employee.fullName')->label('Manager By')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('phone')->searchable(),
                 Tables\Columns\TextColumn::make('country')->searchable(),
                 Tables\Columns\TextColumn::make('state')->searchable(),

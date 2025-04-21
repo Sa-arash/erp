@@ -38,11 +38,10 @@ class StructuresRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('title')
             ->columns([
-                Tables\Columns\TextColumn::make('title')->state(function ($record) {
+                Tables\Columns\TextColumn::make('title')->label('Sub Location')->state(function ($record) {
                     $title = addSpacesBasedOnParentLevel($record) . $record->title;
                     return "<pre style='font-family: Arial,serif'>  $title</pre>";
                 })->html(),
-                Tables\Columns\TextColumn::make('type'),
                 Tables\Columns\TextColumn::make('Employees')->state(fn($record) => $record->employees->count())->badge()
 //                    ->url(fn($record) => AssetResource::getUrl('index', ['tableFilters[tree][structure_id]' => $record->id])),
             ,
