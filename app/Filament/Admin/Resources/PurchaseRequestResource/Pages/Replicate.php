@@ -210,7 +210,7 @@ class Replicate extends CreateRecord
                         Select::make('project_id')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->searchable()->preload()->label('Project')->options(getCompany()->projects->pluck('name', 'id')),
                         Placeholder::make('total')->columnSpan(['default'=>8,'md'=>1,'xl'=>1])->content(fn($state, Get $get) => number_format((((int)str_replace(',', '', $get('quantity'))) * ((int)str_replace(',', '', $get('estimated_unit_cost')))))),
                         Hidden::make('company_id')->default(Filament::getTenant()->id)->required(),
-                        Textarea::make('description')->columnSpan(['default'=>4,'sm'=>3,'md'=>3,'xl'=>5])->label(' Product Name And Description')->columnSpan(6)->required(),
+                        Textarea::make('description')->columnSpan(['default'=>4,'sm'=>3,'md'=>3,'xl'=>5])->label(' Product Name and Description')->columnSpan(6)->required(),
                         MediaManagerInput::make('document') ->columnSpan(['default'=>4,'sm'=>2,'md'=>2,'xl'=>3])->orderable(false)->folderTitleFieldName("purchase_request_id")->disk('public')->schema([])->defaultItems(0)->maxItems(1)->columnSpan(2),
                     ])
                     ->columns(['default'=>4,'sm'=>6,'md'=>6,'xl'=>8])

@@ -58,6 +58,7 @@ class DepartmentResource extends Resource
                 Tables\Columns\TextColumn::make('employee.fullName')->label('Line Manager ')->badge(),
                 TextColumn::make('employees')->color('aColor')->alignCenter()->state(fn($record)=> $record->employees->count())->url(fn($record)=>EmployeeResource::getUrl().'?tableFilters[department_id][value]='.$record->id),
 
+
             ])
             ->filters([
                 //

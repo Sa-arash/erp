@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasAvatar;
 use Filament\Models\Contracts\HasName;
 use Filament\Models\Contracts\HasTenants;
 use Filament\Panel;
@@ -11,24 +12,27 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\PermissionRegistrar;
 use Spatie\Permission\Traits\HasRoles;
 use TomatoPHP\FilamentMediaManager\Traits\InteractsWithMediaFolders;
 
-class User extends Authenticatable implements HasTenants, FilamentUser , HasName
+class User extends Authenticatable implements HasTenants, FilamentUser, HasName, HasAvatar
 {
-    use HasRoles,Notifiable;
+    use HasRoles, Notifiable;
     use HasFactory;
     use InteractsWithMediaFolders;
-
 
 
     public function getFilamentName(): string
     {
         return $this->employee->fullName ?? $this->name;
+    }
+
+    public function getFilamentAvatarUrl(): ?string
+    {
+        return  getEmployee()->media->where('collection_name','images')->first()?->original_url;
     }
 
     public function canAccessPanel(Panel $panel): bool

@@ -213,7 +213,7 @@
 
                 <td style="border: none;width: 20%; text-align: right; padding-right: 10px;">
                     @if($company?->logo)
-                        <img src="{!! public_path('images/' . $company?->logo) !!}" style="padding: 0; border-radius: 50px ; width: 100px;">
+                        <img src="{!! public_path('images/' . $company?->logo) !!}" style="padding: 0; border-radius: 50px ; width: 150px;">
                     @endif
                 </td>
             </tr>

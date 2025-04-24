@@ -184,7 +184,7 @@ class PayrollResource extends Resource
                         Forms\Components\Repeater::make('Allowance')->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
                             $data['company_id'] = getCompany()->id;
                             return $data;
-                        })->label('Allowances')->relationship('itemAllowances')->schema([
+                        })->label('Allowances')->addActionLabel('Add To Allowance')->relationship('itemAllowances')->schema([
                             Forms\Components\Select::make('benefit_id')->required()->label('Allowance')->searchable()->preload()->live()->options(function () {
                                 $options = Benefit::query()->where('type', 'allowance')->where('company_id', getCompany()->id)->get();
                                 $data = [];
@@ -219,7 +219,7 @@ class PayrollResource extends Resource
                         Forms\Components\Repeater::make('Deduction')->mutateRelationshipDataBeforeCreateUsing(function (array $data): array {
                             $data['company_id'] = getCompany()->id;
                             return $data;
-                        })->label('Deductions')->relationship('itemDeductions')->schema([
+                        })->label('Deductions')->addActionLabel('Add To Deductions')->relationship('itemDeductions')->schema([
                             Forms\Components\Select::make('benefit_id')->afterStateUpdated(function (Forms\Set $set, Forms\Get $get) {
                                 $benefit = Benefit::query()->firstWhere('id', $get('benefit_id'));
                                 if ($benefit) {

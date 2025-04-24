@@ -51,7 +51,17 @@ class PositionResource extends Resource
                     ->sortable(),
                    Tables\Columns\TextColumn::make('employees')->color('aColor')->alignCenter()->state(fn($record)=> $record->employees->count())->sortable()
                    ->url(fn($record)=>EmployeeResource::getUrl().'?tableFilters[position_id][value]='.$record->id),
-
+                Tables\Columns\ImageColumn::make('employees.medias')->label('Employees Photo')->state(function ($record){
+                    $data=[];
+                    foreach ($record->employees as $employee){
+                        if ($employee->media->where('collection_name','images')->first()?->original_url){
+                            $data[]= $employee->media->where('collection_name','images')->first()?->original_url;
+                        } else {
+                            $data[] = $employee->gender === "male" ? asset('img/user.png') : asset('img/female.png');
+                        }
+                    }
+                    return $data;
+                })->circular()->stacked(),
 
 
             ])
@@ -60,6 +70,7 @@ class PositionResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make()->modelLabel('Edit'),
+                Tables\Actions\DeleteAction::make()->hidden(fn($record)=>$record->employees->count())
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

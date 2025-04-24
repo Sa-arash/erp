@@ -191,8 +191,8 @@ class MyPurchaseRequest extends BaseWidget
                                 TextInput::make('quantity')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                                 TextInput::make('estimated_unit_cost')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->label('Estimated Unit Cost')->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required(),
                                 Select::make('project_id')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->searchable()->preload()->label('Project')->options(getCompany()->projects->pluck('name', 'id')),
-                                Textarea::make('description')->columnSpan(7)->label('Product Name and Description ')->required(),
-                                FileUpload::make('images')->label('document')->columnSpanFull()->image()->nullable()
+                                Textarea::make('description')->columnSpan(7)->label('Product Description ')->required(),
+                                FileUpload::make('images')->label('Document')->columnSpanFull()->image()->nullable()
                             ])
                             ->columns(6)
                             ->columnSpanFull(),

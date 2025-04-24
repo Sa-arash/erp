@@ -97,7 +97,7 @@
         <tr>
             <td rowspan="1">{{$i++}}</td>
 
-            <td>   {{  $item->product->title."-".$item->product?->sku}}</td>
+            <td>   {{ $item->product?->sku.' - '. $item->product->title}}</td>
             <td>
            {{ $item->description }}
             </td>
@@ -167,10 +167,10 @@
     <tr  style="border: none!important;">
         @foreach($pr?->approvals->where('status','Approve') as $approve)
         <th style="border: none!important;background: white !important;color: #1a202c">
-            @if($approve->position==="PR Verification")
+            @if($approve->position==="PR Verification (2)")
                 Verified By
                 <br>  {{$approve->employee?->position->title}}
-            @elseif($approve->position==="PR Warehouse/Storage Clarification")
+            @elseif($approve->position==="PR Warehouse (1)")
                 Warehouse/Storage
                 <br>  {{$approve->employee?->fullName}}
             @else

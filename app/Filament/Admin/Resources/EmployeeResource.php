@@ -93,7 +93,9 @@ class EmployeeResource extends Resource
                             Forms\Components\TextInput::make('fullName')->required()->maxLength(255),
                             Forms\Components\DatePicker::make('birthday')->label('Date Birthday'),
                             Forms\Components\TextInput::make('phone_number')->tel()->required()->maxLength(255),
+                            Forms\Components\TextInput::make('email')->email()->required()->maxLength(255),
                             Forms\Components\TextInput::make('NIC')->label('NIC')->maxLength(255),
+                            Forms\Components\ToggleButtons::make('gender')->options(['male' => 'Male', 'female' => 'Female', 'other' => 'Other'])->required()->inline()->grouped(),
                             Forms\Components\Select::make('marriage')->label('Marital Status')->options(['divorced' => 'Divorced', 'widowed' => 'Widowed', 'married' => 'Married', 'single' => 'Single',])->searchable()->preload(),
                             Forms\Components\TextInput::make('count_of_child')->label('Number Of Child')
                                 ->numeric()
@@ -116,7 +118,6 @@ class EmployeeResource extends Resource
                                     "AB positive"=>"AB positive",
                                 ])->searchable(),
                             Forms\Components\ToggleButtons::make('covid_vaccine_certificate')->label('Covid Vaccine Certificate')->grouped()->boolean(),
-                            Forms\Components\ToggleButtons::make('gender')->options(['male' => 'Male', 'female' => 'Female', 'other' => 'Other'])->required()->inline()->grouped(),
                             Forms\Components\Repeater::make('emergency_contact')->columnSpanFull()->label('Emergency Contact')->schema([
                                 TextInput::make('name')->required(),
                                 TextInput::make('relation')->required(),

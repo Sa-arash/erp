@@ -154,7 +154,7 @@ class PurchaseRequestResource extends Resource
                             Forms\Components\Select::make('project_id')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->searchable()->preload()->label('Project')->options(getCompany()->projects->pluck('name', 'id')),
                             Placeholder::make('total')->columnSpan(['default'=>8,'md'=>1,'xl'=>1])->content(fn($state, Get $get) => number_format((((int)str_replace(',', '', $get('quantity'))) * ((int)str_replace(',', '', $get('estimated_unit_cost')))))),
                             Forms\Components\Hidden::make('company_id')->default(Filament::getTenant()->id)->required(),
-                            Forms\Components\Textarea::make('description')->label(' Product Name And Description')->columnSpan(['default'=>4,'sm'=>3,'md'=>3,'xl'=>4])->required(),
+                            Forms\Components\Textarea::make('description')->label(' Product Name and Description')->columnSpan(['default'=>4,'sm'=>3,'md'=>3,'xl'=>4])->required(),
                             MediaManagerInput::make('document')->orderable(false)->folderTitleFieldName("purchase_request_id")->disk('public')->schema([])->defaultItems(0)->maxItems(1) ->columnSpan(['default'=>4,'sm'=>2,'md'=>2,'xl'=>3]),
                         ])
                         ->columns(['default'=>4,'sm'=>6,'md'=>6,'xl'=>8])
@@ -183,9 +183,9 @@ class PurchaseRequestResource extends Resource
                 Tables\Columns\TextColumn::make('')->rowIndex()->label('NO'),
                 Tables\Columns\TextColumn::make('description')->tooltip(fn($record) => $record->description)->limit(30),
                 Tables\Columns\TextColumn::make('purchase_number')->prefix('ATGT/UNC/')->label('PR NO')->searchable(),
-                Tables\Columns\TextColumn::make('request_date')->dateTime()->sortable(),
+                Tables\Columns\TextColumn::make('request_date')->label('Request Date')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('employee.fullName')->tooltip(fn($record)=>$record->employee->position->title)
-                    ->label('Requestor')->searchable(),
+                    ->label('Requestor Name')->searchable(),
                 Tables\Columns\TextColumn::make('department')->state(fn($record) => $record->employee->department->title),
                 // Tables\Columns\TextColumn::make('location')->state(fn($record) => $record->employee?->structure?->title)->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('status')->badge(),

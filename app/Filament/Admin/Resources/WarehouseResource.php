@@ -30,7 +30,7 @@ class WarehouseResource extends Resource
     protected static ?string $model = Warehouse::class;
     protected static ?string $navigationGroup = 'Logistic Management';
     protected static ?string $navigationIcon = 'heroicon-c-home-modern';
-    protected static ?string $cluster = StackManagementSettings::class;
+    protected static ?int $navigationSort=5;
     protected static ?string $label="Warehouse";
     protected static ?string $pluralLabel="Warehouse";
 
