@@ -44,9 +44,9 @@ class ApprovalResource extends Resource implements HasShieldPermissions
             'update',
             'delete',
             'delete_any',
-            'PR Warehouse/Storage Clarification',
-            'PR Verification',
-            'PR Approval'
+            'PR Warehouse (1)',
+            'PR Verification (2)',
+            'PR Approval (3)'
         ];
     }
 
@@ -260,9 +260,9 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                         }
                         if ($data['status'] === "Approve") {
                             if ($PR->status->name === "Clarification") {
-                                sendApprove($PR, 'PR Verification_approval');
+                                sendApprove($PR, 'PR Verification (2)_approval');
                             } else if ($PR->status->name === "Verification") {
-                                sendApprove($PR, 'PR Approval_approval');
+                                sendApprove($PR, 'PR Approval (3)_approval');
                             }
                         }
                 })->visible(function ($record) {

@@ -83,8 +83,8 @@ Route::get('/pdf/takeOut/{id}',[\App\Http\Controllers\PdfController::class,'take
 Route::get('/pdf/requestVisit/{id}',[\App\Http\Controllers\PdfController::class,'requestVisit'])->name('pdf.requestVisit');
 Route::get('/pdf/requestVisit/{ids}/all',[\App\Http\Controllers\PdfController::class,'requestVisits'])->name('pdf.requestVisits');
 Route::get('/pdf/accountCurrency/{period}/{account}',[\App\Http\Controllers\PdfController::class,'accountCurrency'])->name('pdf.accountCurrency');
-
 });
+
 
 Route::get('account',function (){
     $accounts = [

@@ -66,7 +66,7 @@ class PayrollResource extends Resource
                                 $amount = $employee->base_salary;
                                 $titleDepartment = $employee->department?->title;
                                 $titlePosition = $employee->position?->title;
-                                $salary = $employee->titlePosition;
+                                $salary = $employee->daily_salary;
                                 $set('amount_pay', number_format($amount));
                                 $set('department', $titleDepartment);
                                 $set('position', $titlePosition);

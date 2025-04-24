@@ -213,7 +213,7 @@ class MyPurchaseRequest extends BaseWidget
                             $item->addMedia(public_path('images/'.$mediaItem))->toMediaCollection('document');
                         }
                     }
-                  sendApprove($request,'PR Warehouse/Storage Clarification_approval');
+                  sendApprove($request,'PR Warehouse (1)_approval');
                     Notification::make('success')->success()->title('Successfully Submitted')->send();
                 })
             ]);

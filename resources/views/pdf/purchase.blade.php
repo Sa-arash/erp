@@ -44,29 +44,32 @@
 
 
     <tr>
-        <td style="text-align: left">PR Date: {{\Illuminate\Support\Carbon::create($pr->request_date)->format('M j, Y / h:iA ')}}</td>
-        <td style="text-align: left">PR No: ATGT/UNC {{$pr->purchase_number}}</td>
+        <td style="text-align: left"> <span style="font-weight: bold">Date:</span>  {{\Illuminate\Support\Carbon::create($pr->request_date)->format('M j, Y / h:iA ')}}</td>
+        <td style="text-align: left"><strong style="font-weight: bold" >Reg.No</strong>: ATGT/UNC {{$pr->purchase_number}}</td>
     </tr>
     <tr>
-        <td style="text-align: left">Requestor Name: {{$pr->employee?->fullName}}</td>
+        <td style="text-align: left"><span  style="font-weight: bold">Requestor Name:</span>  {{$pr->employee?->fullName}}</td>
         <td style="text-align: left">
-
-             Position: {{$pr->employee?->position?->title}}</td>
+            <span  style="font-weight: bold"> Position:</span>
+             {{$pr->employee?->position?->title}}</td>
     </tr>
     <tr>
-        <td style="text-align: left">Department: {{$pr->employee->department?->title}}</td>
-        <td style="text-align: left">Location: {{$pr->employee?->warehouse?->title ." , ".  $pr->employee?->structure?->title}}</td>
+        <td style="text-align: left"><span  style="font-weight: bold">Department:</span> {{$pr->employee->department?->title}}</td>
+        <td style="text-align: left"> <span  style="font-weight: bold">Location:</span> {{$pr->employee?->warehouse?->title ." , ".  $pr->employee?->structure?->title}}</td>
     </tr>
 
 </table>
 <table>
     <tr>
-        <td colspan="2" style="text-align: left">Description : {{$pr->description}}</td>
+        <td colspan="2" style="text-align: left"><span  style="font-weight: bold">Description :</span>  {{$pr->description}}</td>
     </tr>
 </table>
 
 <table>
     <thead>
+    <tr>
+        <th colspan="8"  style="font-size: 18px"> Details</th>
+    </tr>
     <tr>
         <th>NO</th>
         <th>SKU</th>
@@ -74,8 +77,8 @@
         <th>Unit</th>
         <th>Qty</th>
         <th>EST Cost</th>
-        <th>TES</th>
-        <th>Stock In</th>
+        <th>TEC</th>
+        <th>Stock Balance</th>
     </tr>
     </thead>
     <tbody>
@@ -109,7 +112,7 @@
     </tbody>
     <tfoot>
     <tr>
-        <td colspan="5">Total Cost</td>
+        <td colspan="5">Total Estimated Cost </td>
         <td>{{number_format($totalEstimated)}}</td>
         <td>{{number_format($totalBudget)   }}</td>
         <td></td>
@@ -140,7 +143,7 @@
     <tr>
         <th colspan="5"><p>Requested by</p></th>
     <tr>
-        <th>name</th>
+        <th>Name</th>
         <th>Position</th>
         <th>Duty Station</th>
         <th colspan="2">Signature</th>

@@ -12,6 +12,6 @@ class CreatePurchaseRequest extends CreateRecord
     protected static string $resource = PurchaseRequestResource::class;
     public function afterCreate(){
         $request=$this->record;
-        sendApprove($request,'PR Warehouse/Storage Clarification_approval');
+        sendApprove($request,'PR Warehouse (1)_approval');
     }
 }

@@ -134,7 +134,7 @@ class AssetResource extends Resource
                                         $data['buy_date'] = $PO->date_of_po;
                                         $data['number'] = $number;
                                         $data['purchase_order_id'] = $PO->id;
-                                        
+
                                         $data['price'] = number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100));
                                         $assets[] = $data;
                                         $number = generateNextCodeAsset($number);
@@ -202,7 +202,7 @@ class AssetResource extends Resource
                 Tables\Filters\Filter::make('employee')
                     ->form([
                         Forms\Components\Select::make('employee_id')->label('Employee')->options(fn() => getCompany()->employees()->pluck('fullName', 'id'))->searchable()->preload(),
-                        Forms\Components\Select::make('department_id')->label('Department')->options(fn() => getCompany()->departments()->pluck('title', 'id'))->searchable()->preload(),
+                        Forms\Components\Select::make('department_id')->label('Employee Department')->options(fn() => getCompany()->departments()->pluck('title', 'id'))->searchable()->preload(),
                         ])
                     ->query(function (Builder $query, array $data) {
                         return $query->when($data['employee_id'] ?? null, function ($query, $employeeId) {

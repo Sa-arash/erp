@@ -221,7 +221,7 @@ class Replicate extends CreateRecord
     }
     public function afterCreate(){
         $request=$this->record;
-        sendApprove($request,'PR Warehouse/Storage Clarification_approval');
+        sendApprove($request,'PR Warehouse (1)_approval');
     }
 
     protected function getRedirectUrl(): string
