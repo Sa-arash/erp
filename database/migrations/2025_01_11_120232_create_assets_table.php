@@ -25,6 +25,9 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete()->cascadeOnUpdate();
             $table->enum('status',['inuse','inStorageUsable','storageUnUsable','underRepair','outForRepair','loanedOut'])->default('inStorageUsable');
             $table->text('attributes')->nullable();
+            
+            $table->bigInteger('purchase_order_id')->nullable();
+
             $table->foreignId('brand_id')->nullable()->constrained('brands')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('warehouse_id')->constrained('warehouses')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('structure_id')->constrained('structures')->cascadeOnDelete()->cascadeOnUpdate();

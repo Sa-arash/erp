@@ -391,7 +391,7 @@ class PurchaseOrderResource extends Resource
                                                 return $set('isCurrency', 1);
                                             }
                                             return $set('isCurrency', 0);
-                                        })->live()->defaultOpenLevel(3)->live()->label('Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('group','asset')->where('company_id', getCompany()->id))->searchable(),
+                                        })->live()->defaultOpenLevel(3)->live()->label('Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('group', 'asset')->where('company_id', getCompany()->id))->searchable(),
                                         Forms\Components\TextInput::make('description')->required(),
 
                                         Forms\Components\TextInput::make('debtor')->prefix(defaultCurrency()->symbol)->mask(RawJs::make('$money($input)'))->readOnly()->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)
@@ -419,8 +419,7 @@ class PurchaseOrderResource extends Resource
                                             })
                                             ->live(true)->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
 
-                                                    $set('cheque.amount', $state);
-
+                                                $set('cheque.amount', $state);
                                             })
                                             ->mask(RawJs::make('$money($input)'))->stripCharacters(',')
                                             ->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)
@@ -528,8 +527,7 @@ class PurchaseOrderResource extends Resource
                                                 Forms\Components\TextInput::make('amount')->default(function (Get $get) {
                                                     if ($get('debtor') > 0) {
                                                         return $get('debtor');
-                                                    }
-                                                    else
+                                                    } else
                                                     if ($get('creditor') > 0) {
                                                         return $get('creditor');
                                                     } else {
@@ -608,8 +606,10 @@ class PurchaseOrderResource extends Resource
                 Tables\Columns\TextColumn::make('location_of_delivery')
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
-                // Tables\Columns\Textcolumn::make('status')
-                // ->label('Status'),
+
+                Tables\Columns\Textcolumn::make('status')
+                ->toggleable(isToggledHiddenByDefault: true)
+                ->label('Status'),
 
             ])
             ->filters([
@@ -623,6 +623,8 @@ class PurchaseOrderResource extends Resource
 
                 //         return 'Created at ' . Carbon::parse($data['date'])->toFormattedDateString();
                 //     })
+                SelectFilter::make('id')->searchable()->preload()->options(PurchaseOrder::where('company_id', getCompany()->id)->get()->pluck('purchase_orders_number', 'id'))
+                ->label("Po NO"),
                 SelectFilter::make('purchase_request_id')->searchable()->preload()->options(PurchaseRequest::where('company_id', getCompany()->id)->get()->pluck('purchase_number', 'id'))
                     ->label("PR NO"),
                 SelectFilter::make('vendor_id')->searchable()->preload()->options(Parties::where('company_id', getCompany()->id)->where('account_code_vendor', '!=', null)->get()->pluck('name', 'id'))
@@ -669,8 +671,8 @@ class PurchaseOrderResource extends Resource
             ->actions([
                 Tables\Actions\Action::make('prPDF')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.po', ['id' => $record->id]))->openUrlInNewTab(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('GRN')->label('GRN')->url(fn($record) => AssetResource::getUrl('create', ['po' => $record->id])),
-//                Tables\Actions\DeleteAction::make()->visible(fn($record)=>$record->status==="pending" )
+                Tables\Actions\Action::make('GRN')->label('GRN')->url(fn($record) => AssetResource::getUrl('create', ['po' => $record->id]))->visible(fn($record)=>$record->status != 'Finished'),
+                //                Tables\Actions\DeleteAction::make()->visible(fn($record)=>$record->status==="pending" )
 
             ])
             ->bulkActions([
@@ -688,7 +690,7 @@ class PurchaseOrderResource extends Resource
     }
     public static function getNavigationBadge(): ?string
     {
-        return PurchaseOrder::query()->where('company_id',getCompany()->id)->count();
+        return PurchaseOrder::query()->where('company_id', getCompany()->id)->count();
     }
 
     public static function getPages(): array

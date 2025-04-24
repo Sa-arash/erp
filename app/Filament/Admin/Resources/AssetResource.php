@@ -34,6 +34,8 @@ class AssetResource extends Resource
     {
         return $form
             ->schema([
+                Forms\Components\Hidden::make('purchase_order_id')->default($_GET['po']??''),
+
                 Forms\Components\Repeater::make('assets')->schema([
                     Forms\Components\Select::make('product_id')->label('Product')->options(function () {
                         $products = getCompany()->products;
@@ -102,6 +104,8 @@ class AssetResource extends Resource
                         ->mask(RawJs::make('$money($input)'))->stripCharacters(',')
                         ->placeholder('Enter amount'),
 
+                    Forms\Components\Hidden::make('purchase_order_id')->default('inStorageUsable'),
+
                     Forms\Components\Hidden::make('status')->default('inStorageUsable')->required(),
                     Forms\Components\Repeater::make('attributes')->defaultItems(0)->addActionLabel('Add To  Attribute')->schema([
                         Forms\Components\TextInput::make('title')->required(),
@@ -129,6 +133,8 @@ class AssetResource extends Resource
                                         $data['product_id'] = $item->product_id;
                                         $data['buy_date'] = $PO->date_of_po;
                                         $data['number'] = $number;
+                                        $data['purchase_order_id'] = $PO->id;
+                                        
                                         $data['price'] = number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100));
                                         $assets[] = $data;
                                         $number = generateNextCodeAsset($number);
@@ -148,6 +154,9 @@ class AssetResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('product.sku')->label('SKU')->searchable(),
+                Tables\Columns\TextColumn::make('purchase_order_id')->label('PO No')->state(fn($record)=>$record->purchase_order_id === null ? "---": PurchaseOrder::find($record->purchase_order_id)->purchase_orders_number )
+                ->url(fn($record)=>PurchaseOrderResource::getUrl()."?tableFilters[id][value]=".$record->purchase_order_id)
+                ->searchable(),
                 Tables\Columns\TextColumn::make('titlen')->label('Asset Name')->searchable(),
                 Tables\Columns\TextColumn::make('price')->label('Purchase Price')->sortable()->numeric(),
 
@@ -185,6 +194,7 @@ class AssetResource extends Resource
 
             ])
             ->filters([
+                Tables\Filters\SelectFilter::make('purchase_order_id')->searchable()->options(getCompany()->purchaseOrders->pluck('purchase_orders_number', 'id'))->label('Po No'),
                 Tables\Filters\SelectFilter::make('product_id')->searchable()->options(getCompany()->products->pluck('title', 'id'))->label('Product'),
                 Tables\Filters\SelectFilter::make('status')->searchable()->options(['inuse' => "Inuse", 'inStorageUsable' => "InStorageUsable", 'storageUnUsable' => "StorageUnUsable", 'outForRepair' => 'OutForRepair', 'loanedOut' => "LoanedOut"]),
                 DateRangeFilter::make('buy_date')->label('Purchase Date'),

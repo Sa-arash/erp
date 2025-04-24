@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Resources\AssetResource\Pages;
 
 use App\Filament\Admin\Resources\AssetResource;
+use App\Models\PurchaseOrder;
 use Filament\Actions;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Support\Exceptions\Halt;
@@ -29,6 +30,15 @@ class CreateAsset extends CreateRecord
             $data = $this->mutateFormDataBeforeCreate($data);
 
             $this->callHook('beforeCreate');
+
+
+            if ($data['purchase_order_id']) {
+                
+                PurchaseOrder::find($data['purchase_order_id'])->update([
+                    'status' => "finished",
+                ]);
+            }
+
 
             foreach ($data['assets'] as $asset) {
 
