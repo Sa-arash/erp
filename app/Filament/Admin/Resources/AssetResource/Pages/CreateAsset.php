@@ -35,7 +35,7 @@ class CreateAsset extends CreateRecord
             if ($data['purchase_order_id']) {
                 
                 PurchaseOrder::find($data['purchase_order_id'])->update([
-                    'status' => "finished",
+                    'status' => "GRN",
                 ]);
             }
 

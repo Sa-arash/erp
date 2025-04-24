@@ -22,7 +22,8 @@ return new class extends Migration
             $table->decimal('exchange_rate', 50, 8)->nullable();
             $table->date('date_of_po');
             $table->enum('status', [
-                'finished',
+                'GRN',
+                'inventory',
                 'pending',
                 'approved',
             ])->default('pending');
