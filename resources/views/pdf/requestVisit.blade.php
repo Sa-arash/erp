@@ -362,6 +362,17 @@
                     margin: 0;
                 }
             }
+
+
+
+            .equal-table {
+        width: 100%; /* عرض جدول را به 100% تنظیم کنید */
+        border-collapse: collapse; /* برای حذف فاصله بین سلول‌ها */
+    }
+    .equal-cell {
+        width: 25%; /* عرض هر ستون را به 25% تنظیم کنید */
+        border: 1px solid #000; /* برای نمایش مرز سلول‌ها */
+    }
         </style>
     </head>
 
@@ -369,12 +380,12 @@
 
         <table>
             <tr>
-                <td colspan="2" style="border: none;">
+                <td colspan="2" >
                     @if ($company?->logo_security)
                         <img src="{!! public_path('images/' . $company?->logo_security) !!}" style="padding: 0; border-radius: 50px ; width: 200px;">
                     @endif
                 </td>
-                <td colspan="4" class="header" style="border: none;">
+                <td colspan="4" class="header" >
                     HART<br>
                     UNHCR Guard Force Unit, Kabul, Afghanistan<br>
                     <span class="small-text">SOP No.002 Annex {{ str_pad($requestVisit->id, 3, '0', STR_PAD_LEFT) }} dated {{$requestVisit->visit_date}}<br>
@@ -386,7 +397,10 @@
 
         <table>
             <tr>
-                <td colspan="6" class="section-title">ICON COMPOUND - VISITOR ACCESS REQUEST FORM</td>
+                <td colspan="6" class="header">ICON COMPOUND - VISITOR ACCESS REQUEST FORM</td>
+            </tr>
+            <tr>
+                <td colspan="6" class="no-border" style="text-align: right;">   &nbsp;</td>
             </tr>
         </table>
 
@@ -410,6 +424,9 @@
                 <td> {{$requestVisit->employee->phone_number}}</td>
                 <td colspan="2">{{$requestVisit->employee->email}}</td>
             </tr>
+            <tr>
+                <td colspan="6" class="no-border" style="text-align: right;">   &nbsp;</td>
+            </tr>
         </table>
 
         <table>
@@ -428,6 +445,9 @@
                 <td>{{$requestVisit->departure_time}}</td>
                 <td colspan="3">{{$requestVisit->purpose}}</td>
             </tr>
+            <tr>
+                <td colspan="6" class="no-border" style="text-align: right;">   &nbsp;</td>
+            </tr>   
         </table>
 
         <table>
@@ -453,9 +473,9 @@
                         <td >{{$visitor['remarks']??'---'}}</td>
                     </tr>
                 @endforeach
-            <tr>
-                <td colspan="6" style="height: 30px;"></td>
-            </tr>
+                <tr>
+                    <td colspan="6" class="no-border" style="text-align: right;">   &nbsp;</td>
+                </tr>
         </table>
 
         <table>
@@ -473,6 +493,9 @@
                 <td><strong>Total</strong></td>
                 
                 <td colspan="5">&nbsp;</td>
+            </tr>
+            <tr>
+                <td colspan="6" class="no-border" style="text-align: right;">   &nbsp;</td>
             </tr>
         </table>
 
@@ -513,46 +536,109 @@
             </tr>
         </table>
 
-        @if (isset($requestVisit->approvals[0]))
         <table>
-            <tr class="section-title">
-                <td colspan="6">Endorsement and Approval</td>
-            </tr>
             <tr>
-             
-                        <th>Name</th>
-                        <th>Position</th>
-                        <th>Status</th>
-                        <th>Approval Date</th>
-                        <th>Signature</th>
-                    </tr>
-                    </thead>
-                    @foreach ($requestVisit->approvals as $approve)
-                        <tr>
-                            <th>{{$approve->employee->fullName}}</th>
-                            <th>{{$approve->position}}</th>
-                            <th>{{$approve->status}}</th>
-                            <th>{{ $approve->approve_date ? \Carbon\Carbon::make($approve->approve_date)->format('M j, Y / h:iA'):""}}</th>
-                            <th>
+                <td class="no-border">Requestor’s Signature: 
+                </td>
 
-                                @if ($approve->employee->media->where('collection_name', 'signature')->first()?->original_url and $approve->status->name === 'Approve')
+                <td class="no-border"> 
+                    <img src="{{ $requestVisit->employee->media->where('collection_name','signature')->first()->getPath() }}" style="width: 70px;height: 30px" alt="">
+                </td>
+
+                <td class="no-border">Date:</td>
+                <td class="no-border">{{\Illuminate\Support\Carbon::create($requestVisit->visit_date)->format('Y/m/d')}}</td>
+            </tr>
+           
+        </table>
+      
+       
+       
+<table class="equal-table">
+    <tr class="section-title">
+        <td colspan="4" class="equal-cell">Endorsement and Approval</td>
+    </tr>
+    <tr>
+        <td class="equal-cell">FSU UNHCR</td>
+        <td class="equal-cell"></td>
+        <td class="equal-cell"></td>
+        <td class="equal-cell">Date:</td>
+    </tr>
+    <tr>
+        <td class="equal-cell">FSA FAO</td>
+        <td class="equal-cell"></td>
+        <td class="equal-cell"></td>
+        <td class="equal-cell">Date:</td>
+    </tr>
+    <tr>
+        <td class="equal-cell">ICON SFP</td>
+        <td class="equal-cell"></td>
+        <td class="equal-cell"></td>
+        <td class="equal-cell">Date:</td>
+    </tr>
+    <tr>
+        <td class="equal-cell">Remarks to CSM</td>
+        <td class="equal-cell"></td>
+        <td class="equal-cell">□ Approved</td>
+        <td class="equal-cell">□ Not Approved</td>
+    </tr>
+    <tr>
+        <td colspan="4" class="no-border" style="text-align: right;">&nbsp;</td>
+    </tr>
+</table>
+           
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            @if (isset($requestVisit->approvals[0]))
+            <table>
+                @foreach ($requestVisit->approvals as $approve)
+                            {{-- <tr>
+                                <th>{{$approve->employee->fullName}}</th>
+                                <th>{{$approve->position}}</th>
+                                <th>{{$approve->status}}</th>
+                                <th>{{ $approve->approve_date ? \Carbon\Carbon::make($approve->approve_date)->format('M j, Y / h:iA'):""}}</th>
+                                <th>
+    
+                                    @if ($approve->employee->media->where('collection_name', 'signature')->first()?->original_url and $approve->status->name === 'Approve')
+                                        <img src="{{ $approve->employee->media->where('collection_name','signature')->first()->getPath() }}" style="width: 70px;height: 30px" alt="">
+                                    @endif
+                                </th>
+                            </tr> --}}
+                            
+                            <tr>
+                                <td class="no-border">Approved By:  </td>
+                                <td class="no-border"> {{$approve->employee->fullName}}</td>
+                                <td class="no-border">Signature: </td>
+                                <td class="no-border">     @if ($approve->employee->media->where('collection_name', 'signature')->first()?->original_url and $approve->status->name === 'Approve')
                                     <img src="{{ $approve->employee->media->where('collection_name','signature')->first()->getPath() }}" style="width: 70px;height: 30px" alt="">
-                                @endif
-                            </th>
-                        </tr>
-                    @endforeach
+                                @endif</td>
+                                <td class="no-border">Date: </td>
+                                <td class="no-border"> {{ $approve->approve_date ? \Carbon\Carbon::make($approve->approve_date)->format('M j, Y '):""}}</td>
+                                <td class="no-border">Time: </td>
+                                <td class="no-border"> {{ $approve->approve_date ? \Carbon\Carbon::make($approve->approve_date)->format(' h:iA'):""}}</td>
+                            </tr>
+                        @endforeach
+             
+                <tr>
+                    <td colspan="6" class="no-border" style="text-align: right;">   &nbsp;</td>
+                </tr>
             </table>
             @endif
+            
 
-        <br><br>
 
-
-        <table>
-            <tr>
-                <td class="no-border">Requestor’s Signature: __________________</td>
-                <td class="no-border">Date: ________________</td>
-            </tr>
-        </table>
+      
 
     </body>
 
