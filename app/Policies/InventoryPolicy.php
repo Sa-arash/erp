@@ -3,10 +3,10 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\Task;
+use App\Models\Inventory;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class TaskPolicy
+class InventoryPolicy
 {
     use HandlesAuthorization;
 
@@ -15,15 +15,15 @@ class TaskPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_task');
+        return $user->can('view_any_inventory');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, Task $task): bool
+    public function view(User $user, Inventory $inventory): bool
     {
-        return $user->can('view_task');
+        return $user->can('view_inventory');
     }
 
     /**
@@ -31,23 +31,23 @@ class TaskPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_task');
+        return $user->can('{{ Create }}');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, Task $task): bool
+    public function update(User $user, Inventory $inventory): bool
     {
-        return $user->can('update_task');
+        return $user->can('{{ Update }}');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, Task $task): bool
+    public function delete(User $user, Inventory $inventory): bool
     {
-        return $user->can('delete_task');
+        return $user->can('{{ Delete }}');
     }
 
     /**
@@ -55,15 +55,15 @@ class TaskPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_task');
+        return $user->can('{{ DeleteAny }}');
     }
 
     /**
      * Determine whether the user can permanently delete.
      */
-    public function forceDelete(User $user, Task $task): bool
+    public function forceDelete(User $user, Inventory $inventory): bool
     {
-        return $user->can('force_delete_task');
+        return $user->can('{{ ForceDelete }}');
     }
 
     /**
@@ -77,9 +77,9 @@ class TaskPolicy
     /**
      * Determine whether the user can restore.
      */
-    public function restore(User $user, Task $task): bool
+    public function restore(User $user, Inventory $inventory): bool
     {
-        return $user->can('restore_task');
+        return $user->can('{{ Restore }}');
     }
 
     /**
@@ -93,7 +93,7 @@ class TaskPolicy
     /**
      * Determine whether the user can replicate.
      */
-    public function replicate(User $user, Task $task): bool
+    public function replicate(User $user, Inventory $inventory): bool
     {
         return $user->can('{{ Replicate }}');
     }

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->bigInteger('quantity');
             $table->string('description');
             $table->boolean('type');
+            $table->boolean('transaction')->default(0);
             $table->timestamps();
         });
     }

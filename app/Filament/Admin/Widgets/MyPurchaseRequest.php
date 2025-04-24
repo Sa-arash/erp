@@ -145,7 +145,14 @@ class MyPurchaseRequest extends BaseWidget
                             }else{
                                 return "00001";
                             }
-                        })->readOnly()->label('PR Number')->prefix('ATGT/UNC/')->unique(modifyRuleUsing: function (Unique $rule) {return $rule->where('company_id', getCompany()->id);})->unique('purchase_requests', 'purchase_number')->required()->numeric(),
+                        })->readOnly()->label('PR Number')->prefix('ATGT/UNC/')->unique(modifyRuleUsing: function (Unique $rule) {return $rule->where('company_id', getCompany()->id);})->unique('purchase_requests', 'purchase_number')->required()->numeric()->hintAction(\Filament\Forms\Components\Actions\Action::make('update')->label('Update NO')->action(function (Set $set){
+                            $puncher= PurchaseRequest::query()->where('company_id',getCompany()->id)->latest()->first();
+                            if ($puncher){
+                                  $set('purchase_number',generateNextCodePO($puncher->purchase_number));
+                            }else{
+                                $set('purchase_number','00001');
+                            }
+                        })),
                         DateTimePicker::make('request_date')->readOnly()->default(now())->label('Request Date')->required(),
                         Select::make('currency_id')->live()->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload(),
                         Textarea::make('description')->columnSpanFull()->label('Description'),

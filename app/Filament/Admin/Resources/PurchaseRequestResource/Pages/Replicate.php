@@ -148,7 +148,14 @@ class Replicate extends CreateRecord
             Section::make('')->schema([
                 Select::make('employee_id')->live()->searchable()->preload()->label('Requested By')->required()->options(getCompany()->employees->pluck('fullName', 'id'))->default(fn() => auth()->user()->employee->id),
 
-                TextInput::make('purchase_number')->readOnly()->label('PR Number')->prefix('ATGT/UNC/')->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {return $rule->where('company_id', getCompany()->id);})->required()->numeric(),
+                TextInput::make('purchase_number')->readOnly()->label('PR Number')->prefix('ATGT/UNC/')->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {return $rule->where('company_id', getCompany()->id);})->required()->numeric()->hintAction(\Filament\Forms\Components\Actions\Action::make('update')->label('Update NO')->action(function (Set $set){
+                    $puncher= PurchaseRequest::query()->where('company_id',getCompany()->id)->latest()->first();
+                    if ($puncher){
+                        $set('purchase_number',generateNextCodePO($puncher->purchase_number));
+                    }else{
+                        $set('purchase_number','00001');
+                    }
+                })),
                 DateTimePicker::make('request_date')->readOnly()->default(now())->label('Request Date')->required(),
                 Hidden::make('status')->label('Status')->default('Requested')->required(),
                 Select::make('currency_id')->live()->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload(),
