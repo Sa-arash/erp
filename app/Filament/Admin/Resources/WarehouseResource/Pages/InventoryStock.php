@@ -55,6 +55,12 @@ class InventoryStock extends ManageRelatedRecords
                 Tables\Columns\TextColumn::make('description'),
                 Tables\Columns\TextColumn::make('quantity')->badge(),
                 Tables\Columns\TextColumn::make('type')->state(fn($record) => $record->type === 1 ? "Stock In" : "Stock Out")->badge()->color(fn($state) => $state === "Stock In" ? 'success' : 'danger'),
+                Tables\Columns\TextColumn::make('transaction')->state(function($record){
+                    if ($record->transaction){
+                      return  $record->type ?"Stock In" : "Stock Out";
+                    }
+
+                } )->badge()->color(fn($state) => $state === "Stock In" ? 'success' : 'danger'),
                 Tables\Columns\TextColumn::make('created_at')->label('Stock Date')->dateTime(),
             ])
             ->filters([

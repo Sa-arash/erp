@@ -3,10 +3,12 @@
 namespace App\Filament\Admin\Resources\WarehouseResource\Pages;
 
 use App\Filament\Admin\Resources\WarehouseResource;
+use App\Models\Product;
 use App\Models\Structure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ManageRelatedRecords;
 use Filament\Tables;
@@ -32,7 +34,17 @@ class Inventory extends ManageRelatedRecords
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('product_id')->options(getCompany()->products()->where('product_type', 'consumable')->pluck('title', 'id'))->searchable()->preload()->label('Product')->required(),
+                Forms\Components\Select::make('product_id')->options(getCompany()->products()->where('product_type', 'consumable')->pluck('title', 'id'))->searchable()->preload()->label('Product')->required()->getSearchResultsUsing(fn (string $search,Get $get): array => Product::query()->where('company_id',getCompany()->id)->where('title','like',"%{$search}%")->orWhere('second_title','like',"%{$search}%")->pluck('title', 'id')->toArray())->getOptionLabelsUsing(function(array $values){
+                    $data=[];
+                    $products=getCompany()->products->whereIn('id', $values)->pluck('title', 'id');
+                    $i=1;
+                    foreach ($products as $key=> $product){
+                        $data[$key]=$i.". ". $product;
+                        $i++;
+                    }
+                    return $data ;
+
+                }),
                 SelectTree::make('structure_id')->label('Location')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id', modifyQueryUsing: function ($query) {
                     return $query->where('warehouse_id', $this->record->id);
                 })->required(),

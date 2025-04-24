@@ -17,6 +17,7 @@ use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Facades\Filament;
 use Filament\Forms;
+use Filament\Forms\Set;
 use Filament\Pages\Actions\ReplicateAction;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Placeholder;
@@ -92,7 +93,14 @@ class PurchaseRequestResource extends Resource
                         })
                         ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
                             return $rule->where('company_id', getCompany()->id);
-                        })
+                        })->hintAction(\Filament\Forms\Components\Actions\Action::make('update')->label('Update NO')->action(function (Set $set){
+                            $puncher= PurchaseRequest::query()->where('company_id',getCompany()->id)->latest()->first();
+                            if ($puncher){
+                                $set('purchase_number',generateNextCodePO($puncher->purchase_number));
+                            }else{
+                                $set('purchase_number','00001');
+                            }
+                        }))
                         ->required()
                         ->numeric(),
                     Forms\Components\DateTimePicker::make('request_date')->readOnly()->default(now())->label('Request Date')->required(),
