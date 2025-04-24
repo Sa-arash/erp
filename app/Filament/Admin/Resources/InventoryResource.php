@@ -11,6 +11,7 @@ use App\Models\Structure;
 use App\Models\Warehouse;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
+use Filament\Actions\Action;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -42,7 +43,7 @@ class InventoryResource extends Resource implements HasShieldPermissions
 
     public static function table(Table $table): Table
     {
-        return $table->defaultSort('id','desc')
+        return $table->defaultSort('id','desc')->recordUrl(fn($record)=>InventoryResource::getUrl('stocks',['record'=>$record->id]))
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('product.info'),
@@ -122,7 +123,8 @@ class InventoryResource extends Resource implements HasShieldPermissions
                     $inventory->update(['quantity'=>$inventory->quantity+$data['quantity']]);
                     Notification::make('success')->success()->title('Successfully')->send();
 
-                })->requiresConfirmation()->modalWidth(MaxWidth::FiveExtraLarge)->icon('heroicon-c-arrow-up-tray')->modalIcon('heroicon-c-arrow-up-tray')->color('warning')
+                })->requiresConfirmation()->modalWidth(MaxWidth::FiveExtraLarge)->icon('heroicon-c-arrow-up-tray')->modalIcon('heroicon-c-arrow-up-tray')->color('warning'),
+                Tables\Actions\Action::make('stocks')->url(fn($record)=>InventoryResource::getUrl('stocks',['record'=>$record->id]))
             ])
             ->bulkActions([
 
@@ -140,6 +142,7 @@ class InventoryResource extends Resource implements HasShieldPermissions
     {
         return [
             'index' => Pages\ListInventories::route('/'),
+            'stocks'=>Pages\Stocks::route('/{record}/stocks')
 //            'create' => Pages\CreateInventory::route('/create'),
 //            'edit' => Pages\EditInventory::route('/{record}/edit'),
         ];

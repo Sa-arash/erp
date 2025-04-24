@@ -25,6 +25,10 @@ class Inventory extends Model
     {
         return $this->belongsTo(Warehouse::class);
     }
+    public function stocks(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->HasMany(Stock::class);
+    }
 
     public function product(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

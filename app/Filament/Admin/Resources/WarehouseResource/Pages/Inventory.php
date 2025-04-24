@@ -20,11 +20,8 @@ use Illuminate\Support\Facades\Session;
 class Inventory extends ManageRelatedRecords
 {
     protected static string $resource = WarehouseResource::class;
-
     protected static string $relationship = 'inventories';
-
     protected static ?string $navigationIcon = 'heroicon-s-inbox-arrow-down';
-
     public static function getNavigationLabel(): string
     {
         return 'Inventories';

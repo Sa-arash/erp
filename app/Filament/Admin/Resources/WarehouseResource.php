@@ -116,7 +116,8 @@ class WarehouseResource extends Resource
     {
         return $page->generateNavigationItems([
             Pages\Inventory::class,
-            Pages\InventoryStock::class
+            Pages\InventoryStock::class,
+
         ]);
     }
     public static function getPages(): array

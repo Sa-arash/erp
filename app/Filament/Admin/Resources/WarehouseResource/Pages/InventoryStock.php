@@ -10,6 +10,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ManageRelatedRecords;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class InventoryStock extends ManageRelatedRecords
 {
@@ -52,7 +53,7 @@ class InventoryStock extends ManageRelatedRecords
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('employee.fullName'),
                 Tables\Columns\TextColumn::make('inventory.product.info'),
-                Tables\Columns\TextColumn::make('description'),
+                Tables\Columns\TextColumn::make('description')->searchable(),
                 Tables\Columns\TextColumn::make('quantity')->badge(),
                 Tables\Columns\TextColumn::make('type')->state(fn($record) => $record->type === 1 ? "Stock In" : "Stock Out")->badge()->color(fn($state) => $state === "Stock In" ? 'success' : 'danger'),
                 Tables\Columns\TextColumn::make('transaction')->state(function($record){
@@ -64,7 +65,9 @@ class InventoryStock extends ManageRelatedRecords
                 Tables\Columns\TextColumn::make('created_at')->label('Stock Date')->dateTime(),
             ])
             ->filters([
-                //
+                DateRangeFilter::make('created_at')->label('Stock Date'),
+                Tables\Filters\TernaryFilter::make('type')->label('Type')->placeholder('All Type')->trueLabel('Stock In')->falseLabel('Stock Out')->searchable(),
+                Tables\Filters\TernaryFilter::make('transaction')->label('Transaction')->placeholder('All Stocks')->trueLabel('Yes')->falseLabel('No')->searchable()
             ])
             ->headerActions([
                 Tables\Actions\CreateAction::make()->action(function ($data) {
