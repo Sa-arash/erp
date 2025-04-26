@@ -68,21 +68,21 @@ class ChequeResource extends Resource
                 Tables\Columns\TextColumn::make('due_date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('payer_name')->searchable(),
                 Tables\Columns\TextColumn::make('payee_name')->searchable(),
-                Tables\Columns\TextColumn::make('Due Days')->label('Due Days')->state(function ($record){
-                    if (Carbon::make($record->due_date)->diff()->totalDays <0 ){
-                        return Carbon::make($record->due_date)->diff()->roundDay()->day. " Days Due";
-                    }else{
-                        return Carbon::make($record->due_date)->diff()->roundDay()->day. " Days Passed";
-                    }
-                })->color(function ($record){
-                    if (Carbon::make($record->due_date)->diff()->totalDays <0 ){
-                        return 'success';
-                    }elseif (Carbon::make($record->due_date)->diff()->day===0){
-                        return 'warning';
-                    }else{
-                        return  "danger";
-                    }
-                })->badge()->searchable(),
+                Tables\Columns\TextColumn::make('Due Days')->label('Due Days')->state(function ($record) {
+                        $daysUntilDue = Carbon::make($record->due_date)->diffInDays(now(), false);
+                        return abs($daysUntilDue) . ($daysUntilDue < 0 ? ' Days Due' : ' Days Passed');
+                    })  
+                    ->color(function ($record) {
+                        $daysUntilDue = Carbon::make($record->due_date)->diffInDays(now(), false);
+                        
+                        return match(true) {
+                            $daysUntilDue < 0 => 'success',
+                            $daysUntilDue === 0 => 'warning',
+                            default => 'danger'
+                        };
+                    })
+                    ->badge()
+                    ->searchable(),         
                 Tables\Columns\TextColumn::make('type')->state(fn($record) => $record->type ? "Payable" : "Receivable")->badge(),
                 Tables\Columns\TextColumn::make('status')->badge(),
             ])

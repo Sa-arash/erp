@@ -17,6 +17,7 @@ use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class LocationResource extends Resource
@@ -35,6 +36,23 @@ class LocationResource extends Resource
                 Forms\Components\TextInput::make('title')->columnSpanFull()->label('Main Location')->required()->maxLength(255),
                 Forms\Components\Hidden::make('type')->default(0),
             ]);
+    }
+
+    public static function canAccess(): bool
+    {
+        return auth()->user()->can('view_any_location');
+    }
+    public static function canCreate(): bool
+    {
+        return auth()->user()->can('create_location');
+    }
+    public static function canEdit(Model $record): bool
+    {
+        return auth()->user()->can('update_location');
+    }
+    public static function canDelete(Model $record): bool
+    {
+        return auth()->user()->can('force_delete_location');
     }
 
     public static function table(Table $table): Table
