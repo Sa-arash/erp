@@ -23,6 +23,7 @@ use Filament\Forms;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
 use Filament\Support\RawJs;
@@ -44,7 +45,7 @@ class EmployeeResource extends Resource
 
 
     protected static ?string $model = Employee::class;
-
+    protected static ?string $pluralLabel='Employee';
     protected static ?int $navigationSort = 1;
     protected static ?string $navigationGroup = 'HR Management System';
     protected static ?string $navigationIcon = 'heroicon-c-user-group';
@@ -206,12 +207,14 @@ class EmployeeResource extends Resource
                             }),
                             Forms\Components\DatePicker::make('joining_date')->required(),
                             Forms\Components\DatePicker::make('leave_date')->label('Ending Date'),
-                            Forms\Components\TextInput::make('base_salary')->required()->label('Base Salary' . '(' .defaultCurrency()?->symbol . ")")->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->default(0)->numeric()->afterStateUpdated(function ($state,Forms\Set $set){
-                                $baseSalary=str_replace(',','',$state);
-                                $set('daily_salary',number_format($baseSalary/30));
-                            })->live(true),
-                            Forms\Components\TextInput::make('daily_salary')->label('Daily Salary' . '(' . defaultCurrency()?->symbol . ")")->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0),
-
+                    Forms\Components\Section::make([
+                        Forms\Components\Select::make('currency_id')->default(defaultCurrency()->id)->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload(),
+                        Forms\Components\TextInput::make('base_salary')->required()->label('Base Salary')->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->default(0)->numeric()->afterStateUpdated(function ($state,Forms\Set $set){
+                            $baseSalary=str_replace(',','',$state);
+                            $set('daily_salary',number_format($baseSalary/30,2));
+                        })->live(true),
+                        Forms\Components\TextInput::make('daily_salary')->label('Daily Salary')->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0),
+                    ])->columns(3),
                             Forms\Components\Select::make('benefits')->relationship('benefits', 'title')->label('Allowance')
                                 ->createOptionForm([
                                     Forms\Components\Section::make([
@@ -415,13 +418,14 @@ class EmployeeResource extends Resource
                     }),
                     Forms\Components\DatePicker::make('joining_date')->required(),
                     Forms\Components\DatePicker::make('leave_date')->label('Ending Date'),
-                    Forms\Components\TextInput::make('base_salary')->required()->label('Base Salary' . '(' . defaultCurrency()?->symbol . ")")->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->afterStateUpdated(function ($state,Forms\Set $set){
-                        $baseSalary=str_replace(',','',$state);
-                        $set('daily_salary',number_format($baseSalary/30));
-                    })->live(true),
-                    Forms\Components\TextInput::make('daily_salary')->label('Daily Salary' . '(' . defaultCurrency()?->symbol . ")")->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)
-                        ->default(0)
-                        ->numeric(),
+                    Forms\Components\Section::make([
+                        Forms\Components\Select::make('currency_id')->default(defaultCurrency()->id)->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload(),
+                        Forms\Components\TextInput::make('base_salary')->required()->label('Base Salary')->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->default(0)->numeric()->afterStateUpdated(function ($state,Forms\Set $set){
+                            $baseSalary=str_replace(',','',$state);
+                            $set('daily_salary',number_format($baseSalary/30,2));
+                        })->live(true),
+                        Forms\Components\TextInput::make('daily_salary')->label('Daily Salary')->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0),
+                    ])->columns(3),
                     Forms\Components\Select::make('benefits')->relationship('benefits', 'title')->label('Allowance')
                         ->createOptionForm([
                             Forms\Components\Section::make([
@@ -490,6 +494,7 @@ class EmployeeResource extends Resource
     public static function table(Table $table): Table
     {
         return $table->headerActions([
+            Tables\Actions\Action::make('Manager')->label('Organization Chart')->url(EmployeeResource::getUrl('chart')),
             Tables\Actions\ExportAction::make()->label('Export Employees')->color('purple')->exporter(EmployeeExporter::class)
         ])
             ->searchable()
@@ -513,22 +518,17 @@ class EmployeeResource extends Resource
                 Tables\Columns\TextColumn::make('base_salary')->label('Base Salary' . "(" . defaultCurrency()?->symbol . ")")->alignLeft()->numeric()->sortable()->badge(),
                 Tables\Columns\TextColumn::make('department.title')->alignLeft()->color('aColor')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('position.title')->alignLeft()->label('Position')->sortable(),
+                Tables\Columns\TextColumn::make('manager.fullName')->alignLeft()->label('Manager')->sortable(),
                 //                Tables\Columns\TextColumn::make('payrolls_count')->counts('payrolls')->badge()->url(fn($record): string => (PayrollResource::getUrl('index', ['tableFilters[employee_id][value]' => $record->id])))->sortable(),
 
             ])
             ->filters([
 
-                SelectFilter::make('department_id')->searchable()->preload()->options(Department::where('company_id', getCompany()->id)->get()->pluck('title', 'id'))
-                    ->label('Department'),
-                    SelectFilter::make('position_id')->searchable()->preload()->options(Position::where('company_id', getCompany()->id)->get()->pluck('title', 'id'))
-                    ->label('Designation'),
-
-
-                SelectFilter::make('duty_id')->searchable()->preload()->options(Duty::where('company_id', getCompany()->id)->get()->pluck('title', 'id'))
-                    ->label('duty'),
-
+                SelectFilter::make('department_id')->searchable()->preload()->options(Department::where('company_id', getCompany()->id)->get()->pluck('title', 'id'))->label('Department'),
+                SelectFilter::make('position_id')->searchable()->preload()->options(Position::where('company_id', getCompany()->id)->get()->pluck('title', 'id'))->label('Designation'),
+                SelectFilter::make('manager_id')->searchable()->preload()->options(getCompany()->employees()->pluck('fullName', 'id'))->label('Manager'),
+                SelectFilter::make('duty_id')->searchable()->preload()->options(Duty::where('company_id', getCompany()->id)->get()->pluck('title', 'id'))->label('Duty'),
                 SelectFilter::make('gender')->options(['male'=>'Male','female'=>'Female','other'=>'Other'])->searchable()->preload(),
-
                 DateRangeFilter::make('birthday'),
                 DateRangeFilter::make('joining_date'),
                 DateRangeFilter::make('leave_date'),
@@ -571,6 +571,23 @@ class EmployeeResource extends Resource
 //                    Tables\Actions\DeleteBulkAction::make(),
 
                 ]),
+                Tables\Actions\BulkAction::make('setManager')->color('success')->label('Add Manager')->form([
+                    Forms\Components\Select::make('employee_id')->options(getCompany()->employees()->pluck('fullName','id'))->searchable()->preload()->label('Manager')->required()
+                ])->action(function ($records,$data){
+
+                    foreach ($records as $record){
+                        $record->update(['manager_id'=>$data['employee_id']]);
+                    }
+                    Notification::make('success')->success()->title('Added Employees Manager')->send()->sendToDatabase(auth()->user());
+                }),
+                Tables\Actions\BulkAction::make('remove')->color('warning')->label('Remove Manager')->action(function ($records){
+                    foreach ($records as $record){
+                        $record->update(['manager_id'=>null]);
+                    }
+                    Notification::make('success')->success()->title('Removed Employee Manager')->send()->sendToDatabase(auth()->user());
+
+                })->requiresConfirmation(),
+
                 Tables\Actions\ExportBulkAction::make()->label('Export Employees')->color('purple')->exporter(EmployeeExporter::class)
 
             ]);
@@ -595,6 +612,7 @@ class EmployeeResource extends Resource
             'create' => Pages\CreateEmployee::route('/create'),
             'edit' => Pages\EditEmployee::route('/{record}/edit'),
             'view' => Pages\ViewEmployee::route('/{record}'),
+            'chart'=> Pages\Manager::route('/manager/chart'),
         ];
     }
 }

@@ -7,6 +7,7 @@ use App\Models\Approval;
 use Filament\Actions;
 use Filament\Resources\Components\Tab;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Support\Str;
 
 class ListApprovals extends ListRecords
 {
@@ -21,11 +22,14 @@ class ListApprovals extends ListRecords
 
     public function getTabs(): array
     {
-        return [
-            'Pending' => Tab::make()->query(fn($query) => $query->where('status', "Pending")),
-            'Approve' => Tab::make()->query(fn($query) => $query->where('status', "Approve")),
-            'NotApprove' => Tab::make()->query(fn($query) => $query->where('status', "NotApprove")),
-            'All' => Tab::make()->query(fn($query) => $query),
-        ];
+        $data = ['All' => Tab::make()->query(fn($query) => $query)];
+        $approvals = Approval::query()->where('employee_id',getEmployee()->id)->where('company_id', getCompany()->id)->distinct()->get()->unique('approvable_type');
+        foreach ($approvals as  $item) {
+
+
+            $data[Str::headline(substr($item->approvable_type, 11))] = Tab::make()->query(fn($query) => $query->where('approvable_type', $item->approvable_type)) ;
+        }
+        return $data;
+
     }
 }

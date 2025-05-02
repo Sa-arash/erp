@@ -58,9 +58,7 @@ class PayrollResource extends Resource
         return $form
             ->schema([
                 Forms\Components\Section::make([
-                    Forms\Components\Select::make('employee_id')->disabled(fn($operation) => $operation === "edit")
-                        ->live()->suffixIcon('employee')->suffixIconColor('primary')->label('Employee')->searchable()->preload()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->required()
-                        ->afterStateUpdated(function (Forms\Set $set, Forms\Get $get) {
+                    Forms\Components\Select::make('employee_id')->disabled(fn($operation) => $operation === "edit")->live()->suffixIcon('employee')->suffixIconColor('primary')->label('Employee')->searchable()->preload()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->required()->afterStateUpdated(function (Forms\Set $set, Forms\Get $get) {
                             $employee = Employee::query()->with(['department', 'position'])->firstWhere('id', $get('employee_id'));
                             if ($employee) {
                                 $amount = $employee->base_salary;
@@ -72,12 +70,14 @@ class PayrollResource extends Resource
                                 $set('position', $titlePosition);
                                 $set('salary', number_format($salary));
                                 $set('base', number_format($amount));
+                                $set('currency', $employee->currency?->name);
                             } else {
                                 $set('amount_pay', null);
                                 $set('department', null);
                                 $set('position', null);
                                 $set('salary', null);
                                 $set('base', null);
+                                $set('currency', null);
                             }
                         }),
                     Forms\Components\Select::make('year')->disabled(fn($operation) => $operation === "edit")->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
@@ -110,12 +110,12 @@ class PayrollResource extends Resource
                         $set('end_date', $endDate);
                     })->required(),
                     Forms\Components\Split::make([
+                        TextInput::make('currency')->disabled(),
                         TextInput::make('department')->disabled(),
                         TextInput::make('position')->disabled(),
                         TextInput::make('salary')->label('Daily Salary')->disabled(),
                         TextInput::make('base')->label('Monthly Salary')->disabled(),
                     ])->columnSpanFull(),
-
                     Forms\Components\Hidden::make('start_date')->live()->required()->disabled(fn($operation) => $operation === "edit"),
                     Forms\Components\Hidden::make('end_date')->live()->required()->disabled(fn($operation) => $operation === "edit"),
                     TextInput::make('reference')->hidden()->maxLength(255),
@@ -541,10 +541,10 @@ class PayrollResource extends Resource
                 Tables\Columns\TextColumn::make('month')->state(fn($record) => Carbon::parse($record->start_date)->format('M'))->alignLeft()->sortable(),
                 Tables\Columns\TextColumn::make('year')->state(fn($record) => Carbon::parse($record->start_date)->year)->alignLeft()->sortable(),
                 //   Tables\Columns\TextColumn::make('payment_date')->alignCenter()->state(fn($record) => $record->payment_date ? Carbon::make($record->payment_date)->format('Y/m/d') : "Not Paid")->sortable(),
-                Tables\Columns\TextColumn::make('employee.base_salary')->copyable()->label('Base Salary')->alignLeft()->numeric()->sortable(),
-                Tables\Columns\TextColumn::make('total_allowance')->copyable()->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total Allowance'))->label('Total Allowance'." ".defaultCurrency()?->symbol)->alignLeft()->numeric()->sortable(),
-                Tables\Columns\TextColumn::make('total_deduction')->copyable()->summarize(Tables\Columns\Summarizers\Sum::make('total_deduction')->label('Total Deduction'))->label('Total Deduction'." ".defaultCurrency()?->symbol)->alignLeft()->numeric()->sortable(),
-                Tables\Columns\TextColumn::make('amount_pay')->copyable()->summarize(Tables\Columns\Summarizers\Sum::make('amount_pay')->label('Total Net Pay'))->label('Net Pay'." ".defaultCurrency()?->symbol)->alignLeft()->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('employee.base_salary')->state(fn($record)=>number_format($record->employee->base_salary)."".$record->employee->currency?->symbol)->copyable()->label('Base Salary')->alignLeft()->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('total_allowance')->state(fn($record)=>number_format($record->total_allowance)."".$record->employee->currency?->symbol)->copyable()->label('Total Allowance')->alignLeft()->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('total_deduction')->state(fn($record)=>number_format($record->total_deduction)."".$record->employee->currency?->symbol)->copyable()->label('Total Deduction')->alignLeft()->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('amount_pay')->state(fn($record)=>number_format($record->amount_pay)."".$record->employee->currency?->symbol)->copyable()->label('Total Net Pay')->label('Net Pay')->alignLeft()->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('status')->badge()->alignLeft(),
             ])
             ->filters([

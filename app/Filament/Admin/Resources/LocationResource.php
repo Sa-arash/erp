@@ -63,17 +63,6 @@ class LocationResource extends Resource
                 Tables\Columns\TextColumn::make('title')->label('Main Location')->searchable(),
                 Tables\Columns\TextColumn::make('structures.title')->label('Sub Location')->badge()->searchable(),
                 Tables\Columns\TextColumn::make('employees')->state(fn($record)=>$record->employees->count())->label('Employees')->badge()->searchable(),
-                Tables\Columns\ImageColumn::make('employees.medias')->label('Employees Photo')->state(function ($record){
-                    $data=[];
-                    foreach ($record->employees as $employee){
-                        if ($employee->media->where('collection_name','images')->first()?->original_url){
-                            $data[]= $employee->media->where('collection_name','images')->first()?->original_url;
-                        } else {
-                            $data[] = $employee->gender === "male" ? asset('img/user.png') : asset('img/female.png');
-                        }
-                    }
-                    return $data;
-                })->circular()->stacked(),
 
             ])
             ->filters([

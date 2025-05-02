@@ -21,7 +21,7 @@ class Employee extends Model implements HasMedia
 
 
 
-    protected $fillable = ['structure_id','warehouse_id','signature_pic','daily_salary','position_id','branch','contract_id','NIC','post_code','benefit_salary','user_id', 'fullName', 'email', 'phone_number', 'birthday', 'joining_date', 'leave_date', 'country', 'state', 'city', 'address','address2', 'cart', 'bank', 'tin', 'base_salary', 'department_id', 'position_id', 'gender', 'marriage', 'count_of_child', 'emergency_phone_number', 'pic', 'blood_group', 'company_id', 'duty_id','covid_vaccine_certificate','immunization','card_status','type_of_ID','ID_number','emergency_contact'];
+    protected $fillable = ['manager_id','currency_id','structure_id','warehouse_id','signature_pic','daily_salary','position_id','branch','contract_id','NIC','post_code','benefit_salary','user_id', 'fullName', 'email', 'phone_number', 'birthday', 'joining_date', 'leave_date', 'country', 'state', 'city', 'address','address2', 'cart', 'bank', 'tin', 'base_salary', 'department_id', 'position_id', 'gender', 'marriage', 'count_of_child', 'emergency_phone_number', 'pic', 'blood_group', 'company_id', 'duty_id','covid_vaccine_certificate','immunization','card_status','type_of_ID','ID_number','emergency_contact'];
 
     protected $casts=[
         'emergency_contact'=>'array',
@@ -31,6 +31,20 @@ class Employee extends Model implements HasMedia
    public function getInfoAttribute(){
        return $this->fullName." (ID:".$this->ID_number." )";
    }
+    public function manager(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Employee::class, 'manager_id');
+    }
+
+    public function subordinates(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Employee::class, 'manager_id');
+    }
+
+    public function currency(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Currency::class);
+    }
 
     public function structure(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

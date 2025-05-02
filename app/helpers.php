@@ -643,29 +643,14 @@ function getParents($record, $visited = [])
 function sendAR($employee, $record, $company)
 {
 
-    if ($employee?->department?->employee_id) {
-        if ($employee->department->employee_id === $employee->id) {
+    if ($employee?->manager_id) {
+
             $record->approvals()->create([
-                'employee_id' => $employee->department?->employee_id,
+                'employee_id' => $employee->manager_id,
                 'company_id' => $company->id,
-                'position' => 'Head Department',
-                'status' => "Approve",
-                'approve_date' => now()
+                'position' => 'Head'
             ]);
-            $CEO = Employee::query()->firstWhere('user_id', $company->user_id);
-            $record->approvals()->create([
-                'employee_id' => $CEO->id,
-                'company_id' => $company->id,
-                'position' => 'CEO',
-                'status' => "Pending"
-            ]);
-        } else {
-            $record->approvals()->create([
-                'employee_id' => $employee->department->employee_id,
-                'company_id' => $company->id,
-                'position' => 'Head Department'
-            ]);
-        }
+
     } else {
         $CEO = Employee::query()->firstWhere('user_id', $company->user_id);
         $record->approvals()->create([

@@ -9,9 +9,9 @@ use Filament\Pages\Page;
 class MyLeave extends Page
 {
     use HasPageShield;
-    
+
     protected static ?string $navigationIcon = 'heroicon-o-arrow-right-on-rectangle';
-    protected static ?string $navigationLabel = "My Leaves";
+    protected static ?string $navigationLabel = "Leave Request ";
     protected static string $view = 'filament.admin.pages.my-leave';
     protected function getHeaderWidgets(): array
     {

@@ -5,11 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Account;
 use App\Models\Asset;
 use App\Models\Bid;
-use App\Models\Company;
 use App\Models\Employee;
 use App\Models\FinancialPeriod;
-use App\Models\Payroll;
 use App\Models\Invoice;
+use App\Models\Payroll;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseRequest;
 use App\Models\TakeOut;
@@ -18,7 +17,7 @@ use App\Models\Transaction;
 use App\Models\VisitorRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use \niklasravnsborg\LaravelPdf\Facades\Pdf;
+use niklasravnsborg\LaravelPdf\Facades\Pdf;
 
 class PdfController extends Controller
 {
@@ -384,7 +383,8 @@ class PdfController extends Controller
         $company = auth()->user()->employee->company;
         $pdf = Pdf::loadView(
             'pdf.payrolls',
-            compact('payrolls', 'company')
+            compact('payrolls', 'company'),[],
+            ['format' => 'A4-L']
         );
         return $pdf->stream('payrolls.pdf');
     }

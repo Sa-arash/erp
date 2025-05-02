@@ -152,7 +152,8 @@ class PurchaseRequestResource extends Resource
                             Forms\Components\TextInput::make('quantity')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->required()->live()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                             Forms\Components\TextInput::make('estimated_unit_cost')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->label('EST Unit Cost')->live(true)->numeric()->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                             Forms\Components\Select::make('project_id')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->searchable()->preload()->label('Project')->options(getCompany()->projects->pluck('name', 'id')),
-                            Placeholder::make('total')->columnSpan(['default'=>8,'md'=>1,'xl'=>1])->content(fn($state, Get $get) => number_format((((int)str_replace(',', '', $get('quantity'))) * ((int)str_replace(',', '', $get('estimated_unit_cost')))))),
+                            Placeholder::make('total')->columnSpan(['default'=>8,'md'=>1,'xl'=>1])
+                                ->content(fn($state, Get $get) => number_format(((int)str_replace(',', '', $get('quantity'))) * ((float)str_replace(',', '', $get('estimated_unit_cost'))),2)),
                             Forms\Components\Hidden::make('company_id')->default(Filament::getTenant()->id)->required(),
                             Forms\Components\Textarea::make('description')->label(' Product Name and Description')->columnSpan(['default'=>4,'sm'=>3,'md'=>3,'xl'=>4])->required(),
                             MediaManagerInput::make('document')->orderable(false)->folderTitleFieldName("purchase_request_id")->disk('public')->schema([])->defaultItems(0)->maxItems(1) ->columnSpan(['default'=>4,'sm'=>2,'md'=>2,'xl'=>3]),
@@ -190,14 +191,14 @@ class PurchaseRequestResource extends Resource
                 // Tables\Columns\TextColumn::make('location')->state(fn($record) => $record->employee?->structure?->title)->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('status')->badge(),
                 Tables\Columns\TextColumn::make('bid.quotation.party.name')->label('Vendor'),
-                Tables\Columns\TextColumn::make('total')->alignCenter()->label('Total EST Price' )
+                Tables\Columns\TextColumn::make('total')->alignCenter()->label('Total EST Price ' )
 
                     ->state(function ($record) {
                         $total = 0;
                         foreach ($record->items as $item) {
                             $total += $item->quantity * $item->estimated_unit_cost;
                         }
-                        return $total;
+                        return $total ." " .$record->currency?->symbol;
                     })->numeric(),
                 Tables\Columns\TextColumn::make('bid.total_cost')->alignCenter()->label('Total Final Price' )->numeric(),
 

@@ -34,6 +34,12 @@
             padding: 20px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
+        .text-center{
+            alignment: center;
+        }
+        .w-100{
+            width: 100%;
+        }
 
         .pay-slip h1 {
             font-size: 15px;
@@ -138,7 +144,7 @@
             </td>
             <th>Annual Leaves</th>
             <td colspan="1">
-                {{$annualLeaves->sum('days')}} Of {{$leaveType?->days}} --- leave {{$leaves->sum('days') -$annualLeaves->sum('days')}}
+                {{$annualLeaves->sum('days')}} Of {{$leaveType?->days}} --- Remining Leaves {{$leaveType?->days- $annualLeaves->sum('days') }} Days
             </td>
         </tr>
     </table>
@@ -211,6 +217,14 @@
             </tr>
         </table>
     </div>
+    @if($payroll->employee->media->where('collection_name','signature')->first()?->original_url )
+       <span style="margin-left: 300px"> Employee Signature</span>
+    <div class="text-center  w-100" style="margin-left: 300px">
+
+           <img  src="{!! $payroll->employee->media->where('collection_name','signature')->first()?->original_url!!}" style="width: 95px;margin-bottom: 20px">
+   </div>
+    @endif
 </div>
+
 </body>
 </html>

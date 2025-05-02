@@ -69,14 +69,7 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('comment')->sortable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('approvable_type')->label('Request Type')->options(function () {
-                    $data = [];
-                    $approvals = Approval::query()->where('company_id', getCompany()->id)->distinct()->get()->unique('approvable_type');
-                    foreach ($approvals as  $item) {
-                        $data[$item->approvable_type] = substr($item->approvable_type, 11);
-                    }
-                    return $data;
-                })->searchable()
+                Tables\Filters\SelectFilter::make('status')->label('Status')->options(['Approve'=>'Approve','NotApprove'=>'NotApprove','Pending'=>'Pending'])->searchable(),
             ], getModelFilter())
             ->actions([
                 Tables\Actions\Action::make('viewLeave')->visible(fn($record) => substr($record->approvable_type, 11) === "Leave")->infolist(function ($record){
@@ -153,7 +146,9 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                                         TextEntry::make('Registration_Plate')->label('Registration Plate'),
                                     ])->columns(6)->columnSpanFull(),
                                 ImageEntry::make('file')->label('File Upload')->state(function ($record){
-                                    return $record->media->where('collection_name','attachment')->first()?->original_url;
+                                    if ($record?->media){
+                                        return $record?->media?->where('collection_name','attachment')->first()?->original_url;
+                                    }
                                 })
 
                             ])->columns(2)
@@ -196,7 +191,7 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                 Tables\Actions\Action::make('ApprovePurchaseRequest')->tooltip('Approve Purchase Request')->label('Approve')->icon('heroicon-o-check-badge')->iconSize(IconSize::Large)->color('success')->form([
                     Forms\Components\Section::make([
                         Forms\Components\Section::make([
-                            Select::make('employee')->disabled()->default(fn($record) => $record->approvable?->employee_id)->options(fn($record) => Employee::query()->where('id', $record->approvable?->employee_id)->get()->pluck('info', 'id'))->searchable(),
+                            Select::make('employee')->disabled()->default(fn($record) => $record?->approvable?->employee_id)->options(fn($record) => Employee::query()->where('id', $record?->approvable?->employee_id)->get()->pluck('info', 'id'))->searchable(),
                             Forms\Components\ToggleButtons::make('status')->default('Approve')->colors(['Approve' => 'success', 'NotApprove' => 'danger'])->options(['Approve' => 'Approve', 'NotApprove' => 'NotApprove'])->grouped(),
                             Forms\Components\ToggleButtons::make('is_quotation')->required()->label('Need Quotation')->boolean(' With Quotation', 'With out Quotation')->grouped()->inline(),
                             Forms\Components\Textarea::make('comment')->nullable()->columnSpanFull(),
@@ -265,6 +260,7 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                                 sendApprove($PR, 'PR Approval (3)_approval');
                             }
                         }
+                        Notification::make('success')->success()->title('Successfully')->send();
                 })->visible(function ($record) {
                     if ($record->status->name !== "Approve") {
                         if (substr($record->approvable_type, 11) === "PurchaseRequest") {

@@ -153,11 +153,11 @@ class AssetResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
-                Tables\Columns\TextColumn::make('product.sku')->label('SKU')->searchable(),
+                Tables\Columns\TextColumn::make('product.sku')->label('SKU') ->searchable(),
                 Tables\Columns\TextColumn::make('purchase_order_id')->label('PO No')->state(fn($record)=>$record->purchase_order_id === null ? "---": PurchaseOrder::find($record->purchase_order_id)->purchase_orders_number )
                 ->url(fn($record)=>PurchaseOrderResource::getUrl()."?tableFilters[id][value]=".$record->purchase_order_id)
-                ->searchable(),
-                Tables\Columns\TextColumn::make('titlen')->label('Asset Name')->searchable(),
+               ,
+                Tables\Columns\TextColumn::make('titlen')->label('Asset Name'),
                 Tables\Columns\TextColumn::make('price')->label('Purchase Price')->sortable()->numeric(),
 
                 Tables\Columns\TextColumn::make('warehouse.title')->label('Warehouse/Building')->sortable(),

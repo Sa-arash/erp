@@ -18,11 +18,11 @@ class ViewPurcheseRequest extends ViewRecord
         return $infolist->schema([
             Section::make('Request')->schema([
                 Section::make('')->schema([
-                    TextEntry::make('request_date')->dateTime(),
-                    TextEntry::make('purchase_number')->prefix('ATGT/UNC')->badge(),
+                    TextEntry::make('request_date')->label('Request Date')->dateTime(),
+                    TextEntry::make('purchase_number')->label('Purchase Number')->prefix('ATGT/UNC')->badge(),
                     TextEntry::make('employee.department.title')->label('Department'),
                     TextEntry::make('employee.fullName'),
-                    TextEntry::make('position.title'),
+                    TextEntry::make('employee.position.title')->label('Position'),
                     TextEntry::make('structure')->state(fn($record)=>$record->employee->structure?->warehouse?->title. getParents($record->employee->structure))->label('Location'),
                 ])->columns(3)])]);
     }

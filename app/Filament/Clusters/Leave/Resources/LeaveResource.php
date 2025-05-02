@@ -35,8 +35,8 @@ class LeaveResource extends Resource
     protected static ?string $model = ModelLeave::class;
     protected static ?string $navigationGroup = 'HR Management System';
     protected static ?int $navigationSort=3;
-    protected static ?string $pluralLabel="Leaves ";
-     protected static ?string $label="Leave Controller";
+    protected static ?string $pluralLabel="Leave ";
+     protected static ?string $label="Leave";
     protected static ?string $navigationIcon = 'heroicon-o-folder-minus';
 
 

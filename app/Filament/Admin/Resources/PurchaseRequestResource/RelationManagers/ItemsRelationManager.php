@@ -49,7 +49,7 @@ class ItemsRelationManager extends RelationManager
                     ->stripCharacters(','),
 
                 Forms\Components\TextInput::make('estimated_unit_cost')
-                    ->label('Estimated Unit Cost')
+                    ->label('EUC')
                     ->numeric()
                     ->mask(RawJs::make('$money($input)'))
                     ->stripCharacters(','),
@@ -75,15 +75,17 @@ class ItemsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('product.sku')->label('SKU'),
                 Tables\Columns\TextColumn::make('product.title')->label('Product/Service'),
                 Tables\Columns\TextColumn::make('description'),
-                Tables\Columns\TextColumn::make('document')->action(Tables\Actions\Action::make('wa')->action(function ($record){
+                Tables\Columns\TextColumn::make('document')->url(function ($record){
+                    if (isset($record->media[0])){
+                        return $record->media[0]->original_url;
+                    }
+                })->state(fn($record)=> isset($record->media[0])? 'Attach File':null)->color('warning')->alignCenter(),
 
-                    return dd(Storage::download($record->media[0]->getPath()));
-                })),
 
                 Tables\Columns\TextColumn::make('unit.title'),
                 Tables\Columns\TextColumn::make('quantity'),
-                Tables\Columns\TextColumn::make('estimated_unit_cost')->numeric(),
-                Tables\Columns\TextColumn::make('total')->state(fn ($record) => $record->estimated_unit_cost * $record->quantity)->numeric(),
+                Tables\Columns\TextColumn::make('estimated_unit_cost')->state(fn($record)=>$record->estimated_unit_cost.$this->ownerRecord->currency?->symbol)->label('EUC')->numeric(),
+                Tables\Columns\TextColumn::make('total')->state(fn ($record) => $record->estimated_unit_cost * $record->quantity.$this->ownerRecord->currency?->symbol)->numeric(),
                 Tables\Columns\TextColumn::make('project.name'),
                 Tables\Columns\TextColumn::make('clarification_decision')->label('Clarification Decision')->alignCenter()->badge(),
                 Tables\Columns\TextColumn::make('clarification_comment')->label('Clarification Comment'),

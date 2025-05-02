@@ -15,14 +15,14 @@ class PurchasePrice extends ApexChartWidget
      *
      * @var string
      */
-    protected static ?string $chartId = 'assetInStorage';
+    protected static ?string $chartId = 'Purchase';
 
     /**
      * Widget Title
      *
      * @var string|null
      */
-    protected static ?string $heading = 'Monthly PR Total Cost';
+    protected static ?string $heading = 'Monthly PO Total Cost';
 
     /**
      * Chart options (series, labels, types, size, animations...)
@@ -37,12 +37,20 @@ class PurchasePrice extends ApexChartWidget
             'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
         ]);
 
-        $purchaseData = $months->map(function ($month, $index) {
-            return getCompany()->purchaseRequests
-                ->where('status', 'Finished')
-                ->filter(fn($request) => Carbon::parse($request->request_date)->month == $index + 1)
-                ->sum(fn($request) => $request->bid?->total_cost ?? 0);
-        })->toArray();
+        $purchaseData = $months->map(fn($month, $index) => getCompany()->purchaseOrders
+            ->filter(fn($request) => Carbon::parse($request->date_of_po)->month == $index + 1)
+            ->sum(function($request) {
+                $total=0;
+                foreach ( $request->items as $item){
+                    $freights = intval((float)$item->freights );
+                    $q = intval($item->quantity);
+                    $tax = intval($item->taxes);
+                    $price = $item->unit_price;
+
+                    $total+= ($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100);
+                }
+                return $total   ;
+            } ))->toArray();
 
         return [
             'chart' => [

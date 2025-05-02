@@ -23,22 +23,17 @@ return new class extends Migration
             $table->date('date_of_po');
             $table->enum('status', [
                 'GRN',
-                'inventory',
+                'GRN And inventory',
+                'Inventory',
                 'pending',
                 'approved',
             ])->default('pending');
-
             $table->foreignId('prepared_by')->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
-
             $table->foreignId('bid_id')->nullable()->constrained('bids')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('quotation_id')->nullable()->constrained('quotations')->cascadeOnDelete()->cascadeOnUpdate();
-
             // $table->boolean('quotations')->default(false);
             // $table->boolean('bid_summary')->default(false);
             // $table->boolean('request_form')->default(false);
-
-
-
             $table->foreignId('purchase_request_id')->nullable()->constrained('purchase_requests')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('vendor_id')->constrained('parties')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();

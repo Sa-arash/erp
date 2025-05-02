@@ -47,6 +47,7 @@ class EditPayroll extends EditRecord
             $this->data['position'] = $titlePosition;
             $this->data['salary'] = number_format($salary);
             $this->data['base'] = number_format($amount);
+            $this->data['currency'] = $employee->currency?->name;
             $month = Carbon::parse($this->record->start_date)->month-1;
             $year = Carbon::parse($this->record->start_date)->year;
            // dd($this->record);

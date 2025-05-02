@@ -7,15 +7,16 @@ use App\Filament\Admin\Resources\PurchaseOrderResource\RelationManagers;
 use App\Models\Account;
 use App\Models\Currency;
 use App\Models\FinancialPeriod;
+use App\Models\Inventory;
 use App\Models\Parties;
+use App\Models\Product;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseRequest;
 use App\Models\PurchaseRequestItem;
+use App\Models\Stock;
 use Closure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
-use Filament\Facades\Filament;
 use Filament\Forms;
-use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
@@ -29,13 +30,11 @@ use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Support\RawJs;
 use Filament\Tables;
-use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rules\Unique;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
@@ -671,13 +670,85 @@ class PurchaseOrderResource extends Resource
             ->actions([
                 Tables\Actions\Action::make('prPDF')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.po', ['id' => $record->id]))->openUrlInNewTab(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('GRN')->label('GRN')->url(fn($record) => AssetResource::getUrl('create', ['po' => $record->id]))->visible(fn($record)=>$record->status != 'GRN'),
+                Tables\Actions\Action::make('GRN')->label('GRN')->url(fn($record) => AssetResource::getUrl('create', ['po' => $record->id]))->visible(fn($record) => $record->status != 'GRN'),
                 //                Tables\Actions\DeleteAction::make()->visible(fn($record)=>$record->status==="pending" )
+                Tables\Actions\Action::make('Inventory')->form(function ($record) {
+                    $products = Product::query()
+                        ->whereIn('id', function ($query) use ($record) {
+                            return $query->select('product_id')
+                                ->from('purchase_order_items')
+                                ->where('purchase_order_id', $record->id);
+                        })->where('product_type', 'consumable')
+                        ->pluck('title', 'id');
+
+                    return [
+                        Repeater::make('inventories')->schema([
+                                Select::make('product_id')->label('Product')->options($products)->searchable()->preload()->required(),
+                        Select::make('warehouse_id')->label('Warehouse')->required()->options(getCompany()->warehouses()->where('type', 1)->pluck('title', 'id'))->searchable()->preload(),
+                        TextInput::make('quantity')->numeric()->required(),
+                        Forms\Components\Textarea::make('description')->columnSpanFull()->required()
+                    ])->columns(3)->formatStateUsing(function ($record)use($products) {
+                        $data = [];
+                        foreach ($record->items->whereIn('product_id', array_keys($products->toArray())) as $item) {
+                            $data[] = ['product_id' => $item->product_id, 'description' => $item->description, 'warehouse_id' => null, 'quantity' => null];
+                        }
+                        return $data;
+                    })
+                    ];
+                })->action(function ($data,$record){
+                    $validateData=[];
+                    foreach ($data['inventories'] as $inventory){
+                        if (key_exists($inventory['product_id'],$validateData)){
+                            $lastQuantity=$validateData[$inventory['product_id']];
+                            $validateData[$inventory['product_id']]= $lastQuantity+ $inventory['quantity'];
+                        }else{
+                            $validateData[$inventory['product_id']]=$inventory['quantity'];
+                        };
+                    }
+                    foreach ($record->items as $item){
+                        if (key_exists($item->product_id,$validateData)){
+                            $quantity=$validateData[$item->product_id];
+                            if ($quantity > $item->quantity){
+                                Notification::make('danger')->danger()->title('Quantity Not Valid')->send();
+                                return;
+                            }
+                        }
+                    }
+
+                   foreach ($data['inventories'] as $inventory){
+                       $inventory= Inventory::query()->where('warehouse_id',$inventory['warehouse_id'])->where('product_id',$inventory['product_id'])->first();
+                       if (!$inventory){
+                           $inventory= Inventory::query()->create([
+                               'warehouse_id'=>$data['warehouse_id'],
+                               'product_id'=>$record->product_id,
+                               'quantity'=>0,
+                               'company_id'=>$record->company_id
+                           ]);
+                       }
+                       Stock::query()->create([
+                           'inventory_id'=>$inventory->id,
+                           'employee_id'=>getEmployee()->id,
+                           'quantity'=>$inventory['quantity'],
+                           'description'=>$inventory['description'],
+                           'type'=>1,
+                           'purchase_order_id'=>$record->id
+                       ]);
+                       $inventory->update(['quantity'=>$inventory->quantity+$data['quantity']]);
+                   }
+                   if ($record->status==="GRN"){
+                       $record->update(['status'=>'GRN And inventory']);
+                   }else{
+                       $record->update(['status'=>'Inventory']);
+                   }
+
+                    Notification::make('success')->success()->title('Successfully')->send();
+
+                })->modalWidth(MaxWidth::SixExtraLarge)
 
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+//                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

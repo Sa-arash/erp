@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('employees', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->nullable()->constrained('users')->cascadeOnUpdate()->nullOnDelete();
+            $table->foreignId('manager_id')->nullable()->constrained('employees')->nullOnDelete()->cascadeOnUpdate();
             $table->string('fullName');
             $table->string('NIC')->nullable()   ;
             $table->string('email');
@@ -39,6 +40,7 @@ return new class extends Migration
             $table->string('bank')->nullable();
             $table->string('tin')->nullable();
             $table->string('branch')->nullable();
+            $table->foreignId('currency_id')->constrained('currencies')->cascadeOnDelete()->cascadeOnUpdate();
             $table->bigInteger('base_salary')->nullable()->default(0);
             $table->bigInteger('daily_salary')->nullable()->default(0);
             $table->bigInteger('benefit_salary')->default(0);

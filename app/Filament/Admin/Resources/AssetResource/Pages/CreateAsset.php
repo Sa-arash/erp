@@ -33,10 +33,17 @@ class CreateAsset extends CreateRecord
 
 
             if ($data['purchase_order_id']) {
-                
-                PurchaseOrder::find($data['purchase_order_id'])->update([
-                    'status' => "GRN",
-                ]);
+
+               $PO= PurchaseOrder::find($data['purchase_order_id']);
+               if ($PO->status==='Inventory'){
+                   $PO->update([
+                       'status' => "GRN And inventory",
+                   ]);
+               }else{
+                   $PO->update([
+                       'status' => "GRN",
+                   ]);
+               }
             }
 
 

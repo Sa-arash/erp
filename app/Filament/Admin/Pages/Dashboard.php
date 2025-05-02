@@ -3,6 +3,8 @@
 namespace App\Filament\Admin\Pages;
 
 
+use App\Filament\Admin\Resources\ChequeResource\Widgets\ChequeReport;
+use App\Filament\Admin\Resources\ChequeResource\Widgets\StateCheque;
 use App\Filament\Admin\Widgets\accounting;
 use App\Filament\Admin\Widgets\assetInStorage;
 use App\Filament\Admin\Widgets\invoicePrice;
@@ -32,6 +34,7 @@ class Dashboard extends BaseDashboard
             PurchasePrice::class,
             StockAlert::class,
             OverdueChecks::class,
+           ChequeReport::class
 
         ];
     }

@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('inventory_id')->constrained('inventories')->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('employee_id')->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('purchase_order_id')->nullable()->constrained('purchase_orders')->cascadeOnDelete()->cascadeOnUpdate();
             $table->bigInteger('quantity');
             $table->string('description');
             $table->boolean('type');
