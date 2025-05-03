@@ -36,10 +36,17 @@ return new class extends Migration
             $table->string('address2')->nullable();
             $table->string('post_code',100)->nullable();
             $table->foreignId('duty_id')->constrained('duties')->cascadeOnDelete()->cascadeOnUpdate();
+            
             $table->string('cart')->nullable();
+
             $table->string('bank')->nullable();
+
+            $table->string('loan_limit')->default(0);
+
             $table->string('tin')->nullable();
+
             $table->string('branch')->nullable();
+
             $table->foreignId('currency_id')->constrained('currencies')->cascadeOnDelete()->cascadeOnUpdate();
             $table->bigInteger('base_salary')->nullable()->default(0);
             $table->bigInteger('daily_salary')->nullable()->default(0);

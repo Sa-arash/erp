@@ -238,7 +238,7 @@ class EmployeeResource extends Resource
                                 })
                                 ->label('Allowance/Deduction')->pivotData([
                                     'company_id' => getCompany()->id,
-                                ])->columnSpanFull()->live()->afterStateUpdated(static function (Forms\Get $get, Forms\Set $set) {})->multiple()->preload()->options(function () {
+                                ])->live()->afterStateUpdated(static function (Forms\Get $get, Forms\Set $set) {})->multiple()->preload()->options(function () {
                                     $options = Benefit::query()->where('company_id', getCompany()->id)->get();
                                     $data = [];
                                     foreach ($options as $option) {
@@ -246,6 +246,7 @@ class EmployeeResource extends Resource
                                     }
                                     return $data;
                                 }),
+                                TextInput::make('loan_limit')->label("Loan Limit")->default(0)->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required(),
                             Forms\Components\Hidden::make('benefit_salary')->default(0),
                             MediaManagerInput::make('attachments')->label('Documents Attachment')->orderable(false)->folderTitleFieldName("fullName")
                                 ->disk('public')
@@ -449,7 +450,7 @@ class EmployeeResource extends Resource
                         })
                         ->label('Allowance/Deduction')->pivotData([
                             'company_id' => getCompany()->id,
-                        ])->columnSpanFull()->live()->afterStateUpdated(static function (Forms\Get $get, Forms\Set $set) {})->multiple()->preload()->options(function () {
+                        ])->live()->afterStateUpdated(static function (Forms\Get $get, Forms\Set $set) {})->multiple()->preload()->options(function () {
                             $options = Benefit::query()->where('company_id', getCompany()->id)->get();
                             $data = [];
                             foreach ($options as $option) {
@@ -457,6 +458,7 @@ class EmployeeResource extends Resource
                             }
                             return $data;
                         }),
+                        TextInput::make('loan_limit')->label("Loan Limit")->default(0)->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required(),
                     Forms\Components\Hidden::make('benefit_salary')->default(0),
                     MediaManagerInput::make('attachments')->label('Documents Attachment')->orderable(false)->folderTitleFieldName("fullName")
                         ->disk('public')
