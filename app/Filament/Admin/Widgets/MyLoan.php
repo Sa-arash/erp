@@ -25,9 +25,11 @@ class MyLoan extends BaseWidget
                     Loan::query()->where('employee_id',getEmployee()?->id)->orderBy('id','desc')
             )
             ->headerActions([
-                Tables\Actions\Action::make('new')->label('Loan Request ')->form([
+                Tables\Actions\Action::make('new')->disabled(function(){
+                   return ( auth()->user()->employee->loans->where('status','accepted')->isEmpty());
+                })->label('Loan Request ')->form([
                     Section::make([
-                        TextInput::make('request_amount')->label('Required Amount  ')->columnSpanFull()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->numeric(),
+                        TextInput::make('request_amount')->label('Required Amount')->columnSpanFull()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->numeric()->default(fn()=>auth()->user()->employee->loan_limit)->maxValue(fn()=>auth()->user()->employee->loan_limit),
                         Textarea::make('description')->nullable()->columnSpanFull()
                     ])->columns()
                 ])->action(function ($data){

@@ -90,6 +90,10 @@ class Employee extends Model implements HasMedia
     public function documents(): \Illuminate\Database\Eloquent\Relations\hasMany
     {
         return $this->hasMany(Documentation::class);
+    } 
+     public function loans(): \Illuminate\Database\Eloquent\Relations\hasMany
+    {
+        return $this->hasMany(Loan::class,'employee_id');
     }
     public function AssetEmployee(): \Illuminate\Database\Eloquent\Relations\hasMany
     {

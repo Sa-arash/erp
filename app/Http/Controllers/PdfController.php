@@ -26,9 +26,9 @@ class PdfController extends Controller
     {
 
         $payroll = Payroll::query()->with('employee', 'itemAllowances', 'itemDeductions', 'benefits')->findOrFail($id);
-        $company=$payroll->company;
+        $company = $payroll->company;
 
-        $pdf = Pdf::loadView('pdf.payroll', compact('payroll','company'));
+        $pdf = Pdf::loadView('pdf.payroll', compact('payroll', 'company'));
         return $pdf->stream('pdf.payroll');
     }
 
@@ -41,47 +41,63 @@ class PdfController extends Controller
         $pdf = Pdf::loadView('pdf.jornal', compact('transactions', 'company'));
         return $pdf->stream('jornal.pdf');
     }
+    public function leaverequest(Request $request)
+    {
+        // $company = auth()->user()->employee->company;
+        // $transactions = Transaction::query()->whereIn('id', explode('-', $transactions))->get();
+        // dd($transactions);
 
+        $pdf = Pdf::loadView('pdf.leaverequest');
+        return $pdf->stream('leaverequest.pdf');
+    }
+    public function urgentleave(Request $request)
+    {
+        // $company = auth()->user()->employee->company;
+        // $transactions = Transaction::query()->whereIn('id', explode('-', $transactions))->get();
+        // dd($transactions);
 
+        $pdf = Pdf::loadView('pdf.urgentleave');
+        return $pdf->stream('urgentleave.pdf');
+    }
     public function account($period, $account, Request $request)
     {
-            $company = auth()->user()->employee->company;
-            $startDate = null;
-            $endDate = null;
-            $accounts = explode('-', $account);
-            $accountTitle = $request->reportTitle ?? implode('-', Account::query()->whereIn('id', $accounts)->pluck('name')->toArray());
+        $company = auth()->user()->employee->company;
+        $startDate = null;
+        $endDate = null;
+        $accounts = explode('-', $account);
+        $accountTitle = $request->reportTitle ?? implode('-', Account::query()->whereIn('id', $accounts)->pluck('name')->toArray());
 
-            $Allaccounts =  Account::query()->whereIn('id', $accounts)
-                ->orWhereIn('parent_id', $accounts)
-                ->orWhereHas('account', function ($query) use ($accounts) {
-                    return $query->whereIn('parent_id', $accounts)->orWhereHas('account', function ($query) use ($accounts) {
-                        return $query->whereIn('parent_id', $accounts);
-                    });
-                })
-                ->get()->pluck('id')->toArray();
+        $Allaccounts =  Account::query()->whereIn('id', $accounts)
+            ->orWhereIn('parent_id', $accounts)
+            ->orWhereHas('account', function ($query) use ($accounts) {
+                return $query->whereIn('parent_id', $accounts)->orWhereHas('account', function ($query) use ($accounts) {
+                    return $query->whereIn('parent_id', $accounts);
+                });
+            })
+            ->get()->pluck('id')->toArray();
 
-            if (isset($request->date)) {
-                $dateRange = $request->date;
-                [$startDate, $endDate] = explode(' - ', $dateRange);
-                $startDate = Carbon::createFromFormat('d-m-Y', $startDate);
-                $endDate = Carbon::createFromFormat('d-m-Y', $endDate);
+        if (isset($request->date)) {
+            $dateRange = $request->date;
+            [$startDate, $endDate] = explode(' - ', $dateRange);
+            $startDate = Carbon::createFromFormat('d-m-Y', $startDate);
+            $endDate = Carbon::createFromFormat('d-m-Y', $endDate);
 
-                $transactions = Transaction::query()->where('financial_period_id', $period)->whereIn('account_id', $Allaccounts)->whereHas('invoice', function ($query) use ($startDate, $endDate) {
-                    $query->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()]);
-                })->get();
-            } else {
-                $transactions = Transaction::query()->where('financial_period_id', $period)->whereIn('account_id', $Allaccounts)->get();
-            }
+            $transactions = Transaction::query()->where('financial_period_id', $period)->whereIn('account_id', $Allaccounts)->whereHas('invoice', function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()]);
+            })->get();
+        } else {
+            $transactions = Transaction::query()->where('financial_period_id', $period)->whereIn('account_id', $Allaccounts)->get();
+        }
 
-            $transactions = $transactions->sortBy(function ($transaction) {
-                return $transaction->invoce_id;
-            });
-            $period =  FinancialPeriod::query()->find($period);
-            $pdf = Pdf::loadView(
-                'pdf.account',
-                compact('accountTitle', 'accounts', 'period', 'transactions', 'startDate', 'endDate', 'company')
-            );
-            return $pdf->stream('account.pdf');
+        $transactions = $transactions->sortBy(function ($transaction) {
+            return $transaction->invoce_id;
+        });
+        $period =  FinancialPeriod::query()->find($period);
+        $pdf = Pdf::loadView(
+            'pdf.account',
+            compact('accountTitle', 'accounts', 'period', 'transactions', 'startDate', 'endDate', 'company')
+        );
+        return $pdf->stream('account.pdf');
     }
     public function accountCurrency($period, $account, Request $request)
     {
@@ -383,7 +399,8 @@ class PdfController extends Controller
         $company = auth()->user()->employee->company;
         $pdf = Pdf::loadView(
             'pdf.payrolls',
-            compact('payrolls', 'company'),[],
+            compact('payrolls', 'company'),
+            [],
             ['format' => 'A4-L']
         );
         return $pdf->stream('payrolls.pdf');
@@ -400,7 +417,8 @@ class PdfController extends Controller
         );
         return $pdf->stream('purchase.pdf');
     }
-    public function purchaseOrder($id){
+    public function purchaseOrder($id)
+    {
         $po = PurchaseOrder::query()->with(['company', 'items'])->findOrFail($id);
         $company = $po->company;
 
@@ -474,7 +492,7 @@ class PdfController extends Controller
     public function requestVisits($ids)
     {
 
-        $requestVisits = VisitorRequest::query()->whereIn('id', explode('-',$ids))->orderBy('id','desc')->get();
+        $requestVisits = VisitorRequest::query()->whereIn('id', explode('-', $ids))->orderBy('id', 'desc')->get();
         $company = $requestVisits[0]?->company;
 
 
@@ -485,18 +503,20 @@ class PdfController extends Controller
         return $pdf->stream('requestVisits.pdf');
     }
 
-    public function assets($ids){
-        $assets= Asset::query()->with(['product','employees'])->whereIn('id',explode('-',$ids))->get();
-        $company=$assets[0]->company;
+    public function assets($ids)
+    {
+        $assets = Asset::query()->with(['product', 'employees'])->whereIn('id', explode('-', $ids))->get();
+        $company = $assets[0]->company;
         $pdf = Pdf::loadView(
             'pdf.assets',
             compact('company', 'assets')
         );
         return $pdf->stream('pdf.assets');
     }
-    public function tasks($ids){
-        $tasks= Task::query()->with(['employees'])->whereIn('id',explode('-',$ids))->orderBy('id','desc')->get();
-        $company=$tasks[0]->company;
+    public function tasks($ids)
+    {
+        $tasks = Task::query()->with(['employees'])->whereIn('id', explode('-', $ids))->orderBy('id', 'desc')->get();
+        $company = $tasks[0]->company;
         $pdf = Pdf::loadView(
             'pdf.tasks',
             compact('company', 'tasks')
