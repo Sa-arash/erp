@@ -56,7 +56,7 @@ class PdfController extends Controller
     {
         $company = auth()->user()->employee->company;
         // dd($transactions);
-
+        
         $pdf = Pdf::loadView('pdf.urgentleave');
         return $pdf->stream('urgentleave.pdf');
     }

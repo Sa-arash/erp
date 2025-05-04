@@ -336,39 +336,61 @@
             <td>
                 @php
                     $startDate = \Carbon\Carbon::parse($leave->start_leave);
-                    $daysInMonth = $startDate->daysInMonth; // تعداد روزهای ماه
+                    $endDate = \Carbon\Carbon::parse($leave->end_leave);
+                    $daysInMonth = $startDate->daysInMonth; // تعداد روزهای ماه جاری
+                    $nextMonthStartDate = $startDate->copy()->addMonth(); // تاریخ شروع ماه آینده
+                    $nextMonthDaysInMonth = $nextMonthStartDate->daysInMonth; // تعداد روزهای ماه آینده
                 @endphp
                 <strong>Month: {{ $startDate->format('F') }}</strong>
                 <table class="calendar">
-                    @for ($i = 1; $i <= $daysInMonth; $i++)
-                        @if ($i % 7 == 1)
-                            <tr> <!-- شروع یک ردیف جدید -->
-                        @endif
-
-                        <td>{{ $i }}</td> <!-- نمایش روز -->
-
-                        @if ($i % 7 == 0 || $i == $daysInMonth)
-        </tr>
-        <!-- پایان ردیف -->
-        @endif
-        @endfor
+                  @for ($i = 1; $i <= $daysInMonth; $i++)
+                  @if ($i % 7 == 1)
+                      <tr> <!-- شروع یک ردیف جدید -->
+                  @endif
+          
+                  @php
+                      $currentDate = $startDate->copy()->day($i);
+                      $isInLeavePeriod = $currentDate->between($startDate, $endDate) || $currentDate->isSameDay($startDate) || $currentDate->isSameDay($endDate); // بررسی اینکه آیا تاریخ در بازه مرخصی است
+                  @endphp
+          
+                  <td>
+                      {{ $i }} @if($isInLeavePeriod) ★ @endif <!-- نمایش روز و ستاره در صورت نیاز -->
+                  </td>
+          
+                  @if ($i % 7 == 0 || $i == $daysInMonth)
+                      </tr> <!-- پایان ردیف -->
+                  @endif
+              @endfor
     </table>
     </td>
     <td>
-        <strong>Month: {{ $startDate->addMonth()->format('F') }}</strong>
+      @php
+      $startDate = \Carbon\Carbon::parse($leave->start_leave);
+      $endDate = \Carbon\Carbon::parse($leave->end_leave);
+      $daysInMonth = $startDate->daysInMonth; // تعداد روزهای ماه جاری
+      $nextMonthStartDate = $startDate->copy()->addMonth(); // تاریخ شروع ماه آینده
+      $nextMonthDaysInMonth = $nextMonthStartDate->daysInMonth; // تعداد روزهای ماه آینده
+  @endphp
+        <strong>Month: {{ $startDate->copy()->addMonth()->format('F') }}</strong>
         <table class="calendar">
-          @for ($i = 1; $i <= $startDate->addMonth()->daysInMonth; $i++)
-          @if ($i % 7 == 1)
-              <tr> <!-- شروع یک ردیف جدید -->
-          @endif
-
-          <td>{{ $i }}</td> <!-- نمایش روز -->
-
-          @if ($i % 7 == 0 || $i == $daysInMonth)
-</tr>
-<!-- پایان ردیف -->
-@endif
-@endfor
+          @for ($i = 1; $i <= $nextMonthDaysInMonth; $i++)
+                  @if ($i % 7 == 1)
+                      <tr> <!-- شروع یک ردیف جدید -->
+                  @endif
+          
+                  @php
+                      $currentDate = $startDate->copy()->addMonth()->day($i);
+                      $isInLeavePeriod = $currentDate->between($startDate, $endDate) || $currentDate->isSameDay($startDate) || $currentDate->isSameDay($endDate); // بررسی اینکه آیا تاریخ در بازه مرخصی است
+                  @endphp
+          
+                  <td>
+                      {{ $i }} @if($isInLeavePeriod) ★ @endif <!-- نمایش روز و ستاره در صورت نیاز -->
+                  </td>
+          
+                  @if ($i % 7 == 0 || $i == $nextMonthDaysInMonth)
+                      </tr> <!-- پایان ردیف -->
+                  @endif
+              @endfor
         </table>
     </td>
     </tr>
