@@ -200,7 +200,8 @@ class EmployeeProfile extends Page implements HasForms, HasInfolists
                                     ->label('')
                                     ->url(fn($record) => route('pdf.employee', ['id' => $record->id]))
                                     ->openUrlInNewTab()->label('Print')
-                            )->copyable(),                            textEntry::make('birthday')->date(),
+                            )->copyable(),  
+                                                      textEntry::make('birthday')->date(),
                             textEntry::make('phone_number')->copyable(),
                             textEntry::make('emergency_phone_number'),
                             textEntry::make('NIC')->copyable()->label('NIC'),

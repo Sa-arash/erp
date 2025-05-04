@@ -88,6 +88,9 @@ class MyLeave extends BaseWidget
                 Tables\Columns\TextColumn::make('end_leave')->date()->sortable(),
                 Tables\Columns\TextColumn::make('days')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('status')->badge(),
+            ])->actions([
+                Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->label('')
+                ->url(fn($record) => route('pdf.leaverequest', ['id' => $record->id]))->openUrlInNewTab(),
             ]);
     }
 }

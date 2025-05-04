@@ -8,6 +8,7 @@ use App\Models\Bid;
 use App\Models\Employee;
 use App\Models\FinancialPeriod;
 use App\Models\Invoice;
+use App\Models\Leave;
 use App\Models\Payroll;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseRequest;
@@ -41,19 +42,19 @@ class PdfController extends Controller
         $pdf = Pdf::loadView('pdf.jornal', compact('transactions', 'company'));
         return $pdf->stream('jornal.pdf');
     }
-    public function leaverequest(Request $request)
+    public function leaverequest(Request $request , $id)
     {
-        // $company = auth()->user()->employee->company;
-        // $transactions = Transaction::query()->whereIn('id', explode('-', $transactions))->get();
-        // dd($transactions);
+        $company = auth()->user()->employee->company;
+        $leave = Leave::query()->findOrFail($id);
+        $lastleave = Leave::query()->where('employee_id',$leave->employee->id)->first();
+        // dd($company);
 
-        $pdf = Pdf::loadView('pdf.leaverequest');
+        $pdf = Pdf::loadView('pdf.leaverequest',compact('company','leave','lastleave'));
         return $pdf->stream('leaverequest.pdf');
     }
     public function urgentleave(Request $request)
     {
-        // $company = auth()->user()->employee->company;
-        // $transactions = Transaction::query()->whereIn('id', explode('-', $transactions))->get();
+        $company = auth()->user()->employee->company;
         // dd($transactions);
 
         $pdf = Pdf::loadView('pdf.urgentleave');
