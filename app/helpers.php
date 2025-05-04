@@ -527,6 +527,15 @@ function generateNextCode($code): string
 
     return str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
 }
+function generateNextCodeLoan($code): string
+{
+
+    $lastNumber = $code;
+    $lastNumber = (int)$lastNumber;
+    $nextNumber = $lastNumber + 1;
+
+    return str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+}
 
 function defaultCurrency()
 {
@@ -650,14 +659,6 @@ function sendAR($employee, $record, $company)
                 'company_id' => $company->id,
                 'position' => 'Head'
             ]);
-
-    } else {
-        $CEO = Employee::query()->firstWhere('user_id', $company->user_id);
-        $record->approvals()->create([
-            'employee_id' => $CEO->id,
-            'company_id' => $company->user_id,
-            'position' => 'CEO'
-        ]);
     }
 }
 

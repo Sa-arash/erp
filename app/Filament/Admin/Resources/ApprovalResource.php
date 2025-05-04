@@ -158,24 +158,6 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                 Action::make('viewPurchaseRequest')->label('View')->modalWidth(MaxWidth::Full)->infolist(function () {
                     return [
                         Fieldset::make('PR')->relationship('approvable')->schema([
-                            TextEntry::make('employee.info'),
-                            TextEntry::make('request_date')->date(),
-                            TextEntry::make('purchase_number')->label('PR NO')->badge(),
-                            TextEntry::make('description')->columnSpanFull()->label('Description'),
-                            RepeatableEntry::make('items')->schema([
-                                TextEntry::make('product.info')->badge(),
-                                TextEntry::make('unit.title')->badge(),
-                                TextEntry::make('quantity'),
-                                TextEntry::make('estimated_unit_cost')->numeric(),
-                                TextEntry::make('project.name')->badge(),
-                                TextEntry::make('description')->columnSpanFull(),
-                                TextEntry::make('clarification_decision')->badge()->label('Clarification Decision'),
-                                TextEntry::make('clarification_comment')->limit(50)->tooltip(fn($record) => $record->clarification_comment)->label('Clarification Comment'),
-                                TextEntry::make('verification_decision')->badge()->label('Verification Decision'),
-                                TextEntry::make('verification_comment')->tooltip(fn($record) => $record->verification_decision)->label('Verification Comment'),
-                                TextEntry::make('approval_decision')->badge()->label('Approval Decision'),
-                                TextEntry::make('approval_comment')->tooltip(fn($record) => $record->approval_comment)->label('Approval Comment'),
-                            ])->columns(6)->columnSpanFull(),
                             RepeatableEntry::make('approvals')->schema([
                                 TextEntry::make('employee.fullName')->label(fn($record)=>$record->employee?->position?->title),
                                 TextEntry::make('created_at')->label('Request Date')->dateTime(),
@@ -188,87 +170,7 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                     ];
                 })->visible(fn($record) => substr($record->approvable_type, 11) === "PurchaseRequest"),
 
-                Tables\Actions\Action::make('ApprovePurchaseRequest')->tooltip('Approve Purchase Request')->label('Approve')->icon('heroicon-o-check-badge')->iconSize(IconSize::Large)->color('success')->form([
-                    Forms\Components\Section::make([
-                        Forms\Components\Section::make([
-                            Select::make('employee')->disabled()->default(fn($record) => $record?->approvable?->employee_id)->options(fn($record) => Employee::query()->where('id', $record?->approvable?->employee_id)->get()->pluck('info', 'id'))->searchable(),
-                            Forms\Components\ToggleButtons::make('status')->default('Approve')->colors(['Approve' => 'success', 'NotApprove' => 'danger'])->options(['Approve' => 'Approve', 'NotApprove' => 'NotApprove'])->grouped(),
-                            Forms\Components\ToggleButtons::make('is_quotation')->required()->label('Need Quotation')->boolean(' With Quotation', 'With out Quotation')->grouped()->inline(),
-                            Forms\Components\Textarea::make('comment')->nullable()->columnSpanFull(),
-                        ])->columns(3),
-                        Forms\Components\Repeater::make('items')->formatStateUsing(fn($record) => $record->approvable?->items?->toArray())->schema([
-                            Select::make('product_id')
-                                ->label('Product')->options(function () {
-                                    $products = getCompany()->products;
-                                    $data = [];
-                                    foreach ($products as $product) {
-                                        $data[$product->id] = $product->title . " (" . $product->sku . ")";
-                                    }
-                                    return $data;
-                                })->required()->searchable()->preload(),
-                            TextInput::make('description')->label('Description')->required(),
-                            Select::make('unit_id')->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id'))->required(),
-                            TextInput::make('quantity')->required()->live()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-                            TextInput::make('estimated_unit_cost')->label('Estimated Unit Cost')->live()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-                            Select::make('project_id')->searchable()->preload()->label('Project')->options(getCompany()->projects->pluck('name', 'id')),
-                            Placeholder::make('total')->content(fn($state, Get $get) => number_format(((int)str_replace(',', '', $get('quantity'))) * ((int)str_replace(',', '', $get('estimated_unit_cost'))))),
-                            Placeholder::make('stock in')->content(function ($record, Get $get) {
-                                $products = Product::find($get('product_id'))->assets->where('status', 'inStorageUsable')->count();
-                                $url = AssetResource::getUrl('index', ['tableFilters[product_id][value]' => $get('product_id'), 'tableFilters[status][value]' => 'inStorageUsable']);
-                                return new HtmlString("<a style='color: #1cc6b9' target='_blank' href='{$url}'>$products</a>");
-                            }),
-                            TextInput::make('comment')->columnSpan(6),
-                            Forms\Components\ToggleButtons::make('decision')->grouped()->inline()->columnSpan(2)->options(['approve' => 'Approve', 'reject' => 'Reject'])->required()->colors(['approve' => 'success', 'reject' => 'danger']),
-                        ])->columns(8)->columnSpanFull()->addable(false)
-                    ])->columns(),
-                ])->modalWidth(MaxWidth::Full)->action(function ($data, $record) {
 
-                    $record->update(['comment' => $data['comment'], 'status' => $data['status'], 'approve_date' => now()]);
-                    $PR = $record->approvable;
-                    $PR->approvals()->whereNot('id', $record->id)->where('position', $record->position)->delete();
-                    if ($data['status'] === "NotApprove") {
-                            $PR->update(['is_quotation' => $data['is_quotation'], 'status' => "Rejected"]);
-                    } else {
-                        if ($PR->status->name === "Requested") {
-                            $PR->update(['is_quotation' => $data['is_quotation'], 'status' => 'Clarification']);
-
-                        } else if ($PR->status->name === "Clarification") {
-                            $PR->update(['is_quotation' => $data['is_quotation'], 'status' => 'Verification']);
-                        } elseif ($PR->status->name === "Verification") {
-                            $PR->update(['is_quotation' => $data['is_quotation'], 'status' => 'Approval']);
-                        }
-                    }
-                        foreach ($data['items'] as $item) {
-                            $item['status'] = $item['decision'] === "reject" ? "rejected" : "approve";
-                            if ($PR->status->name === "Clarification") {
-                                $item['clarification_comment'] = $item['comment'];
-                                $item['clarification_decision'] = $item['decision'];
-                            } else if ($PR->status->name === "Verification") {
-                                $item['verification_comment'] = $item['comment'];
-                                $item['verification_decision'] = $item['decision'];
-                            } elseif ($PR->status->name === "Approval") {
-                                $item['approval_comment'] = $item['comment'];
-                                $item['approval_decision'] = $item['decision'];
-                            }
-                            $prItem = PurchaseRequestItem::query()->firstWhere('id', $item['id']);
-                            $prItem->update($item);
-                        }
-                        if ($data['status'] === "Approve") {
-                            if ($PR->status->name === "Clarification") {
-                                sendApprove($PR, 'PR Verification (2)_approval');
-                            } else if ($PR->status->name === "Verification") {
-                                sendApprove($PR, 'PR Approval (3)_approval');
-                            }
-                        }
-                        Notification::make('success')->success()->title('Successfully')->send();
-                })->visible(function ($record) {
-                    if ($record->status->name !== "Approve") {
-                        if (substr($record->approvable_type, 11) === "PurchaseRequest") {
-                            return true;
-                        }
-                    }
-                    return  false;
-                }),
                 Tables\Actions\Action::make('approve')->hidden(function ($record) {
                     if (substr($record->approvable_type, 11) === "PurchaseRequest" or substr($record->approvable_type, 11) === "Loan") {
                         return true;
@@ -341,7 +243,7 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                             'first_installment_due_date'=>$data['first_installment_due_date'],
                             'number_of_installments'=>$data['number_of_installments'],
                             'amount'=>$data['amount'],
-                            'status'=>'accepted'
+                            'status'=>'ApproveManager'
                         ]);
                     }elseif ($data['status']==="NotApprove"){
                         $record->approvable->update([
@@ -357,7 +259,15 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                             TextEntry::make('request_amount')->numeric()->label('Request Amount'),
                             TextEntry::make('description')->columnSpanFull()->label('Description'),
                         ])
-                ])
+                ]),
+                Action::make('url')->visible(function ($record){
+                    if ($record->status->name !== "Approve") {
+                        if (substr($record->approvable_type, 11) === "PurchaseRequest") {
+                            return true;
+                        }
+                    }
+                    return  false;
+                })->label('Items')->url(fn($record)=>ApprovalResource::getUrl('purchase',['record'=>$record->id]))
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -381,6 +291,7 @@ class ApprovalResource extends Resource implements HasShieldPermissions
     {
         return [
             'index' => Pages\ListApprovals::route('/'),
+            'purchase'=>Pages\ApprovePurchase::route('/purchase/{record}')
             //            'create' => Pages\CreateApproval::route('/create'),
             //            'edit' => Pages\EditApproval::route('/{record}/edit'),
         ];

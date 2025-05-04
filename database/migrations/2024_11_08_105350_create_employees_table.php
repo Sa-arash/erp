@@ -36,12 +36,12 @@ return new class extends Migration
             $table->string('address2')->nullable();
             $table->string('post_code',100)->nullable();
             $table->foreignId('duty_id')->constrained('duties')->cascadeOnDelete()->cascadeOnUpdate();
-            
+
             $table->string('cart')->nullable();
 
             $table->string('bank')->nullable();
 
-            $table->string('loan_limit')->default(0);
+            $table->bigInteger('loan_limit')->default(0);
 
             $table->string('tin')->nullable();
 

@@ -87,11 +87,35 @@ class ItemsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('estimated_unit_cost')->state(fn($record)=>$record->estimated_unit_cost.$this->ownerRecord->currency?->symbol)->label('EUC')->numeric(),
                 Tables\Columns\TextColumn::make('total')->state(fn ($record) => $record->estimated_unit_cost * $record->quantity.$this->ownerRecord->currency?->symbol)->numeric(),
                 Tables\Columns\TextColumn::make('project.name'),
-                Tables\Columns\TextColumn::make('clarification_decision')->label('Clarification Decision')->alignCenter()->badge(),
+                Tables\Columns\TextColumn::make('clarification_decision')->state(fn($record)=>match ($record->clarification_decision){
+                    'approve' => 'Approved',
+                    'reject' => 'Rejected',
+                    default => 'Pending',
+                })->color(fn (string $state): string => match ($state) {
+                    'Approved' => 'success',
+                    'Rejected' => 'danger',
+                    default => 'primary',
+                })->label('Clarification Decision')->alignCenter()->badge(),
                 Tables\Columns\TextColumn::make('clarification_comment')->label('Clarification Comment'),
-                Tables\Columns\TextColumn::make('verification_decision')->label('Verification Decision')->alignCenter()->badge(),
+                Tables\Columns\TextColumn::make('verification_decision')->state(fn($record)=>match ($record->verification_decision){
+                    'approve' => 'Approved',
+                    'reject' => 'Rejected',
+                    default => 'Pending',
+                })->color(fn (string $state): string => match ($state) {
+                    'Approved' => 'success',
+                    'Rejected' => 'danger',
+                    default => 'primary',
+                })->label('Verification Decision')->alignCenter()->badge(),
                 Tables\Columns\TextColumn::make('verification_comment')->label('Verification Comment'),
-                Tables\Columns\TextColumn::make('approval_decision')->label('Approval Decision')->alignCenter()->badge(),
+                Tables\Columns\TextColumn::make('approval_decision')->state(fn($record)=>match ($record->approval_decision){
+                    'approve' => 'Approved',
+                    'reject' => 'Rejected',
+                    default => 'Pending',
+                })->color(fn (string $state): string => match ($state) {
+                    'Approved' => 'success',
+                    'Rejected' => 'danger',
+                    default => 'primary',
+                })->label('Approval Decision')->alignCenter()->badge(),
                 Tables\Columns\TextColumn::make('approval_comment')->label('Approval Comment'),
                 Tables\Columns\TextColumn::make('status')->badge(),
 

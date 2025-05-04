@@ -13,6 +13,7 @@ use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Support\RawJs;
@@ -43,7 +44,7 @@ class LoanResource extends Resource
                     ->searchable()
                     ->preload()
                     ->required(),
-                Forms\Components\TextInput::make('loan_code')
+                Forms\Components\TextInput::make('loan_code')->readOnly()->default(generateNextCodeLoan(getCompany()->loans()->orderBy('id','desc')->first()?->loan_code))
                     ->required()
                     ->numeric(),
                 Forms\Components\TextInput::make('request_amount')
@@ -86,33 +87,18 @@ class LoanResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->searchable()
+        return $table->searchable()->defaultSort('id','desc')
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
-
-                Tables\Columns\TextColumn::make('employee.fullName')->alignCenter()->columnSpanFull()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('loan_code')->alignCenter()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('request_amount')->alignCenter()
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('amount')->alignCenter()
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('number_of_installments')->alignCenter()
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('number_of_payed_installments')->alignCenter()
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('request_date')->alignCenter()
-                    ->date()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('answer_date')->label('Approval Date')->alignCenter()
-                    ->date()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('status')->alignCenter(),
+                Tables\Columns\TextColumn::make('employee.fullName')->alignCenter()->columnSpanFull()->sortable(),
+                Tables\Columns\TextColumn::make('loan_code')->alignCenter()->sortable(),
+                Tables\Columns\TextColumn::make('request_amount')->alignCenter()->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('amount')->alignCenter()->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('number_of_installments')->alignCenter()->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('number_of_payed_installments')->alignCenter()->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('request_date')->alignCenter()->date()->sortable(),
+                Tables\Columns\TextColumn::make('answer_date')->label('Approval Date')->alignCenter()->date()->sortable(),
+                Tables\Columns\TextColumn::make('status')->badge()->alignCenter(),
 
             ])
             ->filters([
@@ -175,6 +161,10 @@ class LoanResource extends Resource
 
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('approve')->label('Approve HR')->color('success')->requiresConfirmation()->action(function ($record){
+                    $record->update(['status'=>'ApproveAdmin']);
+                    Notification::make('success')->title('Success Submitted')->success()->send();
+                }),
                 Tables\Actions\Action::make('payLoan')
                 ->visible(fn($record)=>$record->status->value === "accepted"&& getPeriod())
                 ->modalWidth(MaxWidth::FiveExtraLarge)->form([
@@ -247,7 +237,7 @@ class LoanResource extends Resource
                         'company_id' =>getCompany()->id,
                     ]);
 
-                    //  pay form bank 
+                    //  pay form bank
                     $invoice->transactions()->create([
                         'account_id' => $data['account_pay'],
                         'description' => 'Payment of loan amount to employee from bank account',
@@ -300,19 +290,19 @@ class LoanResource extends Resource
                             'type' => 0,
                             'amount' => $installment,
                             'issue_date' => $record->first_installment_due_date,
-                            'issue_date' => $firstInstallmentDueDate, 
-                            'due_date' => $chequeDueDate, 
+                            'issue_date' => $firstInstallmentDueDate,
+                            'due_date' => $chequeDueDate,
                             'description' => 'Cheque for installment payment of loan to employee. Due date: ' . $chequeDueDate->toDateString(), // توضیحات چک
                             'company_id' =>getCompany()->id,
                             'status' => 'pending',
-                            'transaction_id' => $savedTransaction->id,  
+                            'transaction_id' => $savedTransaction->id,
                         ]);
                     }
                 })
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+//                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

@@ -26,10 +26,10 @@ class MyLoan extends BaseWidget
             )
             ->headerActions([
                 Tables\Actions\Action::make('new')->disabled(function(){
-                   return ( auth()->user()->employee->loans->where('status','accepted')->isEmpty());
+                   return ( getEmployee()->loans->whereIn('status',['progressed','accepted','waiting'])->isEmpty());
                 })->label('Loan Request ')->form([
                     Section::make([
-                        TextInput::make('request_amount')->label('Required Amount')->columnSpanFull()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->numeric()->default(fn()=>auth()->user()->employee->loan_limit)->maxValue(fn()=>auth()->user()->employee->loan_limit),
+                        TextInput::make('request_amount')->label('Required Amount')->columnSpanFull()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->numeric()->default(fn()=>getEmployee()->loan_limit)->maxValue(fn()=>getEmployee()->loan_limit),
                         Textarea::make('description')->nullable()->columnSpanFull()
                     ])->columns()
                 ])->action(function ($data){
@@ -43,14 +43,7 @@ class MyLoan extends BaseWidget
                         'company_id'=>$company->id,
                         'description'=>$data['description']
                     ]);
-                    $CEO = Employee::query()->firstWhere('user_id', getCompany()->user_id);
-                    if ($CEO){
-                        $loan->approvals()->create([
-                            'employee_id'=>$CEO->id,
-                            'company_id'=>$company->id,
-                            'position'=>'CEO'
-                        ]);
-                    }
+                        sendAR(getEmployee(),$loan,$company->id);
                     Notification::make('success')->success()->title('Successfully Submitted')->send();
                 })
             ])

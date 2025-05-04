@@ -12,6 +12,9 @@ enum LoanStatus:string implements HasColor,HasLabel
     case Accepted = 'accepted';
     case Progressed = 'progressed';
     case Finished = 'finished';
+    case ApproveManager = 'ApproveManager';
+    case ApproveAdmin = 'ApproveAdmin';
+    case ApproveFinance = 'ApproveFinance';
     public function getLabel(): ?string
     {
         return match ($this){
@@ -20,6 +23,9 @@ enum LoanStatus:string implements HasColor,HasLabel
             self::Accepted => 'Accepted',
             self::Progressed => 'Progressed',
             self::Finished => 'Finished',
+            self::ApproveManager => 'ApproveManager',
+            self::ApproveAdmin => 'ApproveAdmin',
+            self::ApproveFinance => 'ApproveFinance',
 
         };
     }
@@ -31,6 +37,9 @@ enum LoanStatus:string implements HasColor,HasLabel
             self::Accepted => 'success',
             self::Progressed => 'warning',
             self::Finished => 'success',
+            self::ApproveManager => 'success',
+            self::ApproveAdmin => 'success',
+            self::ApproveFinance => 'success',
         };
     }
 
