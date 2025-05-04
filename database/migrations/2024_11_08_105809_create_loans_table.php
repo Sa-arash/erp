@@ -23,7 +23,7 @@ return new class extends Migration
             $table->timestamp('answer_date')->nullable();
             $table->timestamp('first_installment_due_date')->nullable();
             $table->text('description')->nullable();
-            $table->enum('status',['waiting','progressed','rejected','accepted','finished']);
+            $table->enum('status',['waiting','ApproveManager','ApproveAdmin','ApproveFinance','progressed','rejected','accepted','finished']);
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamps();
         });

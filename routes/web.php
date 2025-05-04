@@ -86,6 +86,15 @@ Route::get('/pdf/requestVisit/{id}',[\App\Http\Controllers\PdfController::class,
 Route::get('/pdf/requestVisit/{ids}/all',[\App\Http\Controllers\PdfController::class,'requestVisits'])->name('pdf.requestVisits');
 Route::get('/pdf/accountCurrency/{period}/{account}',[\App\Http\Controllers\PdfController::class,'accountCurrency'])->name('pdf.accountCurrency');
 });
+//Route::get('fix',function (){
+//    $deps=\App\Models\Department::query()->with('employees')->where('company_id',1)->get();
+//    foreach ($deps as $item){
+//        foreach ($item->employees as $employee){
+//            $employee->update(['manager_id'=>$item->employee_id]);
+//        }
+//    }
+//    return 'ok';
+//});
 
 
 Route::get('account',function (){
