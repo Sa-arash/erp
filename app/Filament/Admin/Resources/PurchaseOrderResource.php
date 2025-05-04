@@ -94,8 +94,6 @@ class PurchaseOrderResource extends Resource
                                                 $set('vendor_id', $record->bid->quotation->party_id);
                                                 $set('currency_id', $record->bid->quotation->currency_id);
                                             } else {
-
-
                                                 $set('RequestedItems', $record->items->where('status', 'approve')->toArray());
                                                 // dd($get('RequestedItems'),$record->items->where('status', 'approve')->toArray());
                                             }
