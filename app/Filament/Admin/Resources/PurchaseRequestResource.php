@@ -111,11 +111,12 @@ class PurchaseRequestResource extends Resource
                         ->addActionLabel('Add')
                         ->relationship('items')
                         ->schema([
+                            Forms\Components\Select::make('type')->required()->options(['Service','Product'])->default(1)->searchable(),
                             Select::make('department_id')->label('Section')->columnSpan(['default'=>8,'md'=>2,'xl'=>2,'2xl'=>1])->live()->options(getCompany()->departments->pluck('title','id'))->searchable()->preload(),
                             Forms\Components\Select::make('product_id')->columnSpan(['default'=>8,'md'=>2])->disableOptionsWhenSelectedInSiblingRepeaterItems()->label('Product/Service')->options(function (Get $get) {
                                     if ($get('department_id')){
                                         $data=[];
-                                        $products=getCompany()->products->where('department_id',$get('department_id'))->pluck('title', 'id');
+                                        $products=getCompany()->products()->where('product_type',$get('type')==="0"?'=':'!=' ,'service')->where('department_id',$get('department_id'))->pluck('title', 'id');
                                         $i=1;
                                         foreach ($products as $key=> $product){
 
@@ -129,7 +130,7 @@ class PurchaseRequestResource extends Resource
                                     if ($product){
                                         $set('unit_id',$product->unit_id);
                                     }
-                                })->live(true)->getSearchResultsUsing(fn (string $search,Get $get): array => Product::query()->where('company_id',getCompany()->id)->where('title','like',"%{$search}%")->orWhere('second_title','like',"%{$search}%")->where('department_id',$get('department_id'))->pluck('title', 'id')->toArray())->getOptionLabelsUsing(function(array $values){
+                                })->live(true)->getSearchResultsUsing(fn (string $search,Get $get): array => Product::query()->where('department_id',$get('department_id'))->where('company_id',getCompany()->id)->where('title','like',"%{$search}%")->orWhere('second_title','like',"%{$search}%")->pluck('title', 'id')->toArray())->getOptionLabelsUsing(function(array $values){
                                     $data=[];
                                     $products=getCompany()->products->whereIn('id', $values)->pluck('title', 'id');
                                     $i=1;
@@ -138,7 +139,6 @@ class PurchaseRequestResource extends Resource
                                         $i++;
                                     }
                                     return $data ;
-
                                 }),
                             Forms\Components\Select::make('unit_id')->columnSpan(['default'=>8,'md'=>2,'xl'=>2])->createOptionForm([
                                 Forms\Components\TextInput::make('title')->label('Unit Name')->unique('units', 'title')->required()->maxLength(255),

@@ -95,8 +95,8 @@ class ItemsRelationManager extends RelationManager
                     'Approved' => 'success',
                     'Rejected' => 'danger',
                     default => 'primary',
-                })->label('Clarification Decision')->alignCenter()->badge(),
-                Tables\Columns\TextColumn::make('clarification_comment')->label('Clarification Comment'),
+                })->label('Warehouse Decision')->alignCenter()->badge(),
+                Tables\Columns\TextColumn::make('clarification_comment')->label('Warehouse  Comment'),
                 Tables\Columns\TextColumn::make('verification_decision')->state(fn($record)=>match ($record->verification_decision){
                     'approve' => 'Approved',
                     'reject' => 'Rejected',

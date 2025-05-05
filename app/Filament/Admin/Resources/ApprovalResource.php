@@ -28,6 +28,7 @@ use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 use Illuminate\Support\HtmlString;
+use OpenSpout\Common\Entity\Style\CellAlignment;
 
 class ApprovalResource extends Resource implements HasShieldPermissions
 {
@@ -54,7 +55,8 @@ class ApprovalResource extends Resource implements HasShieldPermissions
     {
         return $table->query(Approval::query()->where('employee_id', getEmployee()->id)->orderBy('id', 'desc'))
             ->columns([
-                Tables\Columns\TextColumn::make('approvable.employee.info')->label('Employee')->searchable()->badge(),
+                Tables\Columns\TextColumn::make('approvable.purchase_number')->prefix('')->label('PR No')->badge(),
+                Tables\Columns\TextColumn::make('approvable.employee.info')->label('Employee')->badge(),
                 Tables\Columns\TextColumn::make('created_at')->label('Request Date')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('approvable_type')->label('Request Type')->state(function ($record) {
                     $type = substr($record->approvable_type, 11);
@@ -64,9 +66,9 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                     return $type;
 
                 })->searchable()->badge(),
-                Tables\Columns\TextColumn::make('approve_date')->label('Approval Date')->date()->sortable(),
-                Tables\Columns\TextColumn::make('status')->badge(),
+                Tables\Columns\TextColumn::make('approve_date')->label('Approval Date')->date(),
                 Tables\Columns\TextColumn::make('comment')->sortable(),
+                Tables\Columns\TextColumn::make('status')->badge(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')->label('Status')->options(['Approve'=>'Approve','NotApprove'=>'NotApprove','Pending'=>'Pending'])->searchable(),
@@ -159,16 +161,18 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                     return [
                         Fieldset::make('PR')->relationship('approvable')->schema([
                             RepeatableEntry::make('approvals')->schema([
+                                ImageEntry::make('employee.image')->circular()->label('')->state(fn($record)=>$record->employee->media->where('collection_name','images')->first()?->original_url),
                                 TextEntry::make('employee.fullName')->label(fn($record)=>$record->employee?->position?->title),
                                 TextEntry::make('created_at')->label('Request Date')->dateTime(),
                                 TextEntry::make('status')->badge(),
                                 TextEntry::make('comment')->tooltip(fn($record) => $record->comment)->limit(50),
                                 TextEntry::make('approve_date')->dateTime(),
-                            ])->columns(5)->columnSpanFull()
+                                ImageEntry::make('employee.signature')->label('')->state(fn($record)=>$record->status->value==="Approve"? $record->employee->media->where('collection_name','signature')->first()?->original_url:''),
+                            ])->columns(7)->columnSpanFull()
                         ])->columns(3),
 
                     ];
-                })->visible(fn($record) => substr($record->approvable_type, 11) === "PurchaseRequest"),
+                })->visible(fn($record) => substr($record->approvable_type, 11) === "PurchaseRequest")->modalHeading('PR Approved by:'),
 
 
                 Tables\Actions\Action::make('approve')->hidden(function ($record) {
@@ -260,15 +264,12 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                             TextEntry::make('description')->columnSpanFull()->label('Description'),
                         ])
                 ]),
-                Action::make('url')->visible(function ($record){
-                    if ($record->status->name !== "Approve") {
-                        if (substr($record->approvable_type, 11) === "PurchaseRequest") {
-                            return true;
-                        }
+                Action::make('url')->visible(function ($record) {
+                    if (substr($record->approvable_type, 11) === "PurchaseRequest") {
+                        return true;
                     }
-                    return  false;
-                })->label('Items')->url(fn($record)=>ApprovalResource::getUrl('purchase',['record'=>$record->id]))
-            ])
+                })->label('Item Approval ')->icon( fn($record)=>$record->status->value=='Approve'? 'heroicon-o-check-badge':'heroicon-o-x-circle')->iconSize(IconSize::Large)->color(fn($record)=>$record->status->value=='Approve'? 'success':'danger' )->url(fn($record)=>ApprovalResource::getUrl('purchase',['record'=>$record->id]))
+            ])->actionsAlignment(CellAlignment::LEFT)
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
 //                    Tables\Actions\DeleteBulkAction::make(),

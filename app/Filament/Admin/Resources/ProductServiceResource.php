@@ -6,19 +6,26 @@ use App\Filament\Admin\Resources\ProductServiceResource\Pages;
 use App\Filament\Admin\Resources\ProductServiceResource\RelationManagers;
 use App\Filament\Clusters\StackManagementSettings;
 use App\Models\Account;
+use App\Models\Department;
 use App\Models\Product;
 use App\Models\Transaction;
+use App\Models\Unit;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Forms\Set;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Validation\Rules\Unique;
+use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
 
 class ProductServiceResource extends Resource
 {
@@ -33,19 +40,32 @@ class ProductServiceResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('title')->label('Service Name')->required()->maxLength(255),
-                Forms\Components\TextInput::make('sku')->label(' Service Code')
-                    ->unique(ignoreRecord:true ,modifyRuleUsing: function (Unique $rule) {
-                        return $rule->where('company_id', getCompany()->id);
-                    })->default(function () {
-                        $product = Product::query()->where('product_type','service')->where('company_id',getCompany()->id)->latest()->first();
-                        if ($product) {
-
-                            return generateNextCodeProduct($product->sku);
+                Section::make([
+                    Forms\Components\TextInput::make('title')->label('Service Name')->required()->maxLength(255),
+                    Select::make('department_id')->live()->label('Department')->required()->options(getCompany()->departments->pluck('title','id'))->searchable()->preload()->afterStateUpdated(function (Get $get,Set $set,$state){
+                        $department=Department::query()->firstWhere('id',$state);
+                        if ($department){
+                            $product = Product::query()->where('department_id',$state)->where('company_id',getCompany()->id)->latest('sku')->first();
+                            if ($product) {
+                                $set('sku',generateNextCodeProduct($product->sku));
+                            }else{
+                                $set('sku',$department->abbreviation."-0001");
+                            }
                         }
-                    })
-                    ->required()->maxLength(255),
-                Select::make('account_id')->options(function (Get $get) {
+                    }),
+                    Forms\Components\TextInput::make('sku')->readOnly()->label(' SKU')->unique(ignoreRecord:true ,modifyRuleUsing: function (Unique $rule) {
+                        return $rule->where('company_id', getCompany()->id);
+                    })->required()->maxLength(255),
+                    Select::make('unit_id')->required()->relationship('unit','title',fn($query)=>$query->where('company_id',getCompany()->id))->searchable()->preload()->createOptionForm([
+                        Forms\Components\TextInput::make('title')->label('Unit Name')->unique('units', 'title')->required()->maxLength(255),
+                        Forms\Components\Toggle::make('is_package')->live()->required(),
+                        Forms\Components\TextInput::make('items_per_package')->numeric()->visible(fn(Get $get) => $get('is_package'))->default(null),
+                    ])->createOptionUsing(function ($data) {
+                        $data['company_id'] = getCompany()->id;
+                        Notification::make('success')->success()->title('Create Unit')->send();
+                        return  Unit::query()->create($data)->getKey();
+                    }),
+                    Select::make('account_id')->options(function (Get $get) {
                         $data = [];
                         if (getCompany()->product_service_accounts) {
                             $accounts = Account::query()
@@ -60,19 +80,31 @@ class ProductServiceResource extends Resource
                         }
                         return $data;
                     }
-                )->required()->model(Transaction::class)->searchable()->label('Category'),
-                SelectTree::make('account_id')->formatStateUsing(function ($state, Forms\Set $set) {
-                    $account = Account::query()->where('id', $state)->whereNot('currency_id', defaultCurrency()?->id)->first();
-                    if ($account) {
-                        $set('currency_id', $account->currency_id);
-                        $set('exchange_rate', number_format($account->currency->exchange_rate));
-                        $set('isCurrency', 1);
-                        return $state;
-                    }
-                    $set('isCurrency', 0);
-                    return $state;
-                })->defaultOpenLevel(3)->label('SubCategory')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('group','Expanse')->where('company_id', getCompany()->id),modifyChildQueryUsing: fn($query,Get $get)=>$query->where('parent_id',$get('account_id') ? $get('account_id'):"-1"))->searchable(),
+                    )->required()->model(Transaction::class)->searchable()->label('Category'),
+                    Select::make('sub_account_id')->label('SubCategory')->required()->options(function (Get $get){
+                        $parent=$get('account_id');
+                        if ($parent){
+                            $accounts =  Account::query()
+                                ->where('parent_id', $parent)
+                                ->orWhereHas('account', function ($query) use ($parent) {
+                                    return $query->where('parent_id', $parent)->orWhereHas('account', function ($query) use ($parent) {
+                                        return $query->where('parent_id', $parent);
+                                    });
+                                })
+                                ->get();
+                            $data=[];
+                            foreach ($accounts as $account){
+                                $data[$account->id]=$account->title;
+                            }
+                            return $data;
+                        }
+                        return  [];
+                    })->searchable(),
+                ])->columns(3),
                 Forms\Components\Textarea::make('description')->columnSpanFull(),
+                Section::make([
+                    MediaManagerInput::make('photo')->columnSpan(1)->label('Upload Image')->image(true)->orderable(false)->disk('public')->schema([])->maxItems(1),
+                ])->columns(4),
                 Forms\Components\Hidden::make('product_type')->default('service')->columnSpanFull(),
             ]);
     }
@@ -82,6 +114,17 @@ class ProductServiceResource extends Resource
         return $table->query(Product::query()->where('product_type','service'))
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
+                Tables\Columns\ImageColumn::make('image')->defaultImageUrl(asset('img/images.jpeg'))->state(function ($record){
+                    return $record->media->first()?->original_url;
+                })->action(Tables\Actions\Action::make('image')->modalSubmitAction(false)->infolist(function ($record){
+                    if ($record->media->first()?->original_url){
+                        return  [
+                            \Filament\Infolists\Components\Section::make([
+                                ImageEntry::make('image')->label('')->width(650)->height(650)->columnSpanFull()->state($record->media->first()?->original_url)
+                            ])
+                        ];
+                    }
+                })),
                 Tables\Columns\TextColumn::make('title')->label('Service Name')->searchable(),
                 Tables\Columns\TextColumn::make('sku')->label('Service Code')->searchable(),
                 Tables\Columns\TextColumn::make('account.title')->label('Category ')->sortable(),

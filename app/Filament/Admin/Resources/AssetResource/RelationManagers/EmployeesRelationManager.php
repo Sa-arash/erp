@@ -38,8 +38,10 @@ class EmployeesRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('return_date')->date(),
                 Tables\Columns\TextColumn::make('return_date')->date(),
                 Tables\Columns\TextColumn::make('return_approval_date')->date(),
-                Tables\Columns\TextColumn::make('assetEmployee.note')->label('Note'),
-                Tables\Columns\TextColumn::make('type')->label('status')->state(fn($record)=>$record->return_date ===null ? "Check In":"Check Out")->badge()->color(fn($record)=>$record->return_date ===null ? "success":"danger"),
+                Tables\Columns\TextColumn::make('assetEmployee.note')->label('Note')->wrap(),
+                Tables\Columns\TextColumn::make('assetEmployee.description')->label('Description')->wrap(),
+                Tables\Columns\TextColumn::make('assetEmployee.type')->label('Type')->badge(),
+                Tables\Columns\TextColumn::make('type')->label('Status')->state(fn($record)=>$record->return_date ===null ? "Check In":"Check Out")->badge()->color(fn($record)=>$record->return_date ===null ? "success":"danger"),
             ])
             ->filters([
                 //

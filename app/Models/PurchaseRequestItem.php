@@ -33,6 +33,9 @@ class PurchaseRequestItem extends Model implements HasMedia
     protected $casts=[
         'status'=>ItemStatus::class
     ];
+    public function getDepartmentAttribute(){
+        return $this->product->department_id  ;
+    }
 
     public function product()
     {
