@@ -548,6 +548,7 @@ class PayrollResource extends Resource
                 Tables\Columns\TextColumn::make('status')->badge()->alignLeft(),
             ])
             ->filters([
+
                 SelectFilter::make('employee_id')->multiple()->searchable()->preload()->options(Employee::where('company_id', getCompany()->id)->get()->pluck('fullName', 'id'))->label('Employee'),
                 Filter::make('filter')->form([
                     Forms\Components\Select::make('month')->searchable()->preload()->options([
@@ -564,6 +565,7 @@ class PayrollResource extends Resource
                         'November',
                         'December'
                     ])->label('Month'),
+
                     Forms\Components\Select::make('year')->searchable()->preload()->options([2025=>2025,2026=>2026,2027=>2027,2028=>2028,2029=>2029,2030=>2030,2031=>2031])->label('Year')
                 ])->query(function (Builder $query, array $data): Builder {
                     return $query
@@ -575,7 +577,8 @@ class PayrollResource extends Resource
                             $data['year'],
                             fn (Builder $query, $date):Builder=> $query->whereDate('start_date',now()->year((int)$date)->startOfMonth())->whereDate('end_date',now()->year((int)$date)->endOfMonth()),
                         );
-                })->columns(2)
+                })->columns(2),
+                DateRangeFilter::make('start_date'),
             ], getModelFilter())
             ->actions([
                 Tables\Actions\EditAction::make(),

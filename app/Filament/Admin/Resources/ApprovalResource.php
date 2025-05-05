@@ -58,14 +58,6 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('approvable.purchase_number')->prefix('')->label('PR No')->badge(),
                 Tables\Columns\TextColumn::make('approvable.employee.info')->label('Employee')->badge(),
                 Tables\Columns\TextColumn::make('created_at')->label('Request Date')->dateTime()->sortable(),
-                Tables\Columns\TextColumn::make('approvable_type')->label('Request Type')->state(function ($record) {
-                    $type = substr($record->approvable_type, 11);
-                    if ($type === "Separation") {
-                        return "Clearance";
-                    }
-                    return $type;
-
-                })->searchable()->badge(),
                 Tables\Columns\TextColumn::make('approve_date')->label('Approval Date')->date(),
                 Tables\Columns\TextColumn::make('comment')->sortable(),
                 Tables\Columns\TextColumn::make('status')->badge(),

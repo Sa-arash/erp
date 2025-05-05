@@ -204,6 +204,7 @@ class ApprovePurchase extends ManageRelatedRecords
                         }
                         $prItem = PurchaseRequestItem::query()->firstWhere('id', $item['id']);
                         $prItem->update($item);
+
                     }
                     if ($data['status'] === "Approve") {
                         if ($PR->status->name === "Clarification") {

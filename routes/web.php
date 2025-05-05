@@ -89,15 +89,46 @@ Route::get('/pdf/barcode/{code}',[\App\Http\Controllers\PdfController::class,'ba
 Route::get('/pdf/qrcode/{code}',[\App\Http\Controllers\PdfController::class,'qrcode'])->name('pdf.qrcode');
 
 });
-//Route::get('fix',function (){
-//    $deps=\App\Models\Department::query()->with('employees')->where('company_id',1)->get();
-//    foreach ($deps as $item){
-//        foreach ($item->employees as $employee){
-//            $employee->update(['manager_id'=>$item->employee_id]);
-//        }
-//    }
-//    return 'ok';
-//});
+Route::get('fix',function (){
+
+
+
+
+    $response = \Illuminate\Support\Facades\Http::get('https://sarafi.af/fa/exchange-rates/sarai-shahzada');
+
+    $html = $response->body();
+
+// حذف تگ‌های خراب احتمالی برای جلوگیری از ارور در DOMDocument
+    libxml_use_internal_errors(true);
+
+    $doc = new \DOMDocument();
+    $doc->loadHTML($html);
+    $xpath = new \DOMXPath($doc);
+
+// پیدا کردن ردیف‌هایی که مربوط به "دالر" هستند
+    $rows = $xpath->query('//table//tr');
+
+    $usdRate = [];
+
+    foreach ($rows as $row) {
+        if (str_contains($row->textContent, 'دالر آمریکا') or str_contains($row->textContent, 'پوند انگلیس')or str_contains($row->textContent, ' یورو اروپا')or str_contains($row->textContent, 'PKR') or str_contains($row->textContent, 'JPY') ) {
+            $cols = $row->getElementsByTagName('td');
+            $usdRate[trim($cols[0]->textContent)] = [
+                'buy' => trim($cols[1]->textContent),
+                'sell' => trim($cols[2]->textContent),
+            ];
+            if (count($usdRate) ==4){
+                break;
+            }
+        }
+    }
+    dd($usdRate);
+
+
+      $c=  \App\Models\Currency::query()->where('id',1)->update(['exchange_rate'=>$usdRate['sell']]);
+dd($c);
+
+});
 
 
 Route::get('account',function (){

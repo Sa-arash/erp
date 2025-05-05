@@ -347,20 +347,24 @@
                   @if ($i % 7 == 1)
                       <tr> <!-- شروع یک ردیف جدید -->
                   @endif
-          
+
                   @php
                       $currentDate = $startDate->copy()->day($i);
-                      $isInLeavePeriod = $currentDate->between($startDate, $endDate) || $currentDate->isSameDay($startDate) || $currentDate->isSameDay($endDate); // بررسی اینکه آیا تاریخ در بازه مرخصی است
+
+                      $isInLeavePeriod = $currentDate->between($startDate, $endDate) || $currentDate->isSameDay($startDate) || $currentDate->isSameDay($endDate); //
+                      // بررسی اینکه آیا تاریخ در بازه مرخصی است
+
                   @endphp
-          
+
                   <td>
                       {{ $i }} @if($isInLeavePeriod) ★ @endif <!-- نمایش روز و ستاره در صورت نیاز -->
                   </td>
-          
+
                   @if ($i % 7 == 0 || $i == $daysInMonth)
                       </tr> <!-- پایان ردیف -->
                   @endif
               @endfor
+
     </table>
     </td>
     <td>
@@ -377,16 +381,16 @@
                   @if ($i % 7 == 1)
                       <tr> <!-- شروع یک ردیف جدید -->
                   @endif
-          
+
                   @php
                       $currentDate = $startDate->copy()->addMonth()->day($i);
                       $isInLeavePeriod = $currentDate->between($startDate, $endDate) || $currentDate->isSameDay($startDate) || $currentDate->isSameDay($endDate); // بررسی اینکه آیا تاریخ در بازه مرخصی است
                   @endphp
-          
+
                   <td>
                       {{ $i }} @if($isInLeavePeriod) ★ @endif <!-- نمایش روز و ستاره در صورت نیاز -->
                   </td>
-          
+
                   @if ($i % 7 == 0 || $i == $nextMonthDaysInMonth)
                       </tr> <!-- پایان ردیف -->
                   @endif

@@ -102,9 +102,7 @@ class ProductServiceResource extends Resource
                     })->searchable(),
                 ])->columns(3),
                 Forms\Components\Textarea::make('description')->columnSpanFull(),
-                Section::make([
-                    MediaManagerInput::make('photo')->columnSpan(1)->label('Upload Image')->image(true)->orderable(false)->disk('public')->schema([])->maxItems(1),
-                ])->columns(4),
+
                 Forms\Components\Hidden::make('product_type')->default('service')->columnSpanFull(),
             ]);
     }
@@ -114,17 +112,7 @@ class ProductServiceResource extends Resource
         return $table->query(Product::query()->where('product_type','service'))
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
-                Tables\Columns\ImageColumn::make('image')->defaultImageUrl(asset('img/images.jpeg'))->state(function ($record){
-                    return $record->media->first()?->original_url;
-                })->action(Tables\Actions\Action::make('image')->modalSubmitAction(false)->infolist(function ($record){
-                    if ($record->media->first()?->original_url){
-                        return  [
-                            \Filament\Infolists\Components\Section::make([
-                                ImageEntry::make('image')->label('')->width(650)->height(650)->columnSpanFull()->state($record->media->first()?->original_url)
-                            ])
-                        ];
-                    }
-                })),
+
                 Tables\Columns\TextColumn::make('title')->label('Service Name')->searchable(),
                 Tables\Columns\TextColumn::make('sku')->label('Service Code')->searchable(),
                 Tables\Columns\TextColumn::make('account.title')->label('Category ')->sortable(),

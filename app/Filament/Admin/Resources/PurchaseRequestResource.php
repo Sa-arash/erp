@@ -6,6 +6,7 @@ use App\Filament\Admin\Resources\PurchaseRequestResource\Pages;
 use App\Filament\Admin\Resources\PurchaseRequestResource\RelationManagers;
 use App\Models\Account;
 use App\Models\Bid;
+use App\Models\Currency;
 use App\Models\Employee;
 use App\Models\Parties;
 use App\Models\Product;
@@ -105,7 +106,7 @@ class PurchaseRequestResource extends Resource
                         ->numeric(),
                     Forms\Components\DateTimePicker::make('request_date')->readOnly()->default(now())->label('Request Date')->required(),
                     Forms\Components\Hidden::make('status')->label('Status')->default('Requested')->required(),
-                    Select::make('currency_id')->live()->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload(),
+                    Select::make('currency_id')->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->live(true),
                     Forms\Components\TextInput::make('description')->label('Description')->columnSpanFull(),
                     Repeater::make('Requested Items')
                         ->addActionLabel('Add')
@@ -153,7 +154,9 @@ class PurchaseRequestResource extends Resource
                             Forms\Components\TextInput::make('estimated_unit_cost')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->label('EST Unit Cost')->live(true)->numeric()->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                             Forms\Components\Select::make('project_id')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->searchable()->preload()->label('Project')->options(getCompany()->projects->pluck('name', 'id')),
                             Placeholder::make('total')->columnSpan(['default'=>8,'md'=>1,'xl'=>1])
-                                ->content(fn($state, Get $get) => number_format(((int)str_replace(',', '', $get('quantity'))) * ((float)str_replace(',', '', $get('estimated_unit_cost'))),2)),
+                                ->content(fn($state, Get $get) => number_format(((int)str_replace(',', '', $get('quantity'))) * ((float)str_replace(',', '', $get('estimated_unit_cost'))),2)
+//                                    .Currency::query()->firstWhere('id',dd($get('currency_id'))
+                                    ),
                             Forms\Components\Hidden::make('company_id')->default(Filament::getTenant()->id)->required(),
                             Forms\Components\Textarea::make('description')->label(' Product Name and Description')->columnSpan(['default'=>4,'sm'=>3,'md'=>3,'xl'=>4])->required(),
                             MediaManagerInput::make('document')->orderable(false)->folderTitleFieldName("purchase_request_id")->disk('public')->schema([])->defaultItems(0)->maxItems(1) ->columnSpan(['default'=>4,'sm'=>2,'md'=>2,'xl'=>3]),

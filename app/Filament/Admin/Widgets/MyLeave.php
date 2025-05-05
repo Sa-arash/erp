@@ -28,7 +28,9 @@ class MyLeave extends BaseWidget
     protected int | string | array $columnSpan='full';
     public function table(Table $table): Table
     {
-        return $table
+        return $table ->query(
+            Leave::query()->where('employee_id',getEmployee()->id)
+        )
             ->headerActions([
                 Tables\Actions\Action::make('New Leave')->action(function ($data){
                     $data['company_id']=getCompany()->id;
@@ -76,9 +78,7 @@ class MyLeave extends BaseWidget
                            ])->columns()
                        ])->columns()
             ])])
-            ->query(
-                Leave::query()->where('employee_id',auth()->user()->id)
-            )
+
             ->columns([
                 Tables\Columns\TextColumn::make('')->alignCenter()->rowIndex(),
                 Tables\Columns\TextColumn::make('typeLeave.title')->alignCenter()->sortable(),

@@ -55,8 +55,8 @@ class TaskResource extends Resource
             ->columns([
                 Tables\Columns\IconColumn::make('status')->size(Tables\Columns\IconColumn\IconColumnSize::ExtraLarge),
                 Tables\Columns\TextColumn::make('title')->label('Recently Assigned/ Today')->sortable(),
-                Tables\Columns\TextColumn::make('start_date')->label('Start Date')->dateTime()->sortable(),
-                Tables\Columns\TextColumn::make('deadline')->label('Due Date')->date()->sortable(),
+                Tables\Columns\TextColumn::make('start_date')->label('Start Date (D/M/Y /H)')->dateTime()->sortable(),
+                Tables\Columns\TextColumn::make('deadline')->label('Due Date (D/M/Y /H)')->date()->sortable(),
                 Tables\Columns\TextColumn::make('employee.fullName')->label('Created By')->sortable(),
                 Tables\Columns\TextColumn::make('left')->label('Time Left ')->state(function ($record){
                     $startDateTime = now()->format('Y-m-d H:i:s');
@@ -65,9 +65,9 @@ class TaskResource extends Resource
                     return $difference;
                 }),
                 Tables\Columns\TextColumn::make('start_task')->label('Start Task')->dateTime()->sortable(),
-                Tables\Columns\TextColumn::make('end_task')->label('End Task')->dateTime()->sortable(),
+                Tables\Columns\TextColumn::make('end_task')->label('End Task ')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('priority_level')->label('Priority Level')->color(fn($state)=>$state=='High'?'danger':"warning")->badge(),
-                Tables\Columns\TextColumn::make('created_at')->label('Assigned Date')->date()->sortable(),
+                Tables\Columns\TextColumn::make('created_at')->label('Assigned Date ')->date()->sortable(),
                 Tables\Columns\TextColumn::make('employees.fullName')->limitList(3)->bulleted()->label('Employees')->numeric()->sortable(),
                 Tables\Columns\ImageColumn::make('employees.medias')->state(function ($record){
                     $data=[];

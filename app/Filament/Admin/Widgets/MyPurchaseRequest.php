@@ -27,6 +27,7 @@ use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Unique;
 
 class MyPurchaseRequest extends BaseWidget
@@ -45,16 +46,7 @@ class MyPurchaseRequest extends BaseWidget
                 Tables\Columns\TextColumn::make('purchase_number')->label('PR NO')->searchable(),
                 Tables\Columns\TextColumn::make('description')->label('Description')->searchable(),
                 Tables\Columns\TextColumn::make('request_date')->dateTime()->sortable(),
-                // Tables\Columns\TextColumn::make('employee.fullName')
-                //     ->searchable(),
-                // Tables\Columns\TextColumn::make('department')
-                // ->state(fn($record)=>$record->employee->department->title)
-                //     ->numeric()
-                //     ->sortable(),
-                //     Tables\Columns\TextColumn::make('location')
-                //     ->state(fn($record)=>$record->employee->structure->title)
-                //         ->numeric()
-                //         ->sortable(),
+
                 Tables\Columns\TextColumn::make('status')->badge()->tooltip(function ($record){
                     return $record->approvals->last()?->approve_date;
                 })->alignCenter(),
@@ -65,28 +57,6 @@ class MyPurchaseRequest extends BaseWidget
                     }
                     return $total;
                 })->numeric(),
-
-                // Tables\Columns\TextColumn::make('warehouse_status_date')
-                //     ->date()
-                //     ->sortable(),
-
-                // Tables\Columns\TextColumn::make('department_manager_status_date')
-                //     ->date()
-                //     ->sortable(),
-                // Tables\Columns\TextColumn::make('ceo_status_date')
-                //     ->date()
-                //     ->sortable(),
-                // Tables\Columns\TextColumn::make('purchase_date')
-                //     ->date()
-                //     ->sortable(),
-                // Tables\Columns\TextColumn::make('created_at')
-                //     ->dateTime()
-                //     ->sortable()
-                //     ->toggleable(isToggledHiddenByDefault: true),
-                // Tables\Columns\TextColumn::make('updated_at')
-                //     ->dateTime()
-                //     ->sortable()
-                //     ->toggleable(isToggledHiddenByDefault: true),
 
 
             ])
@@ -103,16 +73,25 @@ class MyPurchaseRequest extends BaseWidget
         $data = [];
         foreach ($record->items as $item) {
             $department = $item->department;
-            if ($item->product->product_type === "Service") {
-                $type = "0";
-            } else {
-                $type = "1";
-            }
+            $type = $item->product->product_type === "Service" ? "0" : "1";
+
+            $image= $item->getFirstMedia('document');
+
             $item = $item->toArray();
+            if ($image){
+                $path = Str::after($image->original_url, 'images/');
+
+                $item['images']=[
+                    'name'=>$path
+                ];
+
+            }
+
             $item['department_id'] = $department;
             $item['type'] = $type;
             $data[] = $item;
         }
+
         return [
             'purchase_number' => $record->purchase_number,
             'request_date' => now(),
@@ -120,7 +99,8 @@ class MyPurchaseRequest extends BaseWidget
             'description' => $record->description,
             'Requested Items' => $data
         ];
-    })->form([
+    })
+        ->form([
         Section::make('')->schema([
             TextInput::make('purchase_number')->readOnly()->label('PR Number')->prefix('ATGT/UNC/')->required()->numeric(),
             DateTimePicker::make('request_date')->readOnly()->default(now())->label('Request Date')->required(),
@@ -163,7 +143,7 @@ class MyPurchaseRequest extends BaseWidget
                     TextInput::make('estimated_unit_cost')->columnSpan(['default' => 8, 'md' => 2, '2xl' => 1])->label('Estimated Unit Cost')->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required(),
                     Select::make('project_id')->columnSpan(['default' => 8, 'md' => 2, '2xl' => 1])->searchable()->preload()->label('Project')->options(getCompany()->projects->pluck('name', 'id')),
                     Textarea::make('description')->columnSpan(7)->label('Product Description ')->required(),
-                    FileUpload::make('images')->label('Document')->columnSpanFull()->nullable()
+                    FileUpload::make('images')->downloadable()->label('Document')->columnSpanFull()->nullable()
                 ])
                 ->columns(7)
                 ->columnSpanFull(),
@@ -177,16 +157,29 @@ class MyPurchaseRequest extends BaseWidget
                 unset($datum['product']);;
                 unset($datum['department_id']);
                 unset($datum['type']);
-                unset($datum['images']);
                 unset($datum['created_at']);
                 unset($datum['updated_at']);
                 $item = $record->items()->where('id', $datum['id'])->first();
                 if ($item) {
+                    $mediaItem = $datum['images'] ?? null;
+                    if (isset($mediaItem)){
+                       if ($item->getFirstMedia('document')->name){
+                           if (!strstr($mediaItem,$item->getFirstMedia('document')->name)){
+                               $item->clearMediaCollection('document');
+                               $item->addMedia(public_path('images/'.$mediaItem))->toMediaCollection('document');
+                           }
+                       }
+                    }
+                    unset($datum['images']);
                     $item->update($datum);
                 }
             } else {
                 $datum['company_id'] = $company;
                 $item = $record->items()->create($datum);
+                $mediaItem = $datum['images'] ?? null;
+                if (isset($mediaItem)){
+                  $item->addMedia(public_path('images/'.$mediaItem))->toMediaCollection('document');
+                }
             }
             $ids[] = $item->id;
         }

@@ -57,8 +57,6 @@ class PurchaseOrderResource extends Resource
     {
         return $form
             ->schema([
-
-
                 Wizard::make([
                     Wizard\Step::make('Order')
                         ->schema([
@@ -105,6 +103,7 @@ class PurchaseOrderResource extends Resource
                                     ->preload()
                                     ->afterStateUpdated(function (Set $set, $state) {
                                         if ($state) {
+
                                             $record = PurchaseRequest::query()->with('bid')->firstWhere('id', $state);
                                             if ($record->bid) {
                                                 $data = [];
@@ -129,11 +128,12 @@ class PurchaseOrderResource extends Resource
                                                 $set('currency_id', $record->bid->quotation->currency_id);
                                                 $set('exchange_rate', $record->bid->quotation->currency->exchange_rate);
                                             } else {
-                                                $set('RequestedItems', $record->items->where('status', 'approve')->toArray());
+
+                                                $set('RequestedItems', $record->items->where('status','approve')->toArray());
                                             }
                                         }
                                     })
-                                    ->options(getCompany()->purchaseRequests->pluck('purchase_number', 'id')),
+                                    ->options(getCompany()->purchaseRequests()->orderBy('id','desc')->pluck('purchase_number', 'id')),
 
                                 Forms\Components\DateTimePicker::make('date_of_po')->default(now())
                                     ->label('Date of PO')->afterOrEqual(now()->startOfHour())
@@ -668,7 +668,7 @@ class PurchaseOrderResource extends Resource
             ->actions([
                 Tables\Actions\Action::make('prPDF')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.po', ['id' => $record->id]))->openUrlInNewTab(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('GRN')->label('GRN')->url(fn($record) => AssetResource::getUrl('create', ['po' => $record->id]))->visible(fn($record) => $record->status != 'GRN'),
+                Tables\Actions\Action::make('GRN')->label('GRN')->url(fn($record) => AssetResource::getUrl('create', ['po' => $record->id]))->hidden(fn($record)=>$record->status ==='GRN And inventory' or $record->status==='GRN'),
                 //                Tables\Actions\DeleteAction::make()->visible(fn($record)=>$record->status==="pending" )
                 Tables\Actions\Action::make('Inventory')->form(function ($record) {
                     $products = Product::query()
@@ -682,7 +682,7 @@ class PurchaseOrderResource extends Resource
                     return [
                         Repeater::make('inventories')->schema([
                                 Select::make('product_id')->label('Product')->options($products)->searchable()->preload()->required(),
-                        Select::make('warehouse_id')->label('Warehouse')->required()->options(getCompany()->warehouses()->where('type', 1)->pluck('title', 'id'))->searchable()->preload(),
+                        Select::make('warehouse_id')->label('Warehouse Location')->required()->options(getCompany()->warehouses()->where('type', 1)->pluck('title', 'id'))->searchable()->preload(),
                         TextInput::make('quantity')->numeric()->required(),
                         Forms\Components\Textarea::make('description')->columnSpanFull()->required()
                     ])->columns(3)->formatStateUsing(function ($record)use($products) {
@@ -714,24 +714,24 @@ class PurchaseOrderResource extends Resource
                     }
 
                    foreach ($data['inventories'] as $inventory){
-                       $inventory= Inventory::query()->where('warehouse_id',$inventory['warehouse_id'])->where('product_id',$inventory['product_id'])->first();
-                       if (!$inventory){
-                           $inventory= Inventory::query()->create([
-                               'warehouse_id'=>$data['warehouse_id'],
-                               'product_id'=>$record->product_id,
+                       $inv= Inventory::query()->where('warehouse_id',$inventory['warehouse_id'])->where('product_id',$inventory['product_id'])->first();
+                       if (!$inv){
+                           $inv= Inventory::query()->create([
+                               'warehouse_id'=>$inventory['warehouse_id'],
+                               'product_id'=>$inventory['product_id'],
                                'quantity'=>0,
                                'company_id'=>$record->company_id
                            ]);
                        }
                        Stock::query()->create([
-                           'inventory_id'=>$inventory->id,
+                           'inventory_id'=>$inv->id,
                            'employee_id'=>getEmployee()->id,
                            'quantity'=>$inventory['quantity'],
                            'description'=>$inventory['description'],
                            'type'=>1,
                            'purchase_order_id'=>$record->id
                        ]);
-                       $inventory->update(['quantity'=>$inventory->quantity+$data['quantity']]);
+                       $inv->update(['quantity'=>$inv->quantity+$inventory['quantity']]);
                    }
                    if ($record->status==="GRN"){
                        $record->update(['status'=>'GRN And inventory']);
@@ -741,7 +741,7 @@ class PurchaseOrderResource extends Resource
 
                     Notification::make('success')->success()->title('Successfully')->send();
 
-                })->modalWidth(MaxWidth::SixExtraLarge)
+                })->modalWidth(MaxWidth::SixExtraLarge)->hidden(fn($record)=>$record->status ==='GRN And inventory' or $record->status==='Inventory')
 
             ])
             ->bulkActions([
