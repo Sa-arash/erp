@@ -744,7 +744,7 @@ function sendSecurity( $record, $company)
     foreach ($securityIDs as $security){
 
         $record->approvals()->create([
-            'employee_id' => $security->id,
+            'employee_id' => $security,
             'company_id' => $company->id,
             'position' => 'Security',
         ]);
