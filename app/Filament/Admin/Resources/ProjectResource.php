@@ -30,7 +30,20 @@ class ProjectResource extends Resource
             ->schema([
                Forms\Components\Section::make([
                    Forms\Components\TextInput::make('name')->columnSpan(2)->required()->maxLength(255),
-                   Forms\Components\TextInput::make('code')->required()->maxLength(255),
+                   Forms\Components\TextInput::make('code')->default(function(){
+                    $maxCode = Project::orderBy('code', 'desc')->value('code');
+
+                    if ($maxCode) {
+                        $parts = explode('-', $maxCode);
+                        $numberPart = (int)$parts[1];
+                        $nextNumberPart = str_pad($numberPart + 1, 4, '0', STR_PAD_LEFT);
+                        $newCode = $parts[0] . '-' . $nextNumberPart;
+                    } else {
+                        $newCode = '2025-0001';
+                    }
+                    
+                    return $newCode;
+                   })->required()->maxLength(255),
                    Forms\Components\DatePicker::make('start_date'),
                    Forms\Components\DatePicker::make('end_date')->afterOrEqual(fn(Forms\Get $get)=>$get('start_date')),
                ])->columns(5),
