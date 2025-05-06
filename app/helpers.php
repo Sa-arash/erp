@@ -676,7 +676,7 @@ function getAdmin()
 function getSecurity()
 {
     $employee = User::whereHas('roles.permissions', function ($query) {
-        $query->where('name', 1); // فرض بر این است که نام مجوز "Admin" است
+        $query->where('name', 'security_VisitRequest'); // فرض بر این است که نام مجوز "Admin" است
     })->get();
     return ($employee);
     // $roles = getCompany()->roles->where('name', 'SECURITY')->first();
