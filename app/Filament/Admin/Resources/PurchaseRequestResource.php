@@ -114,7 +114,7 @@ class PurchaseRequestResource extends Resource
                         ->schema([
                             Forms\Components\Select::make('type')->required()->options(['Service','Product'])->default(1)->searchable(),
                             Select::make('department_id')->label('Section')->columnSpan(['default'=>8,'md'=>2,'xl'=>2,'2xl'=>1])->live()->options(getCompany()->departments->pluck('title','id'))->searchable()->preload(),
-                            Forms\Components\Select::make('product_id')->columnSpan(['default'=>8,'md'=>2])->disableOptionsWhenSelectedInSiblingRepeaterItems()->label('Product/Service')->options(function (Get $get) {
+                            Forms\Components\Select::make('product_id')->columnSpan(['default'=>8,'md'=>2])->label('Product/Service')->options(function (Get $get) {
                                     if ($get('department_id')){
                                         $data=[];
                                         $products=getCompany()->products()->where('product_type',$get('type')==="0"?'=':'!=' ,'service')->where('department_id',$get('department_id'))->pluck('title', 'id');

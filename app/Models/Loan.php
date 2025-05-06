@@ -11,7 +11,7 @@ class Loan extends Model
     use HasFactory;
 
 
-    protected $fillable = ['first_installment_due_date', 'description', 'employee_id', 'loan_code', 'answer_date', 'request_amount', 'request_date', 'number_of_installments', 'number_of_payed_installments', 'status', 'user_id', 'company_id', 'amount'];
+    protected $fillable = ['admin_id','finance_id','first_installment_due_date', 'description', 'employee_id', 'loan_code', 'answer_date', 'request_amount', 'request_date', 'number_of_installments', 'number_of_payed_installments', 'status', 'user_id', 'company_id', 'amount'];
 
     protected $casts = ['status' => LoanStatus::class];
 

@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('loans', function (Blueprint $table) {
             $table->id();
             $table->foreignId('employee_id')->constrained('employees')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('finance_id')->nullable()->constrained('employees')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('admin_id')->nullable()->constrained('employees')->cascadeOnUpdate()->cascadeOnDelete();
             $table->string('loan_code');
             $table->bigInteger('request_amount');
             $table->bigInteger('amount')->nullable();

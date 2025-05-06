@@ -223,9 +223,6 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                    Forms\Components\Section::make([
                        Forms\Components\ToggleButtons::make('status')->live()->columnSpanFull()->default('Approve')->colors(['Approve' => 'success', 'NotApprove' => 'danger', 'Pending' => 'primary'])->options(['Approve' => 'Approve', 'Pending' => 'Pending', 'NotApprove' => 'NotApprove'])->grouped(),
                        Forms\Components\Textarea::make('comment')->columnSpanFull()->nullable(),
-                       TextInput::make('amount')->label('Loan Amount')->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required(fn(Get $get)=>$get('status')!=='NotApprove')->numeric(),
-                       TextInput::make('number_of_installments')->label('Number of Installments')->required(fn(Get $get)=>$get('status')!=='NotApprove')->numeric(),
-                       Forms\Components\DatePicker::make('first_installment_due_date')->required(fn(Get $get)=>$get('status')!=='NotApprove')->columnSpanFull()->label('First Installment Due Date')->afterOrEqual(now())
 
                    ])->columns()
                 ])->action(function ($data,$record){
@@ -236,9 +233,6 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                     ]);
                     if ($data['status']==="Approve"){
                         $record->approvable->update([
-                            'first_installment_due_date'=>$data['first_installment_due_date'],
-                            'number_of_installments'=>$data['number_of_installments'],
-                            'amount'=>$data['amount'],
                             'status'=>'ApproveManager'
                         ]);
                     }elseif ($data['status']==="NotApprove"){
@@ -247,12 +241,13 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                         ]);
                     }
                     Notification::make('success')->title('Success Submitted')->success()->send();
-                })->requiresConfirmation()->modalWidth(MaxWidth::TwoExtraLarge),
-                Action::make('viewLoan')->visible(fn($record)=>substr($record->approvable_type, 11) === "Loan" and $record->status->value ==="Pending")->infolist([
+                })->requiresConfirmation()->modalWidth(MaxWidth::TwoExtraLarge)->icon( fn($record)=>$record->status->value=='Approve'? 'heroicon-o-check-badge':'heroicon-o-x-circle')->iconSize(IconSize::Large)->color(fn($record)=>$record->status->value=='Approve'? 'success':'danger' ),
+                Action::make('viewLoan')->visible(fn($record)=>substr($record->approvable_type, 11) === "Loan" )->infolist([
                         Fieldset::make('')->relationship('approvable')->schema([
                             TextEntry::make('loan_code')->label('Loan Code'),
                             TextEntry::make('request_date')->dateTime()->label('Request Date'),
-                            TextEntry::make('request_amount')->numeric()->label('Request Amount'),
+                            TextEntry::make('employee.loan_limit')->state(fn($record)=>number_format($record->approvable->employee?->loan_limit).$record->employee?->currency?->symbol)->numeric()->label('Employee Loan Limit'),
+                            TextEntry::make('request_amount')->state(fn($record)=>number_format($record->approvable->request_amount).$record->employee?->currency?->symbol)->numeric()->label('Request Amount'),
                             TextEntry::make('description')->columnSpanFull()->label('Description'),
                         ])
                 ]),

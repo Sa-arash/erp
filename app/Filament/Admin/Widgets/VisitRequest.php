@@ -13,13 +13,12 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
-use Filament\Tables\Actions\BulkAction;
 use Filament\Tables\Actions\EditAction;
-use Filament\Tables\Actions\ViewAction;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 
@@ -77,29 +76,31 @@ class VisitRequest extends BaseWidget
                                 Select::make('agency')->options(getCompany()->agency)->createOptionForm([
                                     TextInput::make('title')->required()
                                 ])->createOptionUsing(function ($data){
-                                    $array=getCompany()->agency;
-                                    if (isset($array)){
-                                        $array[$data['title']]=$data['title'];
+                                    $array = getCompany()->agency;
+                                    if (isset($array)) {
+                                        $array[$data['title']] = $data['title'];
 
-                                    }else{
-                                        $array=[$data['title']=>$data['title']];
+                                    } else {
+                                        $array = [$data['title'] => $data['title']];
                                     }
-                                    getCompany()->update(['agency'=>$array]);
+                                    getCompany()->update(['agency' => $array]);
                                     return $data['title'];
                                 })->searchable()->preload(),
-                                DatePicker::make('visit_date')->default(now()->addDay())->required(),
-                                TimePicker::make('arrival_time')->seconds(false)->before('departure_time')->required(),
-                                TimePicker::make('departure_time')->seconds(false)->after('arrival_time')->required(),
+                                DatePicker::make('visit_date')->label('Visit Date')->default(now()->addDay())->required(),
+                                TimePicker::make('arrival_time')->label('Arrival Time')->seconds(false)->before('departure_time')->required(),
+                                TimePicker::make('departure_time')->label('Departure Time')->seconds(false)->after('arrival_time')->required(),
                                 TextInput::make('purpose')->columnSpanFull()->required(),
                             ])->columns(4),
                             Repeater::make('visitors_detail')->addActionLabel('Add')->label('Visitors Detail')->schema([
-                                    TextInput::make('name')->label('Full Name')->required(),
-                                    TextInput::make('id')->label('ID/Passport')->required(),
-                                    TextInput::make('phone')->label('Phone'),
-                                    TextInput::make('organization')->label('Organization'),
-                                    Select::make('type')->searchable()->label('Type')->options(['National' => 'National', 'International' => 'International', 'De-facto Security Forces' => 'De-facto Security Forces',]),
-                                    Textarea::make('remarks')->columnSpanFull()->label('Remarks'),
-                                ])->columns(5)->columnSpanFull(),
+                                TextInput::make('name')->label('Name')->required(),
+                                TextInput::make('id')->label('ID/Passport')->required(),
+                                TextInput::make('phone')->label('Phone'),
+                                TextInput::make('organization')->label('Organization'),
+                                Textarea::make('remarks')->columnSpan(3)->label('Remarks'),
+                                ToggleButtons::make('type')->required()->grouped()->columnSpan(2)->label('Type')->options(['National' => 'National', 'International' => 'International', 'De-facto Security Forces' => 'De-facto Security Forces',]),
+
+
+                            ])->columns(5)->columnSpanFull(),
                             Repeater::make('driver_vehicle_detail')
                                 ->addActionLabel('Add')
                                 ->label('Drivers/Vehicles Detail')->schema([

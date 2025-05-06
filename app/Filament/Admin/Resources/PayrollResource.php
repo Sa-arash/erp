@@ -341,7 +341,9 @@ class PayrollResource extends Resource
                 Tables\Actions\ExportAction::make()->label('Export Payrolls')->exporter(PayrollExporter::class)->color('purple'),
                 Tables\Actions\Action::make('Generate Payroll')->form([
                     Forms\Components\Section::make([
-                        Forms\Components\Select::make('employees')->required()->multiple()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload(),
+                        Forms\Components\Select::make('employees')->required()->multiple()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->hintAction(Forms\Components\Actions\Action::make('all')->action(function (Forms\Set $set){
+                            $set('employees',getCompany()->employees()->pluck('id')->toArray());
+                        })),
                         Forms\Components\Select::make('month')->options([
                             'January',
                             'February',
@@ -579,6 +581,7 @@ class PayrollResource extends Resource
                         );
                 })->columns(2),
                 DateRangeFilter::make('start_date'),
+                DateRangeFilter::make('end_date'),
             ], getModelFilter())
             ->actions([
                 Tables\Actions\EditAction::make(),

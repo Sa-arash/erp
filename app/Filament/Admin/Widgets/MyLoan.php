@@ -26,24 +26,28 @@ class MyLoan extends BaseWidget
             )
             ->headerActions([
                 Tables\Actions\Action::make('new')->disabled(function(){
-                   return ( getEmployee()->loans->whereIn('status',['progressed','accepted','waiting'])->isEmpty());
+//                   return getEmployee()->loans->whereIn('status',['progressed','accepted','Waiting'])->count();
                 })->label('Loan Request ')->form([
                     Section::make([
-                        TextInput::make('request_amount')->label('Required Amount')->columnSpanFull()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->numeric()->default(fn()=>getEmployee()->loan_limit)->maxValue(fn()=>getEmployee()->loan_limit),
+                        TextInput::make('request_amount')->label('Required Amount')->columnSpan(2)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->numeric()->default(fn()=>getEmployee()->loan_limit),
+                        TextInput::make('loan_code')->required()->default(function (){
+                            $lastLoan=Loan::query()->where('company_id',getCompany()->id)->orderBy('id','desc')->first();
+                           return generateNextCodeAsset($lastLoan?->loan_code ? $lastLoan->loan_code :"0001");
+                        })->readOnly(),
                         Textarea::make('description')->nullable()->columnSpanFull()
-                    ])->columns()
+                    ])->columns(3)
                 ])->action(function ($data){
                     $company=getCompany();
-                    $lastLoan=Loan::query()->where('company_id',$company->id)->orderBy('id','desc')->first();
                     $loan=Loan::query()->create([
                         'employee_id'=>getEmployee()->id,
-                        'loan_code'=>generateNextCodeAsset($lastLoan?->loan_code ? $lastLoan->loan_code :"0001"),
+                        'loan_code'=>$data['loan_code'],
                         'request_amount'=>$data['request_amount'],
                         'request_date'=>now(),
                         'company_id'=>$company->id,
-                        'description'=>$data['description']
+                        'description'=>$data['description'],
+
                     ]);
-                        sendAR(getEmployee(),$loan,$company->id);
+                        sendAR(getEmployee(),$loan,$company);
                     Notification::make('success')->success()->title('Successfully Submitted')->send();
                 })
             ])
