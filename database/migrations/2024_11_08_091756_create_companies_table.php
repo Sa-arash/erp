@@ -37,6 +37,8 @@ return new class extends Migration
             $table->string('title_security')->nullable();
             $table->string('logo_security')->nullable();
             $table->string('agency')->nullable();
+            $table->string('visitrequest_model')->nullable();
+            $table->string('visitrequest_color')->nullable();
 //          $table->text('company_type');
             $table->text('logo')->nullable();
             $table->timestamps();

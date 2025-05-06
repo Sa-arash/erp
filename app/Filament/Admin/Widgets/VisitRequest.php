@@ -106,8 +106,32 @@ class VisitRequest extends BaseWidget
                                     TextInput::make('name')->label('Full Name')->required(),
                                     TextInput::make('id')->label('ID/Passport')->required(),
                                     TextInput::make('phone')->label('Phone'),
-                                    TextInput::make('model')->required(),
-                                    TextInput::make('color')->required(),
+                                    Select::make('model')->options(getCompany()->visitrequest_model)->createOptionForm([
+                                        TextInput::make('title')->required()
+                                    ])->createOptionUsing(function ($data){
+                                        $array=getCompany()->visitrequest_model;
+                                        if (isset($array)){
+                                            $array[$data['title']]=$data['title'];
+        
+                                        }else{
+                                            $array=[$data['title']=>$data['title']];
+                                        }
+                                        getCompany()->update(['visitrequest_model'=>$array]);
+                                        return $data['title'];
+                                    })->searchable()->preload(),
+                                    Select::make('color')->options(getCompany()->visitrequest_color)->createOptionForm([
+                                        TextInput::make('title')->required()
+                                    ])->createOptionUsing(function ($data){
+                                        $array=getCompany()->visitrequest_color;
+                                        if (isset($array)){
+                                            $array[$data['title']]=$data['title'];
+        
+                                        }else{
+                                            $array=[$data['title']=>$data['title']];
+                                        }
+                                        getCompany()->update(['visitrequest_color'=>$array]);
+                                        return $data['title'];
+                                    })->searchable()->preload(),
                                     TextInput::make('Registration_Plate')->required(),
                                 ])->columns(3)->columnSpanFull(),
                             FileUpload::make('attachment')->columnSpanFull()->label('File Upload')
@@ -128,8 +152,9 @@ class VisitRequest extends BaseWidget
                     if ($data['attachment']){
                         $visitorRequest->addMedia(public_path('images/'.$data['attachment']))->toMediaCollection('attachment');
                     }
-                    sendSecurity(getEmployee(),$visitorRequest,getCompany());
-                    Notification::make('success')->color('success')->success()->title('Request  Sent')->send()->sendToDatabase(auth()->user());
+                    sendAR(getEmployee(),$visitorRequest,getCompany());
+                    // sendSecurity(getEmployee(),$visitorRequest,getCompany());
+                    Notification::make('success')->color('success')->success()->title('Request Sent')->send()->sendToDatabase(auth()->user());
 
                 })
             ])

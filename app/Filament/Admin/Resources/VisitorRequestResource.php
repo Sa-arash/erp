@@ -38,7 +38,8 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
             'delete',
             'delete_any',
             'reception',
-            'logo_and_name'
+            'logo_and_name',
+            'security',
         ];
     }
 
@@ -67,6 +68,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                                 getCompany()->update(['agency'=>$array]);
                                 return $data['title'];
                             })->searchable()->preload(),
+                            
 
                         Forms\Components\DatePicker::make('visit_date')->default(now()->addDay())->required(),
                         Forms\Components\TimePicker::make('arrival_time')
@@ -97,8 +99,32 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                             Forms\Components\TextInput::make('name')->label('Full Name')->required(),
                             Forms\Components\TextInput::make('id')->label('ID/Passport')->required(),
                             Forms\Components\TextInput::make('phone')->label('Phone'),
-                            Forms\Components\TextInput::make('model')->required(),
-                            Forms\Components\TextInput::make('color')->required(),
+                           Select::make('model')->options(getCompany()->visitrequest_model)->createOptionForm([
+                                Forms\Components\TextInput::make('title')->required()
+                            ])->createOptionUsing(function ($data){
+                                $array=getCompany()->visitrequest_model;
+                                if (isset($array)){
+                                    $array[$data['title']]=$data['title'];
+
+                                }else{
+                                    $array=[$data['title']=>$data['title']];
+                                }
+                                getCompany()->update(['visitrequest_model'=>$array]);
+                                return $data['title'];
+                            })->searchable()->preload(),
+                            Select::make('color')->options(getCompany()->visitrequest_color)->createOptionForm([
+                                Forms\Components\TextInput::make('title')->required()
+                            ])->createOptionUsing(function ($data){
+                                $array=getCompany()->visitrequest_color;
+                                if (isset($array)){
+                                    $array[$data['title']]=$data['title'];
+
+                                }else{
+                                    $array=[$data['title']=>$data['title']];
+                                }
+                                getCompany()->update(['visitrequest_color'=>$array]);
+                                return $data['title'];
+                            })->searchable()->preload(),
                             Forms\Components\TextInput::make('Registration_Plate')->required(),
                         ])->columns(6)->columnSpanFull(),
                     Forms\Components\Hidden::make('company_id')
@@ -115,6 +141,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
 
     public static function table(Table $table): Table
     {
+        
         return $table->defaultSort('id', 'desc')
             ->columns([
 

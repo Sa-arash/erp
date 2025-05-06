@@ -50,9 +50,10 @@ class ApprovalResource extends Resource implements HasShieldPermissions
             'PR Approval (3)'
         ];
     }
-
+   
     public static function table(Table $table): Table
     {
+        dd(getSecurity());
         return $table->query(Approval::query()->where('employee_id', getEmployee()->id)->orderBy('id', 'desc'))
             ->columns([
                 Tables\Columns\TextColumn::make('approvable.purchase_number')->prefix('')->label('PR No')->badge(),
@@ -178,6 +179,7 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                     $record->update(['comment' => $data['comment'], 'status' => $data['status'], 'approve_date' => now()]);
                     if (substr($record->approvable_type, 11) === "VisitorRequest") {
                         if ($data['status'] === "Approve") {
+                            dd('approve');
                                 $record->approvable->update([
                                     'status' => 'approved'
                                 ]);

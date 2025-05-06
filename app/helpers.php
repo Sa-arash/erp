@@ -4,6 +4,7 @@
 use App\Models\Currency;
 use App\Models\Employee;
 use App\Models\FinancialPeriod;
+use App\Models\User;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\Section;
@@ -674,12 +675,16 @@ function getAdmin()
 
 function getSecurity()
 {
-    $roles = getCompany()->roles->where('name', 'SECURITY')->first();
-    if (isset($roles->users[0])) {
-        if ($roles->users[0]->employee) {
-            return $roles->users[0]->employee;
-        }
-    }
+    $employee = User::whereHas('roles.permissions', function ($query) {
+        $query->where('name', 1); // فرض بر این است که نام مجوز "Admin" است
+    })->get();
+    return ($employee);
+    // $roles = getCompany()->roles->where('name', 'SECURITY')->first();
+    // if (isset($roles->users[0])) {
+    //     if ($roles->users[0]->employee) {
+    //         return $roles->users[0]->employee;
+    //     }
+    // }
 }
 
 function getOperation()

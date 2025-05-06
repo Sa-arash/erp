@@ -16,7 +16,7 @@ use Spatie\Permission\Models\Role;
 use TomatoPHP\FilamentMediaManager\Models\Folder;
 use TomatoPHP\FilamentMediaManager\Models\Media;
 
-class Company extends Model implements HasAvatar, HasName , HasMedia
+class Company extends Model implements HasAvatar, HasName, HasMedia
 {
     use HasFactory;
     use InteractsWithMedia;
@@ -27,7 +27,7 @@ class Company extends Model implements HasAvatar, HasName , HasMedia
     }
 
 
-    protected $fillable = ['agency','logo_security','title_security','product_service_accounts','security_id', 'warehouse_id', 'structure_asset_id', 'product_expence_accounts', 'account_cash', 'product_accounts', 'category_account', 'customer_account', 'vendor_account', 'account_bank', 'weekend_days', 'daily_working_hours', 'overtime_rate', 'title', 'logo', 'description', 'user_id', 'country', 'address', 'contact_information', 'company_registration_document'];
+    protected $fillable = ['visitrequest_model','visitrequest_color','agency', 'logo_security', 'title_security', 'product_service_accounts', 'security_id', 'warehouse_id', 'structure_asset_id', 'product_expence_accounts', 'account_cash', 'product_accounts', 'category_account', 'customer_account', 'vendor_account', 'account_bank', 'weekend_days', 'daily_working_hours', 'overtime_rate', 'title', 'logo', 'description', 'user_id', 'country', 'address', 'contact_information', 'company_registration_document'];
 
     protected $casts = [
         'weekend_days' => 'array',
@@ -35,6 +35,8 @@ class Company extends Model implements HasAvatar, HasName , HasMedia
         'product_expence_accounts' => 'array',
         'product_service_accounts' => 'array',
         'agency' => 'array',
+        'visitrequest_model' => 'array',
+        'visitrequest_color' => 'array',
 
     ];
 
