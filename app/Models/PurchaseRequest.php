@@ -19,7 +19,8 @@ class PurchaseRequest extends Model
         'company_id',
         'employee_id',
         'is_quotation',
-        'currency_id'
+        'currency_id',
+        'need_change'
     ];
     protected $casts = ['status' => POStatus::class];
 

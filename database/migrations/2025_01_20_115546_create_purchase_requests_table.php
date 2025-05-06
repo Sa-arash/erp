@@ -27,6 +27,7 @@ return new class extends Migration
             'Finished',
             'Rejected',
         ])->default('Requested');
+        $table->boolean('need_change')->default(0);
 
         $table->text('comment')->nullable();
         $table->timestamps();

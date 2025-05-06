@@ -47,13 +47,14 @@ class MyPurchaseRequest extends BaseWidget
                 Tables\Columns\TextColumn::make('description')->label('Description')->searchable(),
                 Tables\Columns\TextColumn::make('request_date')->dateTime()->sortable(),
 
-                Tables\Columns\TextColumn::make('status')->badge()->tooltip(function ($record){
+                Tables\Columns\TextColumn::make('status')->badge()->tooltip(function ($record) {
                     return $record->approvals->last()?->approve_date;
                 })->alignCenter(),
-                Tables\Columns\TextColumn::make('total')->state(function ($record){
-                    $total=0;
-                    foreach ($record->items as $item){
-                        $total+=$item->quantity *$item->estimated_unit_cost;
+                Tables\Columns\TextColumn::make('need_change')->state(fn($record) => $record->need_change ? "Yes" : "No")->color(fn($record) => $record->need_change ? "warning" : "success")->label('Need Revise')->badge()->alignCenter(),
+                Tables\Columns\TextColumn::make('total')->state(function ($record) {
+                    $total = 0;
+                    foreach ($record->items as $item) {
+                        $total += $item->quantity * $item->estimated_unit_cost;
                     }
                     return $total;
                 })->numeric(),
@@ -149,7 +150,8 @@ class MyPurchaseRequest extends BaseWidget
                 ->columnSpanFull(),
         ])->columns(3)
     ])->action(function ($data, $record) {
-        $record->update($data);
+            $data['need_change'] = 0;
+            $record->update($data);
         $ids = [];
         $company = getCompany()->id;
         foreach ($data['Requested Items'] as $datum) {
