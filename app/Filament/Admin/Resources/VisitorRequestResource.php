@@ -70,12 +70,12 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                             })->searchable()->preload(),
                             
 
-                        Forms\Components\DatePicker::make('visit_date')->default(now()->addDay())->required(),
-                        Forms\Components\TimePicker::make('arrival_time')
+                        Forms\Components\DatePicker::make('visit_date')->label('Visit Date')->default(now()->addDay())->required(),
+                        Forms\Components\TimePicker::make('arrival_time')->label('Arrival Time')
                             ->seconds(false)
                             ->before('departure_time')
                             ->required(),
-                        Forms\Components\TimePicker::make('departure_time')
+                        Forms\Components\TimePicker::make('departure_time')->label('Departure Time')
                             ->seconds(false)
                             ->after('arrival_time')
                             ->required(),
@@ -84,15 +84,16 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                     ])->columns(5),
                     Forms\Components\Repeater::make('visitors_detail')
                         ->addActionLabel('Add')
-                        ->label('Visitors Detail')
+                        ->label('Visitors Details')
                         ->schema([
-                            Forms\Components\TextInput::make('name')->label('Full Name')->required(),
+                            Forms\Components\TextInput::make('name')->label(' Name')->required(),
                             Forms\Components\TextInput::make('id')->label('ID/Passport')->required(),
                             Forms\Components\TextInput::make('phone')->label('Phone'),
                             Forms\Components\TextInput::make('organization')->label('Organization'),
-                            Forms\Components\Select::make('type')->label('Type')->options(['National' => 'National', 'International' => 'International', 'De-facto Security Forces' => 'De-facto Security Forces',]),
                             Forms\Components\TextInput::make('remarks')->label('Remarks'),
-                        ])->columns(6)->columnSpanFull(),
+                            Forms\Components\ToggleButtons::make('type')->columns(2)->grouped()->label('Armed Close Protection Officers (If Applicable)')->options(['National' => 'National', 'International' => 'International', 'De-facto Security Forces' => 'De-facto Security Forces',]),
+
+                        ])->columns(7)->columnSpanFull(),
                     Forms\Components\Repeater::make('driver_vehicle_detail')
                         ->addActionLabel('Add')
                         ->label('Drivers/Vehicles Detail')->schema([
@@ -178,7 +179,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                 Tables\Filters\SelectFilter::make('status')->options(['approved' => 'approved', 'notApproved' => 'notApproved'])->searchable()
             ], getModelFilter())
             ->actions([
-               
+
                 Tables\Actions\Action::make('ActionInSide')->label('CheckIn')->form([
                     Forms\Components\DateTimePicker::make('InSide_date')->withoutSeconds()->label(' Date And Time')->required()->default(now()),
                     Forms\Components\Textarea::make('inSide_comment')->label(' Comment')

@@ -9,6 +9,7 @@ use App\Models\Employee;
 use App\Models\FinancialPeriod;
 use App\Models\Invoice;
 use App\Models\Leave;
+use App\Models\Loan;
 use App\Models\Payroll;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseRequest;
@@ -56,7 +57,7 @@ class PdfController extends Controller
     {
         $company = auth()->user()->employee->company;
         // dd($transactions);
-        
+
         $pdf = Pdf::loadView('pdf.urgentleave');
         return $pdf->stream('urgentleave.pdf');
     }
@@ -540,6 +541,16 @@ class PdfController extends Controller
         $pdf = Pdf::loadView(
             'pdf.qrcode',
             compact( 'code')
+        );
+        return $pdf->stream();
+    }
+    public function loan($id)
+    {
+        $loan=Loan::query()->with(['company'])->findOrFail($id);
+        $company=$loan->company;
+        $pdf = Pdf::loadView(
+            'pdf.loan',
+            compact( 'loan','company')
         );
         return $pdf->stream();
     }

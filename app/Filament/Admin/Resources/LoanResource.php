@@ -9,12 +9,15 @@ use App\Models\Employee;
 use App\Models\Invoice;
 use App\Models\Loan;
 use App\Models\Transaction;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\IconSize;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Support\RawJs;
 use Filament\Tables;
@@ -25,13 +28,27 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 
 class LoanResource extends Resource
+    implements HasShieldPermissions
 {
+
     protected static ?string $model = Loan::class;
 
     protected static ?int $navigationSort = 2;
     protected static ?string $navigationIcon = 'loan';
     protected static ?string $navigationGroup = 'HR Management System';
-
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
+            'Admin',
+            'Finance',
+        ];
+    }
     public static function form(Form $form): Form
     {
         return $form
@@ -91,6 +108,9 @@ class LoanResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('employee.fullName')->alignCenter()->columnSpanFull()->sortable(),
+                Tables\Columns\ImageColumn::make('media.original_url')->state(function ($record) {
+                    return $record->employee->media->where('collection_name','images')->first()?->original_url;
+                })->disk('public')->defaultImageUrl(fn($record) => $record->employee->gender === "male" ? asset('img/user.png') : asset('img/female.png'))->alignLeft()->label('Employee Picture')->width(50)->height(50)->extraAttributes(['style' => 'border-radius:50px!important']),
                 Tables\Columns\TextColumn::make('loan_code')->alignCenter()->sortable(),
                 Tables\Columns\TextColumn::make('request_amount')->alignCenter()->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('amount')->alignCenter()->numeric()->sortable(),
@@ -161,12 +181,8 @@ class LoanResource extends Resource
 
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('approve')->label('Approve HR')->color('success')->requiresConfirmation()->action(function ($record){
-                    $record->update(['status'=>'ApproveAdmin']);
-                    Notification::make('success')->title('Success Submitted')->success()->send();
-                }),
                 Tables\Actions\Action::make('payLoan')
-                ->visible(fn($record)=>$record->status->value === "accepted"&& getPeriod())
+                ->visible(fn($record)=>$record->status->value === "ApproveAdmin"&& getPeriod())
                 ->modalWidth(MaxWidth::FiveExtraLarge)->form([
                     Forms\Components\Section::make([
                         Forms\Components\TextInput::make('number')
@@ -199,33 +215,6 @@ class LoanResource extends Resource
                     if ($remainder > 0) {
                         $installments[0] += $remainder;
                     }
-
-                    // dd($installments, $data, $record);
-
-
-                    //     "number" => 1
-                    //     "name" => "asdf"
-                    //     "reference" => null
-                    //     "date" => "2025-03-13 16:22:00"
-                    //     "account_pay" => null
-                    //     "account_resive" => null
-
-                    // $record = [
-                    //     "id" => 1,
-                    //     "employee_id" => 1,
-                    //     "loan_code" => 123,
-                    //     "request_amount" => 120000,
-                    //     "amount" => 450000,
-                    //     "number_of_installments" => 450,
-                    //     "number_of_payed_installments" => 2,
-                    //     "request_date" => "2025-03-14 00:00:00",
-                    //     "answer_date" => "2025-03-25 00:00:00",
-                    //     "status" => "waiting",
-                    //     "company_id" => 1,
-                    //     "created_at" => "2025-03-13 15:37:51",
-                    //     "updated_at" => "2025-03-13 15:37:51"
-                    // ];
-
 
                     $record->update(['status' => 'progressed']);
 
@@ -298,7 +287,36 @@ class LoanResource extends Resource
                             'transaction_id' => $savedTransaction->id,
                         ]);
                     }
-                })
+                }),
+                Tables\Actions\Action::make('loanApprove')->visible(fn($record)=> $record->status->value ==="ApproveManager" and auth()->user()->can('Admin_loan'))->label('Approve Loan')->color('success')->form([
+                    Forms\Components\Section::make([
+                        Forms\Components\ToggleButtons::make('status')->required()->live()->columnSpanFull()->default('Approve')->colors(['Approve' => 'success', 'NotApprove' => 'danger', 'Pending' => 'primary'])->options(['Approve' => 'Approve', 'Pending' => 'Pending', 'NotApprove' => 'NotApprove'])->grouped(),
+                        TextInput::make('amount')->label('Loan Amount')->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required(fn(Get $get)=>$get('status')!=='NotApprove')->numeric(),
+                        TextInput::make('number_of_installments')->label('Number of Installments')->required(fn(Get $get)=>$get('status')!=='NotApprove')->numeric(),
+                        Forms\Components\DatePicker::make('first_installment_due_date')->required(fn(Get $get)=>$get('status')!=='NotApprove')->columnSpanFull()->label('First Installment Due Date')->afterOrEqual(now())
+
+                    ])->columns()
+                ])->action(function ($data,$record){
+                    if ($data['status']==="Approve"){
+                        $record->update([
+                            'first_installment_due_date'=>$data['first_installment_due_date'],
+                            'number_of_installments'=>$data['number_of_installments'],
+                            'amount'=>$data['amount'],
+                            'status'=>'ApproveAdmin',
+                            'admin_id'=>getEmployee()->id
+                        ]);
+                    }elseif ($data['status']==="NotApprove"){
+                        $record->update([
+                            'status'=>'rejected'
+                        ]);
+                    }
+                    Notification::make('success')->title('Success Submitted')->success()->send();
+                })->requiresConfirmation()->modalWidth(MaxWidth::TwoExtraLarge)->fillForm(function ($record){
+                    return [
+                        'amount'=>$record->request_amount
+                    ];
+                }),
+                Tables\Actions\Action::make('pdf')->visible(fn($record)=>$record->admin_id)->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->url(fn($record)=>route('pdf.loan',['id'=>$record->id]))
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
