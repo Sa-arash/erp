@@ -59,7 +59,7 @@
     <table >
         <tr >
             <td style="border: none;width: 20%; text-align: left; padding-left: 10px;">
-                @if($company?->logo_security)
+                @if ($company?->logo_security)
                     <img src="{!! public_path('images/' . $company?->logo_security) !!}" style="padding: 0; border-radius: 50px ; width: 100px;">
                 @endif
             </td>
@@ -319,6 +319,15 @@
                 text-align: center;
             }
 
+            .section-title td {
+                text-align: center;
+                font-weight: bold;
+            }
+
+            .text-center {
+                text-align: center;
+            }
+
             .no-border {
                 border: none;
             }
@@ -357,6 +366,10 @@
                 margin-right: 5px;
             }
 
+            .bg-lightgreen {
+                background-color: rgb(197, 224, 179, 255) !important;
+            }
+
             @media print {
                 body {
                     margin: 0;
@@ -366,13 +379,18 @@
 
 
             .equal-table {
-        width: 100%; /* عرض جدول را به 100% تنظیم کنید */
-        border-collapse: collapse; /* برای حذف فاصله بین سلول‌ها */
-    }
-    .equal-cell {
-        width: 25%; /* عرض هر ستون را به 25% تنظیم کنید */
-        border: 1px solid #000; /* برای نمایش مرز سلول‌ها */
-    }
+                width: 100%;
+                /* عرض جدول را به 100% تنظیم کنید */
+                border-collapse: collapse;
+                /* برای حذف فاصله بین سلول‌ها */
+            }
+
+            .equal-cell {
+                width: 25%;
+                /* عرض هر ستون را به 25% تنظیم کنید */
+                border: 1px solid #000;
+                /* برای نمایش مرز سلول‌ها */
+            }
         </style>
     </head>
 
@@ -380,17 +398,19 @@
 
         <table>
             <tr>
-                <td colspan="2" >
+                <td colspan="2">
                     @if ($company?->logo_security)
                         <img src="{!! public_path('images/' . $company?->logo_security) !!}" style="padding: 0; border-radius: 50px ; width: 200px;">
                     @endif
                 </td>
-                <td colspan="4" class="header" >
+                <td colspan="4" class="header">
                     HART<br>
                     UNHCR Guard Force Unit, Kabul, Afghanistan<br>
-                    <span class="small-text">SOP No.002 Annex {{ str_pad($requestVisit->id, 3, '0', STR_PAD_LEFT) }} dated {{$requestVisit->visit_date}}<br>
-                        Supersedes: Visitors Access Request {{ str_pad($requestVisit->id, 3, '0', STR_PAD_LEFT) }} Dated dated {{$requestVisit->visit_date}}<br>
-                        Effective Date: {{$requestVisit->visit_date}}</span>
+                    <span class="small-text">SOP No.002 Annex {{ str_pad($requestVisit->id, 3, '0', STR_PAD_LEFT) }}
+                        dated {{ $requestVisit->visit_date }}<br>
+                        Supersedes: Visitors Access Request {{ str_pad($requestVisit->id, 3, '0', STR_PAD_LEFT) }} Dated
+                        dated {{ $requestVisit->visit_date }}<br>
+                        Effective Date: {{ $requestVisit->visit_date }}</span>
                 </td>
             </tr>
         </table>
@@ -400,7 +420,7 @@
                 <td colspan="6" class="header">ICON COMPOUND - VISITOR ACCESS REQUEST FORM</td>
             </tr>
             <tr>
-                <td colspan="6" class="no-border" style="text-align: right;">   &nbsp;</td>
+                <td colspan="6" class="no-border" style="text-align: right;"> &nbsp;</td>
             </tr>
         </table>
 
@@ -408,7 +428,7 @@
             <tr class="section-title">
                 <td colspan="6">Requestor’s Details</td>
             </tr>
-            
+
             <tr>
                 <td>Requestor’s Name</td>
                 <td>Title</td>
@@ -416,38 +436,40 @@
                 <td>Cell Phone</td>
                 <td colspan="2">Email</td>
             </tr>
-            
+
             <tr>
-                <td> {{$requestVisit->employee->fullName}}</td>
-                <td> {{$requestVisit->employee->agency}}</td>
-                <td> {{$requestVisit->agency}}</td>
-                <td> {{$requestVisit->employee->phone_number}}</td>
-                <td colspan="2">{{$requestVisit->employee->email}}</td>
+                <td> {{ $requestVisit->employee->fullName }}</td>
+                <td> {{ $requestVisit->employee->agency }}</td>
+                <td> {{ $requestVisit->agency }}</td>
+                <td> {{ $requestVisit->employee->phone_number }}</td>
+                <td colspan="2">{{ $requestVisit->employee->email }}</td>
             </tr>
             <tr>
-                <td colspan="6" class="no-border" style="text-align: right;">   &nbsp;</td>
+                <td colspan="6" class="no-border" style="text-align: right;"> &nbsp;</td>
             </tr>
         </table>
 
         <table>
             <tr class="section-title">
-                <td colspan="6">Specific Visit Details</td>
+                <td colspan="3">Specific Visit Details</td>
             </tr>
             <tr>
                 <td>Date of Visit</td>
                 <td>Time of Arrival</td>
                 <td>Time of Departure</td>
-                <td colspan="3">Purpose of visit (Be specific)</td>
             </tr>
             <tr>
-                <td>{{\Illuminate\Support\Carbon::create($requestVisit->visit_date)->format('Y/m/d')}}</td>
-                <td>{{$requestVisit->arrival_time}}</td>
-                <td>{{$requestVisit->departure_time}}</td>
-                <td colspan="3">{{$requestVisit->purpose}}</td>
+                <td>{{ \Illuminate\Support\Carbon::create($requestVisit->visit_date)->format('Y/m/d') }}</td>
+                <td>{{ $requestVisit->arrival_time }}</td>
+                <td>{{ $requestVisit->departure_time }}</td>
             </tr>
             <tr>
-                <td colspan="6" class="no-border" style="text-align: right;">   &nbsp;</td>
-            </tr>   
+                <td>Purpose of visit (Be specific)</td>
+                <td colspan="2">{{ $requestVisit->purpose }}</td>
+            </tr>
+            <tr>
+                <td colspan="3" class="no-border" style="text-align: right;"> &nbsp;</td>
+            </tr>
         </table>
 
         <table>
@@ -460,22 +482,21 @@
                 <td>Cell Phone</td>
                 <td>Type</td>
                 <td>Organization</td>
-                <td >Remarks</td>
+                <td>Remarks</td>
             </tr>
             @foreach ($requestVisit->visitors_detail as $visitor)
-                
-                    <tr>
-                        <td>{{$visitor['name']??'---'}}</td>
-                        <td>{{$visitor['id'??'---']}}</td>
-                        <td>{{$visitor['phone']??'---'}}</td>
-                        <td>{{$visitor['type']??'---'}}</td>
-                        <td>{{$visitor['organization']??'---'}}</td>
-                        <td >{{$visitor['remarks']??'---'}}</td>
-                    </tr>
-                @endforeach
                 <tr>
-                    <td colspan="6" class="no-border" style="text-align: right;">   &nbsp;</td>
+                    <td>{{ $visitor['name'] ?? '---' }}</td>
+                    <td>{{ $visitor['id' ?? '---'] }}</td>
+                    <td>{{ $visitor['phone'] ?? '---' }}</td>
+                    <td>{{ $visitor['type'] ?? '---' }}</td>
+                    <td>{{ $visitor['organization'] ?? '---' }}</td>
+                    <td>{{ $visitor['remarks'] ?? '---' }}</td>
                 </tr>
+            @endforeach
+            <tr>
+                <td colspan="6" class="no-border" style="text-align: right;"> &nbsp;</td>
+            </tr>
         </table>
 
         <table>
@@ -487,29 +508,29 @@
                 <td>□ National</td>
                 <td>□ International</td>
                 <td colspan="3">□ De-facto Security Forces</td>
-               
+
             </tr>
             <tr>
                 <td><strong>Total</strong></td>
-                
+
                 <td colspan="5">&nbsp;</td>
             </tr>
             <tr>
-                <td colspan="6" class="no-border" style="text-align: right;">   &nbsp;</td>
+                <td colspan="6" class="no-border" style="text-align: right;"> &nbsp;</td>
             </tr>
         </table>
 
         <table>
             <tr class="section-title">
-                <td colspan="6">Driver(s)/Vehicle(s) Details</td>
+                <td class="text-center" colspan="6">Driver(s)/Vehicle(s) Details</td>
             </tr>
             <tr>
-                <td colspan="3"><strong>Driver’s Details</strong></td>
-                <td colspan="3"><strong>Vehicle Details</strong></td>
+                <td class="text-center" colspan="3"><strong>Driver’s Details</strong></td>
+                <td class="text-center" colspan="3"><strong>Vehicle Details</strong></td>
             </tr>
 
 
-           
+
 
             <tr>
                 <td>Full Name</td>
@@ -521,71 +542,83 @@
             </tr>
             {{-- @dd($requestVisit) --}}
             @foreach ($requestVisit->driver_vehicle_detail as $driver)
-            <tr>
-                <td>{{$driver['name']??'---'}}</td>
-                <td>{{$driver['id']??'---'}}</td>
-                <td>{{$driver['phone']??'---'}}</td>
-                <td>{{$vehicle['model']??'---'}}</td>
-                <td>{{$vehicle['color']??'---'}}</td>
-                <td>{{$vehicle['Registration_Plate']??'---'}}</td>
-            </tr>
+                <tr>
+                    <td>{{ $driver['name'] ?? '---' }}</td>
+                    <td>{{ $driver['id'] ?? '---' }}</td>
+                    <td>{{ $driver['phone'] ?? '---' }}</td>
+                    <td>{{ $vehicle['model'] ?? '---' }}</td>
+                    <td>{{ $vehicle['color'] ?? '---' }}</td>
+                    <td>{{ $vehicle['Registration_Plate'] ?? '---' }}</td>
+                </tr>
             @endforeach
 
             <tr>
-                <td colspan="6" class="no-border" style="text-align: right;">   &nbsp;</td>
+                <td colspan="6" class="no-border" style="text-align: right;"> &nbsp;</td>
             </tr>
         </table>
 
         <table>
             <tr>
-                <td class="no-border">Requestor’s Signature: 
+                <td class="no-border">Requestor’s Signature:
                 </td>
 
-                <td class="no-border"> 
-                    <img src="{{ $requestVisit->employee->media->where('collection_name','signature')->first()->getPath() }}" style="width: 70px;height: 30px" alt="">
+                <td class="no-border">
+                    <img src="{{ $requestVisit->employee->media->where('collection_name', 'signature')->first()->getPath() }}"
+                        style="width: 120px;height: 70px" alt="">
                 </td>
 
                 <td class="no-border">Date:</td>
-                <td class="no-border">{{\Illuminate\Support\Carbon::create($requestVisit->visit_date)->format('Y/m/d')}}</td>
+                <td class="no-border">
+                    {{ \Illuminate\Support\Carbon::create($requestVisit->visit_date)->format('Y/m/d') }}</td>
             </tr>
-           
+
         </table>
-      
-       
-       
-<table class="equal-table">
-    <tr class="section-title">
-        <td colspan="4" class="equal-cell">Endorsement and Approval</td>
-    </tr>
-    <tr>
-        <td class="equal-cell">FSU UNHCR</td>
-        <td class="equal-cell"></td>
-        <td class="equal-cell"></td>
-        <td class="equal-cell">Date:</td>
-    </tr>
-    <tr>
-        <td class="equal-cell">FSA FAO</td>
-        <td class="equal-cell"></td>
-        <td class="equal-cell"></td>
-        <td class="equal-cell">Date:</td>
-    </tr>
-    <tr>
-        <td class="equal-cell">ICON SFP</td>
-        <td class="equal-cell"></td>
-        <td class="equal-cell"></td>
-        <td class="equal-cell">Date:</td>
-    </tr>
-    <tr>
-        <td class="equal-cell">Remarks to CSM</td>
-        <td class="equal-cell"></td>
-        <td class="equal-cell">□ Approved</td>
-        <td class="equal-cell">□ Not Approved</td>
-    </tr>
-    <tr>
-        <td colspan="4" class="no-border" style="text-align: right;">&nbsp;</td>
-    </tr>
-</table>
-           
+
+
+
+        @if (isset($requestVisit->approvals[0]))
+            <table class="equal-table ">
+                <tr class="section-title bg-lightgreen">
+                    <td colspan="4" class="equal-cell bg-lightgreen">Endorsement and Approval</td>
+                </tr>
+                <tr>
+                    <td class="equal-cell">FSU UNHCR</td>
+                    <td class="equal-cell"></td>
+                    <td class="equal-cell"></td>
+                    <td class="equal-cell">Date:</td>
+                </tr>
+                @foreach ($requestVisit->approvals as $approve)
+                <tr>
+                    <td class="equal-cell">FSA FAO</td>
+                    <td class="equal-cell"></td>
+                    <td class="equal-cell" rowspan="2">@if ($approve->employee->media->where('collection_name', 'signature')->first()?->original_url and $approve->status->name === 'Approve')
+                        <img src="{{ $approve->employee->media->where('collection_name','signature')->first()->getPath() }}" style="width: 120px;height: 70px" alt="">
+                    @endif</td>
+                    <td class="equal-cell">Date:
+                        
+                    </td>
+                </tr>
+                    <tr>
+                        <td class="equal-cell">ICON SFP</td>
+                        <td class="equal-cell">{{$approve->employee->fullName}}</td>
+                      
+                        <td class="equal-cell">Date:
+                            {{ $approve->approve_date ? \Carbon\Carbon::make($approve->approve_date)->format('Y.m.d H:i:s') : "" }} +04'30
+                        </td>
+                    </tr>
+                @endforeach
+                <tr>
+                    <td class="equal-cell">Remarks to CSM</td>
+                    <td class="equal-cell"></td>
+                    <td class="equal-cell">□ Approved</td>
+                    <td class="equal-cell">□ Not Approved</td>
+                </tr>
+                <tr>
+                    <td colspan="4" class="no-border" style="text-align: right;">&nbsp;</td>
+                </tr>
+
+            </table>
+        @endif
 
 
 
@@ -600,6 +633,7 @@
 
 
 
+        {{-- 
             @if (isset($requestVisit->approvals[0]))
             <table>
                 @foreach ($requestVisit->approvals as $approve)
@@ -614,14 +648,14 @@
                                         <img src="{{ $approve->employee->media->where('collection_name','signature')->first()->getPath() }}" style="width: 70px;height: 30px" alt="">
                                     @endif
                                 </th>
-                            </tr> --}}
+                            </tr> 
                             
                             <tr>
                                 <td class="no-border">Approved By:  </td>
                                 <td class="no-border"> {{$approve->employee->fullName}}</td>
                                 <td class="no-border">Signature: </td>
                                 <td class="no-border">     @if ($approve->employee->media->where('collection_name', 'signature')->first()?->original_url and $approve->status->name === 'Approve')
-                                    <img src="{{ $approve->employee->media->where('collection_name','signature')->first()->getPath() }}" style="width: 70px;height: 30px" alt="">
+                                    <img src="{{ $approve->employee->media->where('collection_name','signature')->first()->getPath() }}" style="width: 100px;height: 40px" alt="">
                                 @endif</td>
                                 <td class="no-border">Date: </td>
                                 <td class="no-border"> {{ $approve->approve_date ? \Carbon\Carbon::make($approve->approve_date)->format('M j, Y '):""}}</td>
@@ -634,11 +668,11 @@
                     <td colspan="6" class="no-border" style="text-align: right;">   &nbsp;</td>
                 </tr>
             </table>
-            @endif
-            
+            @endif --}}
 
 
-      
+
+
 
     </body>
 
