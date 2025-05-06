@@ -676,15 +676,11 @@ function getAdmin()
 function getSecurity()
 {
     $employee = User::whereHas('roles.permissions', function ($query) {
-        $query->where('name', 'security_VisitRequest'); // فرض بر این است که نام مجوز "Admin" است
-    })->get();
+        $query->where('name', 'security_visitor::request'); 
+    })->get() ->pluck('employee.id')->toArray();
     return ($employee);
-    // $roles = getCompany()->roles->where('name', 'SECURITY')->first();
-    // if (isset($roles->users[0])) {
-    //     if ($roles->users[0]->employee) {
-    //         return $roles->users[0]->employee;
-    //     }
-    // }
+
+   
 }
 
 function getOperation()
@@ -741,33 +737,43 @@ function sendAdmin($employee, $record, $company)
     }
 }
 
-function sendSecurity($employee, $record, $company)
+function sendSecurity( $record, $company)
 {
-    $security = Employee::query()->firstWhere('id', getSecurity()?->id);
-    if ($security) {
-        if ($security->id === $employee->id) {
-            $record->approvals()->create([
-                'employee_id' => $security->id,
-                'company_id' => $company->id,
-                'position' => 'Security',
-                'status' => "Approve",
-                'approve_date' => now()
-            ]);
+    $securityIDs =getSecurity();
+    if($securityIDs)
+    foreach ($securityIDs as $security){
 
-            if (substr($record->approvals[0]?->approvable_type, 11) === "TakeOut") {
-                $record->update(['mood' => 'Approved']);
-            } else {
-                $record->update(['status' => 'Approved']);
+        $record->approvals()->create([
+            'employee_id' => $security->id,
+            'company_id' => $company->id,
+            'position' => 'Security',
+        ]);
 
-            }
-        } else {
-            $record->approvals()->create([
-                'employee_id' => $security->id,
-                'company_id' => $company->id,
-                'position' => 'Security',
-            ]);
-        }
     }
+
+    // $security = Employee::query()->firstWhere('id', getSecurity()?->id);
+    // if ($security) {
+    //     if ($security->id === $employee->id) {
+    //         $record->approvals()->create([
+    //             'employee_id' => $security->id,
+    //             'company_id' => $company->id,
+    //             'position' => 'Security',
+    //         ]);
+
+    //         if (substr($record->approvals[0]?->approvable_type, 11) === "TakeOut") {
+    //             $record->update(['mood' => 'Approved']);
+    //         } else {
+    //             $record->update(['status' => 'Approved']);
+
+    //         }
+    //     } else {
+    //         $record->approvals()->create([
+    //             'employee_id' => $security->id,
+    //             'company_id' => $company->id,
+    //             'position' => 'Security',
+    //         ]);
+    //     }
+    // }
 
 }
 
