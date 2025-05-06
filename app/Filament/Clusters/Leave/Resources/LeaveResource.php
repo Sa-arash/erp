@@ -138,6 +138,8 @@ class LeaveResource extends Resource
 
             ], getModelFilter())
             ->actions([
+                Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->label('')
+                    ->url(fn($record) => route('pdf.leaverequest', ['id' => $record->id]))->openUrlInNewTab(),
                 Tables\Actions\EditAction::make()->hidden(fn($record)=>$record->status->name!=="Pending"),
                 Tables\Actions\Action::make('approve')->iconSize(IconSize::Medium)->color('success')
                 ->icon(fn($record)=>($record->status->value) === 'accepted'?'heroicon-m-cog-8-tooth':'heroicon-o-check-badge')->label(fn($record)=>($record->status->value) === 'accepted'?'Change Status':'Approve')

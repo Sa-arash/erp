@@ -19,7 +19,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->text('note')->nullable();
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->enum('type', ['Assigned', 'Returned']);
+            $table->enum('type', ['Assigned', 'Returned','Transaction']);
             $table->enum('status', ['Pending', 'Approve','Reject'])->default('Pending');
             $table->timestamps();
         });

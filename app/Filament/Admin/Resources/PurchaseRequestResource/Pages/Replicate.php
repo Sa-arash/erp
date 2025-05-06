@@ -136,6 +136,7 @@ class Replicate extends CreateRecord
         foreach ($PR['items'] as $key => $item) {
             $product = Product::query()->firstWhere('id', $item['product_id']);
             $PR['items'][$key]['department_id'] = $product->department_id;
+            $PR['items'][$key]['type'] = $product->product_type=='Service' ?0 :1;
             $PR['items'][$key]['document'] = $item['media'];
         }
         $PR['status']="Requested";
@@ -161,12 +162,13 @@ class Replicate extends CreateRecord
                 Select::make('currency_id')->live()->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload(),
                 TextInput::make('description')->label('Description')->columnSpanFull(),
                 Repeater::make('items')->addActionLabel('Add')->relationship('items')->schema([
-                        Select::make('department_id')->columnSpan(['default'=>8,'md'=>2,'xl'=>2,'2xl'=>1])->label('Section')->options(getCompany()->departments->pluck('title', 'id'))->searchable()->preload()->live(),
+                    Select::make('type')->required()->options(['Service', 'Product'])->default(1)->searchable(),
+                    Select::make('department_id')->columnSpan(['default'=>8,'md'=>2,'xl'=>2,'2xl'=>1])->label('Section')->options(getCompany()->departments->pluck('title', 'id'))->searchable()->preload()->live(),
                         Select::make('product_id')->columnSpan(['default'=>8,'md'=>2])->disableOptionsWhenSelectedInSiblingRepeaterItems()->label('Product/Service')->options(function (Get $get) {
 
                                 if ($get('department_id')) {
                                     $data = [];
-                                    $products = getCompany()->products->where('department_id', $get('department_id'))->pluck('title', 'id');
+                                    $products=getCompany()->products()->where('product_type',$get('type')==="0"?'=':'!=' ,'service')->where('department_id',$get('department_id'))->pluck('title', 'id');
                                     $i = 1;
                                     foreach ($products as $key => $product) {
 

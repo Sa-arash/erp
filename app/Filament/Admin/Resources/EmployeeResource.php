@@ -506,6 +506,8 @@ class EmployeeResource extends Resource
                        return $record->media->where('collection_name','images')->first()?->original_url;
                 })->disk('public')->defaultImageUrl(fn($record) => $record->gender === "male" ? asset('img/user.png') : asset('img/female.png'))->alignLeft()->label('Profile Picture')->width(50)->height(50)->extraAttributes(['style' => 'border-radius:50px!important']),
                 Tables\Columns\TextColumn::make('fullName')->sortable()->alignLeft()->searchable(),
+                Tables\Columns\TextColumn::make('position.title')->alignLeft()->label('Position')->sortable(),
+
                 Tables\Columns\TextColumn::make('gender')->state(function ($record) {
                     if ($record->gender === "male") {
                         return "Male";
@@ -517,10 +519,9 @@ class EmployeeResource extends Resource
                 })->alignLeft()->sortable(),
                 Tables\Columns\TextColumn::make('phone_number')->alignLeft()->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('duty.title')->alignLeft()->numeric()->sortable()->searchable(),
-                Tables\Columns\TextColumn::make('base_salary')->label('Base Salary' . "(" . defaultCurrency()?->symbol . ")")->alignLeft()->numeric()->sortable()->badge(),
+                Tables\Columns\TextColumn::make('base_salary')->state(fn($record)=>number_format($record->base_salary).' '.$record->currency?->symbol)->label('Base Salary' )->alignLeft()->numeric()->sortable()->badge(),
                 Tables\Columns\TextColumn::make('department.title')->alignLeft()->color('aColor')->numeric()->sortable(),
-                Tables\Columns\TextColumn::make('position.title')->alignLeft()->label('Position')->sortable(),
-                Tables\Columns\TextColumn::make('manager.fullName')->alignLeft()->label('Manager')->sortable(),
+                Tables\Columns\TextColumn::make('manager.fullName')->alignLeft()->label('Line Manager')->sortable(),
                 //                Tables\Columns\TextColumn::make('payrolls_count')->counts('payrolls')->badge()->url(fn($record): string => (PayrollResource::getUrl('index', ['tableFilters[employee_id][value]' => $record->id])))->sortable(),
 
             ])

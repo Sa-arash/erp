@@ -5,21 +5,25 @@ namespace App\Filament\Admin\Resources;
 use App\Filament\Admin\Resources\AssetResource\Pages;
 use App\Filament\Admin\Resources\AssetResource\RelationManagers;
 use App\Models\Asset;
+use App\Models\AssetEmployee;
 use App\Models\Brand;
 use App\Models\PurchaseOrder;
 use App\Models\Structure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\KeyValue;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
 use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\HtmlString;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class AssetResource extends Resource
@@ -153,10 +157,18 @@ class AssetResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
-                Tables\Columns\TextColumn::make('product.sku')->label('SKU') ->searchable(),
-                Tables\Columns\TextColumn::make('purchase_order_id')->label('PO No')->state(fn($record)=>$record->purchase_order_id === null ? "---": PurchaseOrder::find($record->purchase_order_id)->purchase_orders_number )
-                ->url(fn($record)=>PurchaseOrderResource::getUrl()."?tableFilters[id][value]=".$record->purchase_order_id)
-               ,
+                Tables\Columns\TextColumn::make('product.sku')->state(fn() => '___________')->label('SKU')->searchable()->description(function ($record) {
+
+                    $barcode = '<img src="data:image/png;base64,' . \Milon\Barcode\Facades\DNS1DFacade::getBarcodePNG($record->number, 'C39', 1, 20) . '" alt="barcode"/>';
+                    $barcode .= "<p>{$record->product->sku}</p>";
+                    return new HtmlString($barcode);
+
+                })->action(function ($record) {
+                    return redirect(route('pdf.barcode', ['code' => $record->id]));
+                }),
+                Tables\Columns\TextColumn::make('purchase_order_id')->label('PO No')->state(fn($record) => $record->purchase_order_id === null ? "---" : PurchaseOrder::find($record->purchase_order_id)->purchase_orders_number)
+                    ->url(fn($record) => PurchaseOrderResource::getUrl() . "?tableFilters[id][value]=" . $record->purchase_order_id)
+                ,
                 Tables\Columns\TextColumn::make('titlen')->label('Asset Name'),
                 Tables\Columns\TextColumn::make('price')->label('Purchase Price')->sortable()->numeric(),
 
@@ -173,25 +185,12 @@ class AssetResource extends Resource
                     }
                 })->label('Employee'),
                 Tables\Columns\TextColumn::make('quality')
-                ->sortable()    ,
-                Tables\Columns\TextColumn::make('depreciation_years')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: false),
-                Tables\Columns\TextColumn::make('depreciation_amount')->money()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: false),
-                Tables\Columns\TextColumn::make('buy_date')->label('Purchase Date')
-                    ->date('Y-m-d')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: false),
-                Tables\Columns\TextColumn::make('guarantee_date')
-                    ->date('Y-m-d')
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: false),
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('depreciation_years')->sortable()->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('depreciation_amount')->money()->sortable()->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('buy_date')->label('Purchase Date')->date('Y-m-d')->sortable()->toggleable(isToggledHiddenByDefault: false),
+                Tables\Columns\TextColumn::make('guarantee_date')->date('Y-m-d')->sortable()->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('status')->badge(),
-
-
-
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('purchase_order_id')->searchable()->options(getCompany()->purchaseOrders->pluck('purchase_orders_number', 'id'))->label('Po No'),
@@ -305,11 +304,57 @@ class AssetResource extends Resource
                         Forms\Components\Repeater::make('attributes')->schema([
                             Forms\Components\TextInput::make('title')->required(),
                             Forms\Components\TextInput::make('value')->required(),
-                        ])->columnSpanFull()->columns()
+                        ])->columnSpanFull()->columns(),
+
 
                     ])->columns(3)
                 ]),
-                Tables\Actions\ViewAction::make()
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\Action::make('Transaction')->iconSize(IconSize::Medium)->form(function ($record) {
+                    return [
+                        Section::make([
+                            Select::make('warehouse_id')->required()->live(true)->label('Warehouse')->options(getCompany()->warehouses()->where('type', 1)->pluck('title', 'id'))->searchable()->preload(),
+                            SelectTree::make('structure_id')->label('Location')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id', modifyQueryUsing: function ($query, Get $get) {
+                                return $query->where('warehouse_id', $get('warehouse_id'));
+                            })->required(),
+                            Textarea::make('description')->required()->maxLength(255)->columnSpanFull(),
+                        ])->columns()
+                    ];
+                })->action(function ($data, $record) {
+
+                    $assetEmployee = AssetEmployee::query()->create([
+                        'employee_id' => getEmployee()->id,
+                        'date' => now(),
+                        'approve_date' => now(),
+                        'type' => 'Transaction',
+                        'status' => 'Pending',
+                        'description' => $data['description'],
+                        'company_id' => getCompany()->id,
+                    ]);
+                    $assetEmployee->assetEmployeeItem()->create([
+                        'asset_id' => $record->id,
+                        'due_date'=>now(),
+                        'warehouse_id'=>$record->warehouse_id,
+                        'type'=>0,
+                        'structure_id'=>$record->structure_id,
+                        'company_id'=>getCompany()->id,
+                    ]);
+                    $assetEmployee->assetEmployeeItem()->create([
+                        'asset_id' => $record->id,
+                        'warehouse_id'=>$data['warehouse_id'],
+                        'return_date'=>now(),
+                        'type'=>1,
+                        'return_approval_date'=>now(),
+                        'structure_id'=>$data['structure_id'],
+                        'company_id'=>getCompany()->id,
+
+                    ]);
+                    $record->update([
+                        'warehouse_id'=>$data['warehouse_id'],
+                        'structure_id'=>$data['structure_id'],
+                    ]);
+
+                })
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

@@ -524,4 +524,23 @@ class PdfController extends Controller
         );
         return $pdf->stream();
     }
+
+    public function barcode($code)
+    {
+
+        $pdf = Pdf::loadView(
+            'pdf.barcode',
+            compact( 'code')
+        );
+        return $pdf->stream();
+    }
+    public function qrcode($code)
+    {
+
+        $pdf = Pdf::loadView(
+            'pdf.qrcode',
+            compact( 'code')
+        );
+        return $pdf->stream();
+    }
 }

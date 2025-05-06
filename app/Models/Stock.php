@@ -16,4 +16,8 @@ class Stock extends Model
     {
         return $this->belongsTo(Employee::class);
     }
+    public function purchaseOrder(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(PurchaseOrder::class);
+    }
 }

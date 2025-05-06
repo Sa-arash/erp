@@ -55,6 +55,7 @@ class ApprovePurchase extends ManageRelatedRecords
                             return $data;
                         })->required()->searchable()->preload(),
                     TextInput::make('description')->label('Description')->required(),
+
                     Select::make('unit_id')->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id'))->required(),
                     TextInput::make('quantity')->required()->live()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                     TextInput::make('estimated_unit_cost')->label('Estimated Unit Cost')->live()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
@@ -81,7 +82,7 @@ class ApprovePurchase extends ManageRelatedRecords
                 Tables\Columns\TextColumn::make('product.info'),
                 Tables\Columns\TextColumn::make('unit.title'),
                 Tables\Columns\TextColumn::make('quantity'),
-                Tables\Columns\TextColumn::make('estimated_unit_cost'),
+                Tables\Columns\TextColumn::make('estimated_unit_cost')->label('EUC'),
                 Tables\Columns\TextColumn::make('project.name'),
                 Tables\Columns\TextColumn::make('description'),
                 Tables\Columns\TextColumn::make('clarification_decision')->badge()->state(fn($record)=>match ($record->clarification_decision){
@@ -92,8 +93,8 @@ class ApprovePurchase extends ManageRelatedRecords
                         'Approved' => 'success',
                         'Rejected' => 'danger',
                         default => 'primary',
-                    })->badge()->label('Clarification Decision'),
-                Tables\Columns\TextColumn::make('clarification_comment')->limit(50)->tooltip(fn($record) => $record->clarification_comment)->label('Clarification Comment'),
+                    })->badge()->label('Warehouse Decision'),
+                Tables\Columns\TextColumn::make('clarification_comment')->limit(50)->tooltip(fn($record) => $record->clarification_comment)->label('Warehouse Comment'),
                 Tables\Columns\TextColumn::make('verification_decision')->badge()->state(fn($record)=>match ($record->verification_decision){
                     'approve' => 'Approved',
                     'reject' => 'Rejected',
@@ -112,9 +113,15 @@ class ApprovePurchase extends ManageRelatedRecords
                         'Approved' => 'success',
                         'Rejected' => 'danger',
                         default => 'primary',
-                    }),
+                    })->label('Approval Decision'),
                 Tables\Columns\TextColumn::make('approval_comment')->limit(50)->tooltip(fn($record) => $record->approval_comment)->label('Approval Comment'),
                 Tables\Columns\TextColumn::make('project.name'),
+                Tables\Columns\TextColumn::make('document')->label('View Attachment')->url(function ($record){
+                    if (isset($record->media[0])){
+                        return $record->media[0]->original_url;
+                    }
+                })->state(fn($record)=> isset($record->media[0])? 'Attach File':null)->color('warning')->alignCenter(),
+
             ])
             ->filters([
                 //
@@ -197,6 +204,7 @@ class ApprovePurchase extends ManageRelatedRecords
                         }
                         $prItem = PurchaseRequestItem::query()->firstWhere('id', $item['id']);
                         $prItem->update($item);
+
                     }
                     if ($data['status'] === "Approve") {
                         if ($PR->status->name === "Clarification") {
