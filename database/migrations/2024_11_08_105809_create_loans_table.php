@@ -16,6 +16,8 @@ return new class extends Migration
             $table->foreignId('employee_id')->constrained('employees')->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('finance_id')->nullable()->constrained('employees')->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('admin_id')->nullable()->constrained('employees')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->dateTime('approve_finance_date')->nullable();
+            $table->dateTime('approve_admin_date')->nullable();
             $table->string('loan_code');
             $table->bigInteger('request_amount');
             $table->bigInteger('amount')->nullable();

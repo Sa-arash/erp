@@ -16,6 +16,10 @@ function getCompany(): ?\Illuminate\Database\Eloquent\Model
 {
     return \Filament\Facades\Filament::getTenant();
 }
+function getEmployeeCEO()
+{
+    return getCompany()->user?->employee;
+}
 
 function genderOption(): array
 {

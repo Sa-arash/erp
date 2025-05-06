@@ -554,4 +554,14 @@ class PdfController extends Controller
         );
         return $pdf->stream();
     }
+    public function cashAdvance($id)
+    {
+        $loan=Loan::query()->with(['company','employee','employee.manager','employee.department','employee.media','admin','finance'])->findOrFail($id);
+        $company=$loan->company;
+        $pdf = Pdf::loadView(
+            'pdf.cashAdvance',
+            compact( 'loan','company')
+        );
+        return $pdf->stream();
+    }
 }

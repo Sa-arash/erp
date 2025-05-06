@@ -50,7 +50,7 @@ class ApprovalResource extends Resource implements HasShieldPermissions
             'PR Approval (3)'
         ];
     }
-   
+
     public static function table(Table $table): Table
     {
         return $table->query(Approval::query()->where('employee_id', getEmployee()->id)->orderBy('id', 'desc'))

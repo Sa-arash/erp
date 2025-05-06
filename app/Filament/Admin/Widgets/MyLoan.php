@@ -38,8 +38,9 @@ class MyLoan extends BaseWidget
                     ])->columns(3)
                 ])->action(function ($data){
                     $company=getCompany();
+                    $employee=getEmployee();
                     $loan=Loan::query()->create([
-                        'employee_id'=>getEmployee()->id,
+                        'employee_id'=>$employee->id,
                         'loan_code'=>$data['loan_code'],
                         'request_amount'=>$data['request_amount'],
                         'request_date'=>now(),
@@ -47,7 +48,7 @@ class MyLoan extends BaseWidget
                         'description'=>$data['description'],
 
                     ]);
-                        sendAR(getEmployee(),$loan,$company);
+                        sendAR($employee,$loan,$company);
                     Notification::make('success')->success()->title('Successfully Submitted')->send();
                 })
             ])

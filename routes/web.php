@@ -88,6 +88,7 @@ Route::get('/pdf/accountCurrency/{period}/{account}',[\App\Http\Controllers\PdfC
 Route::get('/pdf/barcode/{code}',[\App\Http\Controllers\PdfController::class,'barcode'])->name('pdf.barcode');
 Route::get('/pdf/qrcode/{code}',[\App\Http\Controllers\PdfController::class,'qrcode'])->name('pdf.qrcode');
 Route::get('/pdf/loan/{id}',[\App\Http\Controllers\PdfController::class,'loan'])->name('pdf.loan');
+Route::get('/pdf/cashAdvance/{id}',[\App\Http\Controllers\PdfController::class,'cashAdvance'])->name('pdf.cashAdvance');
 
 });
 Route::get('fix',function (){

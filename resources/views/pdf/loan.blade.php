@@ -127,23 +127,25 @@
 <table style="width: 100%; border-collapse: collapse; margin-top: 50px;border: none;">
     <tr style="border: none;">
         <td style="text-align: center; width: 33.33%;border: none;">
-            <div>Madina Sultani</div>
+            <div>{{$loan->admin?->fullName}}</div>
             <div>Sr. Admin/HR Asst</div>
             <div style="margin-top: 20px;">_________________</div>
-            <div>Date</div>
+            <div>Date:{{\Carbon\Carbon::make($loan->approve_admin_date)->format('Y-m-d H:iA')}} </div>
         </td>
         <td style="text-align: center; width: 33.33%;border: none;">
-            <div class="highlight-yellow" style="font-weight: bold;">Donald J. Trump</div>
+            <div class="highlight-yellow" style="font-weight: bold;">{{$loan->employee->fullName}}</div>
             <div>Employee</div>
             <div style="margin-top: 20px;">_________________</div>
-            <div>Date</div>
+            <div>Date: {{\Carbon\Carbon::make($loan->request_date)->format('Y-m-d H:iA')}}</div>
         </td>
+        @if($loan->finance)
         <td style="text-align: center; width: 33.33%;border: none;">
-            <div>Jane E. Paler</div>
+            <div>{{$loan->finance?->fullName}}</div>
             <div>Sr. Finance & Admin/HR Officer</div>
             <div style="margin-top: 20px;">_________________</div>
-            <div>Date</div>
+            <div>Date {{\Carbon\Carbon::make($loan->approve_finance_date)->format('Y-m-d H:iA')}}</div>
         </td>
+            @endif
     </tr>
 </table>
 
