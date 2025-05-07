@@ -7,15 +7,20 @@ use App\Filament\Admin\Resources\VisitorRequestResource\RelationManagers;
 use App\Models\VisitorRequest;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
+use Filament\Infolists\Components\IconEntry;
+use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
 use Filament\Tables;
+use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Table;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
@@ -55,20 +60,19 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                             ->required()
                             ->options(getCompany()->employees->pluck('fullName', 'id'))
                             ->default(fn() => auth()->user()->employee->id),
-                            Select::make('agency')->options(getCompany()->agency)->createOptionForm([
-                                Forms\Components\TextInput::make('title')->required()
-                            ])->createOptionUsing(function ($data){
-                                $array=getCompany()->agency;
-                                if (isset($array)){
-                                    $array[$data['title']]=$data['title'];
 
-                                }else{
-                                    $array=[$data['title']=>$data['title']];
-                                }
-                                getCompany()->update(['agency'=>$array]);
-                                return $data['title'];
-                            })->searchable()->preload(),
-                            
+                        Select::make('agency')->options(getCompany()->agency)->createOptionForm([
+                            Forms\Components\TextInput::make('title')->required()
+                        ])->createOptionUsing(function ($data) {
+                            $array = getCompany()->agency;
+                            if (isset($array)) {
+                                $array[$data['title']] = $data['title'];
+                            } else {
+                                $array = [$data['title'] => $data['title']];
+                            }
+                            getCompany()->update(['agency' => $array]);
+                            return $data['title'];
+                        })->searchable()->preload(),
 
                         Forms\Components\DatePicker::make('visit_date')->label('Visit Date')->default(now()->addDay())->required(),
                         Forms\Components\TimePicker::make('arrival_time')->label('Arrival Time')
@@ -79,6 +83,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                             ->seconds(false)
                             ->after('arrival_time')
                             ->required(),
+                        ToggleButtons::make('ICON')->label('ICON')->boolean()->inline()->default(0)->required(),
                         Forms\Components\TextInput::make('purpose')->columnSpanFull()
                             ->required(),
                     ])->columns(5),
@@ -92,7 +97,8 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                             Forms\Components\TextInput::make('organization')->label('Organization'),
                             Forms\Components\TextInput::make('remarks')->label('Remarks'),
                             Forms\Components\ToggleButtons::make('type')->columns(2)->grouped()->label('Armed Close Protection Officers (If Applicable)')->options(['National' => 'National', 'International' => 'International', 'De-facto Security Forces' => 'De-facto Security Forces',]),
-
+                            FileUpload::make('attachment')->downloadable()
+                                ->disk('public')->columnSpanFull(),
                         ])->columns(7)->columnSpanFull(),
                     Forms\Components\Repeater::make('driver_vehicle_detail')
                         ->addActionLabel('Add')
@@ -100,30 +106,28 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                             Forms\Components\TextInput::make('name')->label('Full Name')->required(),
                             Forms\Components\TextInput::make('id')->label('ID/Passport')->required(),
                             Forms\Components\TextInput::make('phone')->label('Phone'),
-                           Select::make('model')->options(getCompany()->visitrequest_model)->createOptionForm([
+                            Select::make('model')->options(getCompany()->visitrequest_model)->createOptionForm([
                                 Forms\Components\TextInput::make('title')->required()
-                            ])->createOptionUsing(function ($data){
-                                $array=getCompany()->visitrequest_model;
-                                if (isset($array)){
-                                    $array[$data['title']]=$data['title'];
-
-                                }else{
-                                    $array=[$data['title']=>$data['title']];
+                            ])->createOptionUsing(function ($data) {
+                                $array = getCompany()->visitrequest_model;
+                                if (isset($array)) {
+                                    $array[$data['title']] = $data['title'];
+                                } else {
+                                    $array = [$data['title'] => $data['title']];
                                 }
-                                getCompany()->update(['visitrequest_model'=>$array]);
+                                getCompany()->update(['visitrequest_model' => $array]);
                                 return $data['title'];
                             })->searchable()->preload(),
                             Select::make('color')->options(getCompany()->visitrequest_color)->createOptionForm([
                                 Forms\Components\TextInput::make('title')->required()
-                            ])->createOptionUsing(function ($data){
-                                $array=getCompany()->visitrequest_color;
-                                if (isset($array)){
-                                    $array[$data['title']]=$data['title'];
-
-                                }else{
-                                    $array=[$data['title']=>$data['title']];
+                            ])->createOptionUsing(function ($data) {
+                                $array = getCompany()->visitrequest_color;
+                                if (isset($array)) {
+                                    $array[$data['title']] = $data['title'];
+                                } else {
+                                    $array = [$data['title'] => $data['title']];
                                 }
-                                getCompany()->update(['visitrequest_color'=>$array]);
+                                getCompany()->update(['visitrequest_color' => $array]);
                                 return $data['title'];
                             })->searchable()->preload(),
                             Forms\Components\TextInput::make('Registration_Plate')->required(),
@@ -133,8 +137,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                         ->required(),
                     MediaManagerInput::make('attachment')->orderable(false)->folderTitleFieldName("requested_by")
                         ->disk('public')
-                        ->schema([
-                        ])->maxItems(1)->columnSpanFull(),
+                        ->schema([])->maxItems(1)->columnSpanFull(),
                 ])->columns(2)
 
             ]);
@@ -142,7 +145,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
 
     public static function table(Table $table): Table
     {
-        
+
         return $table->defaultSort('id', 'desc')
             ->columns([
 
@@ -171,6 +174,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                     }
                 })->badge(),
                 Tables\Columns\TextColumn::make('gate_status')->label('Gate Status')->badge(),
+                Tables\Columns\ToggleColumn::make('ICON')->label("ICON")->sortable()->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
@@ -179,7 +183,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                 Tables\Filters\SelectFilter::make('status')->options(['approved' => 'approved', 'notApproved' => 'notApproved'])->searchable()
             ], getModelFilter())
             ->actions([
-
+                EditAction::make(),
                 Tables\Actions\Action::make('ActionInSide')->label('CheckIn')->form([
                     Forms\Components\DateTimePicker::make('InSide_date')->withoutSeconds()->label(' Date And Time')->required()->default(now()),
                     Forms\Components\Textarea::make('inSide_comment')->label(' Comment')
@@ -218,14 +222,20 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                 Tables\Actions\ViewAction::make()->infolist([
                     \Filament\Infolists\Components\Section::make([
                         TextEntry::make('employee.info')->label('Employee'),
+                        IconEntry::make('ICON')->label('ICON')->boolean(),
                         RepeatableEntry::make('visitors_detail')->schema([
                             TextEntry::make('name'),
                             TextEntry::make('id')->label('ID/Passport'),
                             TextEntry::make('phone')->label('Phone'),
                             TextEntry::make('organization'),
                             TextEntry::make('type')->label('Type'),
+
+
                             TextEntry::make('remarks')->label('Remarks'),
-                        ])->columns(5),
+
+                            TextEntry::make('attachment')->label('Attachments')->color('aColor')
+                            ->url(fn($state)=>asset('images/'.$state))->openUrlInNewTab()
+                        ])->columns(6),
                         RepeatableEntry::make('driver_vehicle_detail')->schema([
                             TextEntry::make('name'),
                             TextEntry::make('id')->label('ID/Passport'),
@@ -252,7 +262,8 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
             ->bulkActions([
                 Tables\Actions\BulkAction::make('print')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->color('primary')->action(function ($records) {
                     return redirect(route('pdf.requestVisits', ['ids' => implode('-', $records->pluck('id')->toArray())]));
-                }),]);
+                }),
+            ]);
     }
 
     public static function getRelations(): array

@@ -20,8 +20,8 @@ class ListVisitorRequests extends ListRecords
         return [
             Actions\CreateAction::make(),
             Actions\Action::make('config')->label('Print Config')->form([
-                TextInput::make('title')->required()->maxLength(255),
-                FileUpload::make('image')->image()->imageEditor()->required()
+                TextInput::make('title')->default(fn()=>getCompany()->title_security)->required()->maxLength(255),
+                FileUpload::make('image')->image()->default(fn()=>getCompany()->logo_security)->imageEditor()->required()
             ])->action(function ($data){
                 getCompany()->update(['logo_security'=>$data['image'],'title_security'=>$data['title']]);
                 Notification::make('success')->success()->title('Submitted Successfully')->send();
