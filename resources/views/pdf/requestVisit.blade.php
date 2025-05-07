@@ -403,14 +403,26 @@
                         <img src="{!! public_path('images/' . $company?->logo_security) !!}" style="padding: 0; border-radius: 50px ; width: 200px;">
                     @endif
                 </td>
-                <td colspan="4" class="header">
-                    HART<br>
-                    UNHCR Guard Force Unit, Kabul, Afghanistan<br>
-                    <span class="small-text">SOP No.002 Annex {{ str_pad($requestVisit->id, 3, '0', STR_PAD_LEFT) }}
-                        dated {{ $requestVisit->visit_date }}<br>
-                        Supersedes: Visitors Access Request {{ str_pad($requestVisit->id, 3, '0', STR_PAD_LEFT) }} Dated
-                        dated {{ $requestVisit->visit_date }}<br>
-                        Effective Date: {{ $requestVisit->visit_date }}</span>
+                <td colspan="4" style="padding: 0px 0px;margin :0px 0px">
+                    
+                  
+                        <table>
+                            <tr>
+                                <td class="text-center">SOP No.002 Annex {{ str_pad($requestVisit->id, 3, '0', STR_PAD_LEFT) }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-center">dated {{ $requestVisit->visit_date }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-center">Supersedes: Visitors Access Request {{ str_pad($requestVisit->id, 3, '0', STR_PAD_LEFT) }} Dated</td>
+                            </tr>
+                            <tr>
+                                <td class="text-center">dated {{ $requestVisit->visit_date }}</td>
+                            </tr>
+                            <tr>
+                                <td class="text-center">Effective Date: {{ $requestVisit->visit_date }}</td>
+                            </tr>
+                        </table>
                 </td>
             </tr>
         </table>
