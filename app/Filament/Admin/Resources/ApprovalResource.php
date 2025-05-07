@@ -178,7 +178,6 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                     $record->update(['comment' => $data['comment'], 'status' => $data['status'], 'approve_date' => now()]);
                     if (substr($record->approvable_type, 11) === "VisitorRequest") {
                         if ($data['status'] === "Approve") {
-                           sendSecurity($record->approvable, getCompany());
                                 $record->approvable->update([
                                     'status' => 'approved'
                                 ]);
@@ -256,13 +255,7 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                     if (substr($record->approvable_type, 11) === "PurchaseRequest") {
                         return true;
                     }
-                })->label('Item Approval ')->icon( fn($record)=>$record->status->value=='Approve'? 'heroicon-o-check-badge':'heroicon-o-x-circle')->iconSize(IconSize::Large)->color(fn($record)=>$record->status->value=='Approve'? 'success':'danger' )->url(fn($record)=>ApprovalResource::getUrl('purchase',['record'=>$record->id])),
-                Action::make('revise')->color('warning')->iconSize(IconSize::Medium)->icon('heroicon-c-exclamation-circle')->label('Need Revise')->action(function ($record){
-                    $record->approvable->update([
-                        'need_change'=>1
-                    ]);
-                    Notification::make('success')->title('Submitted Successfully')->success()->send();
-                })->requiresConfirmation()->visible(fn($record) => substr($record->approvable_type, 11) === "PurchaseRequest" and !$record->approvable->need_change and $record->approvable->status->value==='Requested')
+                })->label('Item Approval ')->icon( fn($record)=>$record->status->value=='Approve'? 'heroicon-o-check-badge':'heroicon-o-x-circle')->iconSize(IconSize::Large)->color(fn($record)=>$record->status->value=='Approve'? 'success':'danger' )->url(fn($record)=>ApprovalResource::getUrl('purchase',['record'=>$record->id]))
             ])->actionsAlignment(CellAlignment::LEFT)
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

@@ -153,7 +153,8 @@ class VisitRequest extends BaseWidget
                     if ($data['attachment']){
                         $visitorRequest->addMedia(public_path('images/'.$data['attachment']))->toMediaCollection('attachment');
                     }
-                    sendAR(getEmployee(),$visitorRequest,getCompany());
+                    // sendAR(getEmployee(),,getCompany());
+                    sendSecurity($visitorRequest, getCompany());
                     // sendSecurity(getEmployee(),$visitorRequest,getCompany());
                     Notification::make('success')->color('success')->success()->title('Request Sent')->send()->sendToDatabase(auth()->user());
 
