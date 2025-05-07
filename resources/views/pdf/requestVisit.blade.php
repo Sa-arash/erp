@@ -517,9 +517,15 @@
             </tr>
             <tr>
                 <td><strong>Type</strong></td>
-                <td>□ National</td>
-                <td>□ International</td>
-                <td colspan="3">□ De-facto Security Forces</td>
+                <td>
+                    {!! $requestVisit->employee->card_status === 'National Staff' ? '■ National' : '□ National' !!}
+                </td>
+                <td>
+                    {!! $requestVisit->employee->card_status === 'International Staff' ? '■ International' : '□ International' !!}
+                </td>
+                <td colspan="3">
+                    {!! $requestVisit->employee->card_status === 'International Resident' ? '■ De-facto Security Forces' : '□ De-facto Security Forces' !!}
+                </td>
 
             </tr>
             <tr>
@@ -625,9 +631,9 @@
                     <td class="equal-cell">□ Approved</td>
                     <td class="equal-cell">□ Not Approved</td>
                 </tr>
-                <tr>
+                {{-- <tr>
                     <td colspan="4" class="no-border" style="text-align: right;">&nbsp;</td>
-                </tr>
+                </tr> --}}
 
             </table>
         @endif
