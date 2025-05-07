@@ -472,8 +472,9 @@
             </tr>
             <tr>
                 <td>{{ \Illuminate\Support\Carbon::create($requestVisit->visit_date)->format('Y/m/d') }}</td>
-                <td>{{ $requestVisit->arrival_time }}</td>
-                <td>{{ $requestVisit->departure_time }}</td>
+                <td>{{ \Carbon\Carbon::parse($requestVisit->arrival_time)->format('h:i A') }}</td>
+                <td>{{ \Carbon\Carbon::parse($requestVisit->departure_time)->format('h:i A') }}</td>
+                
             </tr>
             <tr>
                 <td>Purpose of visit (Be specific)</td>
@@ -628,8 +629,9 @@
                 <tr>
                     <td class="equal-cell">Remarks to CSM</td>
                     <td class="equal-cell"></td>
-                    <td class="equal-cell">□ Approved</td>
-                    <td class="equal-cell">□ Not Approved</td>
+                    <td class="equal-cell">{{ $requestVisit->status == "approved" ? '■': '□' }}  Approved</td>
+                    <td class="equal-cell">{{ $requestVisit->status == "notApproved" ? '■': '□' }} Not Approved</td>
+                 
                 </tr>
                 {{-- <tr>
                     <td colspan="4" class="no-border" style="text-align: right;">&nbsp;</td>
