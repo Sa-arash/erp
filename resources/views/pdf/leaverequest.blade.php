@@ -170,15 +170,9 @@
 
 
 
+@include('pdf.header', ['titles' => ['Leave Request – R&R/Home'],'title'=>'Leave Request – R&R/Home','css'=>false])
 
 
-
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <title>Leave Request – R&R/Home</title>
     <style>
         body {
             font-family: Calibri, sans-serif;
@@ -246,20 +240,10 @@
             white-space: nowrap;
         }
     </style>
-</head>
 
 <body>
 
-    <table class="no-border">
-        <tr>
-            <td class="no-border" colspan="4" style="text-align: left;">
-
-            </td>
-        </tr>
-        <tr>
-            <td class="header" colspan="4">Leave Request – R&amp;R/Home</td>
-        </tr>
-    </table>
+    
 
     <table>
         <tr>
