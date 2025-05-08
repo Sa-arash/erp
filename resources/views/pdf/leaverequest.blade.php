@@ -184,13 +184,17 @@
         margin: 20px;
         color: #000;
     }
-
+    .font-bold{
+      font-weight: bold;
+    }
     table {
         width: 100%;
         border-collapse: collapse;
         margin-bottom: 10px;
     }
-
+.not-center{
+  text-align : left ;
+}
     td,
     th {
         border: 1px solid #000;
@@ -219,7 +223,12 @@
     }
 
     .section-title {
-        font-weight: bold;
+        font-weight: bold !important;
+        background: #ddd;
+        text-align: center;
+    }
+    .section-title td{
+        font-weight: bold !important;
         background: #ddd;
         text-align: center;
     }
@@ -263,29 +272,49 @@
     </table>
 
     <table>
-      <tr class="section-title">
-          <td >Employee Information</td>
-      </tr>
+        <tr class="section-title">
+            <td>Employee Information</td>
+        </tr>
         <tr>
             <td>
-              <table style="border-collapse: collapse; width: 100%;">
-                <tr>
-                    <td style="border-top: none;  border-left: none; border-right: none;" colspan="2">{{ $leave->employee->fullName }}</td>
-                </tr>
-                <tr >
-                    <td style="border-top: none; border-bottom: none; border-left: none; border-right: none;" colspan="2">Full Name</td>
-                </tr>
-                
-                <tr>
-                    <td style="border-top: none; border-left: none; border-right: none;">{{ $leave->employee->department->title }}</td>
-                    <td style="border-top: none; border-left: none; border-right: none;">{{ $leave->employee->department->employee->fullName }}</td>
-                </tr>
-                <tr>
-                    <td style="border-top: none; border-bottom: none; border-left: none; border-right: none;">Work Location</td>
-                    <td style="border-top: none; border-bottom: none; border-left: none; border-right: none;">Name of Immediate Supervisor / Manager</td>
-                </tr>
-            </table>
-            
+                <table style="border-collapse: collapse; width: 100%;">
+                  
+                    <tr>
+                      <td style="border: none;padding:0 10px">{{ explode(' ', $leave->employee->fullName)[0]  }}<br>
+                          <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+                      </td>
+                      <td style="border: none;padding:0 10px">
+                        {{ implode(' ', array_slice(explode(' ', $leave->employee->fullName), 1)) }}  
+                        <br>
+                          <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+                      </td>
+                  </tr>
+                  <tr>
+                      <td class="font-bold" style="width: 50%;border: none;padding:0 ">First Name</td>
+                      <td class="font-bold" style="width: 50%;border: none;padding:0 ">Last Name</td>
+                  </tr>
+
+                  
+
+
+
+
+
+                    <tr>
+                        <td style="border: none;padding:0 10px">{{ $leave->employee->department->title }}<br>
+                            <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+                        </td>
+                        <td style="border: none;padding:0 10px">
+                            {{ $leave->employee->manager->fullName }}<br>
+                            <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="font-bold" style="width: 50%;border: none;padding:0 ">Work Location</td>
+                        <td class="font-bold" style="width: 50%;border: none;padding:0 ">Name of Immediate Supervisor / Manager</td>
+                    </tr>
+                </table>
+
             </td>
         </tr>
     </table>
@@ -306,15 +335,13 @@
             </td>
         </tr>
         <tr>
-            <td colspan="6">Are you aware of any circumstances that will delay or prevent your return to the site
+            <td not-center colspan="6">Are you aware of any circumstances that will delay or prevent your return to the site
                 from leave?
-                <div style="margin-top:5px;">
-                    <div class="checkbox"></div> Yes <div class="checkbox filled" style="margin-left:20px;"></div> No
-                </div>
+                 Yes □  No □
             </td>
         </tr>
         <tr>
-            <td colspan="6" style="height:30px;">If yes, please explain:</td>
+            <td class="not-center" colspan="6" style="height:30px;">If yes, please explain:</td>
         </tr>
     </table>
 
