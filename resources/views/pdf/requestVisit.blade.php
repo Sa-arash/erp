@@ -10,11 +10,6 @@
                 font-family: Arial, sans-serif;
                 font-size: 14px;
 
-                margin-top: 0!important;
-                text-align: center;
-            }
-            *{
-                text-align: center;
             }
 
             table {
