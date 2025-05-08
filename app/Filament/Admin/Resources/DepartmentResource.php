@@ -43,6 +43,7 @@ class DepartmentResource extends Resource
                     }),
                 Forms\Components\TextInput::make('abbreviation')->maxLength(10)->columnSpanFull() ->required(),
                 Forms\Components\Textarea::make('description')->columnSpanFull(),
+//                Forms\Components\ColorPicker::make('color')
 
 
             ]);

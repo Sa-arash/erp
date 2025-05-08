@@ -41,7 +41,7 @@ class ProjectResource extends Resource
                     } else {
                         $newCode = '2025-0001';
                     }
-                    
+
                     return $newCode;
                    })->required()->maxLength(255),
                    Forms\Components\DatePicker::make('start_date'),
@@ -73,7 +73,7 @@ class ProjectResource extends Resource
                 Tables\Columns\TextColumn::make('end_date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('employee.fullName')->label('Manager')->sortable(),
                 Tables\Columns\TextColumn::make('priority_level')->badge(),
-                Tables\Columns\TextColumn::make('budget')->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('budget')->state(fn($record)=>number_format($record->budget,2).defaultCurrency()->symbol)->numeric()->sortable(),
             ])
             ->filters([
                 //

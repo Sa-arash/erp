@@ -46,8 +46,11 @@ class ApprovalResource extends Resource implements HasShieldPermissions
             'delete',
             'delete_any',
             'PR Warehouse (1)',
+            'PO Logistic Head',
             'PR Verification (2)',
-            'PR Approval (3)'
+            'PO Verification',
+            'PR Approval (3)',
+            'PO Approval'
         ];
     }
 
@@ -251,6 +254,12 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                             TextEntry::make('description')->columnSpanFull()->label('Description'),
                         ])
                 ]),
+                Action::make('revise')->color('warning')->iconSize(IconSize::Medium)->icon('heroicon-c-exclamation-circle')->label('Need Revise')->action(function ($record){
+                    $record->approvable->update([
+                        'need_change'=>1
+                    ]);
+                    Notification::make('success')->title('Submitted Successfully')->success()->send();
+                })->requiresConfirmation()->visible(fn($record) => substr($record->approvable_type, 11) === "PurchaseRequest" and !$record->approvable->need_change and $record->approvable->status->value==='Requested'),
                 Action::make('url')->visible(function ($record) {
                     if (substr($record->approvable_type, 11) === "PurchaseRequest") {
                         return true;

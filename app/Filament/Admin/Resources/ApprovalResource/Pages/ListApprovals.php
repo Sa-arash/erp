@@ -25,8 +25,7 @@ class ListApprovals extends ListRecords
         $data = ['All' => Tab::make()->query(fn($query) => $query)];
         $approvals = Approval::query()->where('employee_id',getEmployee()->id)->where('company_id', getCompany()->id)->distinct()->get()->unique('approvable_type');
         foreach ($approvals as  $item) {
-
-
+//            $approveCount = Approval::query()->where('employee_id',getEmployee()->id)->where('company_id', getCompany()->id)->distinct()->get()->unique('approvable_type')
             $data[Str::headline(substr($item->approvable_type, 11))] = Tab::make()->query(fn($query) => $query->where('approvable_type', $item->approvable_type)) ;
         }
         return $data;

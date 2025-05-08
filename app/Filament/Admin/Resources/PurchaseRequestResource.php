@@ -185,12 +185,12 @@ class PurchaseRequestResource extends Resource
         return $table->defaultSort('id', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex()->label('NO'),
-                Tables\Columns\TextColumn::make('description')->tooltip(fn($record) => $record->description)->limit(30),
-                Tables\Columns\TextColumn::make('purchase_number')->prefix('ATGT/UNC/')->label('PR NO')->searchable(),
-                Tables\Columns\TextColumn::make('request_date')->label('Request Date')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('employee.fullName')->tooltip(fn($record)=>$record->employee->position->title)
                     ->label('Requestor Name')->searchable(),
+                Tables\Columns\TextColumn::make('purchase_number')->prefix('ATGT/UNC/')->label('PR NO')->searchable(),
+                Tables\Columns\TextColumn::make('description')->tooltip(fn($record) => $record->description)->limit(30),
                 Tables\Columns\TextColumn::make('department')->state(fn($record) => $record->employee->department->title),
+                Tables\Columns\TextColumn::make('request_date')->label('Request Date')->dateTime()->sortable(),
                 // Tables\Columns\TextColumn::make('location')->state(fn($record) => $record->employee?->structure?->title)->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('status')->badge(),
                 Tables\Columns\TextColumn::make('bid.quotation.party.name')->label('Vendor'),

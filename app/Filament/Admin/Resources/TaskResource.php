@@ -55,8 +55,8 @@ class TaskResource extends Resource
             ->columns([
                 Tables\Columns\IconColumn::make('status')->size(Tables\Columns\IconColumn\IconColumnSize::ExtraLarge),
                 Tables\Columns\TextColumn::make('title')->label('Recently Assigned/ Today')->sortable(),
-                Tables\Columns\TextColumn::make('start_date')->label('Start Date (D/M/Y /H)')->dateTime()->sortable(),
-                Tables\Columns\TextColumn::make('deadline')->label('Due Date (D/M/Y /H)')->date()->sortable(),
+                Tables\Columns\TextColumn::make('start_date')->label('Start Date (M/D/Y  /H)')->dateTime()->sortable(),
+                Tables\Columns\TextColumn::make('deadline')->label('Due Date (M/D/Y /H)')->date()->sortable(),
                 Tables\Columns\TextColumn::make('employee.fullName')->label('Created By')->sortable(),
                 Tables\Columns\TextColumn::make('left')->label('Time Left ')->state(function ($record){
                     $startDateTime = now()->format('Y-m-d H:i:s');

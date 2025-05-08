@@ -19,7 +19,8 @@
         "niklasravnsborg/laravel-pdf": "^4.1",
         "tomatophp/filament-media-manager": "^1.1",
       "ext-libxml": "*",
-        "ext-dom": "*"
+        "ext-dom": "*",
+        "ext-intl": "*"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
