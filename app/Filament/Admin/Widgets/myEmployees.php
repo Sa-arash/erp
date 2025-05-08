@@ -15,7 +15,7 @@ class myEmployees extends BaseWidget
     {
         return $table
             ->query(
-                Employee::query()->where('manager_id',auth()->user()->id)
+                Employee::query()->where('manager_id',getEmployee()->id)
             )
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),

@@ -42,6 +42,32 @@ class CurrencyResource extends Resource
                 Forms\Components\TextInput::make('name')->required()->maxLength(255),
                 Forms\Components\TextInput::make('symbol')->required()->maxLength(255),
                 Forms\Components\TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                Forms\Components\Select::make('online_currency')->label('Online Currency')->options(function (){
+                    $response = \Illuminate\Support\Facades\Http::get('https://sarafi.af/en/exchange-rates/sarai-shahzada');
+
+                    $html = $response->body();
+
+                    libxml_use_internal_errors(true);
+
+                    $doc = new \DOMDocument();
+                    $doc->loadHTML($html);
+                    $xpath = new \DOMXPath($doc);
+
+                    $rows = $xpath->query('//table//tr');
+
+                    $usdRate = [];
+
+                    foreach ($rows as $row) {
+                        if (str_contains($row->textContent, 'USD - US Dollar') or str_contains($row->textContent, 'GBP - British Pound')or str_contains($row->textContent, 'EUR - Euro')or str_contains($row->textContent, 'PKR - Pakistani Rupee 1K') or str_contains($row->textContent, 'JPY - Japanese Yen 1K') or str_contains($row->textContent, 'INR - Indian Rupee 1K')or str_contains($row->textContent, 'IRR - Iranian Rial 1K') ) {
+                            $cols = $row->getElementsByTagName('td');
+                            $usdRate[trim($cols[0]->textContent)] = trim($cols[0]->textContent);
+                            if (count($usdRate) ==9){
+                                break;
+                            }
+                        }
+                    }
+                    return $usdRate;
+                })->searchable(),
                 Forms\Components\ToggleButtons::make('is_company_currency')->unique(ignoreRecord: true,modifyRuleUsing: function (Unique $rule) {
                     return $rule->where('is_company_currency', 1)->where('company_id',getCompany()->id);
                })->grouped()->label('Base Currency')->default(0)->boolean('Yes','No')->required(),
@@ -50,7 +76,7 @@ class CurrencyResource extends Resource
 
     public static function table(Table $table): Table
     {
-      
+
         return $table
             ->columns([
 

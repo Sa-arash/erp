@@ -1,5 +1,4 @@
 <x-filament-panels::page>
-
     <style>
         * {
             box-sizing: border-box;
@@ -11,50 +10,40 @@
         }
 
         .org-chart ul {
-            padding-top: 10px; /* کمتر از قبل */
+            padding-top: 4px;
             position: relative;
             display: flex;
             justify-content: center;
         }
 
         .org-chart ul ul {
-            padding-top: 20px; /* کمتر از قبل */
+            padding-top: 10px;
         }
 
         .org-chart li {
             list-style: none;
             position: relative;
-            padding: 10px 3px 0 3px; /* کمتر */
+            padding: 4px 3px 0 3px;
+            display: inline-block;
+            vertical-align: top;
         }
 
-        .org-chart li::before, .org-chart li::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            border-top: 1px solid #ccc;
-            width: 50%;
-            height: 15px;
-        }
 
-        .org-chart li::before {
-            left: -50%;
-            border-right: 1px solid #ccc;
-        }
+
+
 
         .org-chart li::after {
             right: -50%;
             border-left: 1px solid #ccc;
         }
 
+        /* حذف خطوط برای افراد بدون فرزند */
         .org-chart li:only-child::before,
         .org-chart li:only-child::after {
             display: none;
         }
 
-        .org-chart li:only-child {
-            padding-top: 0;
-        }
-
+        /* خطوط برای اولین و آخرین فرزند */
         .org-chart li:first-child::before,
         .org-chart li:last-child::after {
             border: 0 none;
@@ -70,89 +59,131 @@
             border-radius: 5px 0 0 0;
         }
 
+        /* استایل شخص */
         .person {
             background: #fefefe;
             border: 1px solid #e0e0e0;
             border-radius: 8px;
-            padding: 6px;
+            padding: 4px;
             display: block;
             margin: 0 auto;
             text-align: center;
-            min-width: 100px;
-            max-width: 120px; /* کوچکتر از قبل */
+            min-width: 80px;
+            max-width: 100px;
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
 
         .person img {
             display: block;
             margin: 0 auto;
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             object-fit: cover;
         }
 
-        .person h3 {
-            margin: 6px 0 3px;
-            font-size: 13px; /* کوچکتر */
+        .person h6 {
+            margin: 2px 0 2px;
+            font-size: 12px!important;
         }
 
         .person p {
             margin: 0;
-            font-size: 11px;
+            font-size: 10px!important;
             color: #888;
         }
 
-        .owner {
-            background-color: #f5e1da;
+        /* گروه زیرمجموعه‌ها */
+        .subordinates-group {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 10px;
         }
 
-        .ceo {
+        /* رنگ‌ها برای گروه‌ها */
+        .group-ceo {
+            border-color: #3399ff;
             background-color: #e6f2ff;
         }
 
-        .manager {
+        .group-manager {
+            border-color: #2ecc71;
             background-color: #e0ffe0;
         }
 
-        .employee {
+        .group-employee {
+            border-color: #f1c40f;
             background-color: #fff9e6;
         }
 
+        .group-owner {
+            border-color: #e67e22;
+            background-color: #f5e1da;
+        }
+
+        /* کانتینر */
         .org-chart-container {
             overflow: auto;
             max-width: 100%;
             max-height: 80vh;
-            padding: 20px;
+            padding: 10px;
         }
 
+        /* اطمینان از مناسب بودن سایز */
         .org-chart {
-            min-width: 1000px; /* عرض حداقلی برای چارت‌های بزرگ */
+            min-width: 700px;
             display: inline-block;
         }
+
+
+
     </style>
+
     @php
         if (!function_exists('renderOrgTree')) {
             function renderOrgTree($employee, $depth = 0, $maxDepth = 4) {
                 if ($depth > $maxDepth) return;
-              $img = $employee->media?->where('collection_name', 'images')?->first()?->original_url;
-   if (!$img) {
-       $img = $employee->gender == "male" ? asset('img/user.png') : asset('img/female.png');
-   }
+
+                $img = $employee->media?->where('collection_name', 'images')?->first()?->original_url;
+                if (!$img) {
+                    $img = $employee->gender == "male" ? asset('img/user.png') : asset('img/female.png');
+                }
 
                 echo '<li>';
                 echo '<div class="person">';
                 echo '<img src="' . $img . '" alt="' . $employee->name . '" loading="lazy" />';
-                echo '<h3>' . $employee->fullName . '</h3>';
+                echo '<h6>' . $employee->fullName . '</h6>';
                 echo '<p>' . ucfirst($employee->position->title) . '</p>';
                 echo '</div>';
 
                 if ($employee->subordinates->count()) {
-                    echo '<ul>';
-                    foreach ($employee->subordinates as $sub) {
-                        renderOrgTree($sub, $depth + 1, $maxDepth);
+                    $subordinates = $employee->subordinates;
+
+                    // ✅ اگر بالادستی نداره، یعنی CEO هست → همه رو تو یه گروه بیار
+                    $isCeo = is_null($employee->manager_id);
+                    $chunks = $subordinates->chunk($isCeo ? 1000 : 4);
+
+                    // 🎨 رنگ روشن رندوم برای گروه
+                    $bgColor = sprintf('#%06X', mt_rand(0xDDDDDD, 0xFFFFFF));
+
+                    echo '<div class="subordinates-group" style="
+                        background-color: ' . $bgColor . ';
+                        border: 1px dashed #999;
+                        border-radius: 8px;
+                        padding: 10px;
+                        margin-top: 10px;
+                    ">';
+
+                    foreach ($chunks as $group) {
+                        echo '<ul>';
+                        foreach ($group as $sub) {
+                            renderOrgTree($sub, $depth + 1, $maxDepth);
+                        }
+                        echo '</ul>';
                     }
-                    echo '</ul>';
+
+                    echo '</div>';
                 }
 
                 echo '</li>';
@@ -160,27 +191,33 @@
         }
 
 
-
-       $topManagers = \App\Models\Employee::with([
-           'media',
-        'subordinates',
-        'subordinates.subordinates',
-        'subordinates.subordinates.subordinates',
-        'subordinates.subordinates.subordinates.subordinates',
-    ])
-      ->where('company_id', getCompany()->id)->whereNull('manager_id')
-      ->get();
+        $topManagers = cache()->remember('top_managers_' . getCompany()->id, 60, function() {
+            return \App\Models\Employee::with([
+                'media',
+                'position',
+                'subordinates',
+                'subordinates.media',
+                'subordinates.position',
+                'subordinates.subordinates',
+                'subordinates.subordinates.media',
+                'subordinates.subordinates.position',
+                'subordinates.subordinates.subordinates',
+                'subordinates.subordinates.subordinates.subordinates',
+            ])
+            ->where('company_id', getCompany()->id)
+            ->whereNull('manager_id')
+            ->get();
+        });
     @endphp
+
     <div class="org-chart-container">
         <div class="org-chart">
             <ul>
                 @foreach($topManagers as $manager)
                     @php renderOrgTree($manager); @endphp
                 @endforeach
-
             </ul>
         </div>
     </div>
-
 
 </x-filament-panels::page>

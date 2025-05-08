@@ -73,6 +73,8 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                             getCompany()->update(['agency' => $array]);
                             return $data['title'];
                         })->searchable()->preload(),
+                        ToggleButtons::make('ICON')->label('ICON')->grouped()->boolean()->inline()->default(0)->required(),
+
 
                         Forms\Components\DatePicker::make('visit_date')->label('Visit Date')->default(now()->addDay())->required(),
                         Forms\Components\TimePicker::make('arrival_time')->label('Arrival Time')
@@ -83,10 +85,9 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                             ->seconds(false)
                             ->after('arrival_time')
                             ->required(),
-                        ToggleButtons::make('ICON')->label('ICON')->boolean()->inline()->default(0)->required(),
                         Forms\Components\TextInput::make('purpose')->columnSpanFull()
                             ->required(),
-                    ])->columns(5),
+                    ])->columns(6),
                     Forms\Components\Repeater::make('visitors_detail')
                         ->addActionLabel('Add')
                         ->label('Visitors Details')
@@ -235,6 +236,15 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
 
                             TextEntry::make('attachment')->label('Attachments')->color('aColor')
                             ->url(fn($state)=>asset('images/'.$state))->openUrlInNewTab()
+
+
+                                // ->hint(function ($state) {
+
+                                //     return str('(' . public_path('images') . '/' . $state . ')')->inlineMarkdown()->toHtmlString();
+                                // })->hintColor('primary')
+
+
+
                         ])->columns(6),
                         RepeatableEntry::make('driver_vehicle_detail')->schema([
                             TextEntry::make('name'),

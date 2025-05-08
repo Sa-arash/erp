@@ -96,7 +96,7 @@ Route::get('fix',function (){
 
 
 
-    $response = \Illuminate\Support\Facades\Http::get('https://sarafi.af/fa/exchange-rates/sarai-shahzada');
+    $response = \Illuminate\Support\Facades\Http::get('https://sarafi.af/en/exchange-rates/sarai-shahzada');
 
     $html = $response->body();
 
@@ -113,22 +113,18 @@ Route::get('fix',function (){
     $usdRate = [];
 
     foreach ($rows as $row) {
-        if (str_contains($row->textContent, 'دالر آمریکا') or str_contains($row->textContent, 'پوند انگلیس')or str_contains($row->textContent, ' یورو اروپا')or str_contains($row->textContent, 'PKR') or str_contains($row->textContent, 'JPY') ) {
+        if (str_contains($row->textContent, 'USD - US Dollar') or str_contains($row->textContent, 'GBP - British Pound')or str_contains($row->textContent, 'EUR - Euro')or str_contains($row->textContent, 'PKR - Pakistani Rupee 1K') or str_contains($row->textContent, 'JPY - Japanese Yen 1K') or str_contains($row->textContent, 'INR - Indian Rupee 1K')or str_contains($row->textContent, 'IRR - Iranian Rial 1K') ) {
             $cols = $row->getElementsByTagName('td');
             $usdRate[trim($cols[0]->textContent)] = [
                 'buy' => trim($cols[1]->textContent),
                 'sell' => trim($cols[2]->textContent),
             ];
-            if (count($usdRate) ==4){
+            if (count($usdRate) ==9){
                 break;
             }
         }
     }
-    dd($usdRate);
 
-
-      $c=  \App\Models\Currency::query()->where('id',1)->update(['exchange_rate'=>$usdRate['sell']]);
-dd($c);
 
 });
 

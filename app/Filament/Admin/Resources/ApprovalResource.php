@@ -55,7 +55,7 @@ class ApprovalResource extends Resource implements HasShieldPermissions
     {
         return $table->query(Approval::query()->where('employee_id', getEmployee()->id)->orderBy('id', 'desc'))
             ->columns([
-                Tables\Columns\TextColumn::make('approvable.purchase_number')->prefix('')->label('PR No')->badge(),
+                Tables\Columns\TextColumn::make('approvable.purchase_number')->prefix('')->label('No')->badge(),
                 Tables\Columns\TextColumn::make('approvable.employee.info')->label('Employee')->badge(),
                 Tables\Columns\TextColumn::make('created_at')->label('Request Date')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('approve_date')->label('Approval Date')->date(),

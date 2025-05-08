@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('symbol');
+            $table->string('online_currency')->nullable();
             $table->decimal('exchange_rate',50,8);
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();
             $table->boolean('is_company_currency')->default(0);
