@@ -289,11 +289,16 @@
                 font-family: Arial, sans-serif;
                 font-size: 14px;
                 margin: 20px;
+                text-align: center;
+            }
+            *{
+                text-align: center; 
             }
 
             table {
                 width: 100%;
                 border-collapse: collapse;
+                text-align: center;
             }
 
             td,
@@ -301,6 +306,7 @@
                 border: 1px solid #000;
                 padding: 4px;
                 vertical-align: top;
+                text-align: center;
             }
 
             .header {
@@ -380,6 +386,7 @@
 
             .equal-table {
                 width: 100%;
+                text-align: center;
                 /* عرض جدول را به 100% تنظیم کنید */
                 border-collapse: collapse;
                 /* برای حذف فاصله بین سلول‌ها */
@@ -387,6 +394,7 @@
 
             .equal-cell {
                 width: 25%;
+                text-align: center;
                 /* عرض هر ستون را به 25% تنظیم کنید */
                 border: 1px solid #000;
                 /* برای نمایش مرز سلول‌ها */
@@ -445,16 +453,18 @@
                 <td>Requestor’s Name</td>
                 <td>Title</td>
                 <td>UN Agency</td>
+                <td>ICON</td>
                 <td>Cell Phone</td>
-                <td colspan="2">Email</td>
+                <td>Email</td>
             </tr>
 
             <tr>
                 <td> {{ $requestVisit->employee->fullName }}</td>
                 <td> {{ $requestVisit->employee->agency }}</td>
                 <td> {{ $requestVisit->agency }}</td>
+                <td> {{ $requestVisit->ICON ? '■': '□' }}</td>
                 <td> {{ $requestVisit->employee->phone_number }}</td>
-                <td colspan="2">{{ $requestVisit->employee->email }}</td>
+                <td>{{ $requestVisit->employee->email }}</td>
             </tr>
             <tr>
                 <td colspan="6" class="no-border" style="text-align: right;"> &nbsp;</td>

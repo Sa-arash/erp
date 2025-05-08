@@ -170,80 +170,85 @@
 
 
 
-@include('pdf.header', ['titles' => ['Leave Request – R&R/Home'],'title'=>'Leave Request – R&R/Home','css'=>false])
+@include('pdf.header', [
+    'titles' => ['Leave Request – R&R/Home'],
+    'title' => 'Leave Request – R&R/Home',
+    'css' => false,
+])
 
 
-    <style>
-        body {
-            font-family: Calibri, sans-serif;
-            font-size: 13px;
-            margin: 20px;
-            color: #000;
-        }
+<style>
+    body {
+        font-family: Calibri, sans-serif;
+        font-size: 13px;
+        margin: 20px;
+        color: #000;
+    }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 10px;
-        }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 10px;
+    }
 
-        td,
-        th {
-            border: 1px solid #000;
-            padding: 5px;
-            vertical-align: top;
-        }
+    td,
+    th {
+        border: 1px solid #000;
+        padding: 5px;
+        text-align: center;
+        vertical-align: top;
+    }
 
-        .header {
-            text-align: center;
-            font-weight: bold;
-            font-size: 16px;
-            border: none;
-        }
+    .header {
+        text-align: center;
+        font-weight: bold;
+        font-size: 16px;
+        border: none;
+    }
 
-        .checkbox {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border: 1px solid #000;
-            margin-right: 4px;
-        }
+    .checkbox {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border: 1px solid #000;
+        margin-right: 4px;
+    }
 
-        .filled {
-            background: #000;
-        }
+    .filled {
+        background: #000;
+    }
 
-        .section-title {
-            font-weight: bold;
-            background: #ddd;
-            text-align: center;
-        }
+    .section-title {
+        font-weight: bold;
+        background: #ddd;
+        text-align: center;
+    }
 
-        .calendar td {
-            text-align: center;
-            height: 24px;
-        }
+    .calendar td {
+        text-align: center;
+        height: 24px;
+    }
 
-        .no-border {
-            border: none !important;
-        }
+    .no-border {
+        border: none !important;
+    }
 
-        .signature-space {
-            height: 50px;
-        }
+    .signature-space {
+        height: 50px;
+    }
 
-        .small-text {
-            font-size: 11px;
-        }
+    .small-text {
+        font-size: 11px;
+    }
 
-        .nowrap {
-            white-space: nowrap;
-        }
-    </style>
+    .nowrap {
+        white-space: nowrap;
+    }
+</style>
 
 <body>
 
-    
+
 
     <table>
         <tr>
@@ -258,18 +263,30 @@
     </table>
 
     <table>
-        <tr class="section-title">
-            <td colspan="4">Employee Information</td>
-        </tr>
+      <tr class="section-title">
+          <td >Employee Information</td>
+      </tr>
         <tr>
-            <td><strong>First Name</strong><br>{{ $leave->employee->fullName }}</td>
-            <td><strong>Middle In.</strong><br>J.</td>
-            <td><strong>Last Name</strong><br>TRUMP</td>
-            <td><strong>Name of Immediate Supervisor /
-                    Manager</strong><br>{{ $leave->employee->department->employee->fullName }}</td>
-        </tr>
-        <tr>
-            <td colspan="4"><strong>Work Location</strong><br>{{ $leave->employee->department->title }}</td>
+            <td>
+              <table style="border-collapse: collapse; width: 100%;">
+                <tr>
+                    <td style="border-top: none;  border-left: none; border-right: none;" colspan="2">{{ $leave->employee->fullName }}</td>
+                </tr>
+                <tr >
+                    <td style="border-top: none; border-bottom: none; border-left: none; border-right: none;" colspan="2">Full Name</td>
+                </tr>
+                
+                <tr>
+                    <td style="border-top: none; border-left: none; border-right: none;">{{ $leave->employee->department->title }}</td>
+                    <td style="border-top: none; border-left: none; border-right: none;">{{ $leave->employee->department->employee->fullName }}</td>
+                </tr>
+                <tr>
+                    <td style="border-top: none; border-bottom: none; border-left: none; border-right: none;">Work Location</td>
+                    <td style="border-top: none; border-bottom: none; border-left: none; border-right: none;">Name of Immediate Supervisor / Manager</td>
+                </tr>
+            </table>
+            
+            </td>
         </tr>
     </table>
 
@@ -327,58 +344,67 @@
                 @endphp
                 <strong>Month: {{ $startDate->format('F') }}</strong>
                 <table class="calendar">
-                  @for ($i = 1; $i <= $daysInMonth; $i++)
-                  @if ($i % 7 == 1)
-                      <tr> <!-- شروع یک ردیف جدید -->
-                  @endif
+                    @for ($i = 1; $i <= $daysInMonth; $i++)
+                        @if ($i % 7 == 1)
+                            <tr> <!-- شروع یک ردیف جدید -->
+                        @endif
 
-                  @php
-                      $currentDate = $startDate->copy()->day($i);
+                        @php
+                            $currentDate = $startDate->copy()->day($i);
 
-                      $isInLeavePeriod = $currentDate->between($startDate, $endDate) || $currentDate->isSameDay($startDate) || $currentDate->isSameDay($endDate); //
-                      // بررسی اینکه آیا تاریخ در بازه مرخصی است
+                            $isInLeavePeriod =
+                                $currentDate->between($startDate, $endDate) ||
+                                $currentDate->isSameDay($startDate) ||
+                                $currentDate->isSameDay($endDate); //
+                            // بررسی اینکه آیا تاریخ در بازه مرخصی است
+                        @endphp
 
-                  @endphp
+                        <td>
+                            {{ $i }} @if ($isInLeavePeriod)
+                                ★
+                            @endif <!-- نمایش روز و ستاره در صورت نیاز -->
+                        </td>
 
-                  <td>
-                      {{ $i }} @if($isInLeavePeriod) ★ @endif <!-- نمایش روز و ستاره در صورت نیاز -->
-                  </td>
-
-                  @if ($i % 7 == 0 || $i == $daysInMonth)
-                      </tr> <!-- پایان ردیف -->
-                  @endif
-              @endfor
+                        @if ($i % 7 == 0 || $i == $daysInMonth)
+        </tr> <!-- پایان ردیف -->
+        @endif
+        @endfor
 
     </table>
     </td>
     <td>
-      @php
-      $startDate = \Carbon\Carbon::parse($leave->start_leave);
-      $endDate = \Carbon\Carbon::parse($leave->end_leave);
-      $daysInMonth = $startDate->daysInMonth; // تعداد روزهای ماه جاری
-      $nextMonthStartDate = $startDate->copy()->addMonth(); // تاریخ شروع ماه آینده
-      $nextMonthDaysInMonth = $nextMonthStartDate->daysInMonth; // تعداد روزهای ماه آینده
-  @endphp
+        @php
+            $startDate = \Carbon\Carbon::parse($leave->start_leave);
+            $endDate = \Carbon\Carbon::parse($leave->end_leave);
+            $daysInMonth = $startDate->daysInMonth; // تعداد روزهای ماه جاری
+            $nextMonthStartDate = $startDate->copy()->addMonth(); // تاریخ شروع ماه آینده
+            $nextMonthDaysInMonth = $nextMonthStartDate->daysInMonth; // تعداد روزهای ماه آینده
+        @endphp
         <strong>Month: {{ $startDate->copy()->addMonth()->format('F') }}</strong>
         <table class="calendar">
-          @for ($i = 1; $i <= $nextMonthDaysInMonth; $i++)
-                  @if ($i % 7 == 1)
-                      <tr> <!-- شروع یک ردیف جدید -->
-                  @endif
+            @for ($i = 1; $i <= $nextMonthDaysInMonth; $i++)
+                @if ($i % 7 == 1)
+                    <tr> <!-- شروع یک ردیف جدید -->
+                @endif
 
-                  @php
-                      $currentDate = $startDate->copy()->addMonth()->day($i);
-                      $isInLeavePeriod = $currentDate->between($startDate, $endDate) || $currentDate->isSameDay($startDate) || $currentDate->isSameDay($endDate); // بررسی اینکه آیا تاریخ در بازه مرخصی است
-                  @endphp
+                @php
+                    $currentDate = $startDate->copy()->addMonth()->day($i);
+                    $isInLeavePeriod =
+                        $currentDate->between($startDate, $endDate) ||
+                        $currentDate->isSameDay($startDate) ||
+                        $currentDate->isSameDay($endDate); // بررسی اینکه آیا تاریخ در بازه مرخصی است
+                @endphp
 
-                  <td>
-                      {{ $i }} @if($isInLeavePeriod) ★ @endif <!-- نمایش روز و ستاره در صورت نیاز -->
-                  </td>
+                <td>
+                    {{ $i }} @if ($isInLeavePeriod)
+                        ★
+                    @endif <!-- نمایش روز و ستاره در صورت نیاز -->
+                </td>
 
-                  @if ($i % 7 == 0 || $i == $nextMonthDaysInMonth)
-                      </tr> <!-- پایان ردیف -->
-                  @endif
-              @endfor
+                @if ($i % 7 == 0 || $i == $nextMonthDaysInMonth)
+                    </tr> <!-- پایان ردیف -->
+                @endif
+            @endfor
         </table>
     </td>
     </tr>
