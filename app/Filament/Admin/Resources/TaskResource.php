@@ -34,7 +34,8 @@ class TaskResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('title')->required()->maxLength(255)->columnSpanFull(),
+                Forms\Components\TextInput::make('title')->required()->maxLength(255),
+                Forms\Components\Select::make('project_id')->nullable()->relationship('project', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->label('Project'),
                 Forms\Components\Section::make([
                     Forms\Components\Select::make('employees')->required()->relationship('employees', 'fullName', modifyQueryUsing: fn($query) => $query->where('employees.company_id', getCompany()->id))->searchable()->preload()->multiple()->pivotData([
                         'company_id' => getCompany()->id
@@ -79,12 +80,14 @@ class TaskResource extends Resource
                         }
                     }
                     return $data;
-                })
-                    ->circular()
-                    ->stacked()
+                })->circular()->stacked(),
+                Tables\Columns\TextColumn::make('project.name')->label('Project')->sortable(),
             ])
             ->filters([
                 DateRangeFilter::make('start_date'),
+                Tables\Filters\SelectFilter::make('project_id')->label('Project')->searchable()->preload()->relationship('project', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id)),
+                Tables\Filters\SelectFilter::make('employee_id')->label('Task Assigned')->searchable()->preload()->relationship('employees', 'fullName', modifyQueryUsing: fn($query) => $query->where('employees.company_id', getCompany()->id)),
+                Tables\Filters\SelectFilter::make('employees')->label('Employees')->searchable()->preload()->relationship('employees', 'fullName', modifyQueryUsing: fn($query) => $query->where('employees.company_id', getCompany()->id)),
             ], getModelFilter())
             ->actions([
                 Tables\Actions\Action::make('Duplicate')->iconSize(IconSize::Large)->icon('heroicon-o-clipboard-document-check')->label('Duplicate')->url(fn($record) => TaskResource::getUrl('replicate', ['id' => $record->id])),
@@ -126,7 +129,7 @@ class TaskResource extends Resource
                     Tables\Actions\BulkAction::make('print')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->color('primary')->action(function ($records) {
                         return redirect(route('pdf.tasks', ['ids' => implode('-', $records->pluck('id')->toArray())]));
                     }),
-            ]);
+            ])->groups(['project_id']);
     }
 
     public static function getRelations(): array

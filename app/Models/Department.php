@@ -9,7 +9,7 @@ class Department extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['title','abbreviation', 'company_id', 'description','employee_id'];
+    protected $fillable = ['title','abbreviation', 'company_id', 'description','employee_id','color'];
 
 
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo

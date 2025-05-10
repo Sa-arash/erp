@@ -27,7 +27,8 @@ class ReplicateTask extends CreateRecord
     {
         return $form
             ->schema([
-                TextInput::make('title')->required()->maxLength(255)->columnSpanFull(),
+                TextInput::make('title')->required()->maxLength(255),
+                Select::make('project_id')->nullable()->relationship('project', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->label('Project'),
                 Section::make([
                     Select::make('employees')->required()->relationship('employees','fullName',modifyQueryUsing: fn($query)=>$query->where('employees.company_id',getCompany()->id))->searchable()->preload()->multiple()->pivotData([
                         'company_id'=>getCompany()->id

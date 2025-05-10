@@ -31,7 +31,7 @@ class ProjectResource extends Resource
                Forms\Components\Section::make([
                    Forms\Components\TextInput::make('name')->columnSpan(2)->required()->maxLength(255),
                    Forms\Components\TextInput::make('code')->default(function(){
-                    $maxCode = Project::orderBy('code', 'desc')->value('code');
+                    $maxCode = Project::query()->where('companny_id',getCompany()->id)->orderBy('code', 'desc')->value('code');
 
                     if ($maxCode) {
                         $parts = explode('-', $maxCode);
@@ -65,8 +65,9 @@ class ProjectResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
+        return $table->recordUrl(fn($record)=>ProjectResource::getUrl('view',['record'=>$record->id]))
             ->columns([
+                Tables\Columns\TextColumn::make('#')->rowIndex(),
                 Tables\Columns\TextColumn::make('name')->searchable(),
                 Tables\Columns\TextColumn::make('code')->searchable(),
                 Tables\Columns\TextColumn::make('start_date')->date()->sortable(),
@@ -91,7 +92,7 @@ class ProjectResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+//                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }
@@ -99,7 +100,8 @@ class ProjectResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\TasksRelationManager::class,
+            RelationManagers\PurchaseRequestItemRelationManager::class
         ];
     }
 
@@ -109,6 +111,7 @@ class ProjectResource extends Resource
             'index' => Pages\ListProjects::route('/'),
             'create' => Pages\CreateProject::route('/create'),
             'edit' => Pages\EditProject::route('/{record}/edit'),
+            'view' => Pages\ViewProject::route('/{record}/view'),
         ];
     }
 }
