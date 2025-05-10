@@ -25,6 +25,10 @@ class Project extends Model implements HasMedia
     {
         return $this->belongsTo(Employee::class);
     }
+    public function tasks(): \Illuminate\Database\Eloquent\Relations\hasMany
+    {
+        return $this->hasMany(Task::class);
+    }
     public function purchaseRequestItem(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(PurchaseRequestItem::class,'project_id')->where('approval_decision','approve');

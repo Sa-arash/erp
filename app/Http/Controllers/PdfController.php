@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\Asset;
 use App\Models\Bid;
 use App\Models\Employee;
+use App\Models\Factor;
 use App\Models\FinancialPeriod;
 use App\Models\Invoice;
 use App\Models\Leave;
@@ -561,6 +562,17 @@ class PdfController extends Controller
         $pdf = Pdf::loadView(
             'pdf.cashAdvance',
             compact( 'loan','company')
+        );
+        return $pdf->stream();
+    }
+    public function sales($id)
+    {
+
+        $invoice=Factor::query()->with(['items','items.unit','company'])->findOrFail($id);
+        $company=$invoice->company;
+        $pdf = Pdf::loadView(
+            'pdf.sales',
+            compact( 'company','invoice')
         );
         return $pdf->stream();
     }

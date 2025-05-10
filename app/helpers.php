@@ -680,11 +680,11 @@ function getAdmin()
 function getSecurity()
 {
     $employee = User::whereHas('roles.permissions', function ($query) {
-        $query->where('name', 'security_visitor::request'); 
+        $query->where('name', 'security_visitor::request');
     })->get() ->pluck('employee.id')->toArray();
     return ($employee);
 
-   
+
 }
 
 function getOperation()
@@ -876,4 +876,17 @@ function calculateTime($startDateTime, $endDateTime): \Carbon\CarbonInterval|str
     $interval = $start->diff($end);
 
     return $interval;
+}
+
+function numberToWords($number)
+{
+    if (!is_numeric($number)) {
+        return false;
+    }
+
+    $f = new NumberFormatter("en", NumberFormatter::SPELLOUT);
+    $words = $f->format($number);
+
+    // Capitalize first letter and add "US Dollar"
+    return ucfirst($words) . " US Dollar";
 }

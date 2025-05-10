@@ -167,10 +167,10 @@
     <tr  style="border: none!important;">
         @foreach($pr?->approvals->where('status','Approve') as $approve)
         <th style="border: none!important;background: white !important;color: #1a202c">
-            @if($approve->position==="PR Verification (2)")
+            @if($approve->position==="PR Verification")
                 Verified By
                 <br>  {{$approve->employee?->position->title}}
-            @elseif($approve->position==="PR Warehouse (1)")
+            @elseif($approve->position==="PR Warehouse")
                 Warehouse/Storage
                 <br>  {{$approve->employee?->fullName}}
             @else

@@ -83,6 +83,7 @@ class PurchaseOrderResource extends Resource
                                                     $item['unit_price'] = number_format($item['unit_rate']);
                                                     $price = $item['unit_rate'];
                                                     $tax = $item['taxes'];
+
                                                     $freights = $item['freights'];
 
                                                     $item['total'] = number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100));
@@ -92,7 +93,14 @@ class PurchaseOrderResource extends Resource
                                                 $set('vendor_id', $record->bid->quotation->party_id);
                                                 $set('currency_id', $record->bid->quotation->currency_id);
                                             } else {
-                                                $set('RequestedItems', $record->items->where('status', 'approve')->toArray());
+                                                $data=[];
+                                                foreach ($record->items->where('status', 'approve')->toArray() as $item){
+                                                    $item['taxes']=0;
+                                                    $item['freights']=0;
+                                                    $data[]=$item;
+                                                }
+                                                dd($data);
+                                                $set('RequestedItems', $data);
                                                 // dd($get('RequestedItems'),$record->items->where('status', 'approve')->toArray());
                                             }
                                         }
@@ -256,7 +264,7 @@ class PurchaseOrderResource extends Resource
                                             ->required()
                                             ->mask(RawJs::make('$money($input)'))
                                             ->stripCharacters(',')->label('Final Price'),
-                                        Forms\Components\TextInput::make('taxes')->afterStateUpdated(function ($state, Set $set, Get $get) {
+                                        Forms\Components\TextInput::make('taxes')->default(0)->afterStateUpdated(function ($state, Set $set, Get $get) {
 
                                             $freights = intval($get('freights') == null ? 0 : (float)$get('freights'));
 
@@ -284,7 +292,7 @@ class PurchaseOrderResource extends Resource
                                             ])
                                             ->mask(RawJs::make('$money($input)'))
                                             ->stripCharacters(','),
-                                        Forms\Components\TextInput::make('freights')->afterStateUpdated(function ($state, Set $set, Get $get) {
+                                        Forms\Components\TextInput::make('freights')->default(0)->afterStateUpdated(function ($state, Set $set, Get $get) {
                                             $freights = $state === null ? 0 : (float) $state;
                                             $q = intval($get('quantity'));
                                             $tax = intval($get('taxes') === null ? 0 : (float)$get('taxes'));

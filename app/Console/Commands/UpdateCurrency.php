@@ -46,6 +46,7 @@ class UpdateCurrency extends Command
                     'buy' => trim($cols[1]->textContent),
                     'sell' => trim($cols[2]->textContent),
                 ];
+                dd(1);
                 \App\Models\Currency::query()->where('online_currency',trim($cols[0]->textContent))->update(['exchange_rate'=>$usdRate[trim($cols[0]->textContent)]['sell']]);
 
                 if (count($usdRate) ==9){

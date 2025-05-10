@@ -139,6 +139,13 @@
 
 
     </style>
+    <div style="margin-bottom: 10px; text-align: center;">
+        <button onclick="zoomOut()" style="padding: 5px 10px; margin-right: 10px;">➖ Zoom Out</button>
+        <button onclick="zoomIn()" style="padding: 5px 10px; margin-right: 10px;">➕ Zoom In</button>
+        <button onclick="resetZoom()" style="padding: 5px 10px;">🔄 Reset</button>
+    </div>
+
+
 
     @php
         if (!function_exists('renderOrgTree')) {
@@ -165,7 +172,7 @@
                     $chunks = $subordinates->chunk($isCeo ? 1000 : 4);
 
                     // 🎨 رنگ روشن رندوم برای گروه
-                    $bgColor = sprintf('#%06X', mt_rand(0xDDDDDD, 0xFFFFFF));
+                    $bgColor = $employee->department?->color?$employee->department?->color:sprintf('#%06X', mt_rand(0xDDDDDD, 0xFFFFFF));
 
                     echo '<div class="subordinates-group" style="
                         background-color: ' . $bgColor . ';
@@ -193,6 +200,7 @@
 
         $topManagers = cache()->remember('top_managers_' . getCompany()->id, 60, function() {
             return \App\Models\Employee::with([
+                'department',
                 'media',
                 'position',
                 'subordinates',
@@ -219,5 +227,39 @@
             </ul>
         </div>
     </div>
+    <script>
+        let scale = 1;
+        const chart = document.querySelector('.org-chart');
+        const container = document.querySelector('.org-chart-container');
+
+        function applyZoom() {
+            chart.style.transform = `scale(${scale})`;
+            chart.style.transformOrigin = 'top center';
+
+            // بعد از زوم، مرکز چارت را به وسط اسکرول کن
+            setTimeout(() => {
+                const scrollLeft = (chart.offsetWidth * scale - container.clientWidth) / 2;
+                container.scrollLeft = scrollLeft;
+            }, 50); // کمی تأخیر برای اعمال scale
+        }
+
+        function zoomIn() {
+            scale += 0.1;
+            applyZoom();
+        }
+
+        function zoomOut() {
+            scale = Math.max(0.2, scale - 0.1);
+            applyZoom();
+        }
+
+        function resetZoom() {
+            scale = 1;
+            applyZoom();
+        }
+
+        document.addEventListener("DOMContentLoaded", applyZoom);
+    </script>
+
 
 </x-filament-panels::page>

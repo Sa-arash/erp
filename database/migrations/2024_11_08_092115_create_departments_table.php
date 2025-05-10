@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('title');
             $table->string('description')->nullable();
+            $table->string('color')->nullable();
             $table->string('abbreviation')->nullable();
             $table->bigInteger('employee_id')->nullable();
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();

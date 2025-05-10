@@ -164,13 +164,18 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                         return $difference;
                     }
                 })->label('Track Time'),
-                Tables\Columns\TextColumn::make('status')->color(function ($state) {
+                Tables\Columns\TextColumn::make('status')->state(fn($record)=>match ($record->status){
+                    'approved'=>'Approved',
+                    'Pending'=>'Pending',
+                    'notApproved'=>'Not Approved',
+                    'default'=>''
+                })->color(function ($state) {
                     switch ($state) {
-                        case "approved":
+                        case "Approved":
                             return 'success';
                         case "Pending":
                             return 'info';
-                        case "notApproved":
+                        case "Not Approved":
                             return 'danger';
                     }
                 })->badge(),
