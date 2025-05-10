@@ -589,6 +589,7 @@ class PurchaseOrderResource extends Resource
                     ->label('Total(' . defaultCurrency()?->symbol . ")")
                     ->state(fn($record) => number_format($record->items->map(fn($item) => (($item['quantity'] * str_replace(',', '', $item['unit_price'])) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['taxes']) / 100) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['freights']) / 100)))?->sum()))
                     ->searchable(),
+                    Tables\Columns\TextColumn::make('bid.total_cost')->alignCenter()->label('Total Final Price' )->numeric(),
 
                 // Tables\Columns\TextColumn::make('currency')
                 // ->searchable(),
