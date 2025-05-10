@@ -138,6 +138,7 @@ class  ViewEmployee extends ViewRecord
                         textEntry::make('name')->badge()->copyable()->inlineLabel(),
                         textEntry::make('relation')->badge()->copyable()->inlineLabel(),
                         textEntry::make('number')->badge()->copyable()->inlineLabel(),
+                        textEntry::make('email')->badge()->copyable()->inlineLabel(),
                     ])->columnSpan(2)
                     ->columns(1)
 
