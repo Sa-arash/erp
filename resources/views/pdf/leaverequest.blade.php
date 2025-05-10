@@ -184,17 +184,21 @@
         margin: 20px;
         color: #000;
     }
-    .font-bold{
-      font-weight: bold;
+
+    .font-bold {
+        font-weight: bold;
     }
+
     table {
         width: 100%;
         border-collapse: collapse;
         margin-bottom: 10px;
     }
-.not-center{
-  text-align : left ;
-}
+
+    .not-center {
+        text-align: left;
+    }
+
     td,
     th {
         border: 1px solid #000;
@@ -227,7 +231,8 @@
         background: #ddd;
         text-align: center;
     }
-    .section-title td{
+
+    .section-title td {
         font-weight: bold !important;
         background: #ddd;
         text-align: center;
@@ -252,6 +257,11 @@
 
     .nowrap {
         white-space: nowrap;
+    }
+
+    .hilite {
+        background-color: yellow;
+        /* یا هر استایل دیگری که می‌خواهید */
     }
 </style>
 
@@ -278,40 +288,66 @@
         <tr>
             <td>
                 <table style="border-collapse: collapse; width: 100%;">
-                  
-                    <tr>
-                      <td style="border: none;padding:0 10px">{{ explode(' ', $leave->employee->fullName)[0]  }}<br>
-                          <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
-                      </td>
-                      <td style="border: none;padding:0 10px">
-                        {{ implode(' ', array_slice(explode(' ', $leave->employee->fullName), 1)) }}  
-                        <br>
-                          <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
-                      </td>
-                  </tr>
-                  <tr>
-                      <td class="font-bold" style="width: 50%;border: none;padding:0 ">First Name</td>
-                      <td class="font-bold" style="width: 50%;border: none;padding:0 ">Last Name</td>
-                  </tr>
-
-                  
-
-
-
-
+                    @php
+                        $fullNameParts = explode(' ', trim($leave->employee->fullName));
+                        $nameCount = count($fullNameParts);
+                    @endphp
 
                     <tr>
-                        <td style="border: none;padding:0 10px">{{ $leave->employee->department->title }}<br>
+                        @if ($nameCount === 3)
+                            @foreach ($fullNameParts as $part)
+                                <td colspan="4" style="border: none; padding: 0 10px;">
+                                    {{ $part }}<br>
+                                    <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+                                </td>
+                            @endforeach
+                        @elseif ($nameCount === 2)
+                            <td colspan="4" style="border: none; padding: 0 10px;">
+                                {{ $fullNameParts[0] }}<br>
+                                <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+                            </td>
+                            <td colspan="4" style="border: none; padding: 0 10px;">
+                                &nbsp;<br>
+                                <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+                            </td>
+                            <td colspan="4" style="border: none; padding: 0 10px;">
+                                {{ $fullNameParts[1] }}<br>
+                                <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+                            </td>
+                        @endif
+                    </tr>
+
+
+
+
+                    <tr>
+                        <td colspan="4" class="font-bold" style="width: 50%;border: none;padding:0 ">First Name</td>
+                        <td colspan="4" class="font-bold" style="width: 50%;border: none;padding:0 ">Mid Name</td>
+                        <td colspan="4" class="font-bold" style="width: 50%;border: none;padding:0 ">Last Name</td>
+                    </tr>
+
+
+
+
+
+
+
+                    <tr>
+                        <td colspan="6" style="border: none;padding:0 10px">
+                            {{ $leave->employee?->warehouse?->title . ' - ' . $leave->employee?->structure?->title }}<br>
                             <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
                         </td>
-                        <td style="border: none;padding:0 10px">
-                            {{ $leave->employee->manager->fullName }}<br>
+                        <td colspan="6" style="border: none;padding:0 10px">
+                            {{ $leave->employee?->manager?->fullName }}<br>
                             <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
                         </td>
                     </tr>
                     <tr>
-                        <td class="font-bold" style="width: 50%;border: none;padding:0 ">Work Location</td>
-                        <td class="font-bold" style="width: 50%;border: none;padding:0 ">Name of Immediate Supervisor / Manager</td>
+                        <td colspan="6" class="font-bold" style="width: 50%;border: none;padding:0 ">Work Location
+                        </td>
+                        <td colspan="6" class="font-bold" style="width: 50%;border: none;padding:0 ">Name of
+                            Immediate Supervisor /
+                            Manager</td>
                     </tr>
                 </table>
 
@@ -335,9 +371,10 @@
             </td>
         </tr>
         <tr>
-            <td not-center colspan="6">Are you aware of any circumstances that will delay or prevent your return to the site
+            <td not-center colspan="6">Are you aware of any circumstances that will delay or prevent your return to
+                the site
                 from leave?
-                 Yes □  No □
+                Yes □ No □
             </td>
         </tr>
         <tr>
@@ -386,10 +423,8 @@
                             // بررسی اینکه آیا تاریخ در بازه مرخصی است
                         @endphp
 
-                        <td>
-                            {{ $i }} @if ($isInLeavePeriod)
-                                ★
-                            @endif <!-- نمایش روز و ستاره در صورت نیاز -->
+                        <td class="{{ $isInLeavePeriod ? 'hilite' : '' }}">
+                            {{ $i }}
                         </td>
 
                         @if ($i % 7 == 0 || $i == $daysInMonth)
@@ -422,10 +457,8 @@
                         $currentDate->isSameDay($endDate); // بررسی اینکه آیا تاریخ در بازه مرخصی است
                 @endphp
 
-                <td>
-                    {{ $i }} @if ($isInLeavePeriod)
-                        ★
-                    @endif <!-- نمایش روز و ستاره در صورت نیاز -->
+                <td class="{{ $isInLeavePeriod ? 'hilite' : '' }}">
+                    {{ $i }}
                 </td>
 
                 @if ($i % 7 == 0 || $i == $nextMonthDaysInMonth)
@@ -441,25 +474,43 @@
         <tr class="section-title">
             <td colspan="2">Emergency Contact Information</td>
         </tr>
-        <tr>
-            <td>Email: ______________________________</td>
-            <td>Contact Number: ____ - ____ - _____________</td>
-        </tr>
+        @if ($leave->employee->emergency_contact)
+            @foreach ($leave->employee->emergency_contact as $emergency)
+                <tr>
+                    <td>Email: {{ $emergency['email']??'' }}</td>
+                    <td>Contact Number: {{ $emergency['number'] }} </td>
+                </tr>
+            @endforeach
+        @endif
+
     </table>
 
     <table>
         <tr class="section-title">
-            <td colspan="4">Signatures</td>
+            <td colspan="4">Signatures<b>
+
+                  
+            </td>
         </tr>
         <tr>
             <td>Employee Signature<br>
-                <div class="signature-space"></div>
+             
+              <div class="signature-space">
+                @if ($leave->employee->media->where('collection_name', 'signature')->first())
+                    <img width="60" height="60"
+                        src="{{ $leave->employee->media->where('collection_name', 'signature')->first()?->getPath() }}">
+                @endif
+            </div>
             </td>
             <td>Date<br>
-                <div class="signature-space"></div>
             </td>
             <td>Supervisor's Signature<br>
-                <div class="signature-space"></div>
+              <div class="signature-space">
+                @if ($leave->employee->manager->media->where('collection_name', 'signature')->first())
+                    <img width="60" height="60"
+                        src="{{ $leave->employee->manager->media->where('collection_name', 'signature')->first()?->getPath() }}">
+                @endif
+            </div>
             </td>
             <td>Date<br>
                 <div class="signature-space"></div>

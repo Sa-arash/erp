@@ -123,7 +123,8 @@ class EmployeeResource extends Resource
                                 TextInput::make('name')->required(),
                                 TextInput::make('relation')->required(),
                                 TextInput::make('number')->label('Phone Number')->required(),
-                            ])->columns(3)->addActionLabel('Add Emergency Contact')
+                                TextInput::make('email')->label('Email')->email(),
+                            ])->columns(4)->addActionLabel('Add Emergency Contact')
                         ])->columns(2),
 
                     Forms\Components\Wizard\Step::make('Salary information')
@@ -332,7 +333,8 @@ class EmployeeResource extends Resource
                         TextInput::make('name')->required(),
                         TextInput::make('relation')->required(),
                         TextInput::make('number')->label('Phone Number')->required(),
-                    ])->columns(3)->addActionLabel('Add Emergency Contact')
+                        TextInput::make('email')->label('Email')->email(),
+                    ])->columns(4)->addActionLabel('Add Emergency Contact')
                 ])->columns(2),
 
             Forms\Components\Wizard\Step::make('Salary information')
