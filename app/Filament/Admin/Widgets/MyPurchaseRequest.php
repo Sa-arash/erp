@@ -328,7 +328,7 @@ class MyPurchaseRequest extends BaseWidget
                             $item->addMedia(public_path('images/'.$mediaItem))->toMediaCollection('document');
                         }
                     }
-                  sendApprove($request,'PR Warehouse (1)_approval');
+                  sendApprove($request,'PR Warehouse_approval');
                     Notification::make('success')->success()->title('Successfully Submitted')->send();
                 })
             ]);

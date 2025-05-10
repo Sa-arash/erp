@@ -145,7 +145,7 @@ class ApprovePurchase extends ManageRelatedRecords
                         Forms\Components\Section::make([
                             Select::make('employee')->disabled()->default(fn($record) => $this->record?->approvable?->employee_id)->options(fn($record) => Employee::query()->where('id', $this->record?->approvable?->employee_id)->get()->pluck('info', 'id'))->searchable(),
                             Forms\Components\ToggleButtons::make('status')->default('Approve')->colors(['Approve' => 'success', 'NotApprove' => 'danger'])->options(['Approve' => 'Approve', 'NotApprove' => 'NotApprove'])->grouped(),
-                            Forms\Components\ToggleButtons::make('is_quotation')->required()->label('Need Quotation')->boolean(' With Quotation', 'With out Quotation')->grouped()->inline(),
+                            Forms\Components\ToggleButtons::make('is_quotation')->disabled($this->record->position==="PR Approval")->default($this->record?->approvable?->is_quotation)->required()->label('Need Quotation')->boolean(' With Quotation', 'With out Quotation')->grouped()->inline(),
                             Forms\Components\Textarea::make('comment')->nullable()->columnSpanFull(),
                         ])->columns(3),
                         Forms\Components\Repeater::make('items')->formatStateUsing(fn($record) => $this->record?->approvable?->items?->toArray())->schema([
@@ -174,9 +174,13 @@ class ApprovePurchase extends ManageRelatedRecords
                         ])->columns(8)->columnSpanFull()->addable(false)->orderable(false)
                     ])->columns(),
                 ])->modalWidth(MaxWidth::Full)->action(function ($data) {
+
                     $record=$this->record;
                     $record->update(['comment' => $data['comment'], 'status' => $data['status'], 'approve_date' => now()]);
                     $PR = $record->approvable;
+                    if (!isset($data['is_quotation'])){
+                        $data['is_quotation']=$PR->is_quotation;
+                    }
                     $PR->approvals()->whereNot('id', $record->id)->where('position', $record->position)->delete();
                     if ($data['status'] === "NotApprove") {
                         $PR->update(['is_quotation' => $data['is_quotation'], 'status' => "Rejected"]);
@@ -208,9 +212,9 @@ class ApprovePurchase extends ManageRelatedRecords
                     }
                     if ($data['status'] === "Approve") {
                         if ($PR->status->name === "Clarification") {
-                            sendApprove($PR, 'PR Verification (2)_approval');
+                            sendApprove($PR, 'PR Verification_approval');
                         } else if ($PR->status->name === "Verification") {
-                            sendApprove($PR, 'PR Approval (3)_approval');
+                            sendApprove($PR, 'PR Approval_approval');
                         }
                     }
                     Notification::make('success')->success()->title('Successfully')->send();

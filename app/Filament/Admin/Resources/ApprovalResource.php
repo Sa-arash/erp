@@ -45,11 +45,11 @@ class ApprovalResource extends Resource implements HasShieldPermissions
             'update',
             'delete',
             'delete_any',
-            'PR Warehouse (1)',
+            'PR Warehouse',
             'PO Logistic Head',
-            'PR Verification (2)',
+            'PR Verification',
             'PO Verification',
-            'PR Approval (3)',
+            'PR Approval',
             'PO Approval'
         ];
     }
