@@ -229,7 +229,7 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                     return  false;
                 })->icon('heroicon-o-check-badge')->iconSize(IconSize::Large)->color('success')->form([
                     Forms\Components\ToggleButtons::make('status')->live()->default('Approve')->colors(['Approve' => 'success', 'NotApprove' => 'danger'])->options(['Approve' => 'Approve','NotApprove' => 'Denied'])->grouped(),
-                    Forms\Components\Textarea::make('comment')->visible(fn(Get $get)=> $get('status')=="NotApprove")->required()->maxLength(100)
+                    Forms\Components\Textarea::make('comment')->label('Rationale')->visible(fn(Get $get)=> $get('status')=="NotApprove")->required()->maxLength(100)
                 ])->visible(fn($record) => $record->status->name === "Pending")->action(function ($record,$data){
                     if (!isset($data['comment'])){
                         $data['comment']=null;
