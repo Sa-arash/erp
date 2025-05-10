@@ -171,11 +171,11 @@ class ApprovalResource extends Resource implements HasShieldPermissions
 
 
                 Tables\Actions\Action::make('approve')->hidden(function ($record) {
-                    if (substr($record->approvable_type, 11) === "PurchaseRequest" or substr($record->approvable_type, 11) === "Loan") {
+                    if (substr($record->approvable_type, 11) === "PurchaseRequest" or substr($record->approvable_type, 11) === "Loan"or substr($record->approvable_type, 11) === "Leave") {
                         return true;
                     }
                 })->icon('heroicon-o-check-badge')->iconSize(IconSize::Large)->color('success')->form([
-                    Forms\Components\ToggleButtons::make('status')->default('Approve')->colors(['Approve' => 'success', 'NotApprove' => 'danger', 'Pending' => 'primary'])->options(['Approve' => 'Approve', 'Pending' => 'Pending', 'NotApprove' => 'NotApprove'])->grouped(),
+                    Forms\Components\ToggleButtons::make('status')->default('Approve')->colors(['Approve' => 'success', 'NotApprove' => 'danger'])->options(['Approve' => 'Approve','NotApprove' => 'Denied'])->grouped(),
                     Forms\Components\Textarea::make('comment')->nullable()
                 ])->action(function ($data, $record) {
                     $record->update(['comment' => $data['comment'], 'status' => $data['status'], 'approve_date' => now()]);
@@ -222,6 +222,29 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                     }
                     Notification::make('success')->success()->title($data['status'])->send();
                 })->requiresConfirmation()->visible(fn($record) => $record->status->name === "Pending"),
+                Tables\Actions\Action::make('approveLeave')->visible(function ($record) {
+                    if (substr($record->approvable_type, 11) === "Leave") {
+                        return true;
+                    }
+                    return  false;
+                })->icon('heroicon-o-check-badge')->iconSize(IconSize::Large)->color('success')->form([
+                    Forms\Components\ToggleButtons::make('status')->live()->default('Approve')->colors(['Approve' => 'success', 'NotApprove' => 'danger'])->options(['Approve' => 'Approve','NotApprove' => 'Denied'])->grouped(),
+                    Forms\Components\Textarea::make('comment')->visible(fn(Get $get)=> $get('status')=="NotApprove")->required()->maxLength(100)
+                ])->visible(fn($record) => $record->status->name === "Pending")->action(function ($record,$data){
+                    if (!isset($data['comment'])){
+                        $data['comment']=null;
+                    }
+                    $record->update(['comment' => $data['comment'], 'status' => $data['status'], 'approve_date' => now()]);
+                    if ($data['status'] === "Approve") {
+                            $record->approvable->update([
+                                'status' => 'approveHead'
+                            ]);
+                        }else{
+                            $record->approvable->update([
+                                'status' => 'rejected'
+                            ]);
+                        }
+                })->requiresConfirmation(),
                 Tables\Actions\Action::make('loanApprove')->visible(fn($record)=>substr($record->approvable_type, 11) === "Loan" and $record->status->value ==="Pending")->label('Approve Loan')->color('success')->form([
                    Forms\Components\Section::make([
                        Forms\Components\ToggleButtons::make('status')->live()->columnSpanFull()->default('Approve')->colors(['Approve' => 'success', 'NotApprove' => 'danger', 'Pending' => 'primary'])->options(['Approve' => 'Approve', 'Pending' => 'Pending', 'NotApprove' => 'NotApprove'])->grouped(),
