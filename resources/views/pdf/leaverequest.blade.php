@@ -503,6 +503,7 @@
             </div>
             </td>
             <td>Date<br>
+              {{ \Carbon\Carbon::parse($leave->created_at)->format('d / M / Y') }}
             </td>
             <td>Supervisor's Signature<br>
               <div class="signature-space">
@@ -513,7 +514,7 @@
             </div>
             </td>
             <td>Date<br>
-                <div class="signature-space"></div>
+              {{$leave->approval_date? \Carbon\Carbon::parse($leave->approval_date)->format('d / M / Y') :" "}}
             </td>
         </tr>
         <tr>
@@ -521,12 +522,7 @@
                 <div class="signature-space"></div>
             </td>
             <td colspan="2">
-                <div>
-                    <div class="checkbox filled"></div> Approved
-                </div>
-                <div>
-                    <div class="checkbox"></div> Denied
-                </div>
+             {{$leave->status}}
                 <div>If denied, rationale:<br>_______________________________</div>
             </td>
         </tr>

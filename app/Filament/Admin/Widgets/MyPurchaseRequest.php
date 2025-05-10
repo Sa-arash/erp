@@ -58,6 +58,7 @@ class MyPurchaseRequest extends BaseWidget
                     }
                     return $total;
                 })->numeric(),
+                Tables\Columns\TextColumn::make('bid.total_cost')->alignCenter()->label('Total Final Price' )->numeric(),
 
 
             ])
