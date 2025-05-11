@@ -338,7 +338,8 @@
                             <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
                         </td>
                         <td colspan="6" style="border: none;padding:0 10px">
-                            {{ $leave->employee?->manager?->fullName }}<br>
+                            {{ $leave->employee?->manager?->fullName }}
+                            <br>
                             <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
                         </td>
                     </tr>
@@ -356,29 +357,107 @@
     </table>
 
     <table>
-        <tr class="section-title">
-            <td colspan="6">Leave Information</td>
+        <tr class="section-title ">
+            <td colspan="8">Leave Information</td>
         </tr>
-        <tr>
-            <td><strong>Last Leave</strong><br>{{ \Carbon\Carbon::parse($lastleave->start_leave)->format('d / M / Y') }}
-                - {{ \Carbon\Carbon::parse($lastleave->end_leave)->format('d / M / Y') }}</td>
-            <td colspan="2"><strong>Current Leave
-                    Request</strong><br>{{ \Carbon\Carbon::parse($leave->start_leave)->format('d / M / Y') }} -
-                {{ \Carbon\Carbon::parse($leave->end_leave)->format('d / M / Y') }}</td>
-            <td colspan="3"><strong>Total # of Days</strong><br>
+        <tr class="no-border font-bold">
+            <td class="font-bold" style="border: none; padding: 5px ;">&nbsp;</td>
+            <td class="font-bold" colspan="3" style="border: none; padding: 5px 10px;">Departure</td>
+            <td class="font-bold" colspan="3" style="border: none; padding: 5px 10px;">Return</td>
+            <td class="font-bold" style="border: none; padding: 5px 10px;">Total # </td>
+        </tr>
+        <tr style="border: none; padding: 0 10px;">
+            <td class="font-bold" style="border: none; padding: 0 10px;">&nbsp;</td>
+            <td class="font-bold" style="border: none; padding: 0 10px;">Day</td>
+            <td class="font-bold" style="border: none; padding: 0 10px;">Month</td>
+            <td class="font-bold" style="border: none; padding: 0 10px;">Year</td>
 
-                {{ \Carbon\Carbon::parse($leave->start_leave)->startOfDay()->diffInDays(\Carbon\Carbon::parse($leave->end_leave), $leave->end_leave) }}
+
+            <td class="font-bold" style="border: none; padding: 0 10px;">Day</td>
+            <td class="font-bold" style="border: none; padding: 0 10px;">Month</td>
+            <td class="font-bold" style="border: none; padding: 0 10px;">Year</td>
+            <td class="font-bold" style="border: none; padding: 0 10px;">of Days</td>
+        </tr>
+
+        <tr style="border: none; padding: 0 10px;">
+            <td class="font-bold" style="border: none; padding: 0 10px;">Last Leave</td>
+            <td class="font-bold" style="border: none; padding: 0 10px;">
+                {{ \Carbon\Carbon::parse($lastleave->start_leave)->format('d') }}/<br>
+                <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+            </td>
+            <td class="font-bold" style="border: none; padding: 0 10px;">
+                {{ \Carbon\Carbon::parse($lastleave->start_leave)->format('M') }}/<br>
+                <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+            </td>
+            <td class="font-bold" style="border: none; padding: 0 10px;">
+                {{ \Carbon\Carbon::parse($lastleave->start_leave)->format('Y') }}<br>
+                <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+            </td>
+
+
+            <td class="font-bold" style="border: none; padding: 0 10px;">
+                {{ \Carbon\Carbon::parse($lastleave->end_leave)->format('d') }}/<br>
+                <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+            </td>
+            <td class="font-bold" style="border: none; padding: 0 10px;">
+                {{ \Carbon\Carbon::parse($lastleave->end_leave)->format('M') }}/<br>
+                <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+            </td>
+            <td class="font-bold" style="border: none; padding: 0 10px;">
+                {{ \Carbon\Carbon::parse($lastleave->end_leave)->format('Y') }}<br>
+                <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+            </td>
+            <td class="font-bold" style="border: none; padding: 0 10px;">
+                {{ \Carbon\Carbon::parse($lastleave->start_leave)->startOfDay()->diffInDays(\Carbon\Carbon::parse($lastleave->end_leave), $lastleave->end_leave) }}<br>
+                <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
             </td>
         </tr>
+
+        <tr style="border: none; padding: 0 10px;">
+            <td class="font-bold" style="border: none; padding: 0 10px;">Current Leave Request </td>
+            <td class="font-bold" style="border: none; padding: 0 10px;">
+                {{ \Carbon\Carbon::parse($leave->start_leave)->format('d') }}/<br>
+                <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+            </td>
+            <td class="font-bold" style="border: none; padding: 0 10px;">
+                {{ \Carbon\Carbon::parse($leave->start_leave)->format('M') }}/<br>
+                <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+            </td>
+            <td class="font-bold" style="border: none; padding: 0 10px;">
+                {{ \Carbon\Carbon::parse($leave->start_leave)->format('Y') }}<br>
+                <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+            </td>
+
+
+            <td class="font-bold" style="border: none; padding: 0 10px;">{{ \Carbon\Carbon::parse($leave->end_leave)->format('d') }}/<br>
+                <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+            </td>
+            <td class="font-bold" style="border: none; padding: 0 10px;">{{ \Carbon\Carbon::parse($leave->end_leave)->format('M') }}/<br>
+                <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+            </td>
+            <td class="font-bold" style="border: none; padding: 0 10px;">{{ \Carbon\Carbon::parse($leave->end_leave)->format('Y') }}<br>
+                <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+            </td>
+            <td class="font-bold" style="border: none; padding: 0 10px;">
+                {{ \Carbon\Carbon::parse($leave->start_leave)->startOfDay()->diffInDays(\Carbon\Carbon::parse($leave->end_leave), $leave->end_leave) }}<br>
+                <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+            </td>
+        </tr>
+      
+        
         <tr>
-            <td not-center colspan="6">Are you aware of any circumstances that will delay or prevent your return to
+            
+            <td style="border: none; padding: 0 10px;" colspan="8">&nbsp;</td>
+        </tr>
+        <tr>
+            <td not-center colspan="8">Are you aware of any circumstances that will delay or prevent your return to
                 the site
                 from leave?
                 Yes □ No □
             </td>
         </tr>
         <tr>
-            <td class="not-center" colspan="6" style="height:30px;">If yes, please explain:</td>
+            <td class="not-center" colspan="8" style="height:30px;">If yes, please explain:</td>
         </tr>
     </table>
 
@@ -477,7 +556,7 @@
         @if ($leave->employee->emergency_contact)
             @foreach ($leave->employee->emergency_contact as $emergency)
                 <tr>
-                    <td>Email: {{ $emergency['email']??'' }}</td>
+                    <td>Email: {{ $emergency['email'] ?? '' }}</td>
                     <td>Contact Number: {{ $emergency['number'] }} </td>
                 </tr>
             @endforeach
@@ -489,32 +568,32 @@
         <tr class="section-title">
             <td colspan="4">Signatures<b>
 
-                  
+
             </td>
         </tr>
         <tr>
             <td>Employee Signature<br>
-             
-              <div class="signature-space">
-                @if ($leave->employee->media->where('collection_name', 'signature')->first())
-                    <img width="60" height="60"
-                        src="{{ $leave->employee->media->where('collection_name', 'signature')->first()?->getPath() }}">
-                @endif
-            </div>
+
+                <div class="signature-space">
+                    @if ($leave->employee->media->where('collection_name', 'signature')->first())
+                        <img width="60" height="60"
+                            src="{{ $leave->employee->media->where('collection_name', 'signature')->first()?->getPath() }}">
+                    @endif
+                </div>
             </td>
             <td>Date<br>
-              {{ \Carbon\Carbon::parse($leave->created_at)->format('d / M / Y') }}
+                {{ \Carbon\Carbon::parse($leave->created_at)->format('d / M / Y') }}
             </td>
             <td>Supervisor's Signature<br>
-              <div class="signature-space">
-                @if ($leave->employee->manager->media->where('collection_name', 'signature')->first())
-                    <img width="60" height="60"
-                        src="{{ $leave->employee->manager->media->where('collection_name', 'signature')->first()?->getPath() }}">
-                @endif
-            </div>
+                <div class="signature-space">
+                    @if ($leave->employee->manager->media->where('collection_name', 'signature')->first())
+                        <img width="60" height="60"
+                            src="{{ $leave->employee->manager->media->where('collection_name', 'signature')->first()?->getPath() }}">
+                    @endif
+                </div>
             </td>
             <td>Date<br>
-              {{$leave->approval_date? \Carbon\Carbon::parse($leave->approval_date)->format('d / M / Y') :" "}}
+                {{ $leave->approval_date ? \Carbon\Carbon::parse($leave->approval_date)->format('d / M / Y') : ' ' }}
             </td>
         </tr>
         <tr>
@@ -522,7 +601,7 @@
                 <div class="signature-space"></div>
             </td>
             <td colspan="2">
-             {{$leave->status}}
+                {{ $leave->status }}
                 <div>If denied, rationale:<br>_______________________________</div>
             </td>
         </tr>
