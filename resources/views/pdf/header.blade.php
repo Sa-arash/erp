@@ -189,9 +189,6 @@
 
 <body>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0;">
-
-
-
         <table >
             <tr >
                 <td style="border: none;width: 20%; text-align: left; padding-left: 10px;">
@@ -201,8 +198,8 @@
                     @endif
                 </td>
                 <td  style="border: none;text-align: center; vertical-align: middle; width: 40%;">
-                    <h4 style="margin: 0; padding: 0; font-size: 18px; white-space: nowrap; display: inline-block;">
-                        {{ $company->title }}
+                    <h4 style="margin: 0; padding: 0; font-size: 25px; white-space: nowrap; display: inline-block;">
+                        {{strtoupper($title)}}
                     </h4>
                     @foreach ($titles as $title)
                         <h2 style="margin: 0; padding: 0; font-size: 13px; white-space: nowrap; display: inline;">
