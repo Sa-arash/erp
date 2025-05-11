@@ -223,14 +223,14 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                     Notification::make('success')->success()->title($data['status'])->send();
                 })->requiresConfirmation()->visible(fn($record) => $record->status->name === "Pending"),
                 Tables\Actions\Action::make('approveLeave')->visible(function ($record) {
-                    if (substr($record->approvable_type, 11) === "Leave") {
+                    if (substr($record->approvable_type, 11) === "Leave" and $record->status->name === "Pending") {
                         return true;
                     }
                     return  false;
                 })->icon('heroicon-o-check-badge')->iconSize(IconSize::Large)->color('success')->form([
                     Forms\Components\ToggleButtons::make('status')->live()->default('Approve')->colors(['Approve' => 'success', 'NotApprove' => 'danger'])->options(['Approve' => 'Approve','NotApprove' => 'Denied'])->grouped(),
                     Forms\Components\Textarea::make('comment')->label('Rationale')->visible(fn(Get $get)=> $get('status')=="NotApprove")->required()->maxLength(100)
-                ])->visible(fn($record) => $record->status->name === "Pending")->action(function ($record,$data){
+                ])->action(function ($record,$data){
                     if (!isset($data['comment'])){
                         $data['comment']=null;
                     }
@@ -282,7 +282,7 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                         'need_change'=>1
                     ]);
                     Notification::make('success')->title('Submitted Successfully')->success()->send();
-                })->requiresConfirmation()->visible(fn($record) => substr($record->approvable_type, 11) === "PurchaseRequest" and !$record->approvable->need_change and $record->approvable->status->value==='Requested'),
+                })->requiresConfirmation()->visible(fn($record) => substr($record->approvable_type, 11) === "PurchaseRequest" and !$record->approvable?->need_change and $record->approvable?->status->value==='Requested'),
                 Action::make('url')->visible(function ($record) {
                     if (substr($record->approvable_type, 11) === "PurchaseRequest") {
                         return true;
