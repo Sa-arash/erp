@@ -30,7 +30,7 @@ class MyLeave extends BaseWidget
     {
         return $table ->query(
             Leave::query()->where('employee_id',getEmployee()->id)
-        )
+        )->defaultSort('id','desc')
             ->headerActions([
                 Tables\Actions\Action::make('New Leave')->action(function ($data){
                     $data['company_id']=getCompany()->id;
@@ -72,6 +72,8 @@ class MyLeave extends BaseWidget
                                $set('days', $validDays);
                            })->live()->required(),
                            TextInput::make('days')->columnSpanFull()->required()->numeric(),
+                           ToggleButtons::make('is_circumstances')->live()->default(0)->required()->boolean('Yes','No')->grouped()->label('Aware of any Circumstances'),
+                           Textarea::make('explain_leave')->required(fn(Get $get)=>$get('is_circumstances'))->label('Explain'),
                            Section::make([
                                FileUpload::make('document')->downloadable(),
                                Textarea::make('description'),

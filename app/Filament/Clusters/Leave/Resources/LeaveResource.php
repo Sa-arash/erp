@@ -11,12 +11,16 @@ use App\Models\Holiday;
 use App\Models\Leave as ModelLeave;
 use App\Models\Overtime;
 use App\Models\Typeleave;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
+use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
@@ -30,7 +34,8 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\HtmlString;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
-class LeaveResource extends Resource
+class LeaveResource extends Resource implements HasShieldPermissions
+
 {
     protected static ?string $model = ModelLeave::class;
     protected static ?string $navigationGroup = 'HR Management System';
@@ -38,7 +43,18 @@ class LeaveResource extends Resource
     protected static ?string $pluralLabel="Leave ";
      protected static ?string $label="Leave";
     protected static ?string $navigationIcon = 'heroicon-o-folder-minus';
-
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
+            'admin'
+        ];
+    }
 
     public static function form(Form $form): Form
     {
@@ -63,6 +79,7 @@ class LeaveResource extends Resource
                     })->label('Leave Type')->required()->options(Typeleave::query()->where('company_id', getCompany()->id)->pluck('title', 'id'))->searchable()->preload(),
                 Forms\Components\DatePicker::make('start_leave')->default(now())->live()->afterStateUpdated(function ( Forms\Get $get ,Forms\Set $set){
                     $start = Carbon::parse($get('start_leave'));
+
                     $end = Carbon::parse($get('end_leave'));
                     $period = CarbonPeriod::create($start, $end);
                     $daysBetween = $period->count(); // تعداد کل روزها
@@ -74,6 +91,7 @@ class LeaveResource extends Resource
                 })->required()->default(now()),
                 Forms\Components\DatePicker::make('end_leave')->default(now())->afterStateUpdated(function ( Forms\Get $get ,Forms\Set $set){
                     $start = Carbon::parse($get('start_leave'));
+
                     $end = Carbon::parse($get('end_leave'));
                     $period = CarbonPeriod::create($start, $end);
                     $daysBetween = $period->count(); // تعداد کل روزها
@@ -84,6 +102,8 @@ class LeaveResource extends Resource
                     $set('days', $validDays);
                 })->live()->required(),
                 Forms\Components\TextInput::make('days')->columnSpanFull()->required()->numeric(),
+                ToggleButtons::make('is_circumstances')->live()->default(0)->required()->boolean('Yes','No')->grouped()->label('Aware of any Circumstances'),
+                Textarea::make('explain_leave')->required(fn(Get $get)=>$get('is_circumstances'))->label('Explain'),
               Forms\Components\Section::make([
                   Forms\Components\FileUpload::make('document')->downloadable(),
                   Forms\Components\Textarea::make('description'),
@@ -151,6 +171,8 @@ class LeaveResource extends Resource
                             Forms\Components\DatePicker::make('start_leave')->disabled()->default($record->start_leave)->required(),
                             Forms\Components\DatePicker::make('end_leave')->disabled()->default($record->end_leave)->required(),
                             Forms\Components\TextInput::make('days')->disabled()->required()->numeric()->default($record->days),
+                            ToggleButtons::make('is_circumstances')->disabled()->live()->default(0)->required()->boolean('Yes','No')->grouped()->label('Aware of any Circumstances'),
+                            Textarea::make('explain_leave')->disabled()->columnSpan(2)->required(fn(Get $get)=>$get('is_circumstances'))->label('Explain'),
                             Forms\Components\FileUpload::make('document')->downloadable()->columnSpan(2)->default($record->document)->disabled(),
                             Forms\Components\Textarea::make('description')->default($record->description)->disabled(),
                         ])->columns(3),
@@ -164,15 +186,16 @@ class LeaveResource extends Resource
                         ])
                     ];
                 }
-                )->action(function ($data,$record) {
+                )->visible(fn($record)=>$record->admin_id ===null and auth()->user()->can('admin_leave'))->action(function ($data,$record) {
 
                     $record->update([
                         'comment'=>$data['comment'],
                         'status'=>$data['status']->value,
                         'approval_date'=>now(),
-                        'user_id'=>auth()->id()
+                        'user_id'=>auth()->id(),
+                        'admin_id'=>getEmployee()->id
                     ]);
-                        Notification::make('approveLeave')->title('Approved Leave')->success()->send()->sendToDatabase(auth()->user(),true);
+                        Notification::make('approveLeave')->title('Approved Leave Employee:'.$record->employee->fullName)->success()->send()->sendToDatabase(auth()->user(),true);
                     })->visible(fn($record)=>$record->status->value=="approveHead")
             ])
             ->bulkActions([

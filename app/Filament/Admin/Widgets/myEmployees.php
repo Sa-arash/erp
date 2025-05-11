@@ -3,7 +3,12 @@
 namespace App\Filament\Admin\Widgets;
 
 use App\Models\Employee;
+use App\Models\Overtime;
 use App\Models\User;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -38,6 +43,16 @@ class myEmployees extends BaseWidget
                 Tables\Columns\TextColumn::make('department.title')->alignLeft()->color('aColor')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('position.title')->alignLeft()->label('Position')->sortable(),
                 Tables\Columns\TextColumn::make('manager.fullName')->alignLeft()->label('Manager')->sortable(),
+            ])->actions([
+                Tables\Actions\Action::make('overTime')->label('Overtime')->form([
+                    TextInput::make('title')->label('Description')->required()->maxLength(255),
+                    DatePicker::make('overtime_date')->default(now())->label('Overtime Date')->required(),
+                    TextInput::make('hours')->numeric()->required()
+                ])->action(function ($record,$data){
+
+                    Overtime::query()->create(['title'=>$data['title'], 'employee_id'=>$record->id, 'company_id'=>$record->company_id, 'user_id'=>auth()->id(), 'overtime_date'=>$data['overtime_date'],'hours'=>$data['hours']]);
+                    Notification::make('success')->success()->title('Create Overtime for Employee :'.$record->fullName)->send()->sendToDatabase(auth()->user());
+                })
             ]);
     }
 }

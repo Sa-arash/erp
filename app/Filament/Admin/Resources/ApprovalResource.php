@@ -76,6 +76,8 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                           TextEntry::make('typeLeave.title')->label('Leave Type'),
                           TextEntry::make('start_leave')->date()->label('Start Leave'),
                           TextEntry::make('end_leave')->date()->label('End Leave'),
+                          TextEntry::make('is_circumstances')->state(fn($record)=>$record?->approvable?->is_circumstances?"Yes":"No")->label('Aware of any Circumstances'),
+                          TextEntry::make('explain_leave')->label('Explain'),
                       ])->columns()->relationship('approvable')
                     ];
                 }),

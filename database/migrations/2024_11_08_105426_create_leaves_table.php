@@ -14,10 +14,13 @@ return new class extends Migration
         Schema::create('leaves', function (Blueprint $table) {
             $table->id();
             $table->foreignId('employee_id')->constrained('employees')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('admin_id')->nullable()->constrained('employees')->nullOnDelete();
             $table->foreignId('typeleave_id')->constrained('typeleaves')->cascadeOnDelete()->cascadeOnUpdate();
             $table->timestamp('start_leave');
             $table->timestamp('end_leave')->nullable();
             $table->integer('days');
+            $table->boolean('is_circumstances')->default(0);
+            $table->string('explain_leave')->nullable();
             $table->text('document')->nullable();
             $table->text('description')->nullable();
             $table->enum('status',['pending','rejected','accepted','approveHead'])->default('pending');

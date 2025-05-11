@@ -11,7 +11,7 @@ class Leave extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['comment','employee_id', 'typeleave_id', 'start_leave', 'end_leave', 'days', 'document', 'description', 'status','user_id','approval_date', 'company_id'];
+    protected $fillable = ['explain_leave','is_circumstances','admin_id','comment','employee_id', 'typeleave_id', 'start_leave', 'end_leave', 'days', 'document', 'description', 'status','user_id','approval_date', 'company_id'];
 
     protected $casts = ['status' => LeaveStatus2::class];
 
@@ -28,6 +28,10 @@ class Leave extends Model
     public function employee(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Employee::class);
+    }
+    public function admin(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Employee::class,'admin_id');
     }
 
     public function typeLeave(): \Illuminate\Database\Eloquent\Relations\BelongsTo

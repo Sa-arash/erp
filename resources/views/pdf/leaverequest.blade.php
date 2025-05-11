@@ -170,11 +170,7 @@
 
 
 
-@include('pdf.header', [
-    'titles' => ['Leave Request – R&R/Home'],
-    'title' => 'Leave Request – R&R/Home',
-    'css' => false,
-])
+
 
 
 <style>
@@ -263,12 +259,31 @@
         background-color: yellow;
         /* یا هر استایل دیگری که می‌خواهید */
     }
+    @page  {
+        margin-top: 5px;
+    }
 </style>
 
 <body>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0;">
+    <table style="border: 1px solid black">
+        <tr >
+            <td style="border: none;width: 20%; text-align: left; padding-left: 10px;">
+            </td>
+            <td  style="border: none;text-align: center; vertical-align: middle; width: 40%;">
 
-
-
+                <h4 style="margin: 0; padding: 0; font-size: 25px; white-space: nowrap; display: inline-block">
+                    Leave Request – R&R/Home
+                </h4>
+            </td>
+            <td style="border: none;width: 20%; text-align: right; padding-right: 10px;">
+                @if($company?->logo)
+                    <img src="{!! public_path('images/' . $company?->logo) !!}" style="padding: 0; border-radius: 50px ; width: 150px;">
+                @endif
+            </td>
+        </tr>
+    </table>
+</div>
     <table>
         <tr>
             <td colspan="2">Check the type of Leave the being requested:</td>
@@ -292,7 +307,6 @@
                         $fullNameParts = explode(' ', trim($leave->employee->fullName));
                         $nameCount = count($fullNameParts);
                     @endphp
-
                     <tr>
                         @if ($nameCount === 3)
                             @foreach ($fullNameParts as $part)
@@ -316,22 +330,11 @@
                             </td>
                         @endif
                     </tr>
-
-
-
-
                     <tr>
                         <td colspan="4" class="font-bold" style="width: 50%;border: none;padding:0 ">First Name</td>
                         <td colspan="4" class="font-bold" style="width: 50%;border: none;padding:0 ">Mid Name</td>
                         <td colspan="4" class="font-bold" style="width: 50%;border: none;padding:0 ">Last Name</td>
                     </tr>
-
-
-
-
-
-
-
                     <tr>
                         <td colspan="6" style="border: none;padding:0 10px">
                             {{ $leave->employee?->warehouse?->title . ' - ' . $leave->employee?->structure?->title }}<br>
@@ -356,7 +359,7 @@
         </tr>
     </table>
 
-    <table>
+    <table  style="border: 1px solid black">
         <tr class="section-title ">
             <td colspan="8">Leave Information</td>
         </tr>
@@ -379,7 +382,7 @@
             <td class="font-bold" style="border: none; padding: 0 10px;">of Days</td>
         </tr>
 
-        <tr style="border: none; padding: 0 10px;">
+        <tr style=" padding: 0 10px;">
             <td class="font-bold" style="border: none; padding: 0 10px;">Last Leave</td>
             <td class="font-bold" style="border: none; padding: 0 10px;">
                 {{ \Carbon\Carbon::parse($lastleave->start_leave)->format('d') }}/<br>
@@ -413,7 +416,7 @@
             </td>
         </tr>
 
-        <tr style="border: none; padding: 0 10px;">
+        <tr style=" padding: 0 10px;">
             <td class="font-bold" style="border: none; padding: 0 10px;">Current Leave Request </td>
             <td class="font-bold" style="border: none; padding: 0 10px;">
                 {{ \Carbon\Carbon::parse($leave->start_leave)->format('d') }}/<br>
@@ -443,31 +446,31 @@
                 <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
             </td>
         </tr>
-      
-        
+
+
         <tr>
-            
+
             <td style="border: none; padding: 0 10px;" colspan="8">&nbsp;</td>
         </tr>
         <tr>
             <td not-center colspan="8">Are you aware of any circumstances that will delay or prevent your return to
                 the site
                 from leave?
-                Yes □ No □
+                {{ $leave->is_circumstances  ? 'Yes ■ No□': 'Yes □ No■' }}
             </td>
         </tr>
         <tr>
-            <td class="not-center" colspan="8" style="height:30px;">If yes, please explain:</td>
+            <td class="not-center" colspan="8" style="height:30px;">If yes, please explain: @if($leave->is_circumstances) {{$leave->explain_leave}} @endif</td>
         </tr>
     </table>
 
-    <table>
+    <table >
         <tr class="section-title">
             <td colspan="2">Leave Details</td>
         </tr>
         <tr>
-            <td colspan="2" class="small-text">Use the following legend to annotate the leave pay status in the
-                calendar below for all days off site:</td>
+            <td colspan="2" class="small-text"><i>Use the following legend to annotate the leave pay status in the
+                    calendar below for all days off site:</i></td>
         </tr>
         <tr>
             <td colspan="2" class="small-text">
@@ -549,22 +552,28 @@
     </tr>
     </table>
 
-    <table>
+    <table style="border: 1px solid black">
         <tr class="section-title">
-            <td colspan="2">Emergency Contact Information</td>
+            <td style="border: none" colspan="2">Emergency Contact Information</td>
+        </tr>
+        <tr>
+            <td style="border: none" colspan="2"><i>Please provide a point of contact who can be reached in the event of an emergency during your leave</i></td>
         </tr>
         @if ($leave->employee->emergency_contact)
-            @foreach ($leave->employee->emergency_contact as $emergency)
                 <tr>
-                    <td>Email: {{ $emergency['email'] ?? '' }}</td>
-                    <td>Contact Number: {{ $emergency['number'] }} </td>
+                    <td style="border: none"><b>Email: {{ $leave->employee->emergency_contact[0]['email'] ?? '' }}</b></td>
+                    <td style="border: none"><b>Contact Number: {{ $leave->employee->emergency_contact[0]['number'] }} </b></td>
                 </tr>
-            @endforeach
+        @else
+        <tr>
+            <td><b>Email:</b> </td>
+            <td><b>Contact Number:  </b></td>
+        </tr>
         @endif
 
     </table>
 
-    <table>
+    <table style="border: 1px solid black">
         <tr class="section-title">
             <td colspan="4">Signatures<b>
 
@@ -572,7 +581,7 @@
             </td>
         </tr>
         <tr>
-            <td>Employee Signature<br>
+            <td style="border: none"> <hr>Employee Signature<br>
 
                 <div class="signature-space">
                     @if ($leave->employee->media->where('collection_name', 'signature')->first())
@@ -581,28 +590,41 @@
                     @endif
                 </div>
             </td>
-            <td>Date<br>
+            <td style="border: none">
+                <hr>
+                Date<br>
                 {{ \Carbon\Carbon::parse($leave->created_at)->format('d / M / Y') }}
+
             </td>
-            <td>Supervisor's Signature<br>
+            <td style="border: none" > <hr>Supervisor's Signature<br>
                 <div class="signature-space">
-                    @if ($leave->employee->manager->media->where('collection_name', 'signature')->first())
+                    @if ($leave->approvals->first()?->employee?->media->where('collection_name', 'signature')?->first())
                         <img width="60" height="60"
-                            src="{{ $leave->employee->manager->media->where('collection_name', 'signature')->first()?->getPath() }}">
+                            src="{{ $leave->approvals->first()->employee->media->where('collection_name', 'signature')->first()?->getPath() }}">
                     @endif
                 </div>
             </td>
-            <td>Date<br>
-                {{ $leave->approval_date ? \Carbon\Carbon::parse($leave->approval_date)->format('d / M / Y') : ' ' }}
+            <td style="border: none"> <hr>Date<br>
+                {{ $leave->approvals?->first()?->approve_date ? \Carbon\Carbon::parse($leave->approvals->first()->approve_date)->format('d / M / Y') : ' ' }}
             </td>
         </tr>
         <tr>
-            <td colspan="2">Admin/HR Dept Signature<br>
+            <td style="border: none" colspan="2">  <hr>Admin/HR Dept Signature<br>
                 <div class="signature-space"></div>
+                @if ($leave->admin?->media->where('collection_name', 'signature')?->first())
+                    <img width="60" height="60"
+                         src="{{ $leave->admin?->media->where('collection_name', 'signature')?->first()?->getPath() }}">
+                @endif
             </td>
-            <td colspan="2">
-                {{ $leave->status }}
-                <div>If denied, rationale:<br>_______________________________</div>
+            <td  colspan="2">
+                {{ $leave->approvals->first()?->status->value !=='NotApprove'?$leave->approvals->first()?->status:"Denied" }}
+                <div>If denied, rationale:<br>
+                    @if($leave->approvals->first()?->status->value==="NotApprove")
+                        {{$leave->approvals->first()?->comment}}
+                    @else
+                        _______________________________
+                    @endif
+                </div>
             </td>
         </tr>
     </table>

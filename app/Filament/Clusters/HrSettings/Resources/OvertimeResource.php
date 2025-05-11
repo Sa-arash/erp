@@ -94,7 +94,7 @@ class OvertimeResource extends Resource
                         'user_id'=>auth()->id()
                     ]);
                     Notification::make('approveOvertime')->title('Approved Overtime')->success()->send()->sendToDatabase(auth()->user(),true);
-                })->visible(fn($record)=>$record->status->value==="approveHead")
+                })
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

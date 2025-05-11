@@ -1,9 +1,4 @@
 
-@include('pdf.header', [
-    'titles' => ['Overtime Slip Form'],
-    'title' => 'Overtime Slip Form',
-    'css' => false,
-])
 
   <style>
     body {
@@ -59,46 +54,68 @@
     }
   </style>
 <body>
-  {{-- <div class="header">
-    <div>
-      <img src="https://i.imgur.com/EmcA5lE.png" alt="ATGT Logo">
-      <div style="font-size: 12px;">AREA TARGET GENERAL TRADING L.L.C<br>ايريا تارقت للتجارة العامة ذ.م.م</div>
-    </div>
-    <div class="title">Overtime Slip Form</div>
-  </div> --}}
-{{-- @dd($overtime->employee->media->where('collection_name', 'signature')) --}}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0;">
+    <table style="border: 1px solid black">
+        <tr >
+            <td style="border: none;width: 20%; text-align: left; padding-left: 10px;">
+            </td>
+            <td  style="border: none;text-align: center; vertical-align: middle; width: 40%;">
+
+                <h4 style="margin: 0; padding: 0; font-size: 25px; white-space: nowrap; display: inline-block">
+                    {{strtoupper('Overtime Slip Form')}}
+                </h4>
+            </td>
+            <td style="border: none;width: 20%; text-align: right; padding-right: 10px;">
+                @if($company?->logo)
+                    <img src="{!! public_path('images/' . $company?->logo) !!}" style="padding: 0; border-radius: 50px ; width: 150px;">
+                @endif
+            </td>
+        </tr>
+    </table>
+</div>
   <table class="container">
     <tr>
-      <td class="left-text-vertical" rowspan="4">Administrative Department</td>
-      <td>Date: {{\Carbon\Carbon::parse($overtime->overtime_date)->format('d / M / Y')}}</td>
-      <td>Department:{{$overtime->employee->department->title}}</td>
+      <td style="border: none"  rowspan="5">
+          <img src="{{public_path('img/dep.png')}}"  alt="">
+      </td>
+      <td>
+              <b>Date:</b> {{\Carbon\Carbon::parse($overtime->overtime_date)->format('d / M / Y')}}
+              <br>
+              <br>
+              <b>Time:</b> {{$overtime->hours}} Hours
+      </td>
+      <td>
+              <b>Department:</b> {{$overtime->employee->department->title}}<br>
+          <br>
+              <b>Position:</b> {{$overtime->employee->position->title}}
+
+          </td>
+    </tr>
+
+    <tr>
+      <td><b>Employee Name:</b> {{$overtime->title}}</td>
+      <td><b>Employee Badge number:</b> {{$overtime->employee->ID_number}}</td>
     </tr>
     <tr>
-      <td>Time:{{$overtime->hours}}Hours</td>
-      <td>Position:{{$overtime->employee->position->title}}</td>
+      <td  colspan="2" style="height: 80px;"><b>Reason for Overtime:</b> {{$overtime->title}}</td>
     </tr>
     <tr>
-      <td>Employee Name:{{$overtime->employee->fullName}}</td>
-      <td>Employee Badge number:{{$overtime->employee->number}}</td>
-    </tr>
-    <tr>
-      <td colspan="2" style="height: 80px;">Reason for Overtime:{{$overtime->title}}</td>
-    </tr>
-    <tr>
-      <td colspan="2">Employee Signature:
+      <td ><b>Employee Signature:</b>
         @if ($overtime->employee->media->where('collection_name', 'signature')->first())
                         <img width="60" height="60"
                             src="{{ $overtime->employee->media->where('collection_name', 'signature')->first()?->getPath() }}">
                     @endif
       </td>
-      <td>Line Manager Signature:
+      <td><b>Line Manager Signature:</b>
         @if (isset($overtime->approvals[0]))
         @if ($overtime->approvals[0]->employee->media->where('collection_name', 'signature')->first()?->original_url and $overtime->approvals[0]->status->name === 'Approve')
         <img src="{{ $overtime->approvals[0]->employee->media->where('collection_name','signature')->first()->getPath() }}" style="width: 120px;height: 70px" alt="">
     @endif
                     @endif
       </td>
+
     </tr>
+
   </table>
 </body>
 </html>
