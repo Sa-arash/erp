@@ -340,7 +340,8 @@
                 <tr>
                     <td class="equal-cell">FSA FAO</td>
                     <td class="equal-cell"></td>
-                    <td class="equal-cell" rowspan="2">@if ($approve->employee->media->where('collection_name', 'signature')->first()?->original_url and $approve->status->name === 'Approve')
+                    <td class="equal-cell" rowspan="2">
+                        @if ($approve->employee->media->where('collection_name', 'signature')->first()?->original_url and $approve->status->name === 'Approve')
                         <img src="{{ $approve->employee->media->where('collection_name','signature')->first()->getPath() }}" style="width: 120px;height: 70px" alt="">
                     @endif</td>
                     <td class="equal-cell">Date:

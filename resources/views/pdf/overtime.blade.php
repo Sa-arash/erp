@@ -1,8 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Overtime Slip Form</title>
+
+@include('pdf.header', [
+    'titles' => ['Overtime Slip Form'],
+    'title' => 'Overtime Slip Form',
+    'css' => false,
+])
+
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -56,20 +58,19 @@
       height: 60px;
     }
   </style>
-</head>
 <body>
-  <div class="header">
+  {{-- <div class="header">
     <div>
       <img src="https://i.imgur.com/EmcA5lE.png" alt="ATGT Logo">
       <div style="font-size: 12px;">AREA TARGET GENERAL TRADING L.L.C<br>ايريا تارقت للتجارة العامة ذ.م.م</div>
     </div>
     <div class="title">Overtime Slip Form</div>
-  </div>
-{{-- @dd($overtime->approvals) --}}
+  </div> --}}
+{{-- @dd($overtime->employee->media->where('collection_name', 'signature')) --}}
   <table class="container">
     <tr>
       <td class="left-text-vertical" rowspan="4">Administrative Department</td>
-      <td>Date:{{$overtime->overtime_date}}</td>
+      <td>Date: {{\Carbon\Carbon::parse($overtime->overtime_date)->format('d / M / Y')}}</td>
       <td>Department:{{$overtime->employee->department->title}}</td>
     </tr>
     <tr>
@@ -87,13 +88,14 @@
       <td colspan="2">Employee Signature:
         @if ($overtime->employee->media->where('collection_name', 'signature')->first())
                         <img width="60" height="60"
-                            src="{{ $leave->employee->media->where('collection_name', 'signature')->first()?->getPath() }}">
+                            src="{{ $overtime->employee->media->where('collection_name', 'signature')->first()?->getPath() }}">
                     @endif
       </td>
       <td>Line Manager Signature:
-        @if ($leave->employee->media->where('collection_name', 'signature')->first())
-                        <img width="60" height="60"
-                            src="{{ $leave->employee->media->where('collection_name', 'signature')->first()?->getPath() }}">
+        @if (isset($overtime->approvals[0]))
+        @if ($overtime->approvals[0]->employee->media->where('collection_name', 'signature')->first()?->original_url and $overtime->approvals[0]->status->name === 'Approve')
+        <img src="{{ $overtime->approvals[0]->employee->media->where('collection_name','signature')->first()->getPath() }}" style="width: 120px;height: 70px" alt="">
+    @endif
                     @endif
       </td>
     </tr>
