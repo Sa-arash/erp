@@ -182,6 +182,15 @@ class Company extends Model implements HasAvatar, HasName, HasMedia
         return $this->hasMany(Leave::class);
     }
 
+    public function urgentTypeleaves(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(UrgentTypeleave::class);
+    }
+
+    public function urgentLeaves(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(UrgentLeave::class);
+    }
     public function loans(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Loan::class);

@@ -11,6 +11,7 @@ use App\Models\FinancialPeriod;
 use App\Models\Invoice;
 use App\Models\Leave;
 use App\Models\Loan;
+use App\Models\Overtime;
 use App\Models\Payroll;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseRequest;
@@ -53,6 +54,16 @@ class PdfController extends Controller
 
         $pdf = Pdf::loadView('pdf.leaverequest',compact('company','leave','lastleave'));
         return $pdf->stream('leaverequest.pdf');
+    }
+     public function overtime(Request $request , $id)
+    {
+        $company = auth()->user()->employee->company;
+        $overtime = Overtime::query()->findOrFail($id);
+        // $lastleave = Leave::query()->where('employee_id',$leave->employee->id)->first();
+        // dd($company);
+
+        $pdf = Pdf::loadView('pdf.overtime',compact('company','overtime'));
+        return $pdf->stream('overtime.pdf');
     }
     public function urgentleave(Request $request)
     {

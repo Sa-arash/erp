@@ -15,9 +15,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('employee_id')->constrained('employees')->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('urgent_typeleave_id')->constrained('urgent_typeleaves')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->timestamp('time_out');
-            $table->timestamp('time_in')->nullable();
-            $table->integer('hours');
+            $table->time('time_out');
+            $table->time('time_in')->nullable();
+            $table->integer('hours')->nullable();
             $table->timestamp('date')->nullable();
 
 

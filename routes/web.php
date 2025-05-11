@@ -64,6 +64,7 @@ Route::get('/',function (){
 });
 Route::middleware('auth')->group(function(){
 
+Route::get('/pdf/overtime/{id}',[\App\Http\Controllers\PdfController::class,'overtime'])->name('pdf.overtime');
 Route::get('/pdf/leaverequest/{id}',[\App\Http\Controllers\PdfController::class,'leaverequest'])->name('pdf.leaverequest');
 Route::get('/pdf/urgentleave',[\App\Http\Controllers\PdfController::class,'urgentleave'])->name('pdf.urgentleave');
 Route::get('/pdf/payroll/{id}',[\App\Http\Controllers\PdfController::class,'payroll'])->name('pdf.payroll');

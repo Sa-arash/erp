@@ -59,6 +59,8 @@ class OvertimeResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')
+                ->url(fn($record) => route('pdf.overtime', ['id' => $record->id]))->openUrlInNewTab(),
                 Tables\Actions\EditAction::make()->hidden(fn($record)=>$record->status->name!=="Pending"),
                 Tables\Actions\Action::make('approve')->iconSize(IconSize::Medium)->color('success')
                 ->icon(fn($record)=>($record->status->value) === 'accepted'?'heroicon-m-cog-8-tooth':'heroicon-o-check-badge')->label(fn($record)=>($record->status->value) === 'accepted'?'Change Status':'Approve')
