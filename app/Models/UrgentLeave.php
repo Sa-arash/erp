@@ -7,7 +7,7 @@ use App\Enums\LeaveStatus2;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Leave extends Model
+class UrgentLeave extends Model
 {
     use HasFactory;
 
