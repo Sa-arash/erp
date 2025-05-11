@@ -189,7 +189,7 @@
 
 <body>
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0;">
-        <table >
+        <table style="border: 1px solid black" >
             <tr >
                 <td style="border: none;width: 20%; text-align: left; padding-left: 10px;">
                     @if ($customImage??false)
@@ -198,7 +198,7 @@
                     @endif
                 </td>
                 <td  style="border: none;text-align: center; vertical-align: middle; width: 40%;">
-                    <h4 style="margin: 0; padding: 0; font-size: 25px; white-space: nowrap; display: inline-block;">
+                    <h4 style="margin: 0; padding: 0; font-size: 22px; white-space: nowrap; display: inline-block;">
                         {{strtoupper($title)}}
                     </h4>
                     @foreach ($titles as $title)
@@ -210,7 +210,7 @@
 
                 <td style="border: none;width: 20%; text-align: right; padding-right: 10px;">
                     @if($company?->logo)
-                        <img src="{!! public_path('images/' . $company?->logo) !!}" style="padding: 0; border-radius: 50px ; width: 150px;">
+                        <img src="{!! public_path('images/' . $company?->logo) !!}" style="padding: 0; border-radius: 50px ; width: 130px;">
                     @endif
                 </td>
             </tr>

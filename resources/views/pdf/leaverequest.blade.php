@@ -1,178 +1,5 @@
-{{-- <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Leave Request – R&R/Home</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      font-size: 12px;
-      margin: 20px;
-    }
 
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    td, th {
-      border: 1px solid #000;
-      padding: 4px;
-      vertical-align: top;
-    }
-
-    .center {
-      text-align: center;
-    }
-
-    .no-border {
-      border: none !important;
-    }
-
-    .section-title {
-      font-weight: bold;
-      background-color: #f0f0f0;
-      text-align: center;
-    }
-
-    .checkbox {
-      display: inline-block;
-      width: 14px;
-      height: 14px;
-      border: 1px solid #000;
-      margin-right: 5px;
-    }
-
-    .filled {
-      background-color: #000;
-    }
-
-    .calendar td {
-      height: 24px;
-      text-align: center;
-    }
-
-    @media print {
-      body {
-        margin: 0;
-      }
-    }
-  </style>
-</head>
-<body>
-
-  <h2 class="center">Leave Request – R&R/Home</h2>
-
-  <table>
-    <tr>
-      <td colspan="2">Check the type of Leave the being requested:</td>
-      <td><div class="checkbox"></div> R&R</td>
-      <td><div class="checkbox filled"></div> Home Leave</td>
-    </tr>
-  </table>
-
-  <table>
-    <tr class="section-title"><td colspan="4">Employee Information</td></tr>
-    <tr>
-      <td><strong>First Name</strong><br>DONALD</td>
-      <td><strong>Middle In.</strong><br>J.</td>
-      <td><strong>Last Name</strong><br>TRUMP</td>
-      <td><strong>Name of Immediate Supervisor / Manager</strong><br>WASIM A. WISSAL</td>
-    </tr>
-    <tr>
-      <td colspan="4"><strong>Work Location</strong><br>ICON COMPOUND - KABUL, AFGHANISTAN</td>
-    </tr>
-  </table>
-
-  <table>
-    <tr class="section-title"><td colspan="6">Leave Information</td></tr>
-    <tr>
-      <td><strong>Last Leave</strong><br>01 / DEC / 2024</td>
-      <td colspan="2"><strong>Current Leave Request</strong><br>25 / APR / 2025 – 09 / MAY / 2025</td>
-      <td colspan="3"><strong>Total # of Days</strong><br>13</td>
-    </tr>
-    <tr>
-      <td colspan="6">Are you aware of any circumstances that will delay or prevent your return to the site from leave?
-        <div style="display:inline-block; margin-left:10px;"><div class="checkbox"></div> Yes</div>
-        <div style="display:inline-block; margin-left:10px;"><div class="checkbox filled"></div> No</div>
-      </td>
-    </tr>
-    <tr><td colspan="6" style="height:30px;">If yes, please explain:</td></tr>
-  </table>
-
-  <table>
-    <tr class="section-title"><td colspan="2">Leave Details</td></tr>
-    <tr>
-      <td colspan="2">Use the following legend to annotate the leave pay status in the calendar below for all days off site:</td>
-    </tr>
-    <tr>
-      <td colspan="2">
-        O = Regular Day Off &nbsp;&nbsp; H = Holiday &nbsp;&nbsp; CL = Casual (LN) &nbsp;&nbsp; ML = Medical Leave &nbsp;&nbsp;
-        BL = Bereavement &nbsp;&nbsp; M = Marriage &nbsp;&nbsp; TD = Travel Day &nbsp;&nbsp; S = Sick &nbsp;&nbsp;
-        RR = Paid leave &nbsp;&nbsp; LWOP = Leave without Pay &nbsp;&nbsp; ML/PL = Maternity/Paternity
-      </td>
-    </tr>
-    <tr>
-      <td>
-        <strong>Month: APRIL</strong>
-        <table class="calendar">
-          <tr><td>1</td><td>2</td><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td></tr>
-          <tr><td>8</td><td>9</td><td>10</td><td>11</td><td>12</td><td>13</td><td>14</td></tr>
-          <tr><td>15</td><td>16</td><td>17</td><td>18</td><td>19</td><td>20</td><td>21</td></tr>
-          <tr><td>22</td><td>23</td><td>24</td><td>25 TD</td><td>26 RR</td><td>27 RR</td><td>28 RR</td></tr>
-          <tr><td>29 RR</td><td>30 RR</td><td colspan="5" class="no-border"></td></tr>
-        </table>
-      </td>
-      <td>
-        <strong>Month: MAY</strong>
-        <table class="calendar">
-          <tr><td>1 RR</td><td>2 RR</td><td>3 RR</td><td>4 RR</td><td>5 RR</td><td>6 RR</td><td>7 RR</td></tr>
-          <tr><td>8 TD</td><td>9</td><td>10</td><td>11</td><td>12</td><td>13</td><td>14</td></tr>
-          <tr><td>15</td><td>16</td><td>17</td><td>18</td><td>19</td><td>20</td><td>21</td></tr>
-          <tr><td>22</td><td>23</td><td>24</td><td>25</td><td>26</td><td>27</td><td>28</td></tr>
-          <tr><td>29</td><td>30</td><td>31</td><td colspan="4" class="no-border"></td></tr>
-        </table>
-      </td>
-    </tr>
-  </table>
-
-  <table>
-    <tr class="section-title"><td colspan="2">Emergency Contact Information</td></tr>
-    <tr>
-      <td>Email: ____________________________</td>
-      <td>Contact Number: ____ - ____ - __________</td>
-    </tr>
-  </table>
-
-  <table>
-    <tr class="section-title"><td colspan="4">Signatures</td></tr>
-    <tr>
-      <td>Employee Signature<br><br>__________________</td>
-      <td>Date<br><br>__________</td>
-      <td>Supervisor's Signature<br><br>__________________</td>
-      <td>Date<br><br>__________</td>
-    </tr>
-    <tr>
-      <td colspan="2">Admin/HR Dept Signature<br><br>__________________</td>
-      <td colspan="2">
-        <div><div class="checkbox filled"></div> Approved</div>
-        <div><div class="checkbox"></div> Denied</div>
-        <br>If denied, rationale:<br>______________________________
-      </td>
-    </tr>
-  </table>
-
-</body>
-</html> --}}
-
-
-
-
-
-
-
-
-
+@include('pdf.header',['title'=>'Leave Request – R&R/Home','titles'=>[],'css'=>false])
 <style>
     body {
         font-family: Calibri, sans-serif;
@@ -188,7 +15,8 @@
     table {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 10px;
+        margin-bottom: 0px;
+        border: 1px solid black;
     }
 
     .not-center {
@@ -260,30 +88,34 @@
         /* یا هر استایل دیگری که می‌خواهید */
     }
     @page  {
-        margin-top: 5px;
+        margin-top: 2px;
+    }
+    .phone-field {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+        font-size: 12px;
+    }
+
+    .phone-section {
+        text-align: center;
+        flex: 1;
+        margin: 0 5px;
+    }
+
+    .line {
+        border-top: 1px solid black;
+        height: 20px;
+        margin-bottom: 2px;
+    }
+
+    .label {
+        padding: 40px;
     }
 </style>
 
-<body>
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0;">
-    <table style="border: 1px solid black">
-        <tr >
-            <td style="border: none;width: 20%; text-align: left; padding-left: 10px;">
-            </td>
-            <td  style="border: none;text-align: center; vertical-align: middle; width: 40%;">
+<body style="border: 2px solid black !important;">
 
-                <h4 style="margin: 0; padding: 0; font-size: 25px; white-space: nowrap; display: inline-block">
-                    Leave Request – R&R/Home
-                </h4>
-            </td>
-            <td style="border: none;width: 20%; text-align: right; padding-right: 10px;">
-                @if($company?->logo)
-                    <img src="{!! public_path('images/' . $company?->logo) !!}" style="padding: 0; border-radius: 50px ; width: 150px;">
-                @endif
-            </td>
-        </tr>
-    </table>
-</div>
     <table>
         <tr>
             <td colspan="2">Check the type of Leave the being requested:</td>
@@ -562,26 +394,40 @@
         @if ($leave->employee->emergency_contact)
                 <tr>
                     <td style="border: none"><b>Email: {{ $leave->employee->emergency_contact[0]['email'] ?? '' }}</b></td>
-                    <td style="border: none"><b>Contact Number: {{ $leave->employee->emergency_contact[0]['number'] }} </b></td>
+                    @php
+                        $number = $leave->employee->emergency_contact[0]['number'];
+
+                        $part1 = substr($number, 0, 3);       // سه رقم اول
+                        $part2 = substr($number, 3, 3);       // سه رقم بعدی
+                        $rest  = substr($number, 6);          // باقی‌مانده
+                    @endphp
+
+                    <p>Part 1: {{ $part1 }}</p>
+                    <p>Part 2: {{ $part2 }}</p>
+                    <p>Rest: {{ $rest }}</p>
+
+                    <td style="border: none"><b>Contact Number: </b><span>{{ $part1 }}__</span><span>{{ $part2 }}__</span><span>{{ $rest }}</span></td>
                 </tr>
         @else
         <tr>
             <td><b>Email:</b> </td>
-            <td><b>Contact Number:  </b></td>
+            <td><b>Contact Number: </b>
+                _______    _________     ________
+            </td>
         </tr>
         @endif
 
     </table>
 
-    <table style="border: 1px solid black">
+    <table style="border: 1px solid black; border-collapse: collapse; width: 100%;">
         <tr class="section-title">
-            <td colspan="4">Signatures<b>
-
+            <td colspan="4">
+                <b>Signatures</b>
 
             </td>
         </tr>
         <tr>
-            <td style="border: none"> <hr>Employee Signature<br>
+            <td style="border: none"> <hr><b>Employee Signature</b><br>
 
                 <div class="signature-space">
                     @if ($leave->employee->media->where('collection_name', 'signature')->first())
@@ -592,11 +438,11 @@
             </td>
             <td style="border: none">
                 <hr>
-                Date<br>
+                <b>Date</b><br>
                 {{ \Carbon\Carbon::parse($leave->created_at)->format('d / M / Y') }}
 
             </td>
-            <td style="border: none" > <hr>Supervisor's Signature<br>
+            <td style="border: none" > <hr><b>Supervisor's Signature</b><br>
                 <div class="signature-space">
                     @if ($leave->approvals->first()?->employee?->media->where('collection_name', 'signature')?->first())
                         <img width="60" height="60"
@@ -604,27 +450,56 @@
                     @endif
                 </div>
             </td>
-            <td style="border: none"> <hr>Date<br>
+            <td style="border: none"> <hr><b>Date</b><br>
                 {{ $leave->approvals?->first()?->approve_date ? \Carbon\Carbon::parse($leave->approvals->first()->approve_date)->format('d / M / Y') : ' ' }}
             </td>
         </tr>
+
         <tr>
-            <td style="border: none" colspan="2">  <hr>Admin/HR Dept Signature<br>
+
+
+            <td style="border: none" colspan="2">  <hr><b>Admin/HR Dept Signature</b><br>
                 <div class="signature-space"></div>
                 @if ($leave->admin?->media->where('collection_name', 'signature')?->first())
                     <img width="60" height="60"
                          src="{{ $leave->admin?->media->where('collection_name', 'signature')?->first()?->getPath() }}">
                 @endif
             </td>
-            <td  colspan="2">
-                {{ $leave->approvals->first()?->status->value !=='NotApprove'?$leave->approvals->first()?->status:"Denied" }}
-                <div>If denied, rationale:<br>
-                    @if($leave->approvals->first()?->status->value==="NotApprove")
-                        {{$leave->approvals->first()?->comment}}
-                    @else
-                        _______________________________
-                    @endif
-                </div>
+            <td style="border: none">
+                <hr><b>Date</b>
+
+            </td>
+
+            <td  style="border: 20px">
+                <table >
+                    <tr>
+                        <th colspan="2" style="border: 1px solid black; padding: 5px; text-align: center; font-weight: bold; text-decoration: underline;">
+                            Request Approved
+                        </th>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid black; padding: 5px;">
+                            <span style="display: inline-block; width: 14px; height: 14px; text-align: center; line-height: 14px; vertical-align: middle; font-size: 12px; margin-right: 5px;">
+                                @if($leave->approvals->first()?->status->value !=='NotApprove') ☒ @endif</span>
+                            <b>Approved</b>
+                        </td>
+                        <td style="border: 1px solid black; padding: 5px;">
+                            <span style="display: inline-block; width: 14px; height: 14px; text-align: center; line-height: 14px; vertical-align: middle; font-size: 12px; margin-right: 5px;">@if($leave->approvals->first()?->status->value !=='NotApprove') ☐ @endif</span>
+                            <b>Denied</b>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="border: 1px solid black; padding: 0px 20px 20px;">
+                            If denied, rationale:
+                            @if($leave->approvals->first()?->status->value==="NotApprove")
+                                {{$leave->approvals->first()?->comment}}
+                            @else
+                                 __________
+                            @endif
+                        </td>
+                    </tr>
+                </table>
+
             </td>
         </tr>
     </table>
