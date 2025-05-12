@@ -9,7 +9,7 @@ class Typeleave extends Model
 {
     use HasFactory;
 
-    protected $fillable=['title','days','description','company_id','is_payroll','built_in'];
+    protected $fillable=['sort','title','abbreviation','days','description','company_id','is_payroll','built_in'];
 
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

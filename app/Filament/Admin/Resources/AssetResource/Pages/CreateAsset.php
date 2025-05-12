@@ -32,7 +32,7 @@ class CreateAsset extends CreateRecord
             $this->callHook('beforeCreate');
 
 
-            if ($data['purchase_order_id']) {
+            if (isset($data['purchase_order_id'])) {
 
                $PO= PurchaseOrder::find($data['purchase_order_id']);
                if ($PO->status==='Inventory'){
@@ -45,7 +45,6 @@ class CreateAsset extends CreateRecord
                    ]);
                }
             }
-
 
             foreach ($data['assets'] as $asset) {
 

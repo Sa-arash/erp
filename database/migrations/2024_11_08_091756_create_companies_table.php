@@ -39,6 +39,10 @@ return new class extends Migration
             $table->string('agency')->nullable();
             $table->string('visitrequest_model')->nullable();
             $table->string('visitrequest_color')->nullable();
+            $table->string('SOP_number')->nullable();
+            $table->string('description_security')->nullable();
+            $table->string('effective_date_security')->nullable();
+            $table->string('supersedes_security')->nullable();
 //          $table->text('company_type');
             $table->text('logo')->nullable();
             $table->timestamps();

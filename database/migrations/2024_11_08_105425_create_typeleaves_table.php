@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('typeleaves', function (Blueprint $table) {
             $table->id();
             $table->string('title');
+            $table->string('abbreviation')->nullable();
             $table->integer('days');
             $table->boolean('is_payroll');
             $table->string('description')->nullable();

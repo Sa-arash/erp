@@ -118,12 +118,20 @@
 
     <table>
         <tr>
-            <td colspan="2">Check the type of Leave the being requested:</td>
-            <td>
-                <div class="checkbox"></div> R&amp;R
+            <td style="border: none" colspan="2">Check the type of Leave the being requested:</td>
+            <td style="border: none" >
+                <div class="checkbox"></div>
+                @if(!$leave->type)
+                    ☒
+                    @endif
+                R&amp;R
             </td>
-            <td>
-                <div class="checkbox filled"></div> Home Leave
+            <td style="border: none">
+                <div class="checkbox filled"></div>
+                @if($leave->type)
+                ☒
+                @endif
+                Home Leave
             </td>
         </tr>
     </table>
@@ -213,8 +221,9 @@
             <td class="font-bold" style="border: none; padding: 0 10px;">Year</td>
             <td class="font-bold" style="border: none; padding: 0 10px;">of Days</td>
         </tr>
-
+        @if($lastleave)
         <tr style=" padding: 0 10px;">
+
             <td class="font-bold" style="border: none; padding: 0 10px;">Last Leave</td>
             <td class="font-bold" style="border: none; padding: 0 10px;">
                 {{ \Carbon\Carbon::parse($lastleave->start_leave)->format('d') }}/<br>
@@ -243,10 +252,55 @@
                 <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
             </td>
             <td class="font-bold" style="border: none; padding: 0 10px;">
-                {{ \Carbon\Carbon::parse($lastleave->start_leave)->startOfDay()->diffInDays(\Carbon\Carbon::parse($lastleave->end_leave), $lastleave->end_leave) }}<br>
+                @php
+                    $startLast = \Carbon\Carbon::make($lastleave->start_leave)->startOfDay();
+                    $endLast = \Carbon\Carbon::make($lastleave->end_leave)->startOfDay();
+                    $CompanyHoliday = count(getDaysBetweenDates($startLast, $endLast, $lastleave->company->weekend_days));
+                    $holidays = \App\Models\Holiday::query()->where('company_id', $lastleave->company->id)->whereBetween('date', [$startLast, $endLast])->count();
+
+                @endphp
+
+                @if ($startLast && $endLast)
+                    {{ round($startLast->diffInDays($endLast) + 1,0)-$CompanyHoliday-$holidays }}
+                @endif
                 <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
             </td>
         </tr>
+        @else
+            <tr style=" padding: 0 10px;">
+
+                <td class="font-bold" style="border: none; padding: 0 10px;">Last Leave</td>
+                <td class="font-bold" style="border: none; padding: 0 10px;">
+                    <br>
+                    <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+                </td>
+                <td class="font-bold" style="border: none; padding: 0 10px;">
+                    <br>
+                    <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+                </td>
+                <td class="font-bold" style="border: none; padding: 0 10px;">
+                    <br>
+                    <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+                </td>
+
+
+                <td class="font-bold" style="border: none; padding: 0 10px;">
+                   <br>
+                    <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+                </td>
+                <td class="font-bold" style="border: none; padding: 0 10px;">
+                    <br>
+                    <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+                </td>
+                <td class="font-bold" style="border: none; padding: 0 10px;">
+                    <br>
+                    <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+                </td>
+                <td class="font-bold" style="border: none; padding: 0 10px;">
+                    <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+                </td>
+            </tr>
+        @endif
 
         <tr style=" padding: 0 10px;">
             <td class="font-bold" style="border: none; padding: 0 10px;">Current Leave Request </td>
@@ -274,7 +328,19 @@
                 <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
             </td>
             <td class="font-bold" style="border: none; padding: 0 10px;">
-                {{ \Carbon\Carbon::parse($leave->start_leave)->startOfDay()->diffInDays(\Carbon\Carbon::parse($leave->end_leave), $leave->end_leave) }}<br>
+
+                @php
+                    $start = \Carbon\Carbon::make($leave->start_leave)->startOfDay();
+                    $end = \Carbon\Carbon::make($leave->end_leave)->startOfDay();
+                    $CompanyHoliday = count(getDaysBetweenDates($start, $end, $leave->company->weekend_days));
+
+                @endphp
+
+                @if ($start && $end)
+                     {{ round($start->diffInDays($end) + 1,0)-$CompanyHoliday }}
+                @else
+                    تاریخ‌ها نامعتبر هستند
+                @endif
                 <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
             </td>
         </tr>
@@ -306,9 +372,25 @@
         </tr>
         <tr>
             <td colspan="2" class="small-text">
-                O = Regular Day Off, H = Holiday, CL = Casual (LN), ML = Medical Leave, BL = Bereavement,
-                M = Marriage, TD = Travel Day, S = Sick, RR = Paid leave, LWOP = Leave without Pay, ML/PL =
-                Maternity/Paternity
+
+                @php
+                $j=1;
+                @endphp
+               <table>
+                   <tr>
+                   @foreach($types as $type)
+                       <th> <b>{{$type?->abbreviation}}</b>= {{$type?->title}}</th>
+                       @php
+                       $j++;
+                       @endphp
+                       @if($j==5)
+                   </tr>
+                   <tr>
+                           @endif
+                   @endforeach
+                   </tr>
+               </table>
+
             </td>
         </tr>
         <tr>
@@ -339,6 +421,8 @@
 
                         <td class="{{ $isInLeavePeriod ? 'hilite' : '' }}">
                             {{ $i }}
+                            <br>
+                            @if($isInLeavePeriod) {{$leave->typeLeave?->abbreviation}} @endif
                         </td>
 
                         @if ($i % 7 == 0 || $i == $daysInMonth)
@@ -389,7 +473,7 @@
             <td style="border: none" colspan="2">Emergency Contact Information</td>
         </tr>
         <tr>
-            <td style="border: none" colspan="2"><i>Please provide a point of contact who can be reached in the event of an emergency during your leave</i></td>
+            <td style="border: none" colspan="2"><b><i style="font-size: 12px">Please provide a point of contact who can be reached in the event of an emergency during your leave</i></b></td>
         </tr>
         @if ($leave->employee->emergency_contact)
                 <tr>
@@ -503,6 +587,7 @@
             </td>
         </tr>
     </table>
+
 
 </body>
 

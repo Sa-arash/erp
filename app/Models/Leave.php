@@ -11,7 +11,7 @@ class Leave extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['explain_leave','is_circumstances','admin_id','comment','employee_id', 'typeleave_id', 'start_leave', 'end_leave', 'days', 'document', 'description', 'status','user_id','approval_date', 'company_id'];
+    protected $fillable = ['type','explain_leave','is_circumstances','admin_id','comment','employee_id', 'typeleave_id', 'start_leave', 'end_leave', 'days', 'document', 'description', 'status','user_id','approval_date', 'company_id'];
 
     protected $casts = ['status' => LeaveStatus2::class];
 

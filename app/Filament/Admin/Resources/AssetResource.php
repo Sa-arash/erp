@@ -108,7 +108,6 @@ class AssetResource extends Resource
                         ->mask(RawJs::make('$money($input)'))->stripCharacters(',')
                         ->placeholder('Enter amount'),
 
-                    Forms\Components\Hidden::make('purchase_order_id')->default('inStorageUsable'),
 
                     Forms\Components\Hidden::make('status')->default('inStorageUsable')->required(),
                     Forms\Components\Repeater::make('attributes')->defaultItems(0)->addActionLabel('Add To  Attribute')->schema([

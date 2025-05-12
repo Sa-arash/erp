@@ -6,9 +6,13 @@ use App\Filament\Admin\Resources\ApprovalResource\Pages;
 use App\Filament\Admin\Resources\ApprovalResource\RelationManagers;
 use App\Models\Approval;
 use App\Models\Employee;
+use App\Models\Holiday;
+use App\Models\Leave as ModelLeave;
 use App\Models\Product;
 use App\Models\PurchaseRequestItem;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Filament\Forms;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
@@ -76,6 +80,22 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                           TextEntry::make('typeLeave.title')->label('Leave Type'),
                           TextEntry::make('start_leave')->date()->label('Start Leave'),
                           TextEntry::make('end_leave')->date()->label('End Leave'),
+                          TextEntry::make('end_leave')->state(function ($record){
+                              $start = Carbon::parse($record->approvable->start_date);
+
+                              $end = Carbon::parse($record->approvable->end_date);
+                              $period = CarbonPeriod::create($start, $end);
+                              $daysBetween = $period->count(); // تعداد کل روزها
+                              $CompanyHoliday = count(getDaysBetweenDates($start, $end, getCompany()->weekend_days));
+
+                              $holidays = Holiday::query()->where('company_id', getCompany()->id)->whereBetween('date', [$start, $end])->count();
+                              $validDays = $daysBetween - $holidays-$CompanyHoliday;
+                              return $validDays;
+                          })->label('Days'),
+                          TextEntry::make('Total Leave('.now()->format('Y').")")->state(function ()use($record){
+                              $leaves= ModelLeave::query()->where('employee_id',$record->employee_id)->whereBetween('start_leave', [now()->startOfYear(), now()->endOfYear()])->whereBetween('end_leave', [now()->startOfYear(), now()->endOfYear()])->where('status','accepted')->sum('days');
+                              return new HtmlString("<div style='font-size: 25px !important;'>  <span style='color: red;font-size: 25px !important;'>$leaves</span> Days </div>");
+                          }),
                           TextEntry::make('is_circumstances')->state(fn($record)=>$record?->approvable?->is_circumstances?"Yes":"No")->label('Aware of any Circumstances'),
                           TextEntry::make('explain_leave')->label('Explain'),
                       ])->columns()->relationship('approvable')

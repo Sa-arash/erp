@@ -18,6 +18,7 @@ use App\Models\PurchaseRequest;
 use App\Models\TakeOut;
 use App\Models\Task;
 use App\Models\Transaction;
+use App\Models\Typeleave;
 use App\Models\UrgentLeave;
 use App\Models\VisitorRequest;
 use Carbon\Carbon;
@@ -49,11 +50,16 @@ class PdfController extends Controller
     public function leaverequest(Request $request , $id)
     {
         $company = auth()->user()->employee->company;
-        $leave = Leave::query()->findOrFail($id);
-        $lastleave = Leave::query()->where('employee_id',$leave->employee->id)->first();
-        // dd($company);
+        $leave = Leave::query()->with(['employee','company','typeLeave'])->findOrFail($id);
+        $types=Typeleave::query()->where('company_id',$company->id)->orderBy('sort')->get();
+        $lastleave = Leave::query()
+            ->where('employee_id', $leave->employee->id)
+            ->orderBy('id', 'desc')
+            ->skip(1)
+            ->first();
 
-        $pdf = Pdf::loadView('pdf.leaverequest',compact('company','leave','lastleave'));
+
+        $pdf = Pdf::loadView('pdf.leaverequest',compact('types','company','leave','lastleave'));
         return $pdf->stream('leaverequest.pdf');
     }
      public function overtime(Request $request , $id)

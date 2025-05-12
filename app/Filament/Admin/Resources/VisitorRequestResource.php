@@ -120,7 +120,8 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                                 return $data['title'];
                             })->searchable()->preload(),
                             Select::make('color')->options(getCompany()->visitrequest_color)->createOptionForm([
-                                Forms\Components\TextInput::make('title')->required()
+                                Forms\Components\TextInput::make('title')->required(),
+                                Forms\Components\ColorPicker::make('color')->required()
                             ])->createOptionUsing(function ($data) {
                                 $array = getCompany()->visitrequest_color;
                                 if (isset($array)) {

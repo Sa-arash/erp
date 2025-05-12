@@ -48,7 +48,8 @@ class MyLeave extends BaseWidget
                     Notification::make('success')->title('Created')->send();
                 })->label('New Leave')->form([
                    Section::make([
-                           Select::make('typeleave_id')->columnSpanFull()->label('Leave Type')->required()->options(Typeleave::query()->where('company_id', getCompany()->id)->pluck('title', 'id'))->searchable()->preload(),
+                       ToggleButtons::make('type')->required()->grouped()->boolean('R&R','Home'),
+                           Select::make('typeleave_id')->label('Leave Type')->required()->options(Typeleave::query()->where('company_id', getCompany()->id)->pluck('title', 'id'))->searchable()->preload(),
                            DatePicker::make('start_leave')->default(now())->live()->afterStateUpdated(function ( Get $get ,Set $set){
                                $start = Carbon::parse($get('start_leave'));
                                $end = Carbon::parse($get('end_leave'));

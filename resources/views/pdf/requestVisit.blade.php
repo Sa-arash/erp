@@ -49,6 +49,7 @@
 
             .text-center {
                 text-align: center;
+                font-size: 12px;
             }
 
             .no-border {
@@ -129,24 +130,26 @@
                         <img src="{!! public_path('images/' . $company?->logo_security) !!}" style="padding: 0; border-radius: 50px ; width: 200px;">
                     @endif
                 </td>
-                <td colspan="4" style="padding: 0px 0px;margin :0px 0px">
-
-
+                <td colspan="4" style="padding: 0px 0px;margin :0px 0px;font-size: 12px!important;">
                         <table>
                             <tr>
-                                <td class="text-center">SOP No.002 Annex {{ str_pad($requestVisit->id, 3, '0', STR_PAD_LEFT) }}</td>
+                                <td  class="text-center"><b>{{$company->title_security}}</b></td>
                             </tr>
                             <tr>
-                                <td class="text-center">dated {{ $requestVisit->visit_date }}</td>
+                                <td class="text-center"><b>{{$company->description_security}}</b></td>
                             </tr>
                             <tr>
-                                <td class="text-center">Supersedes: Visitors Access Request {{ str_pad($requestVisit->id, 3, '0', STR_PAD_LEFT) }} Dated</td>
+                                <td class="text-center"><b>Page 1 of 1</b></td>
                             </tr>
                             <tr>
-                                <td class="text-center">dated {{ $requestVisit->visit_date }}</td>
+                                <td class="text-center"><b>{{$company->SOP_number}}</b></td>
                             </tr>
                             <tr>
-                                <td class="text-center">Effective Date: {{ $requestVisit->visit_date }}</td>
+                                <td class="text-center " style="color:#1c6fb9 "><b>{{$company->supersedes_security}}</b></td>
+                            </tr>
+
+                            <tr>
+                                <td class="text-center"><b>Effective Date: <span style="color:#1c6fb9 ">{{ $company->effective_date_security }}</span></b></td>
                             </tr>
                         </table>
                 </td>
@@ -178,7 +181,8 @@
 
             <tr>
                 <td> {{ $requestVisit->employee->fullName }}</td>
-                <td> {{ $requestVisit->employee->agency }}</td>
+
+                <td> {{$requestVisit->ICON ? $requestVisit->employee->position?->title:'' }}</td>
                 <td> {{ $requestVisit->agency }}</td>
                 <td> {{ $requestVisit->ICON ? '■': '□' }}</td>
                 <td> {{ $requestVisit->employee->phone_number }}</td>
@@ -215,9 +219,10 @@
 
         <table>
             <tr class="section-title">
-                <td colspan="6">Visitor(s) Details</td>
+                <td colspan="7">Visitor(s) Details</td>
             </tr>
             <tr>
+                <td></td>
                 <td>Name</td>
                 <td>ID/Passport</td>
                 <td>Cell Phone</td>
@@ -225,8 +230,12 @@
                 <td>Organization</td>
                 <td>Remarks</td>
             </tr>
+            @php
+            $i=1;
+            @endphp
             @foreach ($requestVisit->visitors_detail as $visitor)
                 <tr>
+                    <td>{{ $i++ }}</td>
                     <td>{{ $visitor['name'] ?? '---' }}</td>
                     <td>{{ $visitor['id' ?? '---'] }}</td>
                     <td>{{ $visitor['phone'] ?? '---' }}</td>
@@ -236,7 +245,7 @@
                 </tr>
             @endforeach
             <tr>
-                <td colspan="6" class="no-border" style="text-align: right;"> &nbsp;</td>
+                <td colspan="7" class="no-border" style="text-align: right;"> &nbsp;</td>
             </tr>
         </table>
 

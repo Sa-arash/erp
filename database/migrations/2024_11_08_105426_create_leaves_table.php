@@ -19,6 +19,7 @@ return new class extends Migration
             $table->timestamp('start_leave');
             $table->timestamp('end_leave')->nullable();
             $table->integer('days');
+            $table->boolean('type')->default(0);
             $table->boolean('is_circumstances')->default(0);
             $table->string('explain_leave')->nullable();
             $table->text('document')->nullable();

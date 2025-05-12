@@ -23,9 +23,9 @@ enum LoanStatus:string implements HasColor,HasLabel
             self::Accepted => 'Accepted',
             self::Progressed => 'Progressed',
             self::Finished => 'Finished',
-            self::ApproveManager => 'ApproveManager',
-            self::ApproveAdmin => 'ApproveAdmin',
-            self::ApproveFinance => 'ApproveFinance',
+            self::ApproveManager => 'Approve Manager',
+            self::ApproveAdmin => 'Approve Admin',
+            self::ApproveFinance => 'Approve Finance',
 
         };
     }

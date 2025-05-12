@@ -64,7 +64,7 @@ class LoanResource extends Resource
                 Forms\Components\TextInput::make('loan_code')->readOnly()->default(generateNextCodeLoan(getCompany()->loans()->orderBy('id','desc')->first()?->loan_code))
                     ->required()
                     ->numeric(),
-                Forms\Components\TextInput::make('request_amount')
+                Forms\Components\TextInput::make('request_amount')->label('Request Amount')
                     ->mask(RawJs::make('$money($input)'))
                     ->stripCharacters(',')
                     ->required()
@@ -84,9 +84,9 @@ class LoanResource extends Resource
                     ->required()
                     ->numeric()
                     ->default(0),
-                Forms\Components\DatePicker::make('request_date')
+                Forms\Components\DatePicker::make('request_date')->label('Request Date')
                     ->required(),
-                Forms\Components\DatePicker::make('answer_date')
+                Forms\Components\DatePicker::make('answer_date')->label('Answer Date')
                     ->label('Approval Date'),
                 Forms\Components\DatePicker::make('first_installment_due_date') // فیلد تاریخ سررسید اولین قسط
                     ->label('First Installment Due Date')
@@ -177,7 +177,7 @@ class LoanResource extends Resource
             ], getModelFilter())
 
             ->actions([
-                Tables\Actions\EditAction::make(),
+//                Tables\Actions\EditAction::make(),
 //                Tables\Actions\Action::make('payLoan')
 //                ->visible(fn($record)=>$record->status->value === "ApproveAdmin"&& getPeriod())
 //                ->modalWidth(MaxWidth::FiveExtraLarge)->form([
@@ -387,7 +387,7 @@ class LoanResource extends Resource
         return [
             'index' => Pages\ListLoans::route('/'),
             'create' => Pages\CreateLoan::route('/create'),
-            'edit' => Pages\EditLoan::route('/{record}/edit'),
+//            'edit' => Pages\EditLoan::route('/{record}/edit'),
         ];
     }
 }

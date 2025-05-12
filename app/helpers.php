@@ -549,7 +549,7 @@ function defaultCurrency()
 
 function PDFdefaultCurrency($company)
 {
-    return $company->currencies->where('is_company_currency', 1)->first()?->symbol;
+    return $company->currencies->where('is_company_currency', 1)->first()?->name;
 }
 
 function generateNextCodePO($code): string

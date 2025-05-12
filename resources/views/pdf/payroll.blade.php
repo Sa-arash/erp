@@ -1,16 +1,20 @@
 
+@php
+    $month = \Carbon\Carbon::parse($payroll->start_date);
+    $year = \Carbon\Carbon::parse($payroll->start_date)->year;
+    $leaveType=\App\Models\Typeleave::query()->where('company_id',$payroll->company_id)->where('built_in',1)->first();
+    $annualLeaves= \App\Models\Leave::query()->where('status','accepted')->whereBetween('start_leave',[now()->startOfYear(),now()->endOfYear()])->whereBetween('end_leave',[now()->startOfYear(),now()->endOfYear()])->where('typeleave_id',$leaveType?->id)->where('employee_id',$payroll->employee_id)->get();
+    $leaves= \App\Models\Leave::query()->where('status','accepted')->whereBetween('start_leave',[now()->startOfMonth(),now()->endOfMonth()])->whereBetween('end_leave',[now()->startOfMonth(),now()->endOfMonth()])->where('employee_id',$payroll->employee_id)->get();
+@endphp
 
 
+@include('pdf.header',['title'=>'Payroll-'.$month->format('M')." ".$year,'titles'=>[],'css'=>false])
 
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pay Slip</title>
+
 
     <style>
         @page {
-            margin-top: 0;
+            margin-top: 10px;
         }
 
         body {
@@ -29,10 +33,7 @@
 
         .pay-slip {
             background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 10px;
             padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         .text-center{
             alignment: center;
@@ -63,7 +64,6 @@
             font-size: 13px;
             color: #666;
             margin-bottom: 5px;
-            border-bottom: 1px solid #ddd;
             padding-bottom: 5px;
         }
 
@@ -101,34 +101,23 @@
     $totalDeductions=0;
 @endphp
 <div class="pay-slip">
-    <h1>Payroll-
-        @php
-            $month = \Carbon\Carbon::parse($payroll->start_date);
-            $year = \Carbon\Carbon::parse($payroll->start_date)->year;
-            $leaveType=\App\Models\Typeleave::query()->where('company_id',$payroll->company_id)->where('built_in',1)->first();
-            $annualLeaves= \App\Models\Leave::query()->where('status','accepted')->whereBetween('start_leave',[now()->startOfYear(),now()->endOfYear()])->whereBetween('end_leave',[now()->startOfYear(),now()->endOfYear()])->where('typeleave_id',$leaveType?->id)->where('employee_id',$payroll->employee_id)->get();
-            $leaves= \App\Models\Leave::query()->where('status','accepted')->whereBetween('start_leave',[now()->startOfMonth(),now()->endOfMonth()])->whereBetween('end_leave',[now()->startOfMonth(),now()->endOfMonth()])->where('employee_id',$payroll->employee_id)->get();
-        @endphp
-        {{$month->format('M')." ".$year}}</h1>
-    <h2>{{$payroll->company->title}}</h2>
-    <div style="width: 100%;display: flex">
-        <div style="display: inline;">
-            @if($payroll->employee->media->where('collection_name','images')->first()?->original_url )
-            <img  src="{!! $payroll->employee->media->where('collection_name','images')->first()?->original_url!!}" style="width: 95px;margin-bottom: 20px">
-            @endif
-            @if($payroll->company?->logo)
-            <img src="{!! public_path('images/' . $payroll->company?->logo) !!}" style="width: 95px;padding-left: 440px;margin-bottom: 20px">
-                @endif
-        </div>
 
+    <div style="width: 100%;display: flex">
+            @if($payroll->employee->media->where('collection_name','images')->first()?->original_url )
+                <div >            <img   src="{!! $payroll->employee->media->where('collection_name','images')->first()?->original_url!!}" style="width: 95px;margin-bottom: 20px;margin-left: 42%;border: 1px solid gray;padding: 5px">
+                </div>
+            @endif
     </div>
     <table class="details">
         <tr>
+            <th colspan="4" style="text-align: center;font-size: 20px"><b> Employee Information</b></th>
+        </tr>
+        <tr>
+            <th>Employee ID</th>
+            <td>{{ $payroll->employee->ID_number }}</td>
             <th>Name</th>
             <td>{{ $payroll->employee->fullName }}</td>
 
-            <th>Employee ID</th>
-            <td>{{ $payroll->employee->ID_number }}</td>
         </tr>
         <tr>
             <th>Department</th>
@@ -138,7 +127,7 @@
 
         </tr>
         <tr>
-            <th> Working days</th>
+            <th> Working Days</th>
             <td colspan="1">
                 {{$month->daysInMonth-$annualLeaves->sum('days')}} Of {{$month->daysInMonth}}
             </td>
@@ -174,7 +163,7 @@
 
             <tr class="">
                 <td style="font-size: 18px">Total Earnings</td>
-                <td style="color: #1cc6b9;font-size: 15px" >{{ number_format($payroll->employee?->base_salary+$payroll->total_allowance ) }}</td>
+                <td style="color: #1cc6b9;font-size: 15px" >{{ number_format($payroll->employee?->base_salary+$payroll->total_allowance ) .' '.PDFdefaultCurrency($payroll->company) }}</td>
             </tr>
 
         </table>
@@ -213,12 +202,12 @@
             </tr>
             <tr>
                 <td >Net Pay </td>
-                <td   style="color: #1cc6b9;font-size: 15px"  >{{ number_format($payroll->amount_pay ).PDFdefaultCurrency($payroll->company)}}</td>
+                <td   style="color: #1cc6b9;font-size: 15px"  >{{ number_format($payroll->amount_pay ).' '.PDFdefaultCurrency($payroll->company)}}</td>
             </tr>
         </table>
     </div>
     @if($payroll->employee->media->where('collection_name','signature')->first()?->original_url )
-       <span style="margin-left: 300px"> Employee Signature</span>
+       <pre style="margin-left: 40%!important;">                                         Employee Signature</pre>
     <div class="text-center  w-100" style="margin-left: 300px">
 
            <img  src="{!! $payroll->employee->media->where('collection_name','signature')->first()?->original_url!!}" style="width: 95px;margin-bottom: 20px">

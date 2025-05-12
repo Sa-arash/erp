@@ -1,12 +1,15 @@
 
 @include('pdf.header',
-   ['titles'=>['Payroll Report'],'title'=>'Employee Salary ','css'=>true])
+   ['titles'=>[''],'title'=>'Employee Salary ','css'=>true])
 <style>
     table th ,table td{
         font-size: 12px!important;
     }
 </style>
 <div class="table-container" >
+    <div>
+        <h4>Date: {{now()->format('Y/F/d H:iA')}}</h4>
+    </div>
     <table>
         <thead  >
         <tr >
@@ -38,7 +41,7 @@
             <td >{{$payroll->employee->fullName}}</td>
             <td>{{$month->format('M')}}</td>
             <td>{{$year}}</td>
-            <td>{{number_format($payroll->employee?->base_salary)}}</td>
+            <td>{{number_format($payroll->employee?->base_salary).' '.$payroll->employee?->currency?->name}}</td>
             <td>{{number_format($payroll->total_allowance)}}</td>
             <td>{{number_format($payroll->total_deduction)}}</td>
             <td>{{number_format($payroll->amount_pay)}}</td>

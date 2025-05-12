@@ -3,7 +3,7 @@
     'css'=>false,
     'company'=>$employee->company,
     'titles'=>[],
-    'title'=>'Journal Report'
+    'title'=>'Employee Information Form'
     ]
     )
 
@@ -88,18 +88,21 @@
 </style>
 <body>
 
-<div style="text-align: center">
-    <b>Employee Information Form</b>
-</div>
-<div>
-    @if($employee->media->where('collection_name','images')->first())
-        <img width="100" src="{{$employee->media->where('collection_name','images')->first()?->getPath()}}" alt="">
 
-    @endif
-</div>
+
 <div class="section-title">Personal Information</div>
 <table>
+    <tr>
+        <th colspan="3"><div>
+                @if($employee->media->where('collection_name','images')->first())
+                    <img width="100" src="{{$employee->media->where('collection_name','images')->first()?->getPath()}}" alt="">
+
+                @endif
+            </div></th>
+
+    </tr>
     <tr >
+
         <th style="border: 2px solid black !important;">Full Name:   {{$employee->fullName}}</th>
         <td></td>
         <th>NIC : {{$employee->NIC}}</th>
