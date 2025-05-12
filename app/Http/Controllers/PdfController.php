@@ -18,6 +18,7 @@ use App\Models\PurchaseRequest;
 use App\Models\TakeOut;
 use App\Models\Task;
 use App\Models\Transaction;
+use App\Models\UrgentLeave;
 use App\Models\VisitorRequest;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -65,14 +66,7 @@ class PdfController extends Controller
         $pdf = Pdf::loadView('pdf.overtime',compact('company','overtime'));
         return $pdf->stream('overtime.pdf');
     }
-    public function urgentleave(Request $request)
-    {
-        $company = auth()->user()->employee->company;
-        // dd($transactions);
 
-        $pdf = Pdf::loadView('pdf.urgentleave');
-        return $pdf->stream('urgentleave.pdf');
-    }
     public function account($period, $account, Request $request)
     {
         $company = auth()->user()->employee->company;
@@ -586,5 +580,13 @@ class PdfController extends Controller
             compact( 'company','invoice')
         );
         return $pdf->stream();
+    }
+    public function urgentleave($id)
+    {
+        $urgent=UrgentLeave::query()->with('company')->findOrFail($id);
+        $company = $urgent->company;
+
+        $pdf = Pdf::loadView('pdf.urgentleave',compact( 'company','urgent'));
+        return $pdf->stream('urgentleave.pdf');
     }
 }

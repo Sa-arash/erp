@@ -23,6 +23,7 @@ use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\ActionSize;
 use Filament\Support\Enums\IconSize;
 use Filament\Support\RawJs;
 use Filament\Tables;
@@ -158,7 +159,7 @@ class LeaveResource extends Resource implements HasShieldPermissions
 
             ], getModelFilter())
             ->actions([
-                Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->label('')
+                Tables\Actions\Action::make('pdf')->size(ActionSize::Medium)->tooltip('Print')->icon('heroicon-s-printer')->label('PDF')
                     ->url(fn($record) => route('pdf.leaverequest', ['id' => $record->id]))->openUrlInNewTab(),
                 Tables\Actions\EditAction::make()->hidden(fn($record)=>$record->status->name!=="Pending"),
                 Tables\Actions\Action::make('approve')->iconSize(IconSize::Medium)->color('success')

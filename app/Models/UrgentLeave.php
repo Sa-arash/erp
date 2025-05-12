@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\LeaveStatus;
 use App\Enums\LeaveStatus2;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -29,13 +28,9 @@ class UrgentLeave extends Model
         return $this->belongsTo(Employee::class);
     }
 
-    public function typeLeave(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function admin(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(Typeleave::class, 'urgent_typeleave_id', 'id');
+        return $this->belongsTo(Employee::class, 'admin_id');
     }
 
-    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
 }

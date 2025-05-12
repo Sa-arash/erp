@@ -14,21 +14,17 @@ return new class extends Migration
         Schema::create('urgent_leaves', function (Blueprint $table) {
             $table->id();
             $table->foreignId('employee_id')->constrained('employees')->cascadeOnUpdate()->cascadeOnDelete();
-            $table->foreignId('urgent_typeleave_id')->constrained('urgent_typeleaves')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('admin_id')->nullable()->constrained('employees')->cascadeOnUpdate()->cascadeOnDelete();
             $table->time('time_out');
             $table->time('time_in')->nullable();
             $table->integer('hours')->nullable();
             $table->timestamp('date')->nullable();
 
-
-
-            $table->text('document')->nullable();
             $table->text('reason')->nullable();
             $table->enum('status',['pending','rejected','accepted','approveHead'])->default('pending');
             $table->text('comment')->nullable();
             $table->timestamp('approval_date')->nullable();
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->foreignId('user_id')->nullable()->constrained('users')->cascadeOnDelete()->cascadeOnUpdate();
             $table->softDeletes();
             $table->timestamps();
         });

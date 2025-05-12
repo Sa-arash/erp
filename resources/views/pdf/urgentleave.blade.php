@@ -1,8 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Urgent Leave Slip</title>
+@include('pdf.header',['title'=>'Urgent Leave Slip','titles'=>[],'css'=>false])
   <style>
     body {
       font-family: Calibri, sans-serif;
@@ -49,33 +45,30 @@
       width: 70%;
     }
   </style>
-</head>
-<body>
-
-  <div class="header">
-    <img src="logo.png" alt="ATGT Logo">
-    <div class="title">Urgent Leave Slip</div>
-  </div>
 
   <table>
-    <tr>
-      <td class="side-header" rowspan="9">Human Resources Department</td>
-      <td class="content-table" colspan="2">
-        <table class="content-table">
-          <tr><td>Date:</td><td>DD-MM-YYYY</td></tr>
-          <tr><td>Name:</td><td>JANE DOE</td></tr>
-          <tr><td>Badge Number:</td><td>UNC-INT-1234</td></tr>
-          <tr><td>Department:</td><td>FINANCE</td></tr>
-          <tr><td>Reason:</td><td>SICK FAMILY MEMBER TO TAKE TO HOSPITAL</td></tr>
-          <tr><td>Time Out:</td><td>14:00 PM</td></tr>
-          <tr><td>Time In:</td><td>NOT RETURNING TO DUTY</td></tr>
-          <tr><td>Staff Signature:</td><td></td></tr>
-          <tr><td>Approved by Line Manager:</td><td>JOHN H. DOE IV</td></tr>
-          <tr><td>Approved by HR Department:</td><td>JANE E. PALER</td></tr>
-        </table>
-      </td>
-    </tr>
+     <tr>
+         <td class="" rowspan="11   ">
+             <img src="{{public_path('img/dep.png')}}"  alt="">
+         </td>
+      <tr><td><b>Date:</b></td><td>{{\Illuminate\Support\Carbon::make($urgent->date)->format('Y F d')}}</td></tr>
+      <tr><td><b>Name:</b></td><td>{{$urgent->employee->fullName}}</td></tr>
+      <tr><td><b>Badge Number:</b></td><td>{{$urgent->employee->ID_number}}</td></tr>
+      <tr><td><b>Department:</b></td><td>{{$urgent->employee?->department->title}}</td></tr>
+      <tr><td><b>Reason:</b></td><td>{{$urgent->reason}}</td></tr>
+      <tr><td><b>Time Out:</b></td><td>{{\Illuminate\Support\Carbon::make($urgent->time_out)->format('h:iA')}}</td></tr>
+      <tr><td><b>Time In:</b></td><td>
+              @if( $urgent->time_in )
+                  {{\Illuminate\Support\Carbon::make($urgent->time_in)->format('h:iA')}}
+          @else
+              NOT RETURNING TO DUTY
+          @endif
+          </td>
+      </tr>
+      <tr><td><b>Staff Signature:</b></td><td>@if ($urgent->employee?->media->where('collection_name', 'signature')?->first())
+                  <img width="60" height="60"
+                       src="{{ $urgent->employee?->media->where('collection_name', 'signature')?->first()?->getPath() }}">
+              @endif</td></tr>
+      <tr><td><b>Approved by Line Manager:</b></td><td>{{$urgent->approvals->first()?->employee->fullName}}</td></tr>
+      <tr><td><b>Approved by HR Department:</b></td><td>{{$urgent->admin?->fullName}}</td></tr>
   </table>
-
-</body>
-</html>

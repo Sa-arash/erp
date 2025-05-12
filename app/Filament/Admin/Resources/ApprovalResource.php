@@ -171,6 +171,22 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                     ];
                 })->visible(fn($record) => substr($record->approvable_type, 11) === "PurchaseRequest")->modalHeading('PR Approved by:'),
 
+                Action::make('viewUrgent')->label('View Urgent Leave')->infolist([
+                    Fieldset::make('dwa')->relationship('approvable')->schema([
+                            ImageEntry::make('employee.image')->circular()->label('')->state(fn($record)=>$record->employee->media->where('collection_name','images')->first()?->original_url),
+                            TextEntry::make('employee.fullName')->label('Employee'),
+                            TextEntry::make('employee.ID_number')->label('Badge Number'),
+                            TextEntry::make('data')->dateTime(),
+                            TextEntry::make('time_out')->time(),
+                            TextEntry::make('time_in')->time(),
+                            TextEntry::make('reason')->columnSpanFull(),
+                    ])->columns(3),
+                ])->visible(function ($record){
+                    if (substr($record->approvable_type, 11) === "UrgentLeave") {
+                        return true;
+                    }
+                    return  false;
+                }),
 
                 Tables\Actions\Action::make('approve')->hidden(function ($record) {
                     if (substr($record->approvable_type, 11) === "PurchaseRequest" or substr($record->approvable_type, 11) === "Loan"or substr($record->approvable_type, 11) === "Leave") {
@@ -212,6 +228,16 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                             ]);
                         }
                     }elseif (substr($record->approvable_type, 11) === "Overtime"){
+                        if ($data['status'] === "Approve") {
+                            $record->approvable->update([
+                                'status' => 'approveHead'
+                            ]);
+                        }else{
+                            $record->approvable->update([
+                                'status' => 'rejected'
+                            ]);
+                        }
+                    }elseif (substr($record->approvable_type, 11) === "UrgentLeave"){
                         if ($data['status'] === "Approve") {
                             $record->approvable->update([
                                 'status' => 'approveHead'
