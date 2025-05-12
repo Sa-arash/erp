@@ -27,6 +27,7 @@ return new class extends Migration
                 'Inventory',
                 'pending',
                 'approved',
+                 'rejected',
             ])->default('pending');
             $table->foreignId('prepared_by')->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('bid_id')->nullable()->constrained('bids')->cascadeOnDelete()->cascadeOnUpdate();

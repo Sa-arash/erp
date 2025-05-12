@@ -310,4 +310,9 @@ class CreatePurchaseOrder extends CreateRecord
 
         $this->redirect($redirectUrl, navigate: FilamentView::hasSpaMode() && is_app_url($redirectUrl));
     }
+    
+    public function afterCreate(){
+        $request=$this->record;
+        sendApprove($request,'PR Warehouse_approval');
+    }
 }

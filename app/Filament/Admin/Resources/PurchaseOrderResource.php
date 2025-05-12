@@ -99,7 +99,7 @@ class PurchaseOrderResource extends Resource
                                                     $item['freights']=0;
                                                     $data[]=$item;
                                                 }
-                                                dd($data);
+                                                // dd($data);
                                                 $set('RequestedItems', $data);
                                                 // dd($get('RequestedItems'),$record->items->where('status', 'approve')->toArray());
                                             }
@@ -677,7 +677,7 @@ class PurchaseOrderResource extends Resource
             ->actions([
                 Tables\Actions\Action::make('prPDF')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.po', ['id' => $record->id]))->openUrlInNewTab(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('GRN')->label('GRN')->url(fn($record) => AssetResource::getUrl('create', ['po' => $record->id]))->hidden(fn($record)=>$record->status ==='GRN And inventory' or $record->status==='GRN'),
+                Tables\Actions\Action::make('GRN')->label('GRN')->url(fn($record) => AssetResource::getUrl('create', ['po' => $record->id]))->hidden(fn($record)=>$record->status ==='GRN And inventory' or $record->status==='GRN' or  $record->status==='pending' or $record->status==='rejected'),
                 //                Tables\Actions\DeleteAction::make()->visible(fn($record)=>$record->status==="pending" )
                 Tables\Actions\Action::make('Inventory')->form(function ($record) {
                     $products = Product::query()
@@ -750,7 +750,7 @@ class PurchaseOrderResource extends Resource
 
                     Notification::make('success')->success()->title('Successfully')->send();
 
-                })->modalWidth(MaxWidth::SixExtraLarge)->hidden(fn($record)=>$record->status ==='GRN And inventory' or $record->status==='Inventory')
+                })->modalWidth(MaxWidth::SixExtraLarge)->hidden(fn($record)=>$record->status ==='GRN And inventory' or $record->status==='Inventory'or  $record->status==='pending' or $record->status==='rejected')
 
             ])
             ->bulkActions([

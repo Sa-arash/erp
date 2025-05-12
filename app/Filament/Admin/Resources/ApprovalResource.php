@@ -267,6 +267,16 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                                 'status' => 'rejected'
                             ]);
                         }
+                    }elseif (substr($record->approvable_type, 11) === "PurchaseOrder"){
+                        if ($data['status'] === "Approve") {
+                            $record->approvable->update([
+                                'status' => 'approved'
+                            ]);
+                        }else{
+                            $record->approvable->update([
+                                'status' => 'rejected'
+                            ]);
+                        }
                     }
                     Notification::make('success')->success()->title($data['status'])->send();
                 })->requiresConfirmation()->visible(fn($record) => $record->status->name === "Pending"),
