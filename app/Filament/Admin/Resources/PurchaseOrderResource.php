@@ -71,6 +71,7 @@ class PurchaseOrderResource extends Resource
                                             $record = PurchaseRequest::query()->with('bid')->firstWhere('id', $state);
 
                                             if ($record->bid) {
+
                                                 $data = [];
                                                 foreach ($record->bid->quotation?->quotationItems->toArray() as $item) {
                                                     $prItem = PurchaseRequestItem::query()->firstWhere('id', $item['purchase_request_item_id']);
@@ -99,6 +100,7 @@ class PurchaseOrderResource extends Resource
                                                     $item['freights']=0;
                                                     $data[]=$item;
                                                 }
+
                                                 // dd($data);
                                                 $set('RequestedItems', $data);
                                                 // dd($get('RequestedItems'),$record->items->where('status', 'approve')->toArray());
@@ -136,8 +138,13 @@ class PurchaseOrderResource extends Resource
                                                 $set('currency_id', $record->bid->quotation->currency_id);
                                                 $set('exchange_rate', $record->bid->quotation->currency->exchange_rate);
                                             } else {
-
-                                                $set('RequestedItems', $record->items->where('status','approve')->toArray());
+                                                $data=[];
+                                                foreach ($record->items->where('status', 'approve')->toArray() as $item){
+                                                    $item['taxes']=0;
+                                                    $item['freights']=0;
+                                                    $data[]=$item;
+                                                }
+                                                $set('RequestedItems', $data);
                                             }
                                         }
                                     })
@@ -613,8 +620,7 @@ class PurchaseOrderResource extends Resource
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
 
-                Tables\Columns\Textcolumn::make('status')
-                ->toggleable(isToggledHiddenByDefault: true)
+                Tables\Columns\Textcolumn::make('status')->badge()
                 ->label('Status'),
 
             ])
@@ -677,7 +683,7 @@ class PurchaseOrderResource extends Resource
             ->actions([
                 Tables\Actions\Action::make('prPDF')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.po', ['id' => $record->id]))->openUrlInNewTab(),
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('GRN')->label('GRN')->url(fn($record) => AssetResource::getUrl('create', ['po' => $record->id]))->hidden(fn($record)=>$record->status ==='GRN And inventory' or $record->status==='GRN' or  $record->status==='pending' or $record->status==='rejected'),
+                Tables\Actions\Action::make('GRN')->label('GRN')->url(fn($record) => AssetResource::getUrl('create', ['po' => $record->id]))->visible(fn($record)=>  $record->status==='Approval')->hidden(fn($record)=>$record->status ==='GRN And inventory' or $record->status==='GRN' ),
                 //                Tables\Actions\DeleteAction::make()->visible(fn($record)=>$record->status==="pending" )
                 Tables\Actions\Action::make('Inventory')->form(function ($record) {
                     $products = Product::query()

@@ -190,9 +190,24 @@ class ApprovalResource extends Resource implements HasShieldPermissions
 
                     ];
                 })->visible(fn($record) => substr($record->approvable_type, 11) === "PurchaseRequest")->modalHeading('PR Approved by:'),
+                Action::make('viewPurchaseOrder')->label('View')->modalWidth(MaxWidth::Full)->infolist(function () {
+                    return [
+                        Fieldset::make('PO Approvals')->relationship('approvable')->schema([
+                            RepeatableEntry::make('approvals')->schema([
+                                ImageEntry::make('employee.image')->circular()->label('')->state(fn($record)=>$record->employee->media->where('collection_name','images')->first()?->original_url),
+                                TextEntry::make('employee.fullName')->label(fn($record)=>$record->employee?->position?->title),
+                                TextEntry::make('created_at')->label('Request Date')->dateTime(),
+                                TextEntry::make('status')->badge(),
+                                TextEntry::make('comment')->tooltip(fn($record) => $record->comment)->limit(50),
+                                TextEntry::make('approve_date')->dateTime(),
+                                ImageEntry::make('employee.signature')->label('')->state(fn($record)=>$record->status->value==="Approve"? $record->employee->media->where('collection_name','signature')->first()?->original_url:''),
+                            ])->columns(7)->columnSpanFull()
+                        ])->columns(3),
 
+                    ];
+                })->visible(fn($record) => substr($record->approvable_type, 11) === "PurchaseOrder")->modalHeading('PO Approved by:'),
                 Action::make('viewUrgent')->label('View Urgent Leave')->infolist([
-                    Fieldset::make('dwa')->relationship('approvable')->schema([
+                    Fieldset::make('Urgent')->relationship('approvable')->schema([
                             ImageEntry::make('employee.image')->circular()->label('')->state(fn($record)=>$record->employee->media->where('collection_name','images')->first()?->original_url),
                             TextEntry::make('employee.fullName')->label('Employee'),
                             TextEntry::make('employee.ID_number')->label('Badge Number'),
@@ -209,7 +224,7 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                 }),
 
                 Tables\Actions\Action::make('approve')->hidden(function ($record) {
-                    if (substr($record->approvable_type, 11) === "PurchaseRequest" or substr($record->approvable_type, 11) === "Loan"or substr($record->approvable_type, 11) === "Leave") {
+                    if (substr($record->approvable_type, 11) === "PurchaseRequest" or substr($record->approvable_type, 11) === "PurchaseOrder" or substr($record->approvable_type, 11) === "Loan"or substr($record->approvable_type, 11) === "Leave") {
                         return true;
                     }
                 })->icon('heroicon-o-check-badge')->iconSize(IconSize::Large)->color('success')->form([
@@ -267,18 +282,8 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                                 'status' => 'rejected'
                             ]);
                         }
-                    }elseif (substr($record->approvable_type, 11) === "PurchaseOrder"){
-                        if ($data['status'] === "Approve") {
-                            $record->approvable->update([
-                                'status' => 'approved'
-                            ]);
-                        }else{
-                            $record->approvable->update([
-                                'status' => 'rejected'
-                            ]);
-                        }
                     }
-                    Notification::make('success')->success()->title($data['status'])->send();
+                    Notification::make('success')->success()->title('Answer '. substr($record->approvable_type, 11). ' Status : '.$data['status'])->send()->sendToDatabase(auth()->user());
                 })->requiresConfirmation()->visible(fn($record) => $record->status->name === "Pending"),
                 Tables\Actions\Action::make('approveLeave')->visible(function ($record) {
                     if (substr($record->approvable_type, 11) === "Leave" and $record->status->name === "Pending") {
@@ -308,8 +313,7 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                        Forms\Components\ToggleButtons::make('status')->live()->columnSpanFull()->default('Approve')->colors(['Approve' => 'success', 'NotApprove' => 'danger', 'Pending' => 'primary'])->options(['Approve' => 'Approve', 'Pending' => 'Pending', 'NotApprove' => 'NotApprove'])->grouped(),
                        Forms\Components\Textarea::make('comment')->columnSpanFull()->nullable(),
 
-                   ])->columns()
-                ])->action(function ($data,$record){
+                   ])->columns()])->action(function ($data,$record){
                     $record->update([
                         'status'=>$data['status'],
                         'comment'=>$data['comment'],
@@ -345,7 +349,12 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                     if (substr($record->approvable_type, 11) === "PurchaseRequest") {
                         return true;
                     }
-                })->label('Item Approval ')->icon( fn($record)=>$record->status->value=='Approve'? 'heroicon-o-check-badge':'heroicon-o-x-circle')->iconSize(IconSize::Large)->color(fn($record)=>$record->status->value=='Approve'? 'success':'danger' )->url(fn($record)=>ApprovalResource::getUrl('purchase',['record'=>$record->id]))
+                })->label('Item Approval ')->icon( fn($record)=>$record->status->value=='Approve'? 'heroicon-o-check-badge':'heroicon-o-x-circle')->iconSize(IconSize::Large)->color(fn($record)=>$record->status->value=='Approve'? 'success':'danger' )->url(fn($record)=>ApprovalResource::getUrl('purchase',['record'=>$record->id])),
+                Action::make('urlOrder')->visible(function ($record) {
+                    if (substr($record->approvable_type, 11) === "PurchaseOrder") {
+                        return true;
+                    }
+                })->label('Purchase Order Approve')->icon( fn($record)=>$record->status->value=='Approve'? 'heroicon-o-check-badge':'heroicon-o-x-circle')->iconSize(IconSize::Large)->color(fn($record)=>$record->status->value=='Approve'? 'success':'danger' )->url(fn($record)=>ApprovalResource::getUrl('purchase_order',['record'=>$record->id])),
             ])->actionsAlignment(CellAlignment::LEFT)
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -369,7 +378,8 @@ class ApprovalResource extends Resource implements HasShieldPermissions
     {
         return [
             'index' => Pages\ListApprovals::route('/'),
-            'purchase'=>Pages\ApprovePurchase::route('/purchase/{record}')
+            'purchase'=>Pages\ApprovePurchase::route('/purchase/{record}'),
+            'purchase_order'=>Pages\ApprovePurchaseOrder::route('/purchase-order/{record}'),
             //            'create' => Pages\CreateApproval::route('/create'),
             //            'edit' => Pages\EditApproval::route('/{record}/edit'),
         ];

@@ -296,15 +296,16 @@
                 <td>Color</td>
                 <td>Registration Plate</td>
             </tr>
+
             {{-- @dd($requestVisit) --}}
             @foreach ($requestVisit->driver_vehicle_detail as $driver)
                 <tr>
                     <td>{{ $driver['name'] ?? '---' }}</td>
                     <td>{{ $driver['id'] ?? '---' }}</td>
                     <td>{{ $driver['phone'] ?? '---' }}</td>
-                    <td>{{ $vehicle['model'] ?? '---' }}</td>
-                    <td>{{ $vehicle['color'] ?? '---' }}</td>
-                    <td>{{ $vehicle['Registration_Plate'] ?? '---' }}</td>
+                    <td>{{ $driver['model'] ?? '---' }}</td>
+                    <td>{{ $driver['color'] ?? '---' }}</td>
+                    <td>{{ $driver['Registration_Plate'] ?? '---' }}</td>
                 </tr>
             @endforeach
 

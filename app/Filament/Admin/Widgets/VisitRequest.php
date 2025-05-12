@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Widgets;
 use App\Filament\Admin\Resources\VisitorRequestResource;
 use App\Filament\Admin\Resources\VisitorRequestResource\Pages\EditVisitorRequest;
 use App\Models\VisitorRequest;
+use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
@@ -98,7 +99,8 @@ class VisitRequest extends BaseWidget
                                 TextInput::make('organization')->label('Organization'),
                                 Textarea::make('remarks')->columnSpan(3)->label('Remarks'),
                                 ToggleButtons::make('type')->required()->grouped()->columnSpan(2)->label('Type')->options(['National' => 'National', 'International' => 'International', 'De-facto Security Forces' => 'De-facto Security Forces',]),
-
+                                FileUpload::make('attachment')->downloadable()
+                                    ->disk('public')->columnSpanFull(),
 
                             ])->columns(5)->columnSpanFull(),
                             Repeater::make('driver_vehicle_detail')
@@ -113,26 +115,38 @@ class VisitRequest extends BaseWidget
                                         $array=getCompany()->visitrequest_model;
                                         if (isset($array)){
                                             $array[$data['title']]=$data['title'];
-        
+
                                         }else{
                                             $array=[$data['title']=>$data['title']];
                                         }
                                         getCompany()->update(['visitrequest_model'=>$array]);
                                         return $data['title'];
                                     })->searchable()->preload(),
-                                    Select::make('color')->options(getCompany()->visitrequest_color)->createOptionForm([
-                                        TextInput::make('title')->required()
-                                    ])->createOptionUsing(function ($data){
-                                        $array=getCompany()->visitrequest_color;
-                                        if (isset($array)){
-                                            $array[$data['title']]=$data['title'];
-        
-                                        }else{
-                                            $array=[$data['title']=>$data['title']];
-                                        }
-                                        getCompany()->update(['visitrequest_color'=>$array]);
-                                        return $data['title'];
-                                    })->searchable()->preload(),
+                                    Select::make('color')
+                                        ->options(
+                                            collect(getCompany()->visitrequest_color)
+                                                ->mapWithKeys(fn($color, $title) => [
+                                                    $title => "<div style='display:flex;align-items:center;gap:8px;'>
+                              <span style='display:inline-block;width:12px;height:12px;background-color:$color;border-radius:50%;'></span>
+                              $title
+                          </div>"
+                                                ])
+                                                ->toArray()
+                                        )
+                                        ->createOptionForm([
+                                            TextInput::make('title')->required(),
+                                            ColorPicker::make('color')->required()
+                                        ])
+                                        ->createOptionUsing(function ($data) {
+                                            $array = getCompany()->visitrequest_color ?? [];
+                                            $array[$data['title']] = $data['color'];
+                                            getCompany()->update(['visitrequest_color' => $array]);
+                                            return $data['title'];
+                                        })->allowHtml()
+                                        ->searchable()
+                                        ->preload()
+                                        ->label('Color')
+                                    ,
                                     TextInput::make('Registration_Plate')->required(),
                                 ])->columns(3)->columnSpanFull(),
                             FileUpload::make('attachment')->columnSpanFull()->label('File Upload')

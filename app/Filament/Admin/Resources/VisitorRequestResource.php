@@ -119,20 +119,34 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                                 getCompany()->update(['visitrequest_model' => $array]);
                                 return $data['title'];
                             })->searchable()->preload(),
-                            Select::make('color')->options(getCompany()->visitrequest_color)->createOptionForm([
-                                Forms\Components\TextInput::make('title')->required(),
-                                Forms\Components\ColorPicker::make('color')->required()
-                            ])->createOptionUsing(function ($data) {
-                                $array = getCompany()->visitrequest_color;
-                                if (isset($array)) {
-                                    $array[$data['title']] = $data['title'];
-                                } else {
-                                    $array = [$data['title'] => $data['title']];
-                                }
-                                getCompany()->update(['visitrequest_color' => $array]);
-                                return $data['title'];
-                            })->searchable()->preload(),
-                            Forms\Components\TextInput::make('Registration_Plate')->required(),
+                            Select::make('color')
+                                ->options(
+                                    collect(getCompany()->visitrequest_color)
+                                        ->mapWithKeys(fn($color, $title) => [
+                                            $title => "<div style='display:flex;align-items:center;gap:8px;'>
+                              <span style='display:inline-block;width:12px;height:12px;background-color:$color;border-radius:50%;'></span>
+                              $title
+                          </div>"
+                                        ])
+                                        ->toArray()
+                                )
+                                ->createOptionForm([
+                                    Forms\Components\TextInput::make('title')->required(),
+                                    Forms\Components\ColorPicker::make('color')->required()
+                                ])
+                                ->createOptionUsing(function ($data) {
+                                    $array = getCompany()->visitrequest_color ?? [];
+                                    $array[$data['title']] = $data['color'];
+                                    getCompany()->update(['visitrequest_color' => $array]);
+                                    return $data['title'];
+                                })->allowHtml()
+                                ->searchable()
+                                ->preload()
+                                ->label('Color')
+                                ,
+                                 // حتماً اینو فعال کنید که HTML داخل لیبل‌ها کار کنه
+
+        Forms\Components\TextInput::make('Registration_Plate')->required(),
                         ])->columns(6)->columnSpanFull(),
                     Forms\Components\Hidden::make('company_id')
                         ->default(getCompany()->id)

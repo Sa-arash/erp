@@ -217,7 +217,7 @@ class ApprovePurchase extends ManageRelatedRecords
                             sendApprove($PR, 'PR Approval_approval');
                         }
                     }
-                    Notification::make('success')->success()->title('Successfully')->send();
+                    Notification::make('success')->success()->title('Answer '.$record->position.' PR NO : '.$PR->purchase_number)->send()->sendToDatabase(auth()->user());
                 })->visible(function () {
 
                     if ($this->record->status->name !== "Approve") {

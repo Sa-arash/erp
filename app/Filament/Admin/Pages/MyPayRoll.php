@@ -12,7 +12,7 @@ class MyPayRoll extends Page
 
     use HasPageShield;
 
-    protected static ?string $navigationLabel = "My Payrolls";
+    protected static ?string $navigationLabel = "My Payroll";
     protected static ?string $navigationIcon = 'heroicon-s-credit-card';
 
     protected static string $view = 'filament.admin.pages.my-pay-roll';
