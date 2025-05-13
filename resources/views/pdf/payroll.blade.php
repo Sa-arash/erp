@@ -90,11 +90,9 @@
             text-align: right;
             color: #333;
         }
-        @page  {
-           margin: 0px;
-        }
+
     </style>
-</head>
+
 <body>
 @php
     $totalAllowances=0;

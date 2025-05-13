@@ -28,9 +28,11 @@
         @php
             $totalBase=0;
             $i=1;
+            
         @endphp
         @foreach($payrolls as $payroll)
             @php
+
 
             $totalBase+=$payroll->employee?->base_salary;
                 $month = \Carbon\Carbon::parse($payroll->start_date);
@@ -51,7 +53,6 @@
         </tbody>
         <tfoot>
         <tr >
-
 {{--            <th style="background:#4b4949!important;" colspan="4">Total </th>--}}
 {{--            <td style="background:#4b4949!important;color: white">{{number_format($totalBase)}}</td>--}}
 {{--            <th style="background:#4b4949!important;" >{{number_format($payrolls->sum('total_allowance'))}}</th>--}}
@@ -60,8 +61,10 @@
 {{--            <td style="background:#4b4949!important;"></td>--}}
 
         </tr>
-
         </tfoot>
+    </table>
+    <table>
+
     </table>
 </div>
 

@@ -31,7 +31,7 @@ class ProjectResource extends Resource
                Forms\Components\Section::make([
                    Forms\Components\TextInput::make('name')->columnSpan(2)->required()->maxLength(255),
                    Forms\Components\TextInput::make('code')->default(function(){
-                    $maxCode = Project::query()->where('companny_id',getCompany()->id)->orderBy('code', 'desc')->value('code');
+                    $maxCode = Project::query()->where('company_id',getCompany()->id)->orderBy('code', 'desc')->value('code');
 
                     if ($maxCode) {
                         $parts = explode('-', $maxCode);
