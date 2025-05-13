@@ -344,20 +344,22 @@ class PayrollResource extends Resource
                         Forms\Components\Select::make('employees')->required()->multiple()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->hintAction(Forms\Components\Actions\Action::make('all')->action(function (Forms\Set $set){
                             $set('employees',getCompany()->employees()->pluck('id')->toArray());
                         })),
-                        Forms\Components\Select::make('month')->options([
-                            'January',
-                            'February',
-                            'March',
-                            'April',
-                            'May',
-                            'June',
-                            'July',
-                            'August',
-                            'September',
-                            'October',
-                            'November',
-                            'December'
-                        ])->live()->default((now()->month - 1))->searchable()->required(),
+                        Forms\Components\Select::make('month')->options(function() {
+                            $currentDate = Carbon::now();
+                            $currentMonth = $currentDate->month; // ماه جاری
+                            $nextMonth = $currentDate->copy()->addMonth()->month;
+                            $daysUntilNextMonth = $currentDate->daysInMonth - $currentDate->day;
+                        
+                            $options = [
+                                $currentDate->format('F'), 
+                            ];
+                        
+                            if ($daysUntilNextMonth <= 5) {
+                                $options[] = $currentDate->format('F', $nextMonth);
+                            }
+                        
+                            return $options;
+                        })->live()->default(now()->format('F'))->searchable()->required(),
                         Forms\Components\Select::make('year')->default(now()->year)->required()->searchable()->options([2024 => 2024, 2025 => 2025, 2026 => 2026, 2027 => 2027, 2028 => 2028, 2029 => 2029, 2030 => 2030]),
                     ])->columns(3)
                 ])->action(function ($data) {
