@@ -14,6 +14,7 @@ use App\Models\PurchaseOrder;
 use App\Models\PurchaseRequest;
 use App\Models\PurchaseRequestItem;
 use App\Models\Stock;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Closure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
@@ -40,7 +41,21 @@ use Illuminate\Validation\Rules\Unique;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class PurchaseOrderResource extends Resource
+implements HasShieldPermissions
 {
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'invoice',
+        ];
+    }
+
+
 
     public static function canCreate(): bool
     {
@@ -681,6 +696,82 @@ class PurchaseOrderResource extends Resource
 
             ], getModelFilter())
             ->actions([
+                Tables\Actions\Action::make('Invoice')->visible(fn()=>auth()->user()->can('publish_post') )->form(function ($record) {
+                    $products = Product::query()
+                        ->whereIn('id', function ($query) use ($record) {
+                            return $query->select('product_id')
+                                ->from('purchase_order_items')
+                                ->where('purchase_order_id', $record->id);
+                        })->where('product_type', 'consumable')
+                        ->pluck('title', 'id');
+
+                    return [
+                        Repeater::make('inventories')->schema([
+                                Select::make('product_id')->label('Product')->options($products)->searchable()->preload()->required(),
+                        Select::make('warehouse_id')->label('Warehouse Location')->required()->options(getCompany()->warehouses()->where('type', 1)->pluck('title', 'id'))->searchable()->preload(),
+                        TextInput::make('quantity')->numeric()->required(),
+                        Forms\Components\Textarea::make('description')->columnSpanFull()->required()
+                    ])->columns(3)->formatStateUsing(function ($record)use($products) {
+                        $data = [];
+                        foreach ($record->items->whereIn('product_id', array_keys($products->toArray())) as $item) {
+                            $data[] = ['product_id' => $item->product_id, 'description' => $item->description, 'warehouse_id' => null, 'quantity' => null];
+                        }
+                        return $data;
+                    })
+                    ];
+                })->action(function ($data,$record){
+                    $validateData=[];
+                    foreach ($data['inventories'] as $inventory){
+                        if (key_exists($inventory['product_id'],$validateData)){
+                            $lastQuantity=$validateData[$inventory['product_id']];
+                            $validateData[$inventory['product_id']]= $lastQuantity+ $inventory['quantity'];
+                        }else{
+                            $validateData[$inventory['product_id']]=$inventory['quantity'];
+                        };
+                    }
+                    foreach ($record->items as $item){
+                        if (key_exists($item->product_id,$validateData)){
+                            $quantity=$validateData[$item->product_id];
+                            if ($quantity > $item->quantity){
+                                Notification::make('danger')->danger()->title('Quantity Not Valid')->send();
+                                return;
+                            }
+                        }
+                    }
+
+                   foreach ($data['inventories'] as $inventory){
+                       $inv= Inventory::query()->where('warehouse_id',$inventory['warehouse_id'])->where('product_id',$inventory['product_id'])->first();
+                       if (!$inv){
+                           $inv= Inventory::query()->create([
+                               'warehouse_id'=>$inventory['warehouse_id'],
+                               'product_id'=>$inventory['product_id'],
+                               'quantity'=>0,
+                               'company_id'=>$record->company_id
+                           ]);
+                       }
+                       Stock::query()->create([
+                           'inventory_id'=>$inv->id,
+                           'employee_id'=>getEmployee()->id,
+                           'quantity'=>$inventory['quantity'],
+                           'description'=>$inventory['description'],
+                           'type'=>1,
+                           'purchase_order_id'=>$record->id
+                       ]);
+                       $inv->update(['quantity'=>$inv->quantity+$inventory['quantity']]);
+                   }
+                   if ($record->status==="GRN"){
+                       $record->update(['status'=>'GRN And inventory']);
+                   }else{
+                       $record->update(['status'=>'Inventory']);
+                   }
+
+                    Notification::make('success')->success()->title('Successfully')->send();
+
+                })->modalWidth(MaxWidth::SixExtraLarge)->hidden(fn($record)=>$record->status ==='GRN And inventory' or $record->status==='Inventory'or  $record->status==='pending' or $record->status==='rejected'),
+
+
+
+
                 Tables\Actions\Action::make('prPDF')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.po', ['id' => $record->id]))->openUrlInNewTab(),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('GRN')->label('GRN')->url(fn($record) => AssetResource::getUrl('create', ['po' => $record->id]))->visible(fn($record)=>   $record->items()->whereHas('product',function ($query){$query->where('product_type','unConsumable');})->count() and $record->status==='Approval' )->hidden(fn($record)=>$record->status ==='GRN And inventory' or $record->status==='GRN' ),

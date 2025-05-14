@@ -21,6 +21,7 @@ use App\Models\Leave;
 use App\Models\Overtime;
 use App\Models\Payroll;
 use App\Models\Transaction;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Carbon\Carbon;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
@@ -47,11 +48,25 @@ use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
 
 
 class PayrollResource extends Resource
+implements HasShieldPermissions
 {
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'approve',
+            'payment',
+        ];
+    }
     protected static ?string $model = Payroll::class;
     protected static ?int $navigationSort = 2;
     protected static ?string $navigationGroup = 'HR Management System';
     protected static ?string $navigationIcon = 'payment';
+
 
     public static function form(Form $form): Form
     {
