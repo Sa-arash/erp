@@ -696,7 +696,7 @@ implements HasShieldPermissions
 
             ], getModelFilter())
             ->actions([
-                Tables\Actions\Action::make('Invoice')->visible(fn()=>auth()->user()->can('publish_post') )->form(function ($record) {
+                Tables\Actions\Action::make('Invoice')->visible(fn()=>dd(auth()->user()->can('invoice_purchase::order')) )->form(function ($record) {
                     $products = Product::query()
                         ->whereIn('id', function ($query) use ($record) {
                             return $query->select('product_id')
@@ -767,8 +767,9 @@ implements HasShieldPermissions
 
                     Notification::make('success')->success()->title('Successfully')->send();
 
-                })->modalWidth(MaxWidth::SixExtraLarge)->hidden(fn($record)=>$record->status ==='GRN And inventory' or $record->status==='Inventory'or  $record->status==='pending' or $record->status==='rejected'),
-
+                })->modalWidth(MaxWidth::SixExtraLarge)
+                // ->hidden(fn($record)=>$record->status ==='GRN And inventory' or $record->status==='Inventory'or  $record->status==='pending' or $record->status==='rejected'),
+,
 
 
 
