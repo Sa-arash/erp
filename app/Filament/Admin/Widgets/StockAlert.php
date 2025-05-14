@@ -23,13 +23,14 @@ class StockAlert extends BaseWidget
 
         return $table
         ->query(
-            Product::withCount('assets')->where('product_type','unConsumable')
+            Product::query()->with(['assets','inventories'])->withCount('assets')
 //             ->havingRaw('assets_count < stock_alert_threshold')
               )
             ->columns([
                 Tables\Columns\TextColumn::make('')->label('#')->rowIndex(),
                 Tables\Columns\TextColumn::make('sku')->label('SKU'),
                 Tables\Columns\TextColumn::make('title')->label('Material Specification')->searchable(),
+                Tables\Columns\TextColumn::make('second_title')->label('Specification in Dari Language')->toggleable(true,false)->searchable(),
                 Tables\Columns\ImageColumn::make('image')->action(Tables\Actions\Action::make('image')->modalSubmitAction(false)->infolist(function ($record){
                     if ($record->media->first()?->original_url){
                         return  [
@@ -53,6 +54,7 @@ class StockAlert extends BaseWidget
                 Tables\Columns\TextColumn::make('use')->numeric()->state(fn($record) => $record->assets->whereIn('status',['inuse'])->count())->label(' In Use')->badge()->color('warning'),
                 Tables\Columns\TextColumn::make('storage')->numeric()->state(fn($record) => $record->assets->whereIn('status',['inStorageUsable','storageUnUsable'])->count())->label('In Storage')->badge()->color('warning'),
                 Tables\Columns\TextColumn::make('count')->numeric()->state(fn($record) => $record->assets->count())->label('Quantity')->badge()->color(fn($record)=>$record->assets->count()>$record->stock_alert_threshold ? 'success' : 'danger')->tooltip(fn($record)=>'Stock Alert:'.$record->stock_alert_threshold),
+                Tables\Columns\TextColumn::make('countInventory')->numeric()->state(fn($record) => $record->inventories()?->sum('quantity'))->label('Quantity In Inventory')->badge(),
             ])->filters([
                 Tables\Filters\SelectFilter::make('department_id')->label('Department')->options(getCompany()->departments->pluck('title','id'))->searchable()->preload()
             ],getModelFilter());

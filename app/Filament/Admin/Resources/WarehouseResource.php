@@ -40,7 +40,7 @@ class WarehouseResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('title')->label('Warehouse Name')->required()->maxLength(255),
-                Select::make('employee_id')->required()->label('Manager By')->searchable()->preload()->options(getCompany()->employees()->get()->pluck('fullName', 'id')),
+                Select::make('employee_id')->required()->label('Manage By')->searchable()->preload()->options(getCompany()->employees()->get()->pluck('fullName', 'id')),
                 Forms\Components\TextInput::make('phone')->tel()->maxLength(255),
                 Forms\Components\Select::make('country')->options(getCountry())->searchable()->preload(),
                 Forms\Components\TextInput::make('state')->label('State/Province')->maxLength(255),

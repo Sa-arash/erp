@@ -89,7 +89,7 @@ class ServiceResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table
+        return $table->defaultSort('id','desc')
             ->columns([
                 Tables\Columns\TextColumn::make('employee.fullName')
                     ->numeric()
@@ -100,11 +100,11 @@ class ServiceResource extends Resource
                 Tables\Columns\TextColumn::make('asset.titlen')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('status'),
+                Tables\Columns\TextColumn::make('status')->badge(),
                 Tables\Columns\TextColumn::make('answer_date')
                     ->date()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('type')->label('Type Of Service'),
+                Tables\Columns\TextColumn::make('type')->badge()->label('Type Of Service'),
                 Tables\Columns\TextColumn::make('service_date')
                     ->date()
                     ->sortable(),
@@ -127,7 +127,7 @@ class ServiceResource extends Resource
                 Tables\Actions\Action::make('Action')->visible(fn($record) => $record->status === 'Pending')->form([
                     Group::make()->schema([
                     ToggleButtons::make('type')->options(['On-site Service' => 'On-site Service', 'Purchase Order' => 'Purchase Order', 'TakeOut For Repair' => 'TakeOut For Repair',])->inline()->required(),
-                    Forms\Components\DatePicker::make('answer_date')->default(now())->required(),
+                    Forms\Components\DatePicker::make('answer_date')->label('Answer Date')->default(now())->required(),
                     ])->columns(2)
 
                 ])->action(function ($data, $record) {
@@ -148,13 +148,18 @@ class ServiceResource extends Resource
                         ->columnSpanFull(),
                     ])->columns(3)
                 ])->action(function ($data, $record) {
+                   ;
                     $record->update([
                         'service_date' => $data['service_date'],
                         'PO_number' => $data['PO_number'],
                         'reply' => $data['reply'],
                         'status' => $data['status'],
                     ]);
-                    $record->asset()->update(['status' => 'underRepair']);
+                    if ($data['status']==="Complete"){
+                        $record->asset()->update(['status' => 'inuse']);
+                    }else{
+                        $record->asset()->update(['status' => 'underRepair']);
+                    }
                 }),
 
             ])

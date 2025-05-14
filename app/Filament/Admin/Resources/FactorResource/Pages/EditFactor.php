@@ -23,6 +23,7 @@ class EditFactor extends EditRecord
         $this->authorizeAccess();
 
         $this->fillForm();
+
         foreach ($this->data['invoice']['transactions']  as $key=> $datum){
 
             if ($datum['cheque']['due_date']){
@@ -32,4 +33,5 @@ class EditFactor extends EditRecord
 
         $this->previousUrl = url()->previous();
     }
+
 }

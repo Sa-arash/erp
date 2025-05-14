@@ -1,4 +1,4 @@
-@include('pdf.header',['title'=>'Deyar Restaurant Sales Invoice','titles'=>['INVOICE - Deyar Restaurant Sales'],'css'=>true])
+@include('pdf.header',['title'=>'Invoice-'.$invoice->from,'titles'=>[''],'css'=>true])
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -121,8 +121,8 @@
                 {{$invoice->to}}
             </td>
             <td style="background: white!important;">
-                <pre style="background: #81c7d3">Invoice Date:<span style="background: yellow;"> Saturday, January 18, 2025</span></pre>
-                <pre style="background: #81c7d3">Invoice No:<span style="background: yellow;">   2025-00XX</span></pre>
+                <pre style="background: #abadad">Invoice Date:<span style="background: #ffffff;" > {{ \Carbon\Carbon::parse($invoice->created_at)->format('l, F d, Y') }}</span></pre>
+                <pre style="background: #abadad">Invoice No:<span style="background: #ffffff;">   2025-{{$invoice->invoice?->number}}</span></pre>
             </td>
         </tr>
     </table>
@@ -130,30 +130,31 @@
     <table>
         <thead>
         <tr>
-            <th style="background:#ffffaa !important; ">No</th>
-            <th style="background:#ffffaa !important; ">Date</th>
-            <th style="background:#ffffaa !important; ">Description</th>
-            <th style="background:#ffffaa !important; ">Facility</th>
-            <th style="background:#ffffaa !important; ">Quantity</th>
-            <th style="background:#ffffaa !important; ">Unit</th>
-            <th style="background:#ffffaa !important; ">Unit Rate</th>
-            <th style="background:#ffffaa !important; ">Total</th>
+            <th style="background:#ababa7 !important; ">No</th>
+            <th style="background:#ababa7 !important; ">Date</th>
+            <th style="background:#ababa7 !important; ">Description</th>
+{{--            <th style="background:#ffffaa !important; ">Facility</th>--}}
+            <th style="background:#ababa7 !important; ">Quantity</th>
+            <th style="background:#ababa7 !important; ">Unit</th>
+            <th style="background:#ababa7 !important; ">Unit Rate</th>
+            <th style="background:#ababa7 !important; ">Total</th>
         </tr>
         </thead>
         <tbody>
         @php
         $i=1;
         $total=0;
+        $currency=$invoice->currency;
         @endphp
         @foreach($invoice->items as $item)
             <tr>
                 <td style="border: none;border-bottom: 2px solid black">{{$i++}}</td>
                 <td style="border: none;border-bottom: 2px solid black!important">{{\Illuminate\Support\Carbon::make($invoice->created_at)->format('d-F-Y')}}</td>
                 <td style="border: none;border-bottom: 2px solid black!important">{{$item->title}}</td>
-                <td style="border: none;border-bottom: 2px solid black!important">Deyar</td>
-                <td style="border: none;border-bottom: 2px solid black!important">{{$item->quantity}}</td>
-                <td style="border: none;border-bottom: 2px solid black!important">{{$item->unit->title}}</td>
-                <td style="border: none;border-bottom: 2px solid black!important">{{number_format($item->unit_price,2)}}</td>
+{{--                <td style="border: none;border-bottom: 2px solid black!important">Deyar</td>--}}
+                <td style="border: none;border-bottom: 2px solid black!important"> {{$item->quantity}}</td>
+                <td style="border: none;border-bottom: 2px solid black!important">{{$item->unit->title}} </td>
+                <td style="border: none;border-bottom: 2px solid black!important"> {{$currency?->name}} {{number_format($item->unit_price,2)}}</td>
                 <td style="border: none;border-bottom: 2px solid black!important">{{number_format($item->unit_price*$item->quantity,2)}} </td>
             </tr>
             @php
@@ -163,8 +164,8 @@
         </tbody>
         <tfooter>
             <tr>
-                <td colspan="4" style="text-align: right;border: none;border-bottom: 2px solid black;">Grand Total Amount</td>
-                <td colspan="3" style="text-align: right;border: none;border-bottom: 2px solid black;">{{numberToWords($total)}}</td>
+                <td colspan="3" style="text-align: right;border: none;border-bottom: 2px solid black;">Grand Total Amount </td>
+                <td colspan="3" style="text-align: right;border: none;border-bottom: 2px solid black;"> {{numberToWords($total,' '.$currency?->name)}}</td>
                 <td style="border: none;border-bottom: 2px solid black;" >{{number_format($total,2)}}</td>
             </tr>
         </tfooter>
@@ -172,15 +173,32 @@
 
 
 
-    <div class="payment-details">
-        <div style="font-weight: bold; margin-bottom: 10px;">Payments to:</div>
-        <div>Beneficiary Bank USD: EMINATES NBD PJSC</div>
-        <div>Account Name: AREA TARGET GENERAL TRADING LLC</div>
-        <div>Account Number: IBAN: AE380260001024332222002</div>
-        <div>Swift Code: EBILAEAD</div>
-        <div>DUBAI- UAE</div>
-    </div>
+    <div class="payment-details" style="border: 2px solid black; width: 40%;padding: 5px">
+        @if($invoice->type)
+            @php
+            $str='';
+                    foreach ($invoice->invoice->transactions->where('debtor','!=','0') as $tra){
+                       $str.= "<p>Account Name:    {$tra->account->name}  </p>
+                       <p> Account Number: {$tra->account->code}  </p>
+                       ";
+                    }
+            @endphp
+        @else
+            @php
+                $str='';
+                    foreach ($invoice->invoice->transactions->where('creditor','!=','0') as $tra){
+                       $str.= "<p>Account Name:    {$tra->account->name}  </p>
+                       <p> Account Number: {$tra->account->code}  </p>
+                       ";
+                    }
 
+            @endphp
+        @endif
+        <div style="font-weight: bold; margin-bottom: 10px;">Payments to:
+        {!! $str !!}
+        </div>
+
+    </div>
     <div class="note">
         <div style="font-weight: bold; margin-bottom: 10px;">Note:</div>
         <div>We kindly request that you provide the wire transfer voucher or any other relevant evidence of payment to
@@ -189,12 +207,17 @@
         </div>
     </div>
 
-    <div class="signature">
-        <div>Thank you for doing business with us!</div>
-        <br><br>
-        <div>Signed and stamped:</div>
-        <div style="border-top: 1px solid #000; width: 200px; display: inline-block; margin-top: 30px;"></div>
+
+
+    <div class="mt-3">
+          <p  >Signed and stamped:</p> <div style="border-bottom: 1px solid #000 ; width: 150px;margin-left: 120px" ></div>
     </div>
+    <br>
+    <br>
+    <br>
+    <div>Thank you for doing business with us!</div>
+
+
 </div>
 </body>
 </html>

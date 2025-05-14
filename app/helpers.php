@@ -878,7 +878,7 @@ function calculateTime($startDateTime, $endDateTime): \Carbon\CarbonInterval|str
     return $interval;
 }
 
-function numberToWords($number)
+function numberToWords($number, $currency)
 {
     if (!is_numeric($number)) {
         return false;
@@ -888,5 +888,5 @@ function numberToWords($number)
     $words = $f->format($number);
 
     // Capitalize first letter and add "US Dollar"
-    return ucfirst($words) . " US Dollar";
+    return ucfirst($words) . $currency;
 }

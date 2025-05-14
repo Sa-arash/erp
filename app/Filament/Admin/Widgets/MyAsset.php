@@ -66,7 +66,7 @@ class MyAsset extends BaseWidget
 //                     TextEntry::make('comment')->label('Location'),
 //                 ])
                  Tables\Actions\Action::make('Service')->label('Request Maintenance')
-                 ->hidden(fn($record)=>($record->asset->status === 'underRepair'))
+                 ->hidden(fn($record)=>($record->asset->status === 'underRepair') or $record->asset?->service?->where('status','Pending')->count())
                  ->fillForm(function ($record){
                         return [
                             'asset_id'=>$record->asset_id,

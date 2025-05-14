@@ -16,10 +16,10 @@ return new class extends Migration
             $table->string('title');
             $table->foreignId('party_id')->constrained('parties')->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('account_id')->constrained('accounts')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('currency_id')->constrained('currencies')->cascadeOnUpdate()->cascadeOnDelete();
             $table->string('from');
             $table->string('to');
             $table->foreignId('invoice_id')->nullable()->constrained('invoices')->cascadeOnDelete()->cascadeOnUpdate();
-           
             $table->boolean('type');
             $table->foreignId('company_id')->constrained('companies')->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();

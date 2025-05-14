@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\FactorResource\Pages;
 use App\Filament\Admin\Resources\EmployeeResource;
 use App\Filament\Admin\Resources\FactorResource;
 use App\Models\Account;
+use App\Models\Currency;
 use App\Models\Parties;
 use Filament\Actions;
 use Filament\Forms\Components\Section;
@@ -30,11 +31,68 @@ class CreateFactor extends CreateRecord
                         ->startOnStep($this->getStartStep())
                         ->submitAction($this->getSubmitFormAction())
                         ->skippable($this->hasSkippableSteps())
-                        ->contained(false)->columnSpanFull(),
+                        ->contained(false)->columnSpanFull()->afterStateUpdated(function ($state) {
+
+                            $this->afterStepChange($state); // صدا زدن متد Livewire
+                        }),
                 ])
             ])
             ->columns(null);
     }
+
+    public function afterStepChange($state)
+    {
+
+        if (!$state['setPrice']   ) {
+            unset($state['invoice']['transactions']);
+            $produtTotal = array_map(function ($item) {
+                try {
+                    return (($item['quantity'] * str_replace(',', '', $item['unit_price'])) - (($item['quantity'] * str_replace(',', '', $item['unit_price'])) * $item['discount']) / 100);
+                } catch (\Throwable $th) {
+                    return null;
+                }
+            }, $state['items']);
+            if (collect($produtTotal)->sum() >0){
+                $state['setPrice']=1;
+            }
+
+            $currency = Currency::query()->firstWhere('id',$state['currency_id']);
+
+            if ($state['type'] == '1') {
+                $state['invoice']['transactions'] = [
+                    [
+                        'account_id' => null,
+                        'description' => null,
+                        'creditor' => 0,
+                        'company_id' => getCompany()->id,
+                        'debtor' => collect($produtTotal)->sum()*$currency?->exchange_rate,
+                        'exchange_rate' => $currency?->exchange_rate,
+                        'debtor_foreign'=>0,
+                        'creditor_foreign'=>0
+
+                    ]];
+            } else {
+                $state['invoice']['transactions'] = [
+                    [
+                        'account_id' => null,
+                        'description' => null,
+                        'creditor' => collect($produtTotal)->sum()*$currency?->exchange_rate,
+                        'company_id' => getCompany()->id,
+                        'debtor' => 0,
+                        'exchange_rate' => $currency?->exchange_rate,
+                        'debtor_foreign'=>0,
+                        'creditor_foreign'=>0
+                    ]];
+            }
+
+            $this->form->fill($state);
+        }
+
+
+
+
+    }
+
     public function create(bool $another = false): void
     {
         $this->authorizeAccess();
@@ -59,12 +117,13 @@ class CreateFactor extends CreateRecord
             $this->form->model($this->getRecord())->saveRelationships();
 
             $this->callHook('afterCreate');
+            $currency = Currency::query()->firstWhere('id',$data['currency_id']);
 
             $total = 0;
             foreach ($this->form->getLivewire()->data['items'] as $item) {
                 $total += str_replace(',', '', $item['total']);
             }
-
+            $total=$total*$currency?->exchange_rate;
 
             // dd($this->data);
 
@@ -76,13 +135,16 @@ class CreateFactor extends CreateRecord
                 //     // ذخیره فاکتور (Invoice)
 
                 $this->record->invoice->update([
-                    'name' => $this->record->invoice->name . "(Total:" . number_format($total) . ")",
+                    'name' => $this->record->invoice->name . "(Total:" . number_format($total) . ' '.$currency?->name.' '. ")",
                 ]);
 
 
                 //     // ذخیره تراکنش‌های فاکتور (Transactions)
                 foreach ($this->data['invoice']['transactions'] as $transaction) {
-                    // dd(str_replace(',', '', $transaction['exchange_rate']));
+                   $debtor=str_replace(',', '', $transaction['debtor_foreign'])===""?0:str_replace(',', '', $transaction['debtor_foreign']);
+                   $creditor=str_replace(',', '', $transaction['creditor_foreign'])===""?0:str_replace(',', '', $transaction['creditor_foreign']);
+                   $ex=str_replace(',', '', $transaction['exchange_rate'])===""?1:str_replace(',', '', $transaction['exchange_rate']);
+//                   dd(str_replace(',', '', $transaction['exchange_rate'])!=="" ?str_replace(',', '', $transaction['exchange_rate']): defaultCurrency()->exchange_rate);
                     $savedTransaction = $this->record->invoice->transactions()->create([
                         'account_id' => $transaction['account_id'],
                         'description' => $transaction['description'],
@@ -92,13 +154,14 @@ class CreateFactor extends CreateRecord
                         'debtor' => str_replace(',', '', $transaction['debtor']),
                         'Cheque' => $transaction['Cheque'],
                         "currency_id" => $transaction['currency_id'] ?? defaultCurrency()->id,
-                        "exchange_rate" => str_replace(',', '', $transaction['exchange_rate']) ?? defaultCurrency()->exchange_rate,
-                        "debtor_foreign" => str_replace(',', '', $transaction['debtor_foreign']),
-                        "creditor_foreign" => str_replace(',', '', $transaction['creditor_foreign']),
-                        'financial_period_id' => $transaction['financial_period_id'],
+                        "exchange_rate" => $ex,
+                        "debtor_foreign" => $debtor,
+                        "creditor_foreign" => $creditor,
+                        'financial_period_id' => getPeriod()->id,
                     ]);
-                    // dd($transaction ,!empty($transaction['cheque']) && isset($transaction['cheque']['amount']) );
-                    // چک
+
+
+
                     if ($transaction['Cheque']) {
                         $savedTransaction->cheque()->create([
                             'type' => $transaction['cheque']['type'] ?? null,
@@ -119,6 +182,7 @@ class CreateFactor extends CreateRecord
                         ]);
                     }
                 }
+
                 // dd(defaultCurrency()->exchange_rate);
 
                 DB::commit(); // تایید تراکنش
@@ -129,6 +193,7 @@ class CreateFactor extends CreateRecord
                 dd($e);
                 DB::rollBack(); // لغو تراکنش در صورت خطا
                 // return response()->json(['message' => 'Error occurred', 'error' => $e->getMessage()], 500);
+
             }
 
             // dd($total, $this->form->getLivewire()->data,$this->form->getLivewire()->data['type']);
@@ -300,4 +365,8 @@ class CreateFactor extends CreateRecord
 
         $this->redirect($redirectUrl, navigate: FilamentView::hasSpaMode() && is_app_url($redirectUrl));
     }
+//    protected function getRedirectUrl(): string
+//    {
+//        return FactorResource::getUrl('index'); // TODO: Change the autogenerated stub
+//    }
 }

@@ -1,15 +1,13 @@
 
 @include('pdf.header',
-   ['titles'=>[''],'title'=>'Employee Salary ','css'=>true])
+   ['titles'=>[''],'title'=>'Payroll Report/'.now()->format('F-Y'),'css'=>true])
 <style>
     table th ,table td{
         font-size: 12px!important;
     }
 </style>
 <div class="table-container" >
-    <div>
-        <h4>Date: {{now()->format('Y/F/d H:iA')}}</h4>
-    </div>
+
     <table>
         <thead  >
         <tr >
@@ -17,7 +15,7 @@
             <th>Employee</th>
             <th>Month</th>
             <th>Year</th>
-            <th>Base Salary</th>
+            <th>Base Salary (Mount)</th>
             <th>Total Allowance</th>
             <th>Total Deduction</th>
             <th>Net Pay</th>
@@ -28,15 +26,19 @@
         @php
             $totalBase=0;
             $i=1;
-            
+            $totals=[];
         @endphp
         @foreach($payrolls as $payroll)
             @php
+                if (key_exists($payroll->employee->currency?->name,$totals)){
+                    $totals[$payroll->employee->currency?->name]= $totals[$payroll->employee->currency?->name] +$payroll->amount_pay;
+                }else{
+                 $totals[$payroll->employee->currency?->name]=$payroll->amount_pay;
+                }
 
-
-            $totalBase+=$payroll->employee?->base_salary;
-                $month = \Carbon\Carbon::parse($payroll->start_date);
-                $year = \Carbon\Carbon::parse($payroll->start_date)->year;
+                $totalBase+=$payroll->employee?->base_salary;
+                    $month = \Carbon\Carbon::parse($payroll->start_date);
+                    $year = \Carbon\Carbon::parse($payroll->start_date)->year;
             @endphp
         <tr style="margin:  0!important;text-align: center!important;" >
             <td >{{$i++}}</td>
@@ -64,7 +66,17 @@
         </tfoot>
     </table>
     <table>
+        @foreach($totals as $key=> $totalPay)
+            <tr>
+
+                <td><b>Total  {{$key}}</b> : {{number_format($totalPay,2)}}</td>
+            </tr>
+        @endforeach
 
     </table>
+
+
+        <span style="font-size: 12px;color: gray; margin-left:40% !important; margin-top: auto ">Print Date: {{now()->format('Y/F/d H:iA')}}</span>
+
 </div>
 

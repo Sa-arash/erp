@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Factor extends Model
 {
     protected $guarded=['id'];
-    
+
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);
@@ -19,6 +19,10 @@ class Factor extends Model
     public function account(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Account::class,'account_id');
+    }
+    public function currency(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Currency::class);
     }
     public function party(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

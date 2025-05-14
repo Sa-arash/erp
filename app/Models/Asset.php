@@ -66,7 +66,7 @@ class Asset extends Model
     }
     public function service(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(AssetEmployeeItem::class);
+        return $this->hasMany(Service::class);
     }
 
 

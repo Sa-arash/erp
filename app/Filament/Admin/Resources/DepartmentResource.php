@@ -43,7 +43,7 @@ class DepartmentResource extends Resource
                     }),
                 Forms\Components\TextInput::make('abbreviation')->maxLength(10)->columnSpanFull() ->required(),
                 Forms\Components\Textarea::make('description')->columnSpanFull(),
-                Forms\Components\ColorPicker::make('color')->columnSpanFull()->required()
+                Forms\Components\ColorPicker::make('color')->label('Department Color')->columnSpanFull()->required()
 
 
             ]);
@@ -57,7 +57,7 @@ class DepartmentResource extends Resource
                 Tables\Columns\TextColumn::make('title')->label('Department Name')->sortable(),
                 Tables\Columns\TextColumn::make('abbreviation')->label('Abbreviation')->sortable(),
                 Tables\Columns\TextColumn::make('employee.fullName')->label('Line Manager ')->badge(),
-                Tables\Columns\ColorColumn::make('color')->label('Color')->alignCenter(),
+                Tables\Columns\ColorColumn::make('color')->label('Department Color')->alignCenter(),
                 TextColumn::make('employees')->color('aColor')->alignCenter()->state(fn($record)=> $record->employees->count())->url(fn($record)=>EmployeeResource::getUrl().'?tableFilters[department_id][value]='.$record->id),
 
 

@@ -51,7 +51,8 @@ class CreateAccount extends CreateRecord
                     Notification::make('error')->danger()->title('Account Code Exists')->send();
                     return;
                 }
-
+                $data['group']=$account->group;
+                $data['type']=$account->type;
                 $level = "group";
                 switch ($account->level) {
                     case "main":

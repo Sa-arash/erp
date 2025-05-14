@@ -67,7 +67,7 @@ class PurchaseRequestResource extends Resource
     }
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::where('status', 'Requested')->count();
+        return static::getModel()::where('status', 'Requested')->where('company_id',getCompany()->id)->count();
     }
 
     public static function form(Form $form): Form
