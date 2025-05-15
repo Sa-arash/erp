@@ -54,7 +54,7 @@ class StockAlert extends BaseWidget
                 Tables\Columns\TextColumn::make('use')->numeric()->state(fn($record) => $record->assets->whereIn('status',['inuse'])->count())->label(' In Use')->badge()->color('warning'),
                 Tables\Columns\TextColumn::make('storage')->numeric()->state(fn($record) => $record->assets->whereIn('status',['inStorageUsable','storageUnUsable'])->count())->label('In Storage')->badge()->color('warning'),
                 Tables\Columns\TextColumn::make('count')->numeric()->state(fn($record) => $record->assets->count())->label('Quantity')->badge()->color(fn($record)=>$record->assets->count()>$record->stock_alert_threshold ? 'success' : 'danger')->tooltip(fn($record)=>'Stock Alert:'.$record->stock_alert_threshold),
-                Tables\Columns\TextColumn::make('countInventory')->numeric()->state(fn($record) => $record->inventories()?->sum('quantity'))->label('Quantity In Inventory')->badge(),
+                Tables\Columns\TextColumn::make('countInventory')->numeric()->state(fn($record) => $record->inventories()?->sum('quantity'))->label('Available')->badge(),
             ])->filters([
                 Tables\Filters\SelectFilter::make('department_id')->label('Department')->options(getCompany()->departments->pluck('title','id'))->searchable()->preload()
             ],getModelFilter());

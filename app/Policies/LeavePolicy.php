@@ -63,7 +63,7 @@ class LeavePolicy
      */
     public function forceDelete(User $user, Leave $leave): bool
     {
-        return $user->can('force_delete_leave');
+        return $user->can('{{ ForceDelete }}');
     }
 
     /**
@@ -79,7 +79,7 @@ class LeavePolicy
      */
     public function restore(User $user, Leave $leave): bool
     {
-        return $user->can('restore_leave');
+        return $user->can('{{ Restore }}');
     }
 
     /**

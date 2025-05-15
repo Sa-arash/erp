@@ -46,13 +46,13 @@ public static function canReorder(): bool
 
     public static function table(Table $table): Table
     {
-        return $table->searchable()->defaultSort('sort')->reorderable('sort', true)
+        return $table->defaultSort('sort')->reorderable('sort', true)
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
-                Tables\Columns\TextColumn::make('title')->label('Leave Title')->alignCenter()->sortable(),
-                Tables\Columns\TextColumn::make('abbreviation')->label('Abbreviation')->alignCenter()->sortable(),
+                Tables\Columns\TextColumn::make('title')->label('Leave Title')->searchable()->alignCenter()->sortable(),
+                Tables\Columns\TextColumn::make('abbreviation')->label('Abbreviation')->searchable()->alignCenter()->sortable(),
                 Tables\Columns\TextColumn::make('days')->alignCenter()->sortable(),
-                Tables\Columns\TextColumn::make('is_payroll')->label('Payment')->state(fn($record) => $record->is_payroll ? "Paid Leave" : 'Unpaid Leave')->alignCenter()->sortable(),
+                Tables\Columns\TextColumn::make('is_payroll')->label('Payment')->state(fn($record) => $record->is_payroll ? "Paid Leave" : 'Unpaid Leave')->alignCenter(),
             ])
             ->filters([
 

@@ -201,7 +201,7 @@ class PurchaseRequestResource extends Resource
                         foreach ($record->items as $item) {
                             $total += $item->quantity * $item->estimated_unit_cost;
                         }
-                        return $total ." " .$record->currency?->symbol;
+                        return number_format($total,2) ." " .$record->currency?->symbol;
                     })->numeric(),
                 Tables\Columns\TextColumn::make('bid.total_cost')->alignCenter()->label('Total Final Price' )->numeric(),
 

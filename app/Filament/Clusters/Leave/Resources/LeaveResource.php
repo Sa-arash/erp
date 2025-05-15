@@ -61,23 +61,28 @@ class LeaveResource extends Resource implements HasShieldPermissions
     {
         return $form
             ->schema([
-                Forms\Components\Select::make('employee_id')->label('Employee')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload(),
-                Forms\Components\Select::make('typeleave_id')
-                    ->createOptionForm([
-                        Forms\Components\TextInput::make('title')->maxLength(250)->required(),
-                        Forms\Components\TextInput::make('days')->label('Max Days')->numeric()->required(),
-                        Forms\Components\ToggleButtons::make('is_payroll')->inline()->boolean('Paid Leave', 'Unpaid Leave')->label('Payment')->required(),
-                        Forms\Components\Textarea::make('description')->nullable()->maxLength(255)->columnSpanFull()
-                    ])
-                    ->createOptionUsing(function (array $data): int {
-                        return Typeleave::query()->create([
-                            'title' => $data['title'],
-                            'days' => $data['days'],
-                            'is_payroll' => $data['is_payroll'],
-                            'description' => $data['description'],
-                            'company_id' => getCompany()->id
-                        ])->getKey();
-                    })->label('Leave Type')->required()->options(Typeleave::query()->where('company_id', getCompany()->id)->pluck('title', 'id'))->searchable()->preload(),
+              Forms\Components\Section::make([
+                  Forms\Components\Select::make('employee_id')->label('Employee')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload(),
+
+                  Forms\Components\Select::make('typeleave_id')
+                      ->createOptionForm([
+                          Forms\Components\TextInput::make('title')->maxLength(250)->required(),
+                          Forms\Components\TextInput::make('days')->label('Max Days')->numeric()->required(),
+                          Forms\Components\ToggleButtons::make('is_payroll')->inline()->boolean('Paid Leave', 'Unpaid Leave')->label('Payment')->required(),
+                          Forms\Components\Textarea::make('description')->nullable()->maxLength(255)->columnSpanFull()
+                      ])
+                      ->createOptionUsing(function (array $data): int {
+                          return Typeleave::query()->create([
+                              'title' => $data['title'],
+                              'days' => $data['days'],
+                              'is_payroll' => $data['is_payroll'],
+                              'description' => $data['description'],
+                              'company_id' => getCompany()->id
+                          ])->getKey();
+                      })->label('Leave Type')->required()->options(Typeleave::query()->where('company_id', getCompany()->id)->pluck('title', 'id'))->searchable()->preload(),
+                  ToggleButtons::make('type')->required()->grouped()->boolean('R&R','Home'),
+
+              ])->columns(3),
                 Forms\Components\DatePicker::make('start_leave')->default(now())->live()->afterStateUpdated(function ( Forms\Get $get ,Forms\Set $set){
                     $start = Carbon::parse($get('start_leave'));
 
@@ -116,10 +121,12 @@ class LeaveResource extends Resource implements HasShieldPermissions
     {
         return $table->searchable()->defaultSort('id','desc')
             ->columns([
+                Tables\Columns\TextColumn::make('#')->rowIndex(),
                 Tables\Columns\TextColumn::make('employee.fullName')->alignLeft()->sortable(),
                 Tables\Columns\TextColumn::make('typeLeave.title')->alignLeft()->sortable(),
                 Tables\Columns\TextColumn::make('created_at')->label('Request Date')->date()->alignLeft()->sortable(),
-                Tables\Columns\TextColumn::make('approval_date')->tooltip(fn($record)=> $record->user?->name)->date()->sortable(),
+                Tables\Columns\TextColumn::make('approvals.employee.fullName')->label('Line Manager')->alignCenter()->sortable(),
+                Tables\Columns\TextColumn::make('approval_date')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('start_leave')->date()->sortable(),
                 Tables\Columns\TextColumn::make('end_leave')->date()->sortable(),
                 Tables\Columns\TextColumn::make('days')->numeric()->sortable(),
@@ -187,7 +194,7 @@ class LeaveResource extends Resource implements HasShieldPermissions
                         ])
                     ];
                 }
-                )->visible(fn($record)=>$record->admin_id ===null and auth()->user()->can('admin_leave'))->action(function ($data,$record) {
+                )->visible(fn($record)=>$record->admin_id ===null and auth()->user()->can('admin_leave') and $record->status->value=="approveHead")->action(function ($data,$record) {
 
                     $record->update([
                         'comment'=>$data['comment'],
@@ -197,7 +204,7 @@ class LeaveResource extends Resource implements HasShieldPermissions
                         'admin_id'=>getEmployee()->id
                     ]);
                         Notification::make('approveLeave')->title('Approved Leave Employee:'.$record->employee->fullName)->success()->send()->sendToDatabase(auth()->user(),true);
-                    })->visible(fn($record)=>$record->status->value=="approveHead")
+                    })
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -216,7 +223,7 @@ class LeaveResource extends Resource implements HasShieldPermissions
     public static function getNavigationBadge(): ?string
     {
 
-        return self::$model::query()->where('status', 'pending')->where('company_id', getCompany()->id)->count();
+        return self::$model::query()->where('status', 'approveHead')->where('company_id', getCompany()->id)->count();
     }
 
     public static function getPages(): array

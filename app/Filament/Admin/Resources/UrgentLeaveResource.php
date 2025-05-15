@@ -98,6 +98,7 @@ class UrgentLeaveResource extends Resource  implements HasShieldPermissions
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('#')->rowIndex(),
                 Tables\Columns\TextColumn::make('employee.fullName')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('time_out')->time()->sortable(),
                 Tables\Columns\TextColumn::make('time_in')->time()->sortable(),

@@ -55,7 +55,7 @@ class PayrollPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_payroll');
+        return $user->can('{{ DeleteAny }}');
     }
 
     /**
@@ -63,7 +63,7 @@ class PayrollPolicy
      */
     public function forceDelete(User $user, Payroll $payroll): bool
     {
-        return $user->can('force_delete_payroll');
+        return $user->can('{{ ForceDelete }}');
     }
 
     /**
@@ -79,7 +79,7 @@ class PayrollPolicy
      */
     public function restore(User $user, Payroll $payroll): bool
     {
-        return $user->can('restore_payroll');
+        return $user->can('{{ Restore }}');
     }
 
     /**

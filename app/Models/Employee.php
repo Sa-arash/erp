@@ -2,33 +2,38 @@
 
 namespace App\Models;
 
-use App\Enums\GenderEnum;
-use Filament\Facades\Filament;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
-use TomatoPHP\FilamentMediaManager\Models\Media;
-use TomatoPHP\FilamentMediaManager\Traits\InteractsWithMediaFolders;
 
 class Employee extends Model implements HasMedia
 {
-    use SoftDeletes,HasFactory;
+    use SoftDeletes, HasFactory;
     use InteractsWithMedia;
+    use LogsActivity;
 
 
+    public function getActivitylogOptions(): LogOptions
+    {
+        return LogOptions::defaults()
+            ->logAll();
+    }
 
-    protected $guarded=['id'];
-    protected $fillable = ['loan_limit','manager_id','currency_id','structure_id','warehouse_id','signature_pic','daily_salary','position_id','branch','contract_id','NIC','post_code','benefit_salary','user_id', 'fullName', 'email', 'phone_number', 'birthday', 'joining_date', 'leave_date', 'country', 'state', 'city', 'address','address2', 'cart', 'bank', 'tin', 'base_salary', 'department_id', 'position_id', 'gender', 'marriage', 'count_of_child', 'emergency_phone_number', 'pic', 'blood_group', 'company_id', 'duty_id','covid_vaccine_certificate','immunization','card_status','type_of_ID','ID_number','emergency_contact'];
+    protected $guarded = ['id'];
+    protected $fillable = ['loan_limit', 'manager_id', 'currency_id', 'structure_id', 'warehouse_id', 'signature_pic', 'daily_salary', 'position_id', 'branch', 'contract_id', 'NIC', 'post_code', 'benefit_salary', 'user_id', 'fullName', 'email', 'phone_number', 'birthday', 'joining_date', 'leave_date', 'country', 'state', 'city', 'address', 'address2', 'cart', 'bank', 'tin', 'base_salary', 'department_id', 'position_id', 'gender', 'marriage', 'count_of_child', 'emergency_phone_number', 'pic', 'blood_group', 'company_id', 'duty_id', 'covid_vaccine_certificate', 'immunization', 'card_status', 'type_of_ID', 'ID_number', 'emergency_contact'];
 
-    protected $casts=[
-        'emergency_contact'=>'array',
-        'immunization'=>'array',
+    protected $casts = [
+        'emergency_contact' => 'array',
+        'immunization' => 'array',
     ];
 
-   public function getInfoAttribute(){
+    public function getInfoAttribute()
+    {
        return $this->fullName." (ID:".$this->ID_number." )";
    }
     public function manager(): \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -90,7 +95,7 @@ class Employee extends Model implements HasMedia
     public function documents(): \Illuminate\Database\Eloquent\Relations\hasMany
     {
         return $this->hasMany(Documentation::class);
-    } 
+    }
      public function loans(): \Illuminate\Database\Eloquent\Relations\hasMany
     {
         return $this->hasMany(Loan::class,'employee_id');

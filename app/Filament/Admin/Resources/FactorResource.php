@@ -681,20 +681,35 @@ class FactorResource extends Resource
                         $set('setPrice', 0);
 
                     })->required()->default(0)->boolean('Income', 'Expense')->grouped(),
-                    getSelectCurrency(),
+                    Select::make('currency_id')->live()->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([
+                        \Filament\Forms\Components\Section::make([
+                            TextInput::make('name')->required()->maxLength(255),
+                            TextInput::make('symbol')->required()->maxLength(255),
+                            TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                        ])->columns(3)
+                    ])->createOptionUsing(function ($data) {
+                        $data['company_id'] = getCompany()->id;
+                        Notification::make('success')->title('success')->success()->send();
+                        return Currency::query()->create($data)->getKey();
+                    })->editOptionForm([
+                        \Filament\Forms\Components\Section::make([
+                            TextInput::make('name')->required()->maxLength(255),
+                            TextInput::make('symbol')->required()->maxLength(255),
+                            TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                        ])->columns(3)
+                    ])->afterStateUpdated(function (Forms\Set $set){
+                        $set('setPrice',0);
+                    }),
                     SelectTree::make('account_id')->label(fn(Forms\Get $get) => $get('type') === "1" ? "Income Account" : "Expence Account")->searchable()->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: function ($query, Get $get) {
                         $type = $get('type') === "1" ? "Income" : "Expense";
                         return $query->where('group', [$type])->where('company_id', getCompany()->id);
-                    })->defaultOpenLevel(3)
-                        ->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
+                    })->defaultOpenLevel(3)->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
                             if ($get('type') !== "0") {
                                 $set('from', getCompany()->AccountTitle);
                             } else {
                                 $set('to', getCompany()->AccountTitle);
                             }
                         })->live(true),
-
-
                     Forms\Components\Select::make('party_id')->label(fn(Forms\Get $get) => $get('type') === "1" ? "Customer" : "Vendor")->searchable()->required()->options(function (Forms\Get $get) {
                         $type = $get('type') === "1" ? "customer" : "vendor";
                         return getCompany()->parties->whereIn('type', [$type, 'both'])->pluck('info', 'id');
@@ -1032,13 +1047,9 @@ class FactorResource extends Resource
                                 return $get('isCurrency') || $get->getData()['type'] !== "1";
                             })->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)
                                 ->rules([
-                                    fn(Get $get): Closure => function (string $attribute, $value, Closure $fail, $operation) use ($get) {
-
-                                        if (is_null($get('id'))) {
+                                    fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
 
                                             if ($get->getData()['type'] === "1") {
-
-
                                                 if ($get('debtor') == 0) {
                                                     $fail('The debtor field must be not zero.');
                                                 } else {
@@ -1050,24 +1061,18 @@ class FactorResource extends Resource
                                                     }, $get->getData()['invoice']['transactions']);
                                                     $currency=Currency::query()->firstWhere('id',$get->getData()['currency_id']);
 
-                                                    $productSum = collect($produtTotal)->sum();
+                                                    $productSum = collect($produtTotal)->sum()*$currency->exchange_rate;
                                                     $invoiceSum = collect($invoiceTotal)->sum();
 
-                                                    if ($invoiceSum != $productSum) {
-                                                        $remainingAmount = $productSum - $invoiceSum;
+                                                    if (round($invoiceSum,2) != round($productSum,2)) {
+                                                        $remainingAmount = round($invoiceSum,2) - round($productSum,2);
                                                         $fail("The paid amount does not match the total price. Total amount:" . number_format($productSum, 2) . ", Remaining amount: " . number_format($remainingAmount, 2));
                                                     }
                                                 }
                                             } elseif ($get('debtor') != 0) {
                                                 $fail('The debtor field must be zero.');
                                             }
-                                        } else {
-                                            if ($get('debtor') == 0 && $get('creditor') == 0) {
-                                                $fail('Only one of these values can be zero.');
-                                            } elseif ($get('debtor') != 0 && $get('creditor') != 0) {
-                                                $fail('At least one of the values must be zero.');
-                                            }
-                                        }
+
                                     },
                                 ]),
                             Forms\Components\TextInput::make('creditor')->prefix(defaultCurrency()->symbol)->readOnly(function (Get $get) {
@@ -1083,7 +1088,6 @@ class FactorResource extends Resource
                                 ->rules([
                                     fn(Get $get): Closure => function (string $attribute, $value, Closure $fail, $operation) use ($get) {
 
-                                        if (is_null($get('id'))) {
 
                                             if ($get->getData()['type'] !== "1") {
 
@@ -1101,21 +1105,14 @@ class FactorResource extends Resource
 
                                                     $productSum = collect($produtTotal)->sum()*$currency->exchange_rate;
                                                     $invoiceSum = collect($invoiceTotal)->sum();
-
-                                                    if ($invoiceSum != $productSum) {
-                                                        $remainingAmount = $productSum - $invoiceSum;
-                                                        $fail("The paid amount does not match the total price. Total amount:" . number_format($productSum, 2) . ", Remaining amount: " . number_format($remainingAmount, 2));
+                                                    if (round($invoiceSum,2) != round($productSum,2)) {
+                                                        $remainingAmount = round($invoiceSum,2) - round($productSum,2);
+                                                        $fail("The paid amount does not match the total price. Total amount:" . number_format(round($invoiceSum,2), 2) . ", Remaining amount: " . number_format($remainingAmount, 2));
                                                     }
                                                 }
                                             } elseif ($get('creditor') != 0) {
                                                 $fail('The creditor field must be zero.');
-                                            }
-                                        } else {
-                                            if ($get('debtor') == 0 && $get('creditor') == 0) {
-                                                $fail('Only one of these values can be zero.');
-                                            } elseif ($get('debtor') != 0 && $get('creditor') != 0) {
-                                                $fail('At least one of the values must be zero.');
-                                            }
+
                                         }
                                     },
                                 ]),
@@ -1124,7 +1121,7 @@ class FactorResource extends Resource
                                 return $get('isCurrency');
                             }),
                             Section::make([
-                                Select::make('currency_id')->live()->label('Currency')->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([
+                                Select::make('currency_id')->live()->label('Currency')->required()->relationship('currency', 'name', modifyQueryUsing: fn($query,$state) => $query->where('id', $state))->searchable()->preload()->createOptionForm([
                                     Section::make([
                                         TextInput::make('name')->required()->maxLength(255),
                                         TextInput::make('symbol')->required()->maxLength(255),

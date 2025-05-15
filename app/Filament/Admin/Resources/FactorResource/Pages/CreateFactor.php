@@ -57,7 +57,6 @@ class CreateFactor extends CreateRecord
             }
 
             $currency = Currency::query()->firstWhere('id',$state['currency_id']);
-
             if ($state['type'] == '1') {
                 $state['invoice']['transactions'] = [
                     [
@@ -65,7 +64,7 @@ class CreateFactor extends CreateRecord
                         'description' => null,
                         'creditor' => 0,
                         'company_id' => getCompany()->id,
-                        'debtor' => collect($produtTotal)->sum()*$currency?->exchange_rate,
+                        'debtor' => round(collect($produtTotal)->sum()*$currency?->exchange_rate,2),
                         'exchange_rate' => $currency?->exchange_rate,
                         'debtor_foreign'=>0,
                         'creditor_foreign'=>0
@@ -76,7 +75,7 @@ class CreateFactor extends CreateRecord
                     [
                         'account_id' => null,
                         'description' => null,
-                        'creditor' => collect($produtTotal)->sum()*$currency?->exchange_rate,
+                        'creditor' => round(collect($produtTotal)->sum()*$currency?->exchange_rate,2),
                         'company_id' => getCompany()->id,
                         'debtor' => 0,
                         'exchange_rate' => $currency?->exchange_rate,

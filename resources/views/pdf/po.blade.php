@@ -37,7 +37,6 @@
 </style>
 
 <body>
-<h1 >Purchase Order (PO)</h1>
 <table>
 
 
@@ -119,65 +118,136 @@
     </tr>
     </tfoot>
 </table>
-@php
-    $document=$po->invoice;
-@endphp
-<div style="text-align: left; padding: 0; margin: 0;">
-    <p style="margin: 0; padding: 0;">Voc No: {{ $document->number }}</p>
-    <p style="margin: 0; padding: 0;">Date: {{ \Carbon\Carbon::parse($document->date)->format('Y-m-d') }}</p>
-    <p style="margin: 0; padding: 0;">Voc Description: {{ $document->name }}</p>
-</div>
+
 <table>
-    <thead>
-    <tr>
-        <th>No</th>
-        <th>Account Name</th>
-        <th>Account Code</th>
-        <th>Description</th>
-        <th>Currency</th>
-        <th>Debit Foreign</th>
-        <th>Credit Foreign</th>
-        <th>Exchange Rate</th>
-        <th>Debit({{ PDFdefaultCurrency($company)}})</th>
-        <th>Credit({{ PDFdefaultCurrency($company)}})</th>
-    </tr>
-    </thead>
-    <tbody>
-    @foreach ($document->transactions as $id => $transaction)
+
+    @if($po->ceo_comment !== null or $po->general_comment !== null)
         <tr>
-            <td>{{ $id + 1 }}</td>
-            <td>{{ $transaction->account->name }}</td>
-            <td>{{ $transaction->account->code }}</td>
-            <td>{{ $transaction->description }}</td>
-            <td>{{ $transaction->currency->name }}</td>
-            <td>{{ number_format($transaction->debtor_foreign,2) }}</td>
-            <td>{{ number_format($transaction->creditor_foreign,2) }}</td>
-            <td>{{ number_format($transaction->exchange_rate,5) }}</td>
-            <td>{{ number_format($transaction->debtor) }}</td>
-            <td>{{ number_format($transaction->creditor) }}</td>
+            <th colspan="5"><strong>Comments</strong></th>
         </tr>
-    @endforeach
+    @endif
+
+    @if($po->ceo_comment !== null)
+        <tr>
+            <td colspan="5" style="text-align: start">{{$po->ceo_comment}}</td>
+        </tr>
+    @endif
+    @if($po->general_comment !== null)
+        <tr>
+            <td colspan="5" style="text-align: start">{{$po->general_comment}}</td>
+        </tr>
+    @endif
+
 
     <tr>
-        <td colspan="5">
-            Total
-        </td>
-        <td>
-            {{ number_format($document->transactions->sum('debtor_foreign')) }}
-        </td>
-        <td>
-            {{ number_format($document->transactions->sum('creditor_foreign')) }}
-        </td>
-        <td></td>
-        <td>
-            {{ number_format($document->transactions->sum('debtor')) }}
-        </td>
-        <td>
-            {{ number_format($document->transactions->sum('creditor')) }}
+        <th colspan="5"><p>Requested by</p></th>
+    <tr>
+        <th>Name</th>
+        <th>Position</th>
+        <th>Duty Station</th>
+        <th colspan="2">Signature</th>
+    </tr>
+    <tr>
+        <td style="text-align: center"><p>{{$po->employee?->fullName}}</p></td>
+        <td style="text-align: center"><p> {{$po->employee?->position?->title}}</p></td>
+        <td style="text-align: center   "><p> {{$po->employee?->warehouse?->title." , ". $po->employee->structure?->title}}</p></td>
+        <td style="text-align: center" colspan="2">
+            @if($po->employee->media->where('collection_name','signature')->first()?->getPath() !== null)
+                <img src="{!!   $po->employee->media->where('collection_name','signature')->first()->getPath()!!}"
+                     style="border-radius: 50px ; width: 80px;" alt="">
+            @endif
         </td>
     </tr>
-    </tbody>
+
+
 </table>
+
+<table style="border: none!important;" >
+    <tr  style="border: none!important;">
+        @foreach($po?->approvals->where('status','Approve') as $approve)
+            <th style="border: none!important;background: white !important;color: #1a202c">
+                @if($approve->position==="PR Verification")
+                    Verified By
+                    <br>  {{$approve->employee?->position->title}}
+                @elseif($approve->position==="PO Logistic Head")
+                     Logistic Head
+                    <br>  {{$approve->employee?->fullName}}
+                @else
+                    {{str_replace('PR','',$approve->position)}}
+                    <br>  {{$approve->employee?->position->title}}
+                @endif
+            </th>
+        @endforeach
+    </tr>
+    <tr style="border: none!important;background: white !important;">
+        @foreach($po?->approvals->where('status','Approve') as $approve)
+            <td style="border: none!important;text-align: center;background: white !important;color: #1a202c">
+                @if ($approve->employee->media->where('collection_name','signature')->first()?->original_url  )
+                    <img src="{!! $approve->employee->media->where('collection_name','signature')->first()->getPath() !!}" style="border-radius: 50px ; width: 80px;" alt="">
+
+                @endif
+            </td>
+        @endforeach
+    </tr>
+{{--@php--}}
+{{--    $document=$po->invoice;--}}
+{{--@endphp--}}
+{{--<div style="text-align: left; padding: 0; margin: 0;">--}}
+{{--    <p style="margin: 0; padding: 0;">Voc No: {{ $document->number }}</p>--}}
+{{--    <p style="margin: 0; padding: 0;">Date: {{ \Carbon\Carbon::parse($document->date)->format('Y-m-d') }}</p>--}}
+{{--    <p style="margin: 0; padding: 0;">Voc Description: {{ $document->name }}</p>--}}
+{{--</div>--}}
+{{--<table>--}}
+{{--    <thead>--}}
+{{--    <tr>--}}
+{{--        <th>No</th>--}}
+{{--        <th>Account Name</th>--}}
+{{--        <th>Account Code</th>--}}
+{{--        <th>Description</th>--}}
+{{--        <th>Currency</th>--}}
+{{--        <th>Debit Foreign</th>--}}
+{{--        <th>Credit Foreign</th>--}}
+{{--        <th>Exchange Rate</th>--}}
+{{--        <th>Debit({{ PDFdefaultCurrency($company)}})</th>--}}
+{{--        <th>Credit({{ PDFdefaultCurrency($company)}})</th>--}}
+{{--    </tr>--}}
+{{--    </thead>--}}
+{{--    <tbody>--}}
+{{--    @foreach ($document->transactions as $id => $transaction)--}}
+{{--        <tr>--}}
+{{--            <td>{{ $id + 1 }}</td>--}}
+{{--            <td>{{ $transaction->account->name }}</td>--}}
+{{--            <td>{{ $transaction->account->code }}</td>--}}
+{{--            <td>{{ $transaction->description }}</td>--}}
+{{--            <td>{{ $transaction->currency->name }}</td>--}}
+{{--            <td>{{ number_format($transaction->debtor_foreign,2) }}</td>--}}
+{{--            <td>{{ number_format($transaction->creditor_foreign,2) }}</td>--}}
+{{--            <td>{{ number_format($transaction->exchange_rate,5) }}</td>--}}
+{{--            <td>{{ number_format($transaction->debtor) }}</td>--}}
+{{--            <td>{{ number_format($transaction->creditor) }}</td>--}}
+{{--        </tr>--}}
+{{--    @endforeach--}}
+
+{{--    <tr>--}}
+{{--        <td colspan="5">--}}
+{{--            Total--}}
+{{--        </td>--}}
+{{--        <td>--}}
+{{--            {{ number_format($document->transactions->sum('debtor_foreign')) }}--}}
+{{--        </td>--}}
+{{--        <td>--}}
+{{--            {{ number_format($document->transactions->sum('creditor_foreign')) }}--}}
+{{--        </td>--}}
+{{--        <td></td>--}}
+{{--        <td>--}}
+{{--            {{ number_format($document->transactions->sum('debtor')) }}--}}
+{{--        </td>--}}
+{{--        <td>--}}
+{{--            {{ number_format($document->transactions->sum('creditor')) }}--}}
+{{--        </td>--}}
+{{--    </tr>--}}
+{{--    </tbody>--}}
+{{--</table>--}}
 
 
 </body>

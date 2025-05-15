@@ -19,6 +19,7 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Support\Enums\IconSize;
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Role;
 
 class  ViewEmployee extends ViewRecord
@@ -29,6 +30,21 @@ class  ViewEmployee extends ViewRecord
         return $this->record->fullName;
     }
 
+    public function mount($record): void
+    {
+        parent::mount($record);
+
+        // فقط اگه لاگین کرده بود
+        if (Auth::check()) {
+            activity()
+                ->causedBy(Auth::user())
+                ->performedOn($this->record)
+                ->withProperties([
+                    'action' => 'view',
+                ])
+                ->log('Viewed employee: ' . $this->record->fullName);
+        }
+    }
     protected function getHeaderActions(): array
     {
         return [

@@ -54,9 +54,9 @@ class MyPurchaseRequest extends BaseWidget
                 Tables\Columns\TextColumn::make('total')->state(function ($record) {
                     $total = 0;
                     foreach ($record->items as $item) {
-                        $total += $item->quantity * $item->estimated_unit_cost;
+                        $total += $item->quantity * $item->estimated_unit_cost ;
                     }
-                    return $total;
+                    return number_format($total,2).' '.$record->currency?->symbol;
                 })->numeric(),
                 Tables\Columns\TextColumn::make('bid.total_cost')->alignCenter()->label('Total Final Price' )->numeric(),
 
@@ -166,8 +166,8 @@ class MyPurchaseRequest extends BaseWidget
                 if ($item) {
                     $mediaItem = $datum['images'] ?? null;
                     if (isset($mediaItem)){
-                       if ($item->getFirstMedia('document')->name){
-                           if (!strstr($mediaItem,$item->getFirstMedia('document')->name)){
+                       if ($item->getFirstMedia('document')?->name){
+                           if (!strstr($mediaItem,$item->getFirstMedia('document')?->name)){
                                $item->clearMediaCollection('document');
                                $item->addMedia(public_path('images/'.$mediaItem))->toMediaCollection('document');
                            }

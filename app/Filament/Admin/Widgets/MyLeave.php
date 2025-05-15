@@ -38,10 +38,10 @@ class MyLeave extends BaseWidget
 
                     $leave= Leave::query()->create($data);
                     $employee=getEmployee();
-                    if ($employee->department->employee_id){
+                    if ($employee->manager_id){
                         $leave->approvals()->create([
-                            'position'=>'Head Department',
-                            'employee_id'=>$employee->department->employee_id,
+                            'position'=>'Manager',
+                            'employee_id'=>$employee->manager_id,
                             'company_id'=>getCompany()->id
                         ]);
                     }
@@ -83,10 +83,11 @@ class MyLeave extends BaseWidget
             ])])
 
             ->columns([
-                Tables\Columns\TextColumn::make('')->alignCenter()->rowIndex(),
+                Tables\Columns\TextColumn::make('#')->alignCenter()->rowIndex(),
                 Tables\Columns\TextColumn::make('typeLeave.title')->alignCenter()->sortable(),
-                Tables\Columns\TextColumn::make('created_at')->label('Request Date')->date()->alignCenter()->sortable(),
-                Tables\Columns\TextColumn::make('approval_date')->alignCenter()->tooltip(fn($record) => $record->user?->name)->date()->sortable(),
+                Tables\Columns\TextColumn::make('created_at')->label('Request Date')->dateTime()->alignCenter()->sortable(),
+                Tables\Columns\TextColumn::make('approvals.employee.fullName')->label('Line Manager')->alignCenter()->sortable(),
+                Tables\Columns\TextColumn::make('approval_date')->alignCenter()->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('start_leave')->date()->sortable(),
                 Tables\Columns\TextColumn::make('end_leave')->date()->sortable(),
                 Tables\Columns\TextColumn::make('days')->numeric()->sortable(),
@@ -94,6 +95,11 @@ class MyLeave extends BaseWidget
             ])->actions([
                 Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->label('')
                 ->url(fn($record) => route('pdf.leaverequest', ['id' => $record->id]))->openUrlInNewTab(),
+                Tables\Actions\DeleteAction::make()->action(function ($record){
+                    $record->approvals()->delete();
+                    $record->delete();
+                    Notification::make('success')->success()->title('Successfully')->send();
+                })->visible(fn($record)=>$record->status->value=='pending')
             ]);
     }
 }

@@ -364,4 +364,8 @@ class Company extends Model implements HasAvatar, HasName, HasMedia
     {
         return $this->hasMany(Media::class);
     }
+//    public function medias(): \Illuminate\Database\Eloquent\Relations\HasMany
+//    {
+//        return $this->hasMany(Media::class);
+//    }
 }

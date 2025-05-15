@@ -26,7 +26,7 @@
     td,
     th {
         border: 1px solid #000;
-        padding: 5px;
+        padding: 2px;
         text-align: center;
         vertical-align: top;
     }
@@ -384,6 +384,9 @@
                        $j++;
                        @endphp
                        @if($j==5)
+                       @php
+                           $j=1;
+                       @endphp
                    </tr>
                    <tr>
                            @endif

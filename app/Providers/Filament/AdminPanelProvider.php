@@ -237,6 +237,9 @@ class AdminPanelProvider extends PanelProvider
                 'Logistic Management',
                 'Security Management',
                 'Basic Setting',
+            ])->resources([
+                config('filament-logger.activity_resource')
+
             ])
             ->databaseNotifications()->tenant(Company::class, 'id', 'company');
     }
