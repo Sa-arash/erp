@@ -702,7 +702,7 @@ implements HasShieldPermissions
 
 
                 Tables\Actions\Action::make('prPDF')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.po', ['id' => $record->id]))->openUrlInNewTab(),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\EditAction::make()->hidden(fn($record)=>$record->status == 'Approved'),
                 Tables\Actions\Action::make('GRN')->label('GRN')->url(fn($record) => AssetResource::getUrl('create', ['po' => $record->id]))->visible(fn($record) =>   $record->items()->whereHas('product', function ($query) {
                     $query->where('product_type', 'unConsumable');
                 })->count() and $record->status === 'Approval')->hidden(fn($record) => $record->status === 'GRN And inventory' or $record->status === 'GRN'),

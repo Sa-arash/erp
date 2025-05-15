@@ -365,16 +365,18 @@ implements HasShieldPermissions
                             $nextMonth = $currentDate->copy()->addMonth()->month;
                             $daysUntilNextMonth = $currentDate->daysInMonth - $currentDate->day;
                         
-                            $options = [
-                                $currentDate->format('F'), 
-                            ];
+                            $options = [];
                         
+                            // اضافه کردن نام ماه جاری با ایندکس شماره ماه
+                            $options[$currentMonth - 1] = $currentDate->format('F'); // ایندکس از 0 شروع می‌شود
+                        
+                            // اگر 5 روز یا کمتر به پایان ماه باقی مانده باشد، نام ماه بعدی را اضافه کن
                             if ($daysUntilNextMonth <= 5) {
-                                $options[] = $currentDate->format('F', $nextMonth);
+                                $options[$nextMonth - 1] = $currentDate->copy()->addMonth()->format('F'); // ایندکس از 0 شروع می‌شود
                             }
-                        
+                        // dd($options);
                             return $options;
-                        })->live()->default(now()->format('F'))->searchable()->required(),
+                        })->live()->default(now()->month - 1)->searchable()->required(),
                         Forms\Components\Select::make('year')->default(now()->year)->required()->searchable()->options([2024 => 2024, 2025 => 2025, 2026 => 2026, 2027 => 2027, 2028 => 2028, 2029 => 2029, 2030 => 2030]),
                     ])->columns(3)
                 ])->action(function ($data) {
