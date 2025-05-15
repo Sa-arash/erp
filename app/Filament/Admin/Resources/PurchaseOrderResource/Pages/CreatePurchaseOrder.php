@@ -103,7 +103,7 @@ class CreatePurchaseOrder extends CreateRecord
 
             // dd($this->data['invoice']['transactions']);
             $this->callHook('beforeCreate');
-// dd( $this->form->model($this->getRecord()));
+            // dd( $this->form->model($this->getRecord()));
             $this->record = $this->handleRecordCreation($data);
             $this->form->model($this->getRecord())->saveRelationships();
             // foreach ($this->data['invoice']['transactions'] as $tr){
@@ -119,7 +119,8 @@ class CreatePurchaseOrder extends CreateRecord
             // }
 
 
-
+            ########################################################################################################
+            /*
             $total = 0;
             foreach ($this->form->getLivewire()->data['RequestedItems'] as $item) {
                 $total += str_replace(',', '', $item['total']);
@@ -271,6 +272,8 @@ class CreatePurchaseOrder extends CreateRecord
                     'status' => "Finished"
                 ]);
             }
+            */
+            ##############################333
             $this->callHook('afterCreate');
 
             $this->commitDatabaseTransaction();

@@ -24,12 +24,12 @@ class EditPurchaseOrder extends EditRecord
 
         $this->fillForm();
         
-        foreach ($this->data['invoice']['transactions']  as $key=> $datum){
+        // foreach ($this->data['invoice']['transactions']  as $key=> $datum){
 
-            if ($datum['cheque']['due_date']){
-                $this->data['invoice']['transactions'][$key]['Cheque']=true;
-            }
-        }
+        //     if ($datum['cheque']['due_date']){
+        //         $this->data['invoice']['transactions'][$key]['Cheque']=true;
+        //     }
+        // }
 
         $this->previousUrl = url()->previous();
     }
