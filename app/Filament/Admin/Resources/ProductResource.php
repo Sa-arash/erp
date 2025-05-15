@@ -170,11 +170,14 @@ class ProductResource extends Resource
                 }),
                 Tables\Columns\TextColumn::make('count')->numeric()->state(fn($record) => $record->assets->count())->label('Quantity')->badge()
                 ->color(fn($record)=>$record->assets->count()>$record->stock_alert_threshold ? 'success' : 'danger')->tooltip(fn($record)=>'Stock Alert:'.$record->stock_alert_threshold),
+                Tables\Columns\TextColumn::make('countInventory')->numeric()->state(fn($record) => $record->inventories()?->sum('quantity'))->label('Available')->badge(),
+
                 Tables\Columns\TextColumn::make('price')->numeric()->state(fn($record) => $record->assets->sum('price'))->label('Total Value')->badge()->color('success')
 
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('department_id')->label('Department')->options(getCompany()->departments->pluck('title','id'))->searchable()->preload()
+                Tables\Filters\SelectFilter::make('department_id')->label('Department')->options(getCompany()->departments->pluck('title','id'))->searchable()->preload(),
+                Tables\Filters\SelectFilter::make('product_type')->options(['consumable'=>'Consumable','unConsumable'=>'Non-Consumable'])->searchable()->preload()
 
 //                SelectFilter::make('unit_id')->searchable()->preload()->options(Unit::where('company_id', getCompany()->id)->get()->pluck('title', 'id'))
 //                    ->label('Unit'),

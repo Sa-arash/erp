@@ -14,6 +14,7 @@ use App\Filament\Admin\Widgets\profitAndLost;
 use App\Filament\Admin\Widgets\PurchasePrice;
 use App\Filament\Admin\Widgets\StateOverView;
 use App\Filament\Admin\Widgets\StockAlert;
+use App\Filament\Admin\Widgets\StockConsumable;
 use App\Filament\Admin\Widgets\test;
 use Filament\Pages\Page;
 
@@ -33,6 +34,7 @@ class Dashboard extends BaseDashboard
             invoicePrice::class,
             PurchasePrice::class,
             StockAlert::class,
+            StockConsumable::class,
             OverdueChecks::class,
            ChequeReport::class
 
