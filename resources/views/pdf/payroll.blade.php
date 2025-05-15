@@ -1,17 +1,34 @@
-
 @php
     $month = \Carbon\Carbon::parse($payroll->start_date);
     $year = \Carbon\Carbon::parse($payroll->start_date)->year;
-    $leaveType=\App\Models\Typeleave::query()->where('company_id',$payroll->company_id)->where('built_in',1)->first();
-    $annualLeaves= \App\Models\Leave::query()->where('status','accepted')->whereBetween('start_leave',[now()->startOfYear(),now()->endOfYear()])->whereBetween('end_leave',[now()->startOfYear(),now()->endOfYear()])->where('typeleave_id',$leaveType?->id)->where('employee_id',$payroll->employee_id)->get();
-    $leaves= \App\Models\Leave::query()->where('status','accepted')->whereBetween('start_leave',[now()->startOfMonth(),now()->endOfMonth()])->whereBetween('end_leave',[now()->startOfMonth(),now()->endOfMonth()])->where('employee_id',$payroll->employee_id)->get();
+    $leaveType = \App\Models\Typeleave::query()
+        ->where('company_id', $payroll->company_id)
+        ->where('built_in', 1)
+        ->first();
+    $annualLeaves = \App\Models\Leave::query()
+        ->where('status', 'accepted')
+        ->whereBetween('start_leave', [now()->startOfYear(), now()->endOfYear()])
+        ->whereBetween('end_leave', [now()->startOfYear(), now()->endOfYear()])
+        ->where('typeleave_id', $leaveType?->id)
+        ->where('employee_id', $payroll->employee_id)
+        ->get();
+    $leaves = \App\Models\Leave::query()
+        ->where('status', 'accepted')
+        ->whereBetween('start_leave', [now()->startOfMonth(), now()->endOfMonth()])
+        ->whereBetween('end_leave', [now()->startOfMonth(), now()->endOfMonth()])
+        ->where('employee_id', $payroll->employee_id)
+        ->get();
 @endphp
 
 
-@include('pdf.header',['title'=>'Payroll-'.$month->format('M')." ".$year,'titles'=>[],'css'=>false])
+@include('pdf.header', [
+    'title' => 'Payroll-' . $month->format('M') . ' ' . $year,
+    'titles' => [],
+    'css' => false,
+])
 
 
-
+{{-- 
     <style>
         @page {
             margin-top: 10px;
@@ -101,7 +118,7 @@
 <div class="pay-slip">
 
     <div style="width: 100%;display: flex">
-            @if($payroll->employee->media->where('collection_name','images')->first()?->original_url )
+            @if ($payroll->employee->media->where('collection_name', 'images')->first()?->original_url)
                 <div >            <img   src="{!! $payroll->employee->media->where('collection_name','images')->first()?->original_url!!}" style="width: 95px;margin-bottom: 20px;margin-left: 42%;border: 1px solid gray;padding: 5px">
                 </div>
             @endif
@@ -152,7 +169,7 @@
                 <td>   {{ number_format($payroll->employee?->base_salary) }}</td>
             </tr>
 
-            @foreach($payroll->benefits->where('type',"allowance")->sortBy('built_in')  as $allowance)
+            @foreach ($payroll->benefits->where('type', 'allowance')->sortBy('built_in') as $allowance)
                 <tr>
                     <td>{{$allowance->title}}</td>
                     <td>{{$allowance->pivot->amount >0? number_format( $allowance->pivot->amount):$allowance->pivot->percent."%"." (".$allowance->on_change.")" }}</td>
@@ -174,7 +191,7 @@
                 <th>Description</th>
                 <th>Amount (({{ PDFdefaultCurrency($payroll->company)}}))</th>
             </tr>
-            @foreach($payroll->benefits->where('type',"deduction")->sortBy('built_in')  as $deduction)
+            @foreach ($payroll->benefits->where('type', 'deduction')->sortBy('built_in') as $deduction)
             <tr>
                 <td>{{$deduction->title }}</td>
                 <td>{{$deduction->pivot->amount >0? number_format( $deduction->pivot->amount):$deduction->pivot->percent."%"." (".$deduction->on_change.")" }}</td>
@@ -204,7 +221,7 @@
             </tr>
         </table>
     </div>
-    @if($payroll->employee->media->where('collection_name','signature')->first()?->original_url )
+    @if ($payroll->employee->media->where('collection_name', 'signature')->first()?->original_url)
        <pre style="margin-left: 40%!important;">                                         Employee Signature</pre>
     <div class="text-center  w-100" style="margin-left: 300px">
 
@@ -214,4 +231,248 @@
 </div>
 
 </body>
+</html> --}}
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    {{-- <title>Payroll Statement</title> --}}
+    <style>
+        body{
+            font-size: 12px;
+        }
+        
+       
+.pay-table{
+    width: 50%;
+}
+        .section-title {
+            font-weight: bold;
+            font-size: 16px;
+            margin-top: 25px;
+            margin-bottom: 8px;
+        }
+
+        .summary-row td {
+            font-weight: bold;
+            background-color: #e0e0e0;
+            /* رنگ خاکستری ساده */
+            border-top: 1px solid #000;
+            border-bottom: 1px solid #000;
+        }
+
+        .deductions {
+            margin-top: 40px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="clearfix">
+        <div class="company-info">
+            {{-- <img src="{{ asset('logo.png') }}" alt="Logo" style="height: 50px;"><br> --}}
+            AREA TARGET GENERAL TRADING L.L.C<br>
+            AL MERAIKHI TOWER 2, RIG AL BUTIN RD,<br>
+            DEIRA, DUBAI, UAE<br>
+            Email: <a href="mailto:finance@unccompound.com">finance@unccompound.com</a><br>
+            Contact: +971 56 152 7710
+        </div>
+
+        {{-- <div class="earnings-info">
+            <div class="title">Earnings Statement</div>
+            <strong>Period Beginning:</strong> <span class="highlight">04/01/2025</span><br>
+            <strong>Period Ending:</strong> <span class="highlight">04/30/2025</span><br>
+            <strong>Pay Date:</strong> <span class="highlight">05/01/2025</span>
+        </div> --}}
+    </div>
+    <br>
+
+
+
+    <table style="width: 100%; border-collapse: collapse; margin: 0; padding: 0;">
+        <tr>
+
+            <!-- Employee Information -->
+            <td style="vertical-align: top; width: 50%; padding: 0; margin: 0;">
+                <table style="border-collapse: collapse; margin: 0; padding: 0;">
+                    <tr>
+                        <td style=" padding: 2px 6px 2px 0;">Employee:</td>
+                        <td><span style="background-color: yellow; padding: 0 3px;">Jane E. Paler</span></td>
+                    </tr>
+                    <tr>
+                        <td style=" padding: 2px 6px 2px 0;">Employee#:</td>
+                        <td><span style="background-color: yellow; padding: 0 3px;">UNC-INT-102</span></td>
+                    </tr>
+                    <tr>
+                        <td style=" padding: 2px 6px 2px 0;">Department:</td>
+                        <td><span style="background-color: yellow; padding: 0 3px;">Admin/Finance</span></td>
+                    </tr>
+                    <tr>
+                        <td style=" padding: 2px 6px 2px 0;">Address:</td>
+                        <td>
+                            <span style="background-color: yellow; padding: 0 3px;">
+                                Brgy. Bagtican, Maasin<br>
+                                So. Leyte 6600<br>
+                                Philippines
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+            <!-- Earnings Statement -->
+            <td style="vertical-align: top; width: 50%; padding: 0; margin: 0;">
+                <div style="font-size: 16px; font-weight: bold; margin-bottom: 10px;">Earnings Statement</div>
+                <br>
+                <table style="border-collapse: collapse; margin: 0; padding: 0;">
+                    <tr>
+                        <td style=" padding: 2px 6px 2px 0;">Period Beginning:</td>
+                        <td><span style="background-color: yellow; padding: 0 3px;">04/01/2025</span></td>
+                    </tr>
+                    <tr>
+                        <td style=" padding: 2px 6px 2px 0;">Period Ending:</td>
+                        <td><span style="background-color: yellow; padding: 0 3px;">04/30/2025</span></td>
+                    </tr>
+                    <tr>
+                        <td style=" padding: 2px 6px 2px 0;">Pay Date:</td>
+                        <td><span style="background-color: yellow; padding: 0 3px;">05/01/2025</span></td>
+                    </tr>
+                </table>
+            </td>
+
+
+        </tr>
+    </table>
+    <br>
+    <br>
+
+
+
+
+    {{-- <div class="section">
+        <strong>Deductions</strong>
+        <table>
+            <tr>
+                <td>Cash Loan</td>
+                <td class="amount">- $500.00</td>
+            </tr>
+        </table>
+        <div class="net-pay bold amount">Net Pay: $500.00</div>
+    </div> --}}
+
+    <!-- Earnings Section -->
+
+    <!-- Earnings Section -->
+  
+    
+    <table class="pay-table">
+        <thead>
+            <tr>
+                <th class="label" style=" text-align: left;font-size: 16px; font-weight: bold;">Earnings</th>
+                <th style="text-align: left;">Rate</th>
+                <th style="text-align: left;">Days</th>
+                <th style="text-align: left;" colspan="2">this period</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="label">Regular</td>
+                <td><span class="highlight-cell">33.33</span></td>
+                <td>30.00</td>
+                <td colspan="2">1,000.00</td>
+            </tr>
+            <tr>
+                <td class="label">Overtime</td>
+                <td>0.00</td>
+                <td>0.00</td>
+                <td colspan="2">0.00</td>
+            </tr>
+            <tr>
+                <td class="label">R&R/Leave</td>
+                <td>0.00</td>
+                <td>0.00</td>
+                <td colspan="2">0.00</td>
+            </tr>
+            <tr class="summary-row">
+                <td class="label">Gross Pay</td>
+                <td colspan="4">$1,000.00</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- Deductions Section -->
+    <div class="section-title deductions">Deductions</div>
+    <table class="pay-table">
+        <tbody>
+            <tr>
+                <td class="label">Cash Loan</td>
+                <td colspan="4">-$500.00*</td>
+            </tr>
+            <tr class="summary-row">
+                <td class="label">Net Pay</td>
+                <td colspan="4">$500.00</td>
+            </tr>
+        </tbody>
+    </table>
+
+
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    
+
+
+
+
+
+
+    <table style="width: 100%; border-collapse: collapse; margin: 0; padding: 0;">
+        <tr>
+
+            <!-- t1 -->
+            <td style="vertical-align: top; width: 50%; padding: 0; margin: 0;">
+                <table style="border-collapse: collapse; margin: 0; padding: 0;">
+                    <tr>
+                        <td style=" padding: 2px 6px 2px 0;">&nbsp;</td>
+                    </tr>
+                </table>
+            </td>
+
+            <!--t2 -->
+            <table class="pay-table">
+                <tbody>
+                    <tr>
+                        <td class="label">Transaction number:</td>
+                        <td colspan="4">0000XX</td>
+                    </tr>
+                    <tr >
+                        <td class="label">Pay date:</td>
+                        <td colspan="4">05/01/2025</td>
+                    </tr>
+                </tbody>
+            </table>
+
+
+        </tr>
+    </table>
+
+
+
+
+
+
+
+
+
+
+    <strong style=" text-align: right;font-size: 25px; font-weight: bold;">NON−NEGOTIABLE</strong>
+</body>
+
 </html>
