@@ -742,7 +742,7 @@ implements HasShieldPermissions
                         return Notification::make('approvePayroll')->title('Approve Payroll ' . $record->employee->fullName)->actions([\Filament\Notifications\Actions\Action::make('Payroll')->url(route('pdf.payroll',['id'=>$record->id]))->openUrlInNewTab()->color('aColor')])->success()->send()->sendToDatabase(auth()->user());
                     })]
                 )->modalWidth(MaxWidth::FitContent)->visible(fn($record) => $record->status->value === "pending"),
-                Tables\Actions\Action::make('payment')->visible(fn($record) => $record->status->value === "accepted")->label('Payment')->tooltip('Payment')->icon('heroicon-o-credit-card')->iconSize(IconSize::Medium)->color('warning')->action(function ($data, $record) {
+                Tables\Actions\Action::make('payment')->visible(fn($record) => $record->status->value === "accepted" and auth()->user()->can('payment_payroll'))->label('Payment')->tooltip('Payment')->icon('heroicon-o-credit-card')->iconSize(IconSize::Medium)->color('warning')->action(function ($data, $record) {
                     $debtor = 0;
                     $creditor = 0;
                     $debtorID = 0;
