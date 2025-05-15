@@ -311,13 +311,13 @@ class InvoicePurchaseOrder extends EditRecord
 
                 $this->callHook('beforeSave');
             });
-
+            
             $data = $this->mutateFormDataBeforeSave($data);
-
-            // dd($this->data,$this->record->invoice);
+            
             $this->handleRecordUpdate($this->getRecord(), $data);
-
+            
             $this->callHook('afterSave');
+            // dd($this->data,$this->record->invoice);
 
 
   ########################################################################################################
@@ -337,7 +337,7 @@ class InvoicePurchaseOrder extends EditRecord
                 $this->record->invoice->update([
                     'name' => $this->record->invoice->name . "(Total:" . number_format($total) . ")",
                 ]);
-                //     // ذخیره تراکنش‌های فاکتور (Transactions)
+                    // ذخیره تراکنش‌های فاکتور (Transactions)
                 // foreach ($this->data['invoice']['transactions'] as $transaction) {
                 //     $savedTransaction = $this->record->invoice->transactions()->create([
                 //         'account_id' => $transaction['account_id'],
