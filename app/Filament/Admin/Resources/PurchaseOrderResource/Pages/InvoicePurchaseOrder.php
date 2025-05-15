@@ -203,7 +203,7 @@ class InvoicePurchaseOrder extends EditRecord
                                             //     return   "Total is ".number_format(collect($produtTotal)->sum(), 2 ).' '.$currency?->name . ' Equal '. number_format(collect($produtTotal)->sum()*$currency?->exchange_rate, 2).' '. defaultCurrency()?->name ;
                                             // }
                                             if ($invoiceSum != (collect($produtTotal)->sum()*$currency?->exchange_rate)) {
-                                                dd($productSum,((collect($produtTotal)->sum()*$currency?->exchange_rate)));
+                                                // dd($productSum,((collect($produtTotal)->sum()*$currency?->exchange_rate)));
                                                 $remainingAmount = (collect($produtTotal)->sum()*$currency?->exchange_rate)-$invoiceSum;
                                                 $fail("The paid amount does not match the total price. Total amount:" .(number_format(collect($produtTotal)->sum()*$currency?->exchange_rate, 2)) . ", Remaining amount: " . number_format($remainingAmount,2). defaultCurrency()?->symbol );
                                             }
