@@ -81,8 +81,17 @@ class InvoicePurchaseOrder extends EditRecord
                                     return null;
                                 }
                             }, $this->record->items->toArray());
+                            if (defaultCurrency()?->id == $this->record->currency_id) {
+                                return collect($produtTotal)->sum() ? number_format(collect($produtTotal)->sum(), 2) . defaultCurrency()?->symbol : '?';
+                            }else{
+                                $currency=Currency::query()->firstWhere('id',$this->record->currency_id);
+                                if (collect($produtTotal)->sum()){
+                                    return   "Total is ".number_format(collect($produtTotal)->sum(), 2 ).' '.$currency?->name . ' Equal '. number_format(collect($produtTotal)->sum()*$currency?->exchange_rate, 2).' '. defaultCurrency()?->name ;
+                                }
+                            }    
+                            // dd($produtTotal,collect($produtTotal)->sum(),number_format(collect($produtTotal)->sum(),2));
 
-                            return  collect($produtTotal)->sum() ? number_format(collect($produtTotal)->sum()) : '?';
+                            return  collect($produtTotal)->sum() ? number_format(collect($produtTotal)->sum(),2) : '?';
                         }
                     })->inlineLabel()
                 ])->columns(8),
@@ -181,11 +190,28 @@ class InvoicePurchaseOrder extends EditRecord
                                         $productSum = collect($produtTotal)->sum();
                                         $invoiceSum = collect($invoiceTotal)->sum();
                                         // dd($productSum,$invoiceSum,($invoiceSum != $productSum));
+                                        if (defaultCurrency()?->id == $this->record->currency_id) {
+                                            if ($invoiceSum != $productSum) {
+                                                $remainingAmount = $productSum - $invoiceSum;
+                                                $fail("The paid amount does not match the total price. Total amount:" . number_format($productSum,2) . ", Remaining amount: " . number_format($remainingAmount,2). defaultCurrency()?->symbol );
+                                            }
+                                            
+                                        }else{
+                                            // dd($this->record->currency_id);
+                                            $currency=Currency::query()->firstWhere('id',$this->record->currency_id);
+                                            // if (collect($produtTotal)->sum()){
+                                            //     return   "Total is ".number_format(collect($produtTotal)->sum(), 2 ).' '.$currency?->name . ' Equal '. number_format(collect($produtTotal)->sum()*$currency?->exchange_rate, 2).' '. defaultCurrency()?->name ;
+                                            // }
+                                            if ($invoiceSum != (collect($produtTotal)->sum()*$currency?->exchange_rate)) {
+                                                dd($productSum,((collect($produtTotal)->sum()*$currency?->exchange_rate)));
+                                                $remainingAmount = (collect($produtTotal)->sum()*$currency?->exchange_rate)-$invoiceSum;
+                                                $fail("The paid amount does not match the total price. Total amount:" .(number_format(collect($produtTotal)->sum()*$currency?->exchange_rate, 2)) . ", Remaining amount: " . number_format($remainingAmount,2). defaultCurrency()?->symbol );
+                                            }
+                                        }  
 
-                                        if ($invoiceSum != $productSum) {
-                                            $remainingAmount = $productSum - $invoiceSum;
-                                            $fail("The paid amount does not match the total price. Total amount:" . number_format($productSum) . ", Remaining amount: " . number_format($remainingAmount));
-                                        }
+
+
+                                        
 
                                         if ($get('debtor') == 0 && $get('creditor') == 0) {
                                             $fail('Only one of these values can be zero.');

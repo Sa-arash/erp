@@ -653,7 +653,7 @@ implements HasShieldPermissions
                 //     })
                 SelectFilter::make('id')->searchable()->preload()->options(PurchaseOrder::where('company_id', getCompany()->id)->get()->pluck('purchase_orders_number', 'id'))
                     ->label("Po NO"),
-                SelectFilter::make('purchase_request_id')->searchable()->preload()->options(PurchaseRequest::where('company_id', getCompany()->id)->get()->pluck('purchase_number', 'id'))
+                SelectFilter::make('purchase_request_id')->searchable()->preload()->options(PurchaseRequest::where('company_id', getCompany()->id)->where('status','Approval')->get()->pluck('purchase_number', 'id'))
                     ->label("PR NO"),
                 SelectFilter::make('vendor_id')->searchable()->preload()->options(Parties::where('company_id', getCompany()->id)->where('account_code_vendor', '!=', null)->get()->pluck('name', 'id'))
                     ->label("Vendor"),
