@@ -4,10 +4,9 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\PurchaseOrderResource\Pages;
 use App\Filament\Admin\Resources\PurchaseOrderResource\RelationManagers;
-use App\Models\Account;
 use App\Models\Currency;
-use App\Models\FinancialPeriod;
 use App\Models\Inventory;
+use App\Models\Package;
 use App\Models\Parties;
 use App\Models\Product;
 use App\Models\PurchaseOrder;
@@ -16,15 +15,12 @@ use App\Models\PurchaseRequestItem;
 use App\Models\Stock;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Closure;
-use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
-use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Wizard;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
@@ -37,6 +33,7 @@ use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Http\Request;
+use Illuminate\Support\HtmlString;
 use Illuminate\Validation\Rules\Unique;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
@@ -609,8 +606,8 @@ implements HasShieldPermissions
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('total')
-                    ->label('Total(' . defaultCurrency()?->symbol . ")")
-                    ->state(fn($record) => number_format($record->items->map(fn($item) => (($item['quantity'] * str_replace(',', '', $item['unit_price'])) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['taxes']) / 100) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['freights']) / 100)))?->sum()))
+                    ->label('Total')
+                    ->state(fn($record) => number_format($record->items->map(fn($item) => (($item['quantity'] * str_replace(',', '', $item['unit_price'])) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['taxes']) / 100) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['freights']) / 100)))?->sum()).$record->currency->symbol)
                     ->searchable(),
                 Tables\Columns\TextColumn::make('bid.total_cost')->alignCenter()->label('Total Final Price')->numeric(),
 
@@ -637,7 +634,7 @@ implements HasShieldPermissions
                     ->searchable(),
 
                 Tables\Columns\Textcolumn::make('status')->badge()
-                    ->label('Status'),  
+                    ->label('Status'),
 
             ])
             ->filters([
@@ -697,19 +694,17 @@ implements HasShieldPermissions
 
             ], getModelFilter())
             ->actions([
-                Tables\Actions\Action::make('Invoice')->visible(fn($record) => auth()->user()->can('invoice_purchase::order')  AND $record->invoice== null)->label('Invoice')->tooltip('Invoice')->icon('heroicon-o-credit-card')->iconSize(IconSize::Medium)->color('warning')->url(fn($record)=>PurchaseOrderResource::getUrl('InvoicePurchaseOrder',['record'=>$record->id])),
-
-
+                Tables\Actions\Action::make('Invoice')->visible(fn($record) => auth()->user()->can('invoice_purchase::order') and $record->invoice == null)->label('Invoice')->tooltip('Invoice')->icon('heroicon-o-credit-card')->iconSize(IconSize::Medium)->color('warning')->url(fn($record) => PurchaseOrderResource::getUrl('InvoicePurchaseOrder', ['record' => $record->id])),
 
                 Tables\Actions\Action::make('prPDF')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.po', ['id' => $record->id]))->openUrlInNewTab(),
-                Tables\Actions\EditAction::make()->hidden(fn($record)=>$record->status == 'Approved'),
-                Tables\Actions\Action::make('GRN')->label('GRN')->url(fn($record) => AssetResource::getUrl('create', ['po' => $record->id]))->visible(fn($record) =>   $record->items()->whereHas('product', function ($query) {
-                    $query->where('product_type', 'unConsumable');
-                })->count() and $record->status === 'Approval')->hidden(fn($record) => $record->status === 'GRN And inventory' or $record->status === 'GRN'),
+                Tables\Actions\EditAction::make()->hidden(fn($record) => $record->status == 'Approved'),
+                Tables\Actions\Action::make('GRN')->label('GRN')->url(fn($record) => AssetResource::getUrl('create', ['po' => $record->id]))->visible(fn($record) => $record->items()->whereHas('product', function ($query) {
+                        $query->where('product_type', 'unConsumable');
+                    })->count() and $record->status === 'Approved')->hidden(fn($record) => $record->status === 'GRN And inventory' or $record->status === 'GRN'),
                 //                Tables\Actions\DeleteAction::make()->visible(fn($record)=>$record->status==="pending" )
-                Tables\Actions\Action::make('Inventory')->visible(fn($record) =>   $record->items()->whereHas('product', function ($query) {
-                    $query->where('product_type', 'consumable');
-                })->count() and $record->status === 'Approval')->form(function ($record) {
+                Tables\Actions\Action::make('Inventory')->visible(fn($record) => $record->items()->whereHas('product', function ($query) {
+                        $query->where('product_type', 'consumable');
+                    })->count() and $record->status === 'Approved')->form(function ($record) {
                     $products = Product::query()
                         ->whereIn('id', function ($query) use ($record) {
                             return $query->select('product_id')
@@ -719,39 +714,92 @@ implements HasShieldPermissions
                         ->pluck('title', 'id');
 
                     return [
+                        Placeholder::make('table')->label('')->content(function ($record)use($products) {
+                            $data = $record->items->whereIn('product_id',array_keys($products->toArray()))->map(function ($item) {
+                                return [
+                                    'product' => $item->product->title,
+                                    'quantity' => $item->quantity,
+                                ];
+                            })->toArray();
+
+                            $table = '
+        <table style="width:100%; border-collapse: collapse; border: 1px solid #ccc;">
+            <thead style="background-color: #f0f0f0;">
+                <tr>
+                    <th style="padding: 8px; border: 1px solid #ccc;color: black !important">Product Title</th>
+                    <th style="padding: 8px; border: 1px solid #ccc;color: black !important">Quantity</th>
+                </tr>
+            </thead>
+            <tbody>';
+
+                            foreach ($data as $row) {
+                                $table .= '
+            <tr>
+                <td style="padding: 8px; border: 1px solid #ccc;text-align: center">' . $row['product'] . '</td>
+                <td style="padding: 8px; border: 1px solid #ccc;text-align: center">' . number_format($row['quantity']) . '</td>
+            </tr>';
+                            }
+
+                            $table .= '
+            </tbody>
+        </table>';
+
+                            return new HtmlString($table);
+                        }),
+
+
                         Repeater::make('inventories')->schema([
                             Select::make('product_id')->label('Product')->options($products)->searchable()->preload()->required(),
                             Select::make('warehouse_id')->label('Warehouse Location')->required()->options(getCompany()->warehouses()->where('type', 1)->pluck('title', 'id'))->searchable()->preload(),
+                            Forms\Components\Select::make('package_id')->label('Package')->live()->searchable()->options(fn() => getCompany()->packages->mapWithKeys(function ($item) {
+                                return [$item->id => $item->title . ' (' . $item->quantity . ')'];
+                            })),
                             TextInput::make('quantity')->numeric()->required(),
-                            Forms\Components\Textarea::make('description')->columnSpanFull()->required()
-                        ])->columns(3)->formatStateUsing(function ($record) use ($products) {
+                            Forms\Components\Textarea::make('description')->columnSpanFull()->required(),
+                        ])->columns(4)->formatStateUsing(function ($record) use ($products) {
                             $data = [];
                             foreach ($record->items->whereIn('product_id', array_keys($products->toArray())) as $item) {
                                 $data[] = ['product_id' => $item->product_id, 'description' => $item->description, 'warehouse_id' => null, 'quantity' => null];
                             }
                             return $data;
-                        })
+                        })->reorderable(false)
                     ];
                 })->action(function ($data, $record) {
+                    $products = Product::query()
+                        ->whereIn('id', function ($query) use ($record) {
+                            return $query->select('product_id')
+                                ->from('purchase_order_items')
+                                ->where('purchase_order_id', $record->id);
+                        })->where('product_type', 'consumable')
+                        ->pluck('title', 'id');
                     $validateData = [];
                     foreach ($data['inventories'] as $inventory) {
+                        $quantity=(int)$inventory['quantity'];
+                        if (isset($inventory['package_id'])){
+                            $package=Package::query()->firstWhere('id',$inventory['package_id']);
+                            if ($package){
+                                $quantity=$quantity*$package->quantity;
+                            }
+                        }
                         if (key_exists($inventory['product_id'], $validateData)) {
                             $lastQuantity = $validateData[$inventory['product_id']];
-                            $validateData[$inventory['product_id']] = $lastQuantity + $inventory['quantity'];
+                            $validateData[$inventory['product_id']] = $lastQuantity + $quantity;
                         } else {
-                            $validateData[$inventory['product_id']] = $inventory['quantity'];
+                            $validateData[$inventory['product_id']] = $quantity;
                         };
                     }
-                    foreach ($record->items as $item) {
+                    foreach ($record->items->whereIn('product_id',array_keys($products->toArray())) as $item) {
                         if (key_exists($item->product_id, $validateData)) {
                             $quantity = $validateData[$item->product_id];
-                            if ($quantity > $item->quantity) {
+                            if ($quantity != $item->quantity) {
                                 Notification::make('danger')->danger()->title('Quantity Not Valid')->send();
                                 return;
                             }
                         }
                     }
-
+                    if (count(array_keys($validateData))!= $record->items->whereIn('product_id',array_keys($products->toArray()))->count()){
+                        Notification::make('danger')->danger()->title('Product Not Valid')->send();
+                    }
                     foreach ($data['inventories'] as $inventory) {
                         $inv = Inventory::query()->where('warehouse_id', $inventory['warehouse_id'])->where('product_id', $inventory['product_id'])->first();
                         if (!$inv) {
@@ -770,7 +818,14 @@ implements HasShieldPermissions
                             'type' => 1,
                             'purchase_order_id' => $record->id
                         ]);
-                        $inv->update(['quantity' => $inv->quantity + $inventory['quantity']]);
+                        $quantity=(int)$inventory['quantity'];
+                        if (isset($inventory['package_id'])){
+                            $package=Package::query()->firstWhere('id',$inventory['package_id']);
+                            if ($package){
+                                $quantity=$quantity*$package->quantity;
+                            }
+                        }
+                        $inv->update(['quantity' => $inv->quantity + $quantity]);
                     }
                     if ($record->status === "GRN") {
                         $record->update(['status' => 'GRN And inventory']);

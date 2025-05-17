@@ -28,7 +28,7 @@
 ])
 
 
-{{-- 
+{{--
     <style>
         @page {
             margin-top: 10px;
@@ -244,8 +244,8 @@
         body{
             font-size: 12px;
         }
-        
-       
+
+
 .pay-table{
     width: 50%;
 }
@@ -366,8 +366,8 @@
     <!-- Earnings Section -->
 
     <!-- Earnings Section -->
-  
-    
+
+
     <table class="pay-table">
         <thead>
             <tr>
@@ -426,7 +426,7 @@
     <br>
     <br>
     <br>
-    
+
 
 
 

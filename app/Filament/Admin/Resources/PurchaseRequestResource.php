@@ -382,15 +382,15 @@ class PurchaseRequestResource extends Resource
                                     $data = [];
                                     $quotations = Quotation::query()->where('purchase_request_id', $record->id)->get();
                                     foreach ($quotations as $quotation) {
-                                        $data[$quotation->id] = $quotation->party->name;
+                                        $data[$quotation->id] = $quotation->party?->name;
                                     }
                                     return $data;
-                                })->required()->label('Quotation Selected')->preload()->searchable(),
+                                })->required()->label('Quotation Selected')->preload()->searchable()->live(),
                                 Select::make('position_procurement_controller')->label(' Procurement Controller')->multiple()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->preload()->searchable(),
                                 Select::make('procurement_committee_members')->label(' Committee Members')->multiple()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->preload()->searchable(),
 
                             ])->columns(4),
-                            Placeholder::make('content')->content(function () use ($record) {
+                            Placeholder::make('content')->content(function (Get $get) use ($record) {
                                 $trs = "";
                                 $totalTrs = "
                                 <tr>
@@ -403,7 +403,11 @@ class PurchaseRequestResource extends Resource
                                 $ths = '';
                                 foreach ($record->quotations as $quotation) {
                                     $vendor = $quotation->party->name . "'s Quotation" . " " . $quotation->currency->symbol;
-                                    $vendors .= "<th style='border: 1px solid black;padding: 8px;text-align: center;background-color:rgb(90, 86, 86)'>{$vendor}</th>";
+                                    if ($get('quotation_id')==$quotation->id){
+                                        $vendors .= "<th style='border: 1px solid black;padding: 8px;text-align: center;background-color:rgb(82,178,49)'>{$vendor}</th>";
+                                    }else{
+                                        $vendors .= "<th style='border: 1px solid black;padding: 8px;text-align: center;background-color:rgb(90, 86, 86)'>{$vendor}</th>";
+                                    }
                                     $totalSum = 0;
 
                                     foreach ($quotation->quotationItems as $quotationItem) {

@@ -66,6 +66,21 @@ class AssetEmployeeResource extends Resource
                 ])->columnSpanFull()->columns(4)->mutateRelationshipDataBeforeCreateUsing(function ($data) {
                     $data['company_id'] = getCompany()->id;
                     return $data;
+                })->default(function (){
+                    if (request('asset')) {
+                        $asset = Asset::query()->find((int) request('asset'));
+                        if ($asset) {
+                            return [
+                                [
+                                    'asset_id' => $asset->id,
+                                    'warehouse_id' => null,
+                                    'structure_id' => null,
+                                    'due_date' => null,
+                                ],
+                            ];
+                        }
+                    }
+                    return [];
                 })
             ]);
     }
@@ -112,7 +127,7 @@ class AssetEmployeeResource extends Resource
                         ]);
                     }
                     Notification::make('success')->success()->title('Approved')->send();
-                })->hidden(fn($record)=>$record->status==="Approve")
+                })->visible(fn($record)=>$record->status==="Pending")->hidden(fn($record)=>  $record->type!="Returned")
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

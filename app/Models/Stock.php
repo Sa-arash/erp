@@ -20,4 +20,8 @@ class Stock extends Model
     {
         return $this->belongsTo(PurchaseOrder::class);
     }
+    public function package(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Package::class);
+    }
 }

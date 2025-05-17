@@ -370,7 +370,7 @@ class AssetResource extends Resource
     {
         return [
             RelationManagers\EmployeesRelationManager::class,
-            RelationManagers\FinanceRelationManager::class,
+//            RelationManagers\FinanceRelationManager::class,
             RelationManagers\ServiceRelationManager::class,
         ];
     }
