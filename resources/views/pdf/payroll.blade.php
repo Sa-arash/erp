@@ -301,20 +301,20 @@
                 <table style="border-collapse: collapse; margin: 0; padding: 0;">
                     <tr>
                         <td style=" padding: 2px 6px 2px 0;">Employee:</td>
-                        <td><span style="background-color: yellow; padding: 0 3px;">Jane E. Paler</span></td>
+                        <td><span style=" padding: 0 3px;">Jane E. Paler</span></td>
                     </tr>
                     <tr>
                         <td style=" padding: 2px 6px 2px 0;">Employee#:</td>
-                        <td><span style="background-color: yellow; padding: 0 3px;">UNC-INT-102</span></td>
+                        <td><span style=" padding: 0 3px;">UNC-INT-102</span></td>
                     </tr>
                     <tr>
                         <td style=" padding: 2px 6px 2px 0;">Department:</td>
-                        <td><span style="background-color: yellow; padding: 0 3px;">Admin/Finance</span></td>
+                        <td><span style=" padding: 0 3px;">Admin/Finance</span></td>
                     </tr>
                     <tr>
                         <td style=" padding: 2px 6px 2px 0;">Address:</td>
                         <td>
-                            <span style="background-color: yellow; padding: 0 3px;">
+                            <span style=" padding: 0 3px;">
                                 Brgy. Bagtican, Maasin<br>
                                 So. Leyte 6600<br>
                                 Philippines
@@ -330,15 +330,15 @@
                 <table style="border-collapse: collapse; margin: 0; padding: 0;">
                     <tr>
                         <td style=" padding: 2px 6px 2px 0;">Period Beginning:</td>
-                        <td><span style="background-color: yellow; padding: 0 3px;">04/01/2025</span></td>
+                        <td><span style=" padding: 0 3px;">04/01/2025</span></td>
                     </tr>
                     <tr>
                         <td style=" padding: 2px 6px 2px 0;">Period Ending:</td>
-                        <td><span style="background-color: yellow; padding: 0 3px;">04/30/2025</span></td>
+                        <td><span style=" padding: 0 3px;">04/30/2025</span></td>
                     </tr>
                     <tr>
                         <td style=" padding: 2px 6px 2px 0;">Pay Date:</td>
-                        <td><span style="background-color: yellow; padding: 0 3px;">05/01/2025</span></td>
+                        <td><span style=" padding: 0 3px;">05/01/2025</span></td>
                     </tr>
                 </table>
             </td>
@@ -371,10 +371,10 @@
     <table class="pay-table">
         <thead>
             <tr>
-                <th class="label" style=" text-align: left;font-size: 16px; font-weight: bold;">Earnings</th>
-                <th style="text-align: left;">Rate</th>
-                <th style="text-align: left;">Days</th>
-                <th style="text-align: left;" colspan="2">this period</th>
+                <th class="label" style=" text-align: left;font-size: 16px; font-weight: bold;border-bottom: 1px solid black ">Earnings</th>
+                <th style="text-align: left;border-bottom: 1px solid black">Rate</th>
+                <th style="text-align: left;border-bottom: 1px solid black">Days</th>
+                <th style="text-align: left;border-bottom: 1px solid black" colspan="2">this period</th>
             </tr>
         </thead>
         <tbody>
@@ -397,8 +397,10 @@
                 <td colspan="2">0.00</td>
             </tr>
             <tr class="summary-row">
+                <td></td>
                 <td class="label">Gross Pay</td>
-                <td colspan="4">$1,000.00</td>
+
+                <td  style="text-align: right" colspan="3">$1,000.00</td>
             </tr>
         </tbody>
     </table>
@@ -409,11 +411,15 @@
         <tbody>
             <tr>
                 <td class="label">Cash Loan</td>
-                <td colspan="4">-$500.00*</td>
+                <td></td>
+                <td></td>
+                <td style="text-align: right" colspan="3">-$500.00*</td>
             </tr>
             <tr class="summary-row">
+                <td></td>
                 <td class="label">Net Pay</td>
-                <td colspan="4">$500.00</td>
+
+                <td style="text-align: right" colspan="4">$500.00</td>
             </tr>
         </tbody>
     </table>
@@ -461,18 +467,6 @@
 
 
         </tr>
-    </table>
-
-
-
-
-
-
-
-
-
-
-    <strong style=" text-align: right;font-size: 25px; font-weight: bold;">NON−NEGOTIABLE</strong>
-</body>
+    </table></body>
 
 </html>
