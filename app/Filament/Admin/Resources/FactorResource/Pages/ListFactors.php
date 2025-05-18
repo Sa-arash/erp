@@ -6,8 +6,10 @@ use App\Filament\Admin\Resources\FactorResource;
 use App\Filament\Admin\Resources\FinancialPeriodResource;
 use App\Filament\Admin\Resources\PurchaseOrderResource;
 use Filament\Actions;
+use Filament\Forms\Components\FileUpload;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Support\Facades\Auth;
 
 class ListFactors extends ListRecords
 {
@@ -27,8 +29,19 @@ class ListFactors extends ListRecords
         if (getPeriod()!==null) {
 
             return [
-                Actions\CreateAction::make()
-                    ->label('New Invoice'),
+                Actions\CreateAction::make()->label('New Invoice'),
+                Actions\Action::make('config')->form([
+                    FileUpload::make('stamp')->default(getCompany()->stamp_finance),
+                    FileUpload::make('signature')->default(getCompany()->signature_finance),
+                ])->action(function ($data){
+                    getCompany()->update([
+                        'signature_finance'=>$data['signature'],
+                        'stamp_finance'=>$data['stamp']
+                    ]);
+                    Notification::make('success')->success()->title('Saved')->send();
+
+                })
+
             ];
         }else{
             return [

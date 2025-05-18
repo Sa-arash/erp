@@ -60,7 +60,7 @@ class MyLeave extends BaseWidget
                                $holidays = Holiday::query()->where('company_id', getCompany()->id)->whereBetween('date', [$start, $end])->count();
                                $validDays = $daysBetween - $holidays-$CompanyHoliday;
                                $set('days', $validDays);
-                           })->required()->default(now()),
+                           })->required()->default(now())->live(),
                            DatePicker::make('end_leave')->default(now())->afterStateUpdated(function ( Get $get ,Set $set){
                                $start = Carbon::parse($get('start_leave'));
                                $end = Carbon::parse($get('end_leave'));
@@ -71,7 +71,7 @@ class MyLeave extends BaseWidget
                                $holidays = Holiday::query()->where('company_id', getCompany()->id)->whereBetween('date', [$start, $end])->count();
                                $validDays = $daysBetween - $holidays-$CompanyHoliday;
                                $set('days', $validDays);
-                           })->live()->required(),
+                           })->live()->required()->afterOrEqual(fn(Get $get)=>$get('start_leave')),
                            TextInput::make('days')->columnSpanFull()->required()->numeric(),
                            ToggleButtons::make('is_circumstances')->live()->default(0)->required()->boolean('Yes','No')->grouped()->label('Aware of any Circumstances'),
                            Textarea::make('explain_leave')->required(fn(Get $get)=>$get('is_circumstances'))->label('Explain'),
