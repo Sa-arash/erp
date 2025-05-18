@@ -143,7 +143,7 @@
             <div>{{$loan->finance?->fullName}}</div>
             <div>Sr. Finance & Admin/HR Officer</div>
             <div style="margin-top: 20px;">_________________</div>
-            <div>Date {{\Carbon\Carbon::make($loan->approve_finance_date)->format('Y-m-d H:iA')}}</div>
+            <div>Date  {{ $loan?->approve_finance_date? \Carbon\Carbon::make($loan?->approve_finance_date)->format('Y-m-d H:iA'):'--'}}</div>
         </td>
             @endif
     </tr>

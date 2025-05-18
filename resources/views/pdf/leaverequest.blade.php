@@ -379,11 +379,11 @@
                <table>
                    <tr>
                    @foreach($types as $type)
-                       <th> <b>{{$type?->abbreviation}}</b>= {{$type?->title}}</th>
+                       <th style="font-size: 10px ;">  {{$type?->abbreviation}}= <span>{{$type?->title}}</span></th>
                        @php
                        $j++;
                        @endphp
-                       @if($j==5)
+                       @if($j==7)
                        @php
                            $j=1;
                        @endphp
@@ -452,7 +452,7 @@
                             <br>
                             @if($isInLeavePeriod) {{$leave->typeLeave?->abbreviation}} @endif
                             @if($isWeekend) B @endif
-                            @if($holidayName) 
+                            @if($holidayName)
                             {{-- {{ $holidayName }}  --}}
                             H
                             @endif <!-- نمایش نام تعطیلی رسمی -->
