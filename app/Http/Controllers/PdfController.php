@@ -503,6 +503,19 @@ class PdfController extends Controller
         );
         return $pdf->stream('requestVisit.pdf');
     }
+     public function clearance($ids)
+    {
+
+        // $requestVisits = VisitorRequest::query()->whereIn('id', explode('-', $ids))->orderBy('id', 'desc')->get();
+        // $company = $requestVisits[0]?->company;
+
+
+        $pdf = Pdf::loadView(
+            'pdf.clearance',
+            // compact('company')
+        );
+        return $pdf->stream('clearance.pdf');
+    }
     public function requestVisits($ids)
     {
 
