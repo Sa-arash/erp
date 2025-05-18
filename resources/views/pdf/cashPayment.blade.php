@@ -5,7 +5,7 @@
         body {
             font-family: DejaVu Sans, sans-serif;
             font-size: 12px;
-            margin: 0;
+         
             padding: 0;
         }
 
@@ -105,11 +105,15 @@
         <table class="bordered">
             <tr >
                 <td>
-                    @foreach ($invoice->transactions->where('creditor','>', 0) as $transaction)
                     {{-- @dd($transaction) --}}
                     <table class="bordered-none">
                         <tr>
-                            <td><span class="bold">PETTY CASH CODE:</span> <span class="highlight">{{ $transaction->account->title }}</span></td>
+                           
+                            <td><span class="bold">PETTY CASH CODE:</span> <span class="highlight">
+                                @foreach ($invoice->transactions->where('creditor','>', 0) as $transaction)
+                                {{ $transaction->account->title }},
+                                @endforeach
+                            </td>
                             <td><span class="bold">PAYMENT DATE:</span> <span class="highlight">{{\Carbon\Carbon::parse($invoice->date)->format('Y/m/d')}}</span></td>
                         </tr>
                         <tr>
@@ -117,7 +121,6 @@
                             <td><span class="bold">HOUR:</span>{{\Carbon\Carbon::parse($invoice->date)->format('h:i:s A')}}</td>
                         </tr>
                     </table>
-                    @endforeach
                 </td>
             </tr>
             <tr style="border-bottom:none">
@@ -136,7 +139,7 @@
                             <td class="amount"><span class="bold">AMOUNT</span>
                             
                                
-                           {{ number_format($transaction->debtor) }}
+                           {{ number_format($transaction->debtor)." ".PDFdefaultCurrency($company) }}
                             
                             </td>
                         </tr>
@@ -146,7 +149,7 @@
                 </td>
             </tr>
             <tr >
-                <td><span class="bold">Amount:</span> {{number_format($invoice->transactions->sum('debtor'))}}</td>
+                <td><span class="bold">Amount:</span> {{number_format($invoice->transactions->sum('debtor'))." ".PDFdefaultCurrency($company)}}</td>
             </tr>
             <tr >
                 <td><span class="bold">DESCRIPTION:</span> {{$invoice->description}}</td>
@@ -154,8 +157,8 @@
             <tr style="border-top:none">
                 <td style="border-top:none">
                     <table class="bordered-none">
-                        <tr>
-                            <td>
+                        <tr style="text-align:right">
+                            <td style="text-align:right">
                                 
                                 <strong>Amount in words:</strong>  {{ numberToWords($invoice->transactions->sum('debtor') ," ".PDFdefaultCurrency($company)) }}
                             </td>
@@ -168,8 +171,8 @@
                             </td>
                            
                         </tr>
-                        <tr>
-                            <td>
+                        <tr style="text-align:right">
+                            <td style="text-align:right">
                                 <strong>Received By</strong>
                             </td>
                             
