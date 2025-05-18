@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Account;
 use App\Models\Asset;
 use App\Models\Bid;
+use App\Models\Company;
 use App\Models\Employee;
 use App\Models\Factor;
 use App\Models\FinancialPeriod;
@@ -509,7 +510,7 @@ class PdfController extends Controller
     {
 
         // $requestVisits = VisitorRequest::query()->whereIn('id', explode('-', $ids))->orderBy('id', 'desc')->get();
-        // $company = $requestVisits[0]?->company;
+        // $company = Company::query()->first();
 
 
         $pdf = Pdf::loadView(
