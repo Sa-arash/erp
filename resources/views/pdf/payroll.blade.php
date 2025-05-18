@@ -416,7 +416,7 @@
     <!-- Deductions Section -->
     <div class="section-title deductions">Deductions</div>
     <table class="pay-table">
-        <tbody>
+        <tbody> 
             @foreach ($payroll->benefits->where('type', 'deduction')->sortBy('built_in') as $deduction)
             
             <tr>

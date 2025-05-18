@@ -149,6 +149,9 @@
                 </td>
             </tr>
             <tr >
+                <td><span class="bold">Amount:</span> {{number_format($invoice->transactions->sum('debtor'))}}</td>
+            </tr>
+            <tr >
                 <td><span class="bold">DESCRIPTION:</span> {{$invoice->description}}</td>
             </tr>
             <tr style="border-top:none">
@@ -157,7 +160,7 @@
                         <tr>
                             <td>
                                 
-                                <strong>Amount in words:</strong>  {{ numberToWords($invoice->transactions->sum('debtor') ,'') }}
+                                <strong>Amount in words:</strong>  {{ numberToWords($invoice->transactions->sum('debtor') ," ".PDFdefaultCurrency($company)) }}
                             </td>
                            
                         </tr>
