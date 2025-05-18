@@ -469,7 +469,7 @@
                 <tbody>
                     <tr>
                         <td class="label">Transaction number:</td>
-                        <td colspan="4">{{ str_pad($payroll->invoice?->number, 9, '0', STR_PAD_LEFT) }}</td>
+                        <td colspan="4">{{$payroll->invoice?->number? str_pad($payroll->invoice?->number, 9, '0', STR_PAD_LEFT):" ---------" }}</td>
                     </tr>
                     <tr >
                         <td class="label">Pay date:</td>
