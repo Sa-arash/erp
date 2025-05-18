@@ -69,17 +69,17 @@
                   <img width="60" height="60"
                        src="{{ $urgent->employee?->media->where('collection_name', 'signature')?->first()?->getPath() }}">
               @endif</td></tr>
-      <tr><td style="text-align: center"><b>Approved by Line Manager:</b></td><td>
+      <tr><td style="text-align: center"><b>Approved by Line Manager:</b></td><td style="border-right: none !important;">
               {{$urgent->approvals->first()?->employee->fullName}}
           </td>
-      <td style="border-right: 1px solid white!important;">
+      <td style="border-left: none !important;">
           @if ($urgent->approvals[0]->    employee?->media->where('collection_name', 'signature')?->first())
               <img width="60" height="60"
                    src="{{ $urgent->approvals[0]->employee?->media->where('collection_name', 'signature')?->first()?->getPath() }}">
           @endif
       </td></tr>
-      <tr><td style="text-align: center"><b>Approved by HR Department:</b></td><td>{{$urgent->admin?->fullName}}</td>
-      <td >
+      <tr><td style="text-align: center;"><b>Approved by HR Department:</b></td><td style="border-right: none !important">{{$urgent->admin?->fullName}}</td>
+      <td  style="border-left: none !important">
           @if ($urgent->admin?->media->where('collection_name', 'signature')?->first())
               <img style="text-align: end" width="60" height="60"
                    src="{{ $urgent->admin?->media->where('collection_name', 'signature')?->first()?->getPath() }}">

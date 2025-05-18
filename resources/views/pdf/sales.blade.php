@@ -173,13 +173,10 @@
 
 
 
-    <table>
-
+    <table style="border: none">
         <tbody>
-
         <tr>
-            <td >
-
+            <td style="width: 50%" >
                     @if($invoice->type)
                         @php
                             $str='';
