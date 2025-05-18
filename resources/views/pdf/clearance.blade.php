@@ -1,9 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <title>Employee Exit Form</title>
+@include('pdf.header',['title'=>'EXIT CLEARANCE CHECKLIST','titles'=>[],'css'=>false])
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -13,7 +8,7 @@
 
         table {
             width: 100%;
-            border-collapse: collapse;
+            /* border-collapse: collapse; */
             margin-top: 10px;
         }
 
@@ -179,18 +174,13 @@
 
 
   
+    <div style="text-align:center;font-size:15px"> Employee Name: ____________________________________________Employee ID: _________________
+        Job Title: ___________________Department: _______________________Last Day of Worked:_________
+        Term Date (return to HOR/Demob/Release): __________________Site Location: ICON Compound- Kabul, AFG
+        Reason for Termination:</div>
+           
+        
     <table>
-        <tr style="text-align:center">
-            <td colspan="8" style=" text-align: center;
-            font-weight: bold;
-            padding: 8px;
-            border: none !important;" >
-                Employee Name: ____________________________________________Employee ID: _________________
-                Job Title: ___________________Department: _______________________Last Day of Worked:_________
-                Term Date (return to HOR/Demob/Release): __________________Site Location: ICON Compound- Kabul, AFG
-                Reason for Termination:
-            
-        </tr>
         <tr style="text-align:center">
             <td colspan="8" style="text-align:center;border: 1px solid black; background-color:black;color:white">
                 <strong>Employee Name:
@@ -323,16 +313,6 @@
     </table>
 
     <div class="page-break"></div>
-
-
-
-
-
-
-
-
-
-
 
 
 

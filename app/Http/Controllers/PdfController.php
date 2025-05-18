@@ -509,13 +509,12 @@ class PdfController extends Controller
      public function clearance($ids)
     {
 
-        // $requestVisits = VisitorRequest::query()->whereIn('id', explode('-', $ids))->orderBy('id', 'desc')->get();
-        // $company = Company::query()->first();
+        $company = auth()->user()->employee->company;
 
 
         $pdf = Pdf::loadView(
             'pdf.clearance',
-            // compact('company')
+            compact('company')
         );
         return $pdf->stream('clearance.pdf');
     }

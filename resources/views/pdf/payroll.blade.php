@@ -296,49 +296,52 @@
     <table style="width: 100%; border-collapse: collapse; margin: 0; padding: 0;">
         <tr>
 
+          
+
+
+
             <!-- Employee Information -->
             <td style="vertical-align: top; width: 50%; padding: 0; margin: 0;">
                 <table style="border-collapse: collapse; margin: 0; padding: 0;">
                     <tr>
                         <td style=" padding: 2px 6px 2px 0;">Employee:</td>
-                        <td><span style=" padding: 0 3px;">Jane E. Paler</span></td>
+                        <td><span style=" padding: 0 3px;">{{ $payroll->employee->fullName }}</span></td>
                     </tr>
                     <tr>
                         <td style=" padding: 2px 6px 2px 0;">Employee#:</td>
-                        <td><span style=" padding: 0 3px;">UNC-INT-102</span></td>
+                        <td><span style=" padding: 0 3px;">  {{ $payroll->employee->ID_number }}</span></td>
                     </tr>
                     <tr>
                         <td style=" padding: 2px 6px 2px 0;">Department:</td>
-                        <td><span style=" padding: 0 3px;">Admin/Finance</span></td>
+                        <td><span style=" padding: 0 3px;">{{ $payroll->employee->department->title }}</span></td>
                     </tr>
                     <tr>
                         <td style=" padding: 2px 6px 2px 0;">Address:</td>
                         <td>
                             <span style=" padding: 0 3px;">
-                                Brgy. Bagtican, Maasin<br>
-                                So. Leyte 6600<br>
-                                Philippines
+                                {{ $payroll->employee->address }}
                             </span>
                         </td>
                     </tr>
                 </table>
             </td>
             <!-- Earnings Statement -->
+            {{-- @dd($payroll) --}}
             <td style="vertical-align: top; width: 50%; padding: 0; margin: 0;">
                 <div style="font-size: 16px; font-weight: bold; margin-bottom: 10px;">Earnings Statement</div>
                 <br>
                 <table style="border-collapse: collapse; margin: 0; padding: 0;">
                     <tr>
                         <td style=" padding: 2px 6px 2px 0;">Period Beginning:</td>
-                        <td><span style=" padding: 0 3px;">04/01/2025</span></td>
+                        <td><span style=" padding: 0 3px;">{{\Carbon\Carbon::parse($payroll->start_date)->format('Y/m/d')}}</span></td>
                     </tr>
                     <tr>
                         <td style=" padding: 2px 6px 2px 0;">Period Ending:</td>
-                        <td><span style=" padding: 0 3px;">04/30/2025</span></td>
+                        <td><span style=" padding: 0 3px;">{{\Carbon\Carbon::parse($payroll->end_date)->format('Y/m/d')}}</span></td>
                     </tr>
                     <tr>
                         <td style=" padding: 2px 6px 2px 0;">Pay Date:</td>
-                        <td><span style=" padding: 0 3px;">05/01/2025</span></td>
+                        <td><span style=" padding: 0 3px;">{{\Carbon\Carbon::parse($payroll->pay_date)->format('Y/m/d')}}</span></td>
                     </tr>
                 </table>
             </td>
@@ -367,7 +370,7 @@
 
     <!-- Earnings Section -->
 
-
+{{-- @dd($payroll) --}}
     <table class="pay-table">
         <thead>
             <tr>
@@ -380,27 +383,32 @@
         <tbody>
             <tr>
                 <td class="label">Regular</td>
-                <td><span class="highlight-cell">33.33</span></td>
-                <td>30.00</td>
-                <td colspan="2">1,000.00</td>
+                <td><span class="highlight-cell">{{ number_format( $payroll->employee->daily_salary) }}</span></td>
+                <td>{{$month->daysInMonth-$annualLeaves->sum('days')}}</td>
+                <td colspan="2">{{ number_format( $payroll->employee->base_salary)     }}</td>
             </tr>
+            
+            @foreach ($payroll->benefits->where('type', 'allowance')->sortBy('built_in') as $allowance)
+            {{-- @dd($allowance) --}}
+           
             <tr>
-                <td class="label">Overtime</td>
-                <td>0.00</td>
-                <td>0.00</td>
-                <td colspan="2">0.00</td>
+                <td class="label">{{$allowance->title}}</td>
+                <td>-</td>
+                <td>-</td>
+                <td colspan="2">{{$allowance->pivot->amount >0? number_format( $allowance->pivot->amount):$allowance->pivot->percent."%"." (".$allowance->on_change.")" }}</td>
             </tr>
-            <tr>
+        @endforeach
+            {{-- <tr>
                 <td class="label">R&R/Leave</td>
                 <td>0.00</td>
-                <td>0.00</td>
-                <td colspan="2">0.00</td>
-            </tr>
+                <td>{{$annualLeaves->sum('days')}} Of {{$leaveType?->days}} --- Remining Leaves {{$leaveType?->days- $annualLeaves->sum('days') }} Days</td>
+                <td colspan="2">$record->total_deduction</td>
+            </tr> --}}
             <tr class="">
                 <td></td>
                 <td style="background: #e0e0e0" class="label">Gross Pay</td>
-
-                <td style="background: #e0e0e0;text-align: right" colspan="3">$1,000.00</td>
+{{-- @dd($payroll->total_allowance,$payroll->employee?->base_salary , $payroll->total_allowance ,) --}}
+                <td style="background: #e0e0e0;text-align: right" colspan="3">{{ number_format($payroll->employee?->base_salary + $payroll->total_allowance ) .' '.PDFdefaultCurrency($payroll->company) }}</td>
             </tr>
         </tbody>
     </table>
@@ -409,17 +417,21 @@
     <div class="section-title deductions">Deductions</div>
     <table class="pay-table">
         <tbody>
+            @foreach ($payroll->benefits->where('type', 'deduction')->sortBy('built_in') as $deduction)
+            
             <tr>
-                <td class="label">Cash Loan</td>
+                <td class="label">{{$deduction->title }}</td>
                 <td></td>
                 <td></td>
-                <td style="text-align: right" colspan="3">-$500.00*</td>
+                <td style="text-align: right" colspan="3">{{$deduction->pivot->amount >0? number_format( $deduction->pivot->amount):$deduction->pivot->percent."%"." (".$deduction->on_change.")" }}</td>
             </tr>
+            @endforeach
+            
             <tr class="">
                 <td></td>
                 <td style="background: #e0e0e0" class="label">Net Pay</td>
 
-                <td style="background: #e0e0e0;text-align: right" colspan="4">$500.00</td>
+                <td style="background: #e0e0e0;text-align: right" colspan="4">{{ $payroll->amount_pay }}</td>
             </tr>
         </tbody>
     </table>
@@ -460,7 +472,7 @@
                     </tr>
                     <tr >
                         <td class="label">Pay date:</td>
-                        <td colspan="4">05/01/2025</td>
+                        <td colspan="4">{{\Carbon\Carbon::parse($payroll->pay_date)->format('Y/m/d')}}  </td>
                     </tr>
                 </tbody>
             </table>
