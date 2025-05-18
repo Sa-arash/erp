@@ -1,9 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
 
-<head>
-    <meta charset="UTF-8">
-    <title>Cash Payment</title>
+@include('pdf.header',['title'=>'Cash Payment','titles'=>[],'css'=>false])
+
     <style>
         body {
             font-family: DejaVu Sans, sans-serif;
