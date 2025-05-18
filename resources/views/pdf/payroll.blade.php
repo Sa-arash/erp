@@ -396,11 +396,11 @@
                 <td>0.00</td>
                 <td colspan="2">0.00</td>
             </tr>
-            <tr class="summary-row">
+            <tr class="">
                 <td></td>
-                <td class="label">Gross Pay</td>
+                <td style="background: #e0e0e0" class="label">Gross Pay</td>
 
-                <td  style="text-align: right" colspan="3">$1,000.00</td>
+                <td style="background: #e0e0e0;text-align: right" colspan="3">$1,000.00</td>
             </tr>
         </tbody>
     </table>
@@ -415,11 +415,11 @@
                 <td></td>
                 <td style="text-align: right" colspan="3">-$500.00*</td>
             </tr>
-            <tr class="summary-row">
+            <tr class="">
                 <td></td>
-                <td class="label">Net Pay</td>
+                <td style="background: #e0e0e0" class="label">Net Pay</td>
 
-                <td style="text-align: right" colspan="4">$500.00</td>
+                <td style="background: #e0e0e0;text-align: right" colspan="4">$500.00</td>
             </tr>
         </tbody>
     </table>
