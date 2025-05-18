@@ -61,7 +61,7 @@
             border: none !important;
         }
 
-        .highlight {
+        .highlight- {
             background-color: yellow;
         }
 
@@ -108,22 +108,24 @@
         <table class="bordered">
             <tr >
                 <td>
+                    @foreach ($invoice->transactions->where('creditor','>', 0) as $transaction)
+                    {{-- @dd($transaction) --}}
                     <table class="bordered-none">
                         <tr>
-                            <td><span class="bold">PETTY CASH CODE:</span> <span class="highlight">T.006{{$invoice->reference}}</span></td>
+                            <td><span class="bold">PETTY CASH CODE:</span> <span class="highlight">{{ $transaction->account->title }}</span></td>
                             <td><span class="bold">PAYMENT DATE:</span> <span class="highlight">{{\Carbon\Carbon::parse($invoice->date)->format('Y/m/d')}}</span></td>
                         </tr>
                         <tr>
                             <td><span class="bold">T.NO:</span> <span class="highlight">{{ str_pad($invoice->number, 9, '0', STR_PAD_LEFT) }}</span></td>
-                            <td><span class="bold">HOUR:</span>{{\Carbon\Carbon::parse($invoice->date)->format('H:i:s')}}</td>
+                            <td><span class="bold">HOUR:</span>{{\Carbon\Carbon::parse($invoice->date)->format('h:i:s A')}}</td>
                         </tr>
                     </table>
+                    @endforeach
                 </td>
             </tr>
-            {{-- @dd($transaction) --}}
             <tr style="border-bottom:none">
                 <td style="border-bottom:none">
-                    @foreach ($invoice->transactions as $transaction)
+                    @foreach ($invoice->transactions->where('debtor','>', 0) as $transaction)
                     <table class="" >
                         <tr>
                             <td><span class="bold">Account Code:</span> <span class="highlight">{{ $transaction->account->title }}</span>
@@ -136,26 +138,26 @@
                         <tr>
                             <td class="amount"><span class="bold">AMOUNT</span>
                             
-                                Creditor : {{ number_format($transaction->creditor) }}
-                                Debtor :   {{ number_format($transaction->debtor) }}
+                               
+                           {{ number_format($transaction->debtor) }}
                             
                             </td>
                         </tr>
-                        <tr >
-                            <td><span class="bold">DESCRIPTION:</span> {{$invoice->description}}</td>
-                        </tr>
+                        
                     </table>
                     @endforeach
                 </td>
             </tr>
-            
+            <tr >
+                <td><span class="bold">DESCRIPTION:</span> {{$invoice->description}}</td>
+            </tr>
             <tr style="border-top:none">
                 <td style="border-top:none">
                     <table class="bordered-none">
                         <tr>
                             <td>
                                 
-                                <strong>Amount in words:</strong>  {{ numberToWords($invoice->transactions->sum('debtor') - $invoice->transactions->sum('creditor'),'') }}
+                                <strong>Amount in words:</strong>  {{ numberToWords($invoice->transactions->sum('debtor') ,'') }}
                             </td>
                            
                         </tr>
