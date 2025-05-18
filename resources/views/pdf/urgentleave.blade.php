@@ -51,13 +51,13 @@
          <td class="" rowspan="11   ">
              <img src="{{public_path('img/dep.png')}}"  alt="">
          </td>
-      <tr><td><b>Date:</b></td><td>{{\Illuminate\Support\Carbon::make($urgent->date)->format('Y F d')}}</td></tr>
-      <tr><td><b>Name:</b></td><td>{{$urgent->employee->fullName}}</td></tr>
-      <tr><td><b>Badge Number:</b></td><td>{{$urgent->employee->ID_number}}</td></tr>
-      <tr><td><b>Department:</b></td><td>{{$urgent->employee?->department->title}}</td></tr>
-      <tr><td><b>Reason:</b></td><td>{{$urgent->reason}}</td></tr>
-      <tr><td><b>Time Out:</b></td><td>{{\Illuminate\Support\Carbon::make($urgent->time_out)->format('h:iA')}}</td></tr>
-      <tr><td><b>Time In:</b></td><td>
+      <tr><td><b>Date:</b></td><td colspan="2"> {{\Illuminate\Support\Carbon::make($urgent->date)->format('Y F d')}}</td></tr>
+      <tr><td><b>Name:</b></td><td colspan="2">{{$urgent->employee->fullName}}</td></tr>
+      <tr><td><b>Badge Number:</b></td><td colspan="2">{{$urgent->employee->ID_number}}</td></tr>
+      <tr><td><b>Department:</b></td><td colspan="2">{{$urgent->employee?->department->title}}</td></tr>
+      <tr><td><b>Reason:</b></td><td colspan="2">{{$urgent->reason}}</td></tr>
+      <tr><td><b>Time Out:</b></td><td colspan="2">{{\Illuminate\Support\Carbon::make($urgent->time_out)->format('h:iA')}}</td></tr>
+      <tr><td><b>Time In:</b></td><td colspan="2">
               @if( $urgent->time_in )
                   {{\Illuminate\Support\Carbon::make($urgent->time_in)->format('h:iA')}}
           @else
@@ -65,10 +65,24 @@
           @endif
           </td>
       </tr>
-      <tr><td><b>Staff Signature:</b></td><td>@if ($urgent->employee?->media->where('collection_name', 'signature')?->first())
+      <tr><td style="text-align: center"><b>Staff Signature:</b></td><td colspan="2">@if ($urgent->employee?->media->where('collection_name', 'signature')?->first())
                   <img width="60" height="60"
                        src="{{ $urgent->employee?->media->where('collection_name', 'signature')?->first()?->getPath() }}">
               @endif</td></tr>
-      <tr><td><b>Approved by Line Manager:</b></td><td>{{$urgent->approvals->first()?->employee->fullName}}</td></tr>
-      <tr><td><b>Approved by HR Department:</b></td><td>{{$urgent->admin?->fullName}}</td></tr>
+      <tr><td style="text-align: center"><b>Approved by Line Manager:</b></td><td>
+              {{$urgent->approvals->first()?->employee->fullName}}
+          </td>
+      <td style="border-right: 1px solid white!important;">
+          @if ($urgent->approvals[0]->    employee?->media->where('collection_name', 'signature')?->first())
+              <img width="60" height="60"
+                   src="{{ $urgent->approvals[0]->employee?->media->where('collection_name', 'signature')?->first()?->getPath() }}">
+          @endif
+      </td></tr>
+      <tr><td style="text-align: center"><b>Approved by HR Department:</b></td><td>{{$urgent->admin?->fullName}}</td>
+      <td >
+          @if ($urgent->admin?->media->where('collection_name', 'signature')?->first())
+              <img style="text-align: end" width="60" height="60"
+                   src="{{ $urgent->admin?->media->where('collection_name', 'signature')?->first()?->getPath() }}">
+          @endif
+      </td></tr>
   </table>

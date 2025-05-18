@@ -121,8 +121,8 @@
                 {{$invoice->to}}
             </td>
             <td style="background: white!important;">
-                <pre style="background: #abadad">Invoice Date:<span style="background: #ffffff;" > {{ \Carbon\Carbon::parse($invoice->created_at)->format('l, F d, Y') }}</span></pre>
-                <pre style="background: #abadad">Invoice No:<span style="background: #ffffff;">   2025-{{$invoice->invoice?->number}}</span></pre>
+                <pre style="background: #c4e7e7">Invoice Date:<span style="background: #ffffff;" > {{ \Carbon\Carbon::parse($invoice->created_at)->format('l, F d, Y') }}</span></pre>
+                <pre style="background: #c4e7e7">Invoice No:<span style="background: #ffffff;">   2025-{{$invoice->invoice?->number}}</span></pre>
             </td>
         </tr>
     </table>
@@ -173,39 +173,56 @@
 
 
 
-    <div class="payment-details" style="border: 2px solid black; width: 40%;padding: 5px">
-        @if($invoice->type)
-            @php
-            $str='';
-                    foreach ($invoice->invoice->transactions->where('debtor','!=','0') as $tra){
-                       $str.= "<p>Account Name:    {$tra->account->name}  </p>
-                       <p> Account Number: {$tra->account->code}  </p>
-                       ";
-                    }
-            @endphp
-        @else
-            @php
-                $str='';
-                    foreach ($invoice->invoice->transactions->where('creditor','!=','0') as $tra){
-                       $str.= "<p>Account Name:    {$tra->account->name}  </p>
-                       <p> Account Number: {$tra->account->code}  </p>
-                       ";
-                    }
+    <table>
 
-            @endphp
-        @endif
-        <div style="font-weight: bold; margin-bottom: 10px;">Payments to:
-        {!! $str !!}
-        </div>
+        <tbody>
 
-    </div>
-    <div class="note">
-        <div style="font-weight: bold; margin-bottom: 10px;">Note:</div>
-        <div>We kindly request that you provide the wire transfer voucher or any other relevant evidence of payment to
-            the ICON Finance office. This is necessary for banking compliance purposes and to ensure proper
-            documentation and processing of your payment.
-        </div>
-    </div>
+        <tr>
+            <td >
+
+                    @if($invoice->type)
+                        @php
+                            $str='';
+                                    foreach ($invoice->invoice->transactions->where('debtor','!=','0') as $tra){
+                                       $str.= "<p>Account Name:    {$tra->account->name}  </p>
+                                       <p> Account Number: {$tra->account->code}  </p>
+                                       ";
+                                    }
+                        @endphp
+                    @else
+                        @php
+                            $str='';
+                                foreach ($invoice->invoice->transactions->where('creditor','!=','0') as $tra){
+                                   $str.= "<p>Account Name:    {$tra->account->name}  </p>
+                                   <p> Account Number: {$tra->account->code}  </p>
+                                   ";
+                                }
+
+                        @endphp
+                    @endif
+                    <div style="font-weight: bold; margin-bottom: 10px;">Payments to:
+                        {!! $str !!}
+                    </div>
+
+
+            </td>
+            <td  style="border: none;font-size: 13px">
+                <b>Note:</b>
+                <div>We kindly request that you provide the wire transfer voucher or any other relevant evidence of payment to
+                    the ICON Finance office. This is necessary for banking compliance purposes and to ensure proper
+                    documentation and processing of your payment.
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+{{--    <div class="payment-details" style=" width: 100%;padding: 5px;display: inline">--}}
+{{--        <div class="note" >--}}
+{{--            <div style="font-weight: bold;">Note:</div>--}}
+{{--           --}}
+{{--        </div>--}}
+{{--    </div>--}}
+
 
 
 

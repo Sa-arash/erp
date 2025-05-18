@@ -71,8 +71,8 @@
     </tr>
     <tr>
         <th>Requestor Signature:</th>
-        <td> @if($loan->employee->media->where('collection_name','signature')->first())
-                <img width="60" height="60" src="{{$employee->media->where('collection_name','signature')->first()?->getPath()}}">
+        <td> @if($loan->employee?->media->where('collection_name','signature')->first())
+                <img width="60" height="60" src="{{$loan->employee->media?->where('collection_name','signature')->first()?->getPath()}}">
             @endif</td>
     </tr>
     <tr>
