@@ -18,6 +18,7 @@
         ->whereBetween('end_leave', [now()->startOfMonth(), now()->endOfMonth()])
         ->where('employee_id', $payroll->employee_id)
         ->get();
+        $currency = $payroll->employee?->currency->name;
 @endphp
 
 
@@ -408,7 +409,7 @@
                 <td></td>
                 <td style="background: #e0e0e0" class="label">Gross Pay</td>
 {{-- @dd($payroll->total_allowance,$payroll->employee?->base_salary , $payroll->total_allowance ,) --}}
-                <td style="background: #e0e0e0;text-align: right" colspan="3">{{ number_format($payroll->employee?->base_salary + $payroll->total_allowance ) .' '.PDFdefaultCurrency($payroll->company) }}</td>
+                <td style="background: #e0e0e0;text-align: right" colspan="3">{{ number_format($payroll->employee?->base_salary + $payroll->total_allowance )}} {{$currency}}</td>
             </tr>
         </tbody>
     </table>
@@ -431,7 +432,7 @@
                 <td></td>
                 <td style="background: #e0e0e0" class="label">Net Pay</td>
 
-                <td style="background: #e0e0e0;text-align: right" colspan="4">{{ $payroll->amount_pay }}</td>
+                <td style="background: #e0e0e0;text-align: right" colspan="4">{{ $payroll->amount_pay }} {{$currency}}</td>
             </tr>
         </tbody>
     </table>
@@ -468,7 +469,7 @@
                 <tbody>
                     <tr>
                         <td class="label">Transaction number:</td>
-                        <td colspan="4">0000XX</td>
+                        <td colspan="4">{{ str_pad($payroll->invoice?->number, 9, '0', STR_PAD_LEFT) }}</td>
                     </tr>
                     <tr >
                         <td class="label">Pay date:</td>
