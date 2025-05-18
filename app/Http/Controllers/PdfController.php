@@ -8,6 +8,7 @@ use App\Models\Bid;
 use App\Models\Employee;
 use App\Models\Factor;
 use App\Models\FinancialPeriod;
+use App\Models\Holiday;
 use App\Models\Invoice;
 use App\Models\Leave;
 use App\Models\Loan;
@@ -51,6 +52,7 @@ class PdfController extends Controller
     {
         $company = auth()->user()->employee->company;
         $leave = Leave::query()->with(['employee','company','typeLeave'])->findOrFail($id);
+        $holidays=Holiday::query()->where('company_id',$company->id)->get()->toArray();
         $types=Typeleave::query()->where('company_id',$company->id)->orderBy('sort')->get();
         $lastleave = Leave::query()
             ->where('employee_id', $leave->employee->id)
@@ -59,7 +61,7 @@ class PdfController extends Controller
             ->first();
 
 
-        $pdf = Pdf::loadView('pdf.leaverequest',compact('types','company','leave','lastleave'));
+        $pdf = Pdf::loadView('pdf.leaverequest',compact('types','company','leave','lastleave','holidays'));
         return $pdf->stream('leaverequest.pdf');
     }
      public function overtime(Request $request , $id)

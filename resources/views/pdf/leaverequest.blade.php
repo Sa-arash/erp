@@ -399,6 +399,22 @@
         <tr>
             <td>
                 @php
+                // dd($company->weekend_days); //=>    ->options([
+                        // 'saturday' => 'Saturday',
+                        // 'sunday' => 'Sunday',
+                        // 'monday' => 'Monday',
+                        // 'tuesday' => 'Tuesday',
+                        // 'wednesday' => 'Wednesday',
+                        // 'thursday' => 'Thursday',
+                        // 'friday' => 'Friday',
+
+
+    //                     dd($holidays);
+    // //                     => 0 => array:6 [▼
+    // // "id" => 1
+    // // "name" => "test"
+    // // "date" => "2025-05-11 00:00:00"
+    // // "company_id" => 1
                     $startDate = \Carbon\Carbon::parse($leave->start_leave);
                     $endDate = \Carbon\Carbon::parse($leave->end_leave);
                     $daysInMonth = $startDate->daysInMonth; // تعداد روزهای ماه جاری
@@ -420,12 +436,26 @@
                                 $currentDate->isSameDay($startDate) ||
                                 $currentDate->isSameDay($endDate); //
                             // بررسی اینکه آیا تاریخ در بازه مرخصی است
+                            // dd($currentDate->format('l'),$company->weekend_days,);
+                            $isWeekend = in_array(strtolower($currentDate->format('l')), $company->weekend_days);
+                            $holidayName = '';
+            foreach ($holidays as $holiday) {
+                if ($currentDate->isSameDay($holiday['date'])) {
+                    $holidayName = $holiday['name'];
+                    break; // اگر تعطیلی پیدا شد، از حلقه خارج می‌شویم
+                }
+            }
                         @endphp
 
                         <td class="{{ $isInLeavePeriod ? 'hilite' : '' }}">
                             {{ $i }}
                             <br>
                             @if($isInLeavePeriod) {{$leave->typeLeave?->abbreviation}} @endif
+                            @if($isWeekend) B @endif
+                            @if($holidayName) 
+                            {{-- {{ $holidayName }}  --}}
+                            H
+                            @endif <!-- نمایش نام تعطیلی رسمی -->
                         </td>
 
                         @if ($i % 7 == 0 || $i == $daysInMonth)
@@ -456,10 +486,21 @@
                         $currentDate->between($startDate, $endDate) ||
                         $currentDate->isSameDay($startDate) ||
                         $currentDate->isSameDay($endDate); // بررسی اینکه آیا تاریخ در بازه مرخصی است
+                        $isWeekend = in_array(strtolower($currentDate->format('l')), $company->weekend_days);
+                        $holidayName = '';
+                        foreach ($holidays as $holiday) {
+                if ($currentDate->isSameDay($holiday['date'])) {
+                    $holidayName = $holiday['name'];
+                    break; // اگر تعطیلی پیدا شد، از حلقه خارج می‌شویم
+                }
+            }
                 @endphp
 
                 <td class="{{ $isInLeavePeriod ? 'hilite' : '' }}">
                     {{ $i }}
+                    @if($isInLeavePeriod) {{$leave->typeLeave?->abbreviation}} @endif
+                    @if($isWeekend) B @endif
+                    @if($holidayName) H @endif <!-- نمایش نام تعطیلی رسمی -->
                 </td>
 
                 @if ($i % 7 == 0 || $i == $nextMonthDaysInMonth)
