@@ -172,40 +172,45 @@
     </table>
 
 
-
-    <table style="border: none">
+    <table style="border: none;background: none !important;">
+        <tr style="border-top: none !important">
+            <th style="border-bottom: 1px !important;background: #cee6f3;padding: 3px"><b>Payments to:</b></th>
+            <th style="border: none;padding: 1px"><b>Note:</b></th>
+        </tr>
         <tbody>
         <tr>
-            <td style="width: 50%" >
-                    @if($invoice->type)
-                        @php
-                            $str='';
-                                    foreach ($invoice->invoice->transactions->where('debtor','!=','0') as $tra){
-                                       $str.= "<p>Account Name:    {$tra->account->name}  </p>
-                                       <p> Account Number: {$tra->account->code}  </p>
-                                       ";
-                                    }
-                        @endphp
-                    @else
-                        @php
-                            $str='';
-                                foreach ($invoice->invoice->transactions->where('creditor','!=','0') as $tra){
+            <td style="width: 50%;background: none !important">
+
+                @if($invoice->type)
+                    @php
+                        $str='';
+                                foreach ($invoice->invoice->transactions->where('debtor','!=','0') as $tra){
                                    $str.= "<p>Account Name:    {$tra->account->name}  </p>
                                    <p> Account Number: {$tra->account->code}  </p>
                                    ";
                                 }
+                    @endphp
+                @else
+                    @php
+                        $str='';
+                            foreach ($invoice->invoice->transactions->where('creditor','!=','0') as $tra){
+                               $str.= "<p>Account Name:    {$tra->account->name}  </p>
+                               <p> Account Number: {$tra->account->code}  </p>
+                               ";
+                            }
 
-                        @endphp
-                    @endif
-                    <div style="font-weight: bold; margin-bottom: 10px;">Payments to:
-                        {!! $str !!}
-                    </div>
+                    @endphp
+                @endif
+                <div >
+                    {!! $str !!}
+                </div>
 
 
             </td>
-            <td  style="border: none;font-size: 13px">
-                <b>Note:</b>
-                <div>We kindly request that you provide the wire transfer voucher or any other relevant evidence of payment to
+            <td style="border: none;font-size: 13px;background: none !important">
+
+                <div>We kindly request that you provide the wire transfer voucher or any other relevant evidence of
+                    payment to
                     the ICON Finance office. This is necessary for banking compliance purposes and to ensure proper
                     documentation and processing of your payment.
                 </div>
@@ -221,14 +226,27 @@
 {{--    </div>--}}
 
 
+    <table style="border: none !important;">
+        <tr style="border: none !important;">
+            <td style="width: 50%;border: none !important;border-bottom: 2px !important;"></td>
+            <td style="border: none !important;">Signed and stamped:</td>
+            <td style="border: none !important;width: 30%">
+                <div class="mt-3">
+                    @if($company->stamp_finance)
+                        <img width="100" src="{{public_path('images/'.$company->stamp_finance)}}" alt="">
+                    @endif
+                        @if($company->signature_finance)
+                        <img width="100" src="{{public_path('images/'.$company->signature_finance)}}" alt="">
+                    @endif
 
 
-    <div class="mt-3">
-          <p  >Signed and stamped:</p> <div style="border-bottom: 1px solid #000 ; width: 150px;margin-left: 120px" ></div>
-    </div>
-    <br>
-    <br>
-    <br>
+                    ___________________________________
+                </div>
+            </td>
+        </tr>
+    </table>
+
+
     <div>Thank you for doing business with us!</div>
 
 

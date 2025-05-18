@@ -43,6 +43,8 @@ return new class extends Migration
             $table->string('description_security')->nullable();
             $table->string('effective_date_security')->nullable();
             $table->string('supersedes_security')->nullable();
+            $table->string('stamp_finance')->nullable();
+            $table->string('signature_finance')->nullable();
 //          $table->text('company_type');
             $table->text('logo')->nullable();
             $table->timestamps();
