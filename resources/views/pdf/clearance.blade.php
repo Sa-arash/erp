@@ -141,25 +141,19 @@
 
         .tablefirst {
             border-collapse: collapse;
-            /* برای حذف فاصله بین سلول‌ها */
             width: 100%;
-            /* عرض جدول */
         }
 
         .tablefirst tr {
             border-top: none;
-            /* حذف حاشیه بالای ردیف */
             border-bottom: none;
-            /* حذف حاشیه پایینی ردیف */
         }
 
         .tablefirst td {
             border-top: none;
-            /* حذف حاشیه بالای سلول */
             border-bottom: none;
-            /* حذف حاشیه پایینی سلول */
             padding: 8px;
-            /* فاصله داخلی سلول‌ها */
+           
         }
 
         .border-bottom-none {
@@ -184,9 +178,19 @@
 
 
 
-
-
+  
     <table>
+        <tr style="text-align:center">
+            <td colspan="8" style=" text-align: center;
+            font-weight: bold;
+            padding: 8px;
+            border: none !important;" >
+                Employee Name: ____________________________________________Employee ID: _________________
+                Job Title: ___________________Department: _______________________Last Day of Worked:_________
+                Term Date (return to HOR/Demob/Release): __________________Site Location: ICON Compound- Kabul, AFG
+                Reason for Termination:
+            
+        </tr>
         <tr style="text-align:center">
             <td colspan="8" style="text-align:center;border: 1px solid black; background-color:black;color:white">
                 <strong>Employee Name:
