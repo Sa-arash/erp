@@ -296,6 +296,7 @@ class InvoiceResource extends Resource
             ], getModelFilter())
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('print')->label('Print Cash Payment')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->color('primary')->url(fn($record)=>route('pdf.cashPayment', ['id' => $record->id])),
                 Tables\Actions\Action::make('print')
                     ->label('')->iconSize(IconSize::Large)
                     ->icon('heroicon-o-printer')

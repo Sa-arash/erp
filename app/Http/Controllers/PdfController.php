@@ -505,6 +505,19 @@ class PdfController extends Controller
             compact('company', 'requestVisit')
         );
         return $pdf->stream('requestVisit.pdf');
+    } 
+    public function cashPayment($id)
+    {
+
+        $invoice = Invoice::query()->findOrFail($id);
+      
+        $company = $invoice->company;
+// dd($invoice);
+        $pdf = Pdf::loadView(
+            'pdf.cashPayment',
+            compact('company','invoice')
+        );
+        return $pdf->stream('cashPayment.pdf');
     }
      public function clearance($ids)
     {
