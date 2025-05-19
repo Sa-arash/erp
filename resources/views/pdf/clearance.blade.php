@@ -148,7 +148,7 @@
             border-top: none;
             border-bottom: none;
             padding: 8px;
-           
+
         }
 
         .border-bottom-none {
@@ -173,13 +173,13 @@
 
 
 
-  
-    <div style="text-align:center;font-size:15px"> Employee Name: ____________________________________________Employee ID: _________________
+
+    <div style="text-align:center;font-size:15px;font-weight: bold;text-justify: auto"> Employee Name: ____________________________________________Employee ID: ___________________
         Job Title: ___________________Department: _______________________Last Day of Worked:_________
         Term Date (return to HOR/Demob/Release): __________________Site Location: ICON Compound- Kabul, AFG
         Reason for Termination:</div>
-           
-        
+
+
     <table>
         <tr style="text-align:center">
             <td colspan="8" style="text-align:center;border: 1px solid black; background-color:black;color:white">
@@ -201,7 +201,7 @@
             <td class="font-bold font-sm">Employee</td>
             <td class="font-bold font-sm">Manager</td>
         </tr>
- 
+
         <tr class="border-top-none border-bottom-none">
             <td colspan="4">Admin/HR or Security Department must retrieve employee
                 issued badge and PPE:
@@ -288,7 +288,7 @@
         </tr>
         <br>
 
-      
+
         <tr class="border-top-none border-bottom-none">
             <td colspan="4">&nbsp;</td>
             <td></td>

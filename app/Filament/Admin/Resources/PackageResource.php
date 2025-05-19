@@ -18,7 +18,7 @@ class PackageResource extends Resource
 {
     protected static ?string $model = Package::class;
 
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-s-square-3-stack-3d';
     protected static ?string $navigationGroup = 'Logistic Management';
 
     protected static ?string $cluster = StackManagementSettings::class;
@@ -26,13 +26,8 @@ class PackageResource extends Resource
     {
         return $form
             ->schema([
-
-                Forms\Components\TextInput::make('title')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('quantity')
-                    ->required()
-                    ->numeric(),
+                Forms\Components\TextInput::make('title')->required()->maxLength(255),
+                Forms\Components\TextInput::make('quantity')->required()->numeric(),
             ]);
     }
 

@@ -29,6 +29,7 @@ class TakeOutResource extends Resource implements HasShieldPermissions
     protected static ?string $navigationGroup = 'Security Management';
     protected static ?int $navigationSort = 99;
 
+    protected static ?string $label='Gate Pass';
     public static function getPermissionPrefixes(): array
     {
         return [

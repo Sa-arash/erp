@@ -14,7 +14,7 @@ class StockConsumable extends BaseWidget
 {
     use HasWidgetShield;
 
-    protected static ?string $heading = 'Stock Alert  Non-Consumable';
+    protected static ?string $heading = 'Stock Alert Consumable';
     protected int | string | array $columnSpan = 2;
     public function table(Table $table): Table
     {

@@ -36,6 +36,7 @@ class Stocks extends ManageRelatedRecords
                 Tables\Columns\TextColumn::make('employee.fullName'),
                 Tables\Columns\TextColumn::make('description')->searchable(),
                 Tables\Columns\TextColumn::make('quantity')->badge(),
+                Tables\Columns\TextColumn::make('package.title')->state(fn($record)=> isset($record->package?->quantity)? '('.$record->quantity /$record->package?->quantity.' * '. $record->package?->quantity .')'.$record->package->title:'---')->badge(),
                 Tables\Columns\TextColumn::make('type')->state(fn($record) => $record->type === 1 ? "Stock In" : "Stock Out")->badge()->color(fn($state) => $state === "Stock In" ? 'success' : 'danger'),
                 Tables\Columns\TextColumn::make('transaction')->state(function($record){
                     if ($record->transaction){

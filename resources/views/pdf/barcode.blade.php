@@ -11,13 +11,14 @@
     @page {
         margin: 10px; !important;
 
+
     }
 </style>
 <body>
 
-    {!! '<img src="data:image/png;base64,' . \Milon\Barcode\Facades\DNS1DFacade::getBarcodePNG($code, 'C39',1,20) .'" alt="barcode"/>' !!}
+    {!! '<img src="data:image/png;base64,' . \Milon\Barcode\Facades\DNS1DFacade::getBarcodePNG($code, 'C39',1   ,20) .'" style="width:400px" alt="barcode"/>' !!}
     <br>
-    {{$code}}
+    <p style="text-align: center" >{{$code}}</p>
 
 </body>
 </html>

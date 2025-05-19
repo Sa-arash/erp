@@ -31,8 +31,8 @@ class ListFactors extends ListRecords
             return [
                 Actions\CreateAction::make()->label('New Invoice'),
                 Actions\Action::make('config')->form([
-                    FileUpload::make('stamp')->default(getCompany()->stamp_finance),
-                    FileUpload::make('signature')->default(getCompany()->signature_finance),
+                    FileUpload::make('stamp')->image()->imageEditor()->default(getCompany()->stamp_finance),
+                    FileUpload::make('signature')->image()->imageEditor()->default(getCompany()->signature_finance),
                 ])->action(function ($data){
                     getCompany()->update([
                         'signature_finance'=>$data['signature'],

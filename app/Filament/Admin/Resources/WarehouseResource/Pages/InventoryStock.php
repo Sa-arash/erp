@@ -41,7 +41,14 @@ class InventoryStock extends ManageRelatedRecords
                     })->searchable()->preload()->label('Inventory')->required(),
                     Forms\Components\Select::make('package_id')->label('Package')->live()->searchable()->options(fn()=>getCompany()->packages->mapWithKeys(function ($item) {
                         return [$item->id => $item->title . ' (' . $item->quantity.')'];
-                    })),
+                    }))->createOptionForm([
+                        Forms\Components\TextInput::make('title')->required()->maxLength(255),
+                        Forms\Components\TextInput::make('quantity')->required()->numeric(),
+                    ])->createOptionUsing(function ($data){
+                        $record= Package::query()->create(['title'=>$data['title'],'quantity'=>$data['quantity'],'company_id'=>getCompany()->id]);
+                        Notification::make('success')->success()->title('Submitted Successfully')->send();
+                        return $record->getKey();
+                    }),
                     Forms\Components\TextInput::make('quantity')->minValue(1)->required()->numeric(),
                 ])->columns(3),
                 Forms\Components\Textarea::make('description')->required()->maxLength(255)->columnSpanFull(),

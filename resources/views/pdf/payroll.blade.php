@@ -293,16 +293,10 @@
     <br>
 
 
-
     <table style="width: 100%; border-collapse: collapse; margin: 0; padding: 0;">
         <tr>
-
-          
-
-
-
             <!-- Employee Information -->
-            <td style="vertical-align: top; width: 50%; padding: 0; margin: 0;">
+            <td style="vertical-align: top; width: 70%; padding: 0; margin: 0;">
                 <table style="border-collapse: collapse; margin: 0; padding: 0;">
                     <tr>
                         <td style=" padding: 2px 6px 2px 0;">Employee:</td>
@@ -328,7 +322,7 @@
             </td>
             <!-- Earnings Statement -->
             {{-- @dd($payroll) --}}
-            <td style="vertical-align: top; width: 50%; padding: 0; margin: 0;">
+            <td style="vertical-align: top; width: 30%; padding: 0; margin: 0;">
                 <div style="font-size: 16px; font-weight: bold; margin-bottom: 10px;">Earnings Statement</div>
                 <br>
                 <table style="border-collapse: collapse; margin: 0; padding: 0;">
@@ -388,10 +382,10 @@
                 <td>{{$month->daysInMonth-$annualLeaves->sum('days')}}</td>
                 <td colspan="2">{{ number_format( $payroll->employee->base_salary)     }}</td>
             </tr>
-            
+
             @foreach ($payroll->benefits->where('type', 'allowance')->sortBy('built_in') as $allowance)
             {{-- @dd($allowance) --}}
-           
+
             <tr>
                 <td class="label">{{$allowance->title}}</td>
                 <td>-</td>
@@ -407,9 +401,10 @@
             </tr> --}}
             <tr class="">
                 <td></td>
-                <td style="background: #e0e0e0" class="label">Gross Pay</td>
-{{-- @dd($payroll->total_allowance,$payroll->employee?->base_salary , $payroll->total_allowance ,) --}}
-                <td style="background: #e0e0e0;text-align: right" colspan="3">{{ number_format($payroll->employee?->base_salary + $payroll->total_allowance )}} {{$currency}}</td>
+                <td style="background: #e0e0e0;border-bottom: 2px solid black;border-top:2px solid black " class="label">Gross Pay</td>
+                {{-- @dd($payroll->total_allowance,$payroll->employee?->base_salary , $payroll->total_allowance ,) --}}
+                <td style="background: #e0e0e0;text-align: right;border-bottom: 2px solid black;border-top:2px solid black "
+                    colspan="3">{{ number_format($payroll->employee?->base_salary + $payroll->total_allowance )}} {{$currency}}</td>
             </tr>
         </tbody>
     </table>
@@ -417,23 +412,37 @@
     <!-- Deductions Section -->
     <div class="section-title deductions">Deductions</div>
     <table class="pay-table">
-        <tbody> 
-            @foreach ($payroll->benefits->where('type', 'deduction')->sortBy('built_in') as $deduction)
-            
+        <tbody>
+        @foreach ($payroll->benefits->where('type', 'deduction')->sortBy('built_in') as $deduction)
+
             <tr>
                 <td class="label">{{$deduction->title }}</td>
                 <td></td>
                 <td></td>
-                <td style="text-align: right" colspan="3">{{$deduction->pivot->amount >0? number_format( $deduction->pivot->amount):$deduction->pivot->percent."%"." (".$deduction->on_change.")" }}</td>
+                <td style="text-align: right"
+                    colspan="3">{{$deduction->pivot->amount >0? number_format( $deduction->pivot->amount):$deduction->pivot->percent."%"." (".$deduction->on_change.")" }}</td>
             </tr>
-            @endforeach
-            
-            <tr class="">
-                <td></td>
-                <td style="background: #e0e0e0" class="label">Net Pay</td>
+        @endforeach
 
-                <td style="background: #e0e0e0;text-align: right" colspan="4">{{ $payroll->amount_pay }} {{$currency}}</td>
-            </tr>
+        <tr class="">
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td style="background: #e0e0e0;border-bottom: 2px solid black;border-top:2px solid black " class="label">Net Pay</td>
+
+            <td style="background: #e0e0e0;text-align: right;border-bottom: 2px solid black;border-top:2px solid black "
+                colspan="2">{{ number_format($payroll->amount_pay,2) }} {{$currency}}</td>
+        </tr>
         </tbody>
     </table>
 
@@ -445,18 +454,21 @@
     <br>
     <br>
     <br>
-
-
-
-
-
-
-
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
+    <br>
     <table style="width: 100%; border-collapse: collapse; margin: 0; padding: 0;">
         <tr>
-
             <!-- t1 -->
-            <td style="vertical-align: top; width: 50%; padding: 0; margin: 0;">
+            <td style="vertical-align: top; width: 70%; padding: 0; margin: 0;">
                 <table style="border-collapse: collapse; margin: 0; padding: 0;">
                     <tr>
                         <td style=" padding: 2px 6px 2px 0;">&nbsp;</td>
@@ -465,21 +477,286 @@
             </td>
 
             <!--t2 -->
-            <table class="pay-table">
-                <tbody>
+            <td style="width: 30%;">
+                <table class="">
+                    <tbody>
                     <tr>
-                        <td class="label">Transaction number:</td>
-                        <td colspan="4">{{$payroll->invoice?->number? str_pad($payroll->invoice?->number, 9, '0', STR_PAD_LEFT):" ---------" }}</td>
+                        <td colspan="2">Transaction number:</td>
+                        <td
+                            colspan="2">{{$payroll->invoice?->number? str_pad($payroll->invoice?->number, 9, '0', STR_PAD_LEFT):" ---------" }}</td>
                     </tr>
-                    <tr >
-                        <td class="label">Pay date:</td>
-                        <td colspan="4">{{\Carbon\Carbon::parse($payroll->pay_date)->format('Y/m/d')}}  </td>
-                    </tr>
-                </tbody>
-            </table>
+                    <tr>
+                        <td colspan="2" class="">Pay Date:</td>
+                        <td colspan="3">{{\Carbon\Carbon::parse($payroll->pay_date)->format('Y/m/d')}}  </td>
 
+                    </tr>
+                    <tr>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                    </tr><tr>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                    </tr><tr>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                    </tr><tr>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                    </tr><tr>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                    </tr><tr>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                    </tr><tr>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                    </tr><tr>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                    </tr><tr>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                    </tr><tr>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                    </tr><tr>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                    </tr><tr>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                    </tr><tr>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                    </tr><tr>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                    </tr><tr>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                    </tr><tr>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                    </tr><tr>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                    </tr><tr>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                        <td>
+                            <pre> </pre>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <td></td>
+                        <td style="font-size: 17px "><b>NON−NEGOTIABLE</b></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </td>
 
         </tr>
-    </table></body>
+    </table>
+
+</body>
 
 </html>

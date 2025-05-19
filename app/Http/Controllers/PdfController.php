@@ -505,12 +505,12 @@ class PdfController extends Controller
             compact('company', 'requestVisit')
         );
         return $pdf->stream('requestVisit.pdf');
-    } 
+    }
     public function cashPayment($id)
     {
 
         $invoice = Invoice::query()->findOrFail($id);
-      
+
         $company = $invoice->company;
 // dd($invoice);
         $pdf = Pdf::loadView(
@@ -571,16 +571,34 @@ class PdfController extends Controller
 
         $pdf = Pdf::loadView(
             'pdf.barcode',
-            compact( 'code')
+            compact( 'code'),[], [
+                'format' => [50, 35],
+            ]
+        );
+        return $pdf->stream();
+    }
+    public function qrcodeView($code)
+    {
+        $companyID=Asset::query()->firstWhere('id',$code)?->company_id;
+        $pdf = Pdf::loadView(
+            'pdf.qrcode',
+            compact( 'code','companyID'),[],
+            [
+                'format' => [80, 80],
+            ]
         );
         return $pdf->stream();
     }
     public function qrcode($code)
     {
+        $companyID=Asset::query()->firstWhere('id',$code)?->company_id;
 
         $pdf = Pdf::loadView(
             'pdf.qrcode',
-            compact( 'code')
+            compact( 'code','companyID'),[],
+            [
+                'format' => [80, 80],
+            ]
         );
         return $pdf->stream();
     }

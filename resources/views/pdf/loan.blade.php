@@ -25,7 +25,7 @@
             margin-bottom: 15px;
         }
         .highlight-yellow {
-            background-color: yellow;
+            background-color: #fafafa;
             font-weight: bold;
         }
         .signature-block {
@@ -74,7 +74,6 @@
         }
 
         .highlight-yellow {
-            background-color: yellow;
             font-weight: bold;
         }
     </style>
@@ -82,7 +81,6 @@
 <body>
 
 
-<div class="header">SALARY DEDUCTION LETTER</div>
 <div class="ref-number">Ref No: UNC-HR-SDL-001</div>
 
 <div class="section">

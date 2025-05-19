@@ -146,6 +146,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')->sidebarCollapsibleOnDesktop()
             ->login(Login::class)
              ->favicon(fn()=>( getCompany()?->logo ? asset('images/' .getCompany()?->logo ):asset('img/my.png')))
+//            ->brandLogo(fn()=>getCompany()?->logo ? asset('images/' .getCompany()?->logo ):asset('img/my.png'))
             ->font(
                 'Inter',
                 url: asset('css/app/custom-stylesheet.css'),

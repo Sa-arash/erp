@@ -1,4 +1,4 @@
-@include('pdf.header', ['titles' => ['Journal Report'],'title'=>'Journal Report'])
+@include('pdf.header', ['titles' => [''],'title'=>'Journal Report'])
 
 
 @php

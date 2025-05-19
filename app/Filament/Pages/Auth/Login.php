@@ -8,6 +8,8 @@ use Filament\Pages\Auth\EditProfile as BaseEditProfile;
 
 class Login extends \Filament\Pages\Auth\Login
 {
+
+
     protected function getForms(): array
     {
         return [

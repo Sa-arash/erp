@@ -33,8 +33,8 @@ class Dashboard extends BaseDashboard
             accounting::class,
             invoicePrice::class,
             PurchasePrice::class,
-            StockAlert::class,
             StockConsumable::class,
+            StockAlert::class,
             OverdueChecks::class,
            ChequeReport::class
 

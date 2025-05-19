@@ -28,7 +28,7 @@ use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
 class VisitorRequestResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = VisitorRequest::class;
-    protected static ?string $navigationLabel = 'Visit Access Request';
+    protected static ?string $navigationLabel = 'Visitor Access Request';
     protected static ?string $navigationGroup = 'Security Management';
     protected static ?int $navigationSort = 100;
     protected static ?string $navigationIcon = 'heroicon-o-eye';
@@ -167,19 +167,21 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
 
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('employee.fullName')->label('Requester')->numeric()->sortable(),
-                Tables\Columns\TextColumn::make('visitors_detail')->label('Visitors')->state(fn($record) => implode(', ', (array_map(fn($item) => $item['name'], $record->visitors_detail))))->numeric()->sortable(),
-                Tables\Columns\TextColumn::make('visit_date')->date()->sortable(),
+                Tables\Columns\TextColumn::make('visitors_detail')->label('Visitors')->state(fn($record) => array_map(fn($item) => $item['name'], $record->visitors_detail))->numeric()->sortable()->badge()->limitList(1),
+                Tables\Columns\TextColumn::make('visit_date')->label('Date of Visit ')->date()->sortable(),
                 Tables\Columns\TextColumn::make('arrival_time')->time('H:m'),
                 Tables\Columns\TextColumn::make('departure_time')->time('H:m'),
+                Tables\Columns\TextColumn::make('InSide_date')->label('Check IN ')->time(),
+                Tables\Columns\TextColumn::make('OutSide_date')->label('Check OUT ')->time(),
                 Tables\Columns\TextColumn::make('Track Time')->state(function ($record) {
-                    $startTime = $record->InSide_date;
-                    $endTime = $record->OutSide_date;
-                    if ($startTime and $endTime) {
-                        $difference = calculateTime($startTime, $endTime);
-                        return $difference;
-                    }
+//                    $startTime = $record->InSide_date;
+//                    $endTime = $record->OutSide_date;
+//                    if ($startTime and $endTime) {
+//                        $difference = calculateTime($startTime, $endTime);
+//                        return $difference;
+//                    }
                 })->label('Track Time'),
-                Tables\Columns\TextColumn::make('status')->state(fn($record)=>match ($record->status){
+                Tables\Columns\TextColumn::make('status')->label('Head of Security ')->tooltip(fn($record)=>isset($record->approvals[0])? $record->approvals[0]->approve_date : false )->alignCenter()->state(fn($record)=>match ($record->status){
                     'approved'=>'Approved',
                     'Pending'=>'Pending',
                     'notApproved'=>'Not Approved',
@@ -194,7 +196,11 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                             return 'danger';
                     }
                 })->badge(),
-                Tables\Columns\TextColumn::make('gate_status')->label('Gate Status')->badge(),
+                Tables\Columns\TextColumn::make('gate_status')->state(fn($record)=>match ($record->gate_status){
+                    'CheckedOut'=>'Checked OUT',
+                    'CheckedIn'=>'Checked IN',
+                    default=>''
+                })->label('Reception')->badge(),
                 Tables\Columns\ToggleColumn::make('ICON')->label("ICON")->sortable()->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
@@ -204,8 +210,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                 Tables\Filters\SelectFilter::make('status')->options(['approved' => 'approved', 'notApproved' => 'notApproved'])->searchable()
             ], getModelFilter())
             ->actions([
-                EditAction::make(),
-                Tables\Actions\Action::make('ActionInSide')->label('CheckIn')->form([
+                Tables\Actions\Action::make('ActionInSide')->label('Check IN ')->form([
                     Forms\Components\DateTimePicker::make('InSide_date')->withoutSeconds()->label(' Date And Time')->required()->default(now()),
                     Forms\Components\Textarea::make('inSide_comment')->label(' Comment')
                 ])->requiresConfirmation()->action(function ($data, $record) {
@@ -221,7 +226,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                     }
                     return false;
                 }),
-                Tables\Actions\Action::make('ActionOutSide')->label('CheckOut')->form([
+                Tables\Actions\Action::make('ActionOutSide')->label('Check OUT')->form([
                     Forms\Components\DateTimePicker::make('OutSide_date')->withoutSeconds()->label(' Date And Time')->required()->default(now()),
                     Forms\Components\Textarea::make('OutSide_comment')->label(' Comment')
                 ])->requiresConfirmation()->action(function ($data, $record) {
@@ -345,7 +350,8 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
         return [
             'index' => Pages\ListVisitorRequests::route('/'),
             'create' => Pages\CreateVisitorRequest::route('/create'),
-            'edit' => Pages\EditVisitorRequest::route('/{record}/edit'),
+//            'edit' => Pages\EditVisitorRequest::route('/{record}/edit'),
+            'view' =>Pages\ViewVisitRequest::route('{record}/view')
         ];
     }
 }

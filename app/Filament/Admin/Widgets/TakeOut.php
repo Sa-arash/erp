@@ -26,10 +26,11 @@ class TakeOut extends BaseWidget
 
     protected int|string|array $columnSpan = 'full';
 
+protected static ?string $heading='Gate Pass';
     public function table(Table $table): Table
     {
-        return $table->headerActions([
-            Action::make('Take Out')->label('Take Out')->form([
+        return $table->emptyStateHeading('No Gate Pass')->heading('Gate Pass')->headerActions([
+            Action::make('Take Out')->label('New Gate Pass')->form([
                 \Filament\Forms\Components\Section::make([
                     TextInput::make('from')->label('From (Location)')->default(getEmployee()->structure?->title)->required()->maxLength(255),
                     TextInput::make('to')->label('To (Location)')->required()->maxLength(255),

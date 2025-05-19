@@ -8,7 +8,7 @@
     <title>QRCODE Checkout</title>
 </head>
 <body>
-{!! '<img src="data:image/png;base64,' . \Milon\Barcode\Facades\DNS2DFacade::getBarcodePNG(env('APP_URL').'/admin/'.$companyID.'/asset-employees/create?asset='.$code, 'QRCODE',150,150) .'" alt="barcode"/>' !!}
+{!! '<img src="data:image/png;base64,' . \Milon\Barcode\Facades\DNS2DFacade::getBarcodePNG(env('APP_URL').'/admin/'.$companyID.'/assets/'.$code.'view', 'QRCODE',150,150) .'" alt="barcode"/>' !!}
 
 </body>
 </html>

@@ -351,7 +351,8 @@ class LoanResource extends Resource
                             'finance_id'=>getEmployee()->id,
                             'approve_fiance_date'=>now(),
                             'status'=>'ApproveFinance',
-                            'answer_date'=>now()
+                            'answer_date'=>now(),
+                            'approve_finance_date'=>now()
                         ]);
                     }elseif ($data['status']==="NotApprove"){
                         $record->update([

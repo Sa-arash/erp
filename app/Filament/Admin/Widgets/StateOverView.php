@@ -12,7 +12,7 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 class StateOverView extends BaseWidget
 {
     use HasWidgetShield;
-    protected ?string $heading = 'StateOverView';
+    protected ?string $heading = 'State Overview';
     protected static ?string $chartId = 'StateOverView';
 
 
@@ -21,7 +21,7 @@ class StateOverView extends BaseWidget
         return [
             Stat::make('Employee',number_format(Employee::query()->where('company_id',getCompany()->id)->count())),
             Stat::make('Asset',number_format(Asset::query()->where('company_id',getCompany()->id)->count())),
-            Stat::make('AssetPrice',number_format(Asset::query()->where('company_id',getCompany()->id)->sum('price'))),
+            Stat::make('Asset Price',number_format(Asset::query()->where('company_id',getCompany()->id)->sum('price'))),
             Stat::make('Active Projects',number_format(Project::query()->where('company_id',getCompany()->id)->count())),
         ];
     }

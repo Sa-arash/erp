@@ -1,4 +1,4 @@
-@include('pdf.header',['title'=>'Cash Advance Form','titles'=>[],'css'=>true])
+@include('pdf.header',['title'=>'Cash Advance Form','titles'=>[],'css'=>false])
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -46,16 +46,20 @@
     </style>
 
 
-<div class="title">CASH ADVANCE FORM</div>
 
 <table>
+    <tr>
+        <td class="" rowspan="11   ">
+            <img src="{{public_path('img/dep.png')}}"  alt="">
+        </td>
+    </tr>
     <tr>
         <th>Date:</th>
         <td>{{$loan->approve_finance_date}}</td>
     </tr>
     <tr>
         <th>Name:</th>
-        <td>{{$loan->employee->fullName}}</td>
+        <td >{{$loan->employee->fullName}}</td>
     </tr>
     <tr>
         <th>Badge Number:</th>

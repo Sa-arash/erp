@@ -23,6 +23,8 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Validation\Rules\Unique;
 use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
 
@@ -36,6 +38,12 @@ class ProductResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-m-cube';
     protected static ?string $cluster = StackManagementSettings::class;
 
+//    protected static ?string $recordTitleAttribute = 'title';
+//    public static function getGlobalSearchResultTitle(Model $record): string | Htmlable
+//    {
+//        dd($record);
+//        return $record->title;
+//    }
     public static function form(Form $form): Form
     {
         return $form

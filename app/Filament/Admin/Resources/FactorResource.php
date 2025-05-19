@@ -406,7 +406,7 @@ class FactorResource extends Resource
                                     })->live()->defaultOpenLevel(3)->live()->label('Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('company_id', getCompany()->id))->searchable(),
                                     Forms\Components\TextInput::make('description')->required(),
 
-                                    Forms\Components\TextInput::make('debtor')->prefix(defaultCurrency()->symbol)->live(true)->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
+                                    Forms\Components\TextInput::make('debtor')->live(true)->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
                                         if ($get('Cheque')) {
                                             $set('cheque.amount', $state);
                                         }
@@ -454,7 +454,7 @@ class FactorResource extends Resource
                                                 }
                                             },
                                         ]),
-                                    Forms\Components\TextInput::make('creditor')->prefix(defaultCurrency()->symbol)->readOnly(function (Get $get) {
+                                    Forms\Components\TextInput::make('creditor')->readOnly(function (Get $get) {
                                         return $get('isCurrency') || $get->getData()['type'] == "1";
                                     })->live(true)
                                         ->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
@@ -645,6 +645,11 @@ class FactorResource extends Resource
             ])
             ->actions([
 //                Tables\Actions\EditAction::make(),
+            Tables\Actions\DeleteAction::make()->action(function ($record){
+                $record->invoice()->delete();
+                $record->delete();
+                Notification::make('success')->success()->title('Deleted')->send();
+            }),
                 Tables\Actions\Action::make('print')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->color('primary')->url(fn($record)=>route('pdf.sales', ['id' => $record->id]))
 
             ])
@@ -697,10 +702,14 @@ class FactorResource extends Resource
                             TextInput::make('symbol')->required()->maxLength(255),
                             TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                         ])->columns(3)
-                    ])->afterStateUpdated(function (Forms\Set $set){
+                    ])->afterStateUpdated(function (Forms\Set $set,$state){
                         $set('setPrice',0);
+                        $currency=Currency::query()->firstWhere('id',$state);
+                        if ($currency){
+                            $set('currency',$currency->symbol);
+                        }
                     }),
-                    SelectTree::make('account_id')->label(fn(Forms\Get $get) => $get('type') === "1" ? "Income Account" : "Expence Account")->searchable()->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: function ($query, Get $get) {
+                    SelectTree::make('account_id')->label(fn(Forms\Get $get) => $get('type') === "1" ? "Income Account" : "Expense Account")->searchable()->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: function ($query, Get $get) {
                         $type = $get('type') === "1" ? "Income" : "Expense";
                         return $query->where('group', [$type])->where('company_id', getCompany()->id);
                     })->defaultOpenLevel(3)->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
@@ -937,12 +946,12 @@ class FactorResource extends Resource
                                 $fail('The :attribute is invalid.');
                             }
                         },
-                    ])->mask(RawJs::make('$money($input)'))->stripCharacters(',')->live(true)->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
+                    ])->mask(RawJs::make('$money($input)'))->stripCharacters(',')->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
                         $count = $get('quantity') === null ? 0 : (float)$get('quantity');
                         $unitPrice = $get('unit_price') === null ?  0 : (float)str_replace(',', '', $get('unit_price'));
                         $discount = $get('discount') === null ?  0 : (float)$get('discount');
                         $set('total', number_format(($count * $unitPrice) - (($count * $unitPrice) * $discount) / 100, 2));
-                    })->required()->label('Unit Price'),
+                    })->required()->label(fn(Get $get)=>'Unit Price')->live(true),
                     Forms\Components\TextInput::make('discount')->label('Discount(%)')->numeric()->live(true)->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
                         $count = $get('quantity') === null ? 0 : (float)$get('quantity');
                         $unitPrice = $get('unit_price') === null ?  0 : (float)str_replace(',', '', $get('unit_price'));
@@ -1036,10 +1045,10 @@ class FactorResource extends Resource
                                     return $set('isCurrency', 1);
                                 }
                                 return $set('isCurrency', 0);
-                            })->live()->defaultOpenLevel(3)->live()->label('Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('company_id', getCompany()->id))->searchable(),
+                            })->live()->defaultOpenLevel(1)->live()->label('Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('company_id', getCompany()->id))->searchable(),
                             Forms\Components\TextInput::make('description')->required(),
 
-                            Forms\Components\TextInput::make('debtor')->prefix(defaultCurrency()->symbol)->live(true)->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
+                            Forms\Components\TextInput::make('debtor')->live(true)->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
                                 if ($get('Cheque')) {
                                     $set('cheque.amount', $state);
                                 }
@@ -1075,7 +1084,7 @@ class FactorResource extends Resource
 
                                     },
                                 ]),
-                            Forms\Components\TextInput::make('creditor')->prefix(defaultCurrency()->symbol)->readOnly(function (Get $get) {
+                            Forms\Components\TextInput::make('creditor')->readOnly(function (Get $get) {
                                 return $get('isCurrency') || $get->getData()['type'] === "1";
                             })->live(true)
                                 ->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
@@ -1224,7 +1233,7 @@ class FactorResource extends Resource
         return [
             'index' => Pages\ListFactors::route('/'),
             'create' => Pages\CreateFactor::route('/create'),
-            'edit' => Pages\EditFactor::route('/{record}/edit'),
+//            'edit' => Pages\EditFactor::route('/{record}/edit'),
         ];
     }
 }

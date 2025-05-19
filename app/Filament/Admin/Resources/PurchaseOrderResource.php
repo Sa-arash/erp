@@ -753,7 +753,14 @@ implements HasShieldPermissions
                             Select::make('warehouse_id')->label('Warehouse Location')->required()->options(getCompany()->warehouses()->where('type', 1)->pluck('title', 'id'))->searchable()->preload(),
                             Forms\Components\Select::make('package_id')->label('Package')->live()->searchable()->options(fn() => getCompany()->packages->mapWithKeys(function ($item) {
                                 return [$item->id => $item->title . ' (' . $item->quantity . ')'];
-                            })),
+                            }))->createOptionForm([
+                                Forms\Components\TextInput::make('title')->required()->maxLength(255),
+                                Forms\Components\TextInput::make('quantity')->required()->numeric(),
+                            ])->createOptionUsing(function ($data){
+                                $record= Package::query()->create(['title'=>$data['title'],'quantity'=>$data['quantity'],'company_id'=>getCompany()->id]);
+                                Notification::make('success')->success()->title('Submitted Successfully')->send();
+                                return $record->getKey();
+                            }),
                             TextInput::make('quantity')->numeric()->required(),
                             Forms\Components\Textarea::make('description')->columnSpanFull()->required(),
                         ])->columns(4)->formatStateUsing(function ($record) use ($products) {

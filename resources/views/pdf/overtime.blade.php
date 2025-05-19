@@ -1,4 +1,4 @@
-@include('pdf.header',['title'=>'Overtime Slip Form','titles'=>[]])
+@include('pdf.header',['title'=>'Overtime Slip Form','titles'=>[],'css'=>false])
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -50,6 +50,9 @@
 
         .form-section td {
             height: 60px;
+        }
+        @page  {
+
         }
     </style>
 

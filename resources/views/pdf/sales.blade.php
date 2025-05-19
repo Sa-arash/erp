@@ -223,7 +223,7 @@
 {{--            <div style="font-weight: bold;">Note:</div>--}}
 {{--           --}}
 {{--        </div>--}}
-{{--    </div>--}}
+    {{--    </div>--}}
 
 
     <table style="border: none !important;">
@@ -232,21 +232,18 @@
             <td style="border: none !important;">Signed and stamped:</td>
             <td style="border: none !important;width: 30%">
                 <div class="mt-3">
-                    @if($company->stamp_finance)
-                        <img width="100" src="{{public_path('images/'.$company->stamp_finance)}}" alt="">
-                    @endif
-                        @if($company->signature_finance)
+                    @if($company->signature_finance)
                         <img width="100" src="{{public_path('images/'.$company->signature_finance)}}" alt="">
                     @endif
 
-
+                    @if($company->stamp_finance)
+                        <img width="100" src="{{public_path('images/'.$company->stamp_finance)}}" alt="">
+                    @endif
                     ___________________________________
                 </div>
             </td>
         </tr>
     </table>
-
-
     <div>Thank you for doing business with us!</div>
 
 

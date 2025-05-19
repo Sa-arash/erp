@@ -22,7 +22,9 @@ use Filament\Support\Enums\IconSize;
 use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\HtmlString;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
@@ -42,7 +44,7 @@ class AssetResource extends Resource
 
                 Forms\Components\Repeater::make('assets')->schema([
                     Forms\Components\Select::make('product_id')->label('Product')->options(function () {
-                        $products = getCompany()->products;
+                        $products = getCompany()->products->where('product_type','unConsumable');
                         $data = [];
                         foreach ($products as $product) {
                             $data[$product->id] = $product->title . " (" . $product->sku . ")";
@@ -110,11 +112,11 @@ class AssetResource extends Resource
 
 
                     Forms\Components\Hidden::make('status')->default('inStorageUsable')->required(),
-                    Forms\Components\Repeater::make('attributes')->defaultItems(0)->addActionLabel('Add To  Attribute')->schema([
+                    Forms\Components\Repeater::make('attributes')->grid(3)->defaultItems(0)->addActionLabel('Add To  Attribute')->schema([
                         Forms\Components\TextInput::make('title')->required(),
                         Forms\Components\TextInput::make('value')->required(),
                     ])->columnSpanFull()->columns()
-                ])->columns(4)->columnSpanFull()->collapsed()->default(function () {
+                ])->columns(4)->columnSpanFull()->default(function () {
                     if (isset($_GET['po'])) {
                         $asset = Asset::query()->where('company_id', getCompany()->id)->latest()->first();
                         if ($asset) {
@@ -147,7 +149,7 @@ class AssetResource extends Resource
                             return $assets;
                         }
                     }
-                })->cloneable()->addActionLabel('New Asset')
+                })->defaultItems(1)->collapsed(false)->cloneable()->addActionLabel('New Asset')
             ]);
     }
 
@@ -166,7 +168,7 @@ class AssetResource extends Resource
                     return redirect(route('pdf.barcode', ['code' => $record->id]));
                 }),
                 Tables\Columns\TextColumn::make('purchase_order_id')->label('PO No')->state(fn($record) => $record->purchase_order_id === null ? "---" : PurchaseOrder::find($record->purchase_order_id)->purchase_orders_number)
-                    ->url(fn($record) => PurchaseOrderResource::getUrl() . "?tableFilters[id][value]=" . $record->purchase_order_id)
+                    ->url(fn($record) => $record->purchase_order_id? PurchaseOrderResource::getUrl() . "?tableFilters[id][value]=" . $record->purchase_order_id:false)
                 ,
                 Tables\Columns\TextColumn::make('titlen')->label('Asset Name'),
                 Tables\Columns\TextColumn::make('price')->label('Purchase Price')->sortable()->numeric(),
@@ -241,6 +243,11 @@ class AssetResource extends Resource
 
             ], getModelFilter())
             ->actions([
+            Tables\Actions\ActionGroup::make([
+                Tables\Actions\Action::make('qr')->color('danger')->label('QR Checkout')->tooltip('Checkout')->iconSize(IconSize::Medium)->icon('heroicon-c-qr-code')->url(fn($record)=>route('pdf.qrcode',['code'=>$record->id])),
+                Tables\Actions\Action::make('qrView')->color('success')->label('QR View')->tooltip('View Asset')->iconSize(IconSize::Medium)->icon('heroicon-c-qr-code')->url(fn($record)=>route('pdf.qrcode.view',['code'=>$record->id])),
+                Tables\Actions\Action::make('barcode')->color('warning')->label('Barcode')->tooltip('Barcode')->iconSize(IconSize::Medium)->icon('barcode')->url(fn($record)=>route('pdf.barcode',['code'=>$record->id])),
+            ])->color('warning'),
                 Tables\Actions\EditAction::make()->form([
                     Forms\Components\Section::make([
                         Forms\Components\Select::make('product_id')->label('Product')->options(getCompany()->products()->pluck('title', 'id'))->required()->searchable()->preload(),

@@ -9,8 +9,11 @@ class TakeOut extends Page
 {
 
     use HasPageShield;
+
     protected static ?string $navigationIcon = 'heroicon-c-arrow-up-tray';
     protected static string $view = 'filament.admin.pages.take-out';
+    protected static ?string $navigationLabel = 'Gate Pass';
+    protected ?string $heading = 'Gate Pass';
 
     protected function getHeaderWidgets(): array
     {
