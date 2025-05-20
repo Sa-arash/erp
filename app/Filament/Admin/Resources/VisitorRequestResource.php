@@ -22,6 +22,7 @@ use Filament\Support\Enums\IconSize;
 use Filament\Tables;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
 
@@ -53,7 +54,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
         return $form
             ->schema([
                 Section::make('Visitor Access Request')->schema([
-                    Section::make('Visit’s Details')->schema([
+                    Section::make('')->schema([
                         Forms\Components\Select::make('requested_by')->live()
                             ->searchable()
                             ->preload()
@@ -87,7 +88,10 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                             ->required(),
                         Forms\Components\TextInput::make('purpose')->columnSpanFull()
                             ->required(),
+
+
                     ])->columns(6),
+
                     Forms\Components\Repeater::make('visitors_detail')
                         ->addActionLabel('Add')
                         ->label('Visitors Details')
@@ -97,10 +101,21 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                             Forms\Components\TextInput::make('phone')->label('Phone'),
                             Forms\Components\TextInput::make('organization')->label('Organization'),
                             Forms\Components\TextInput::make('remarks')->label('Remarks'),
-                            Forms\Components\ToggleButtons::make('type')->columns(2)->grouped()->label('Armed Close Protection Officers (If Applicable)')->options(['National' => 'National', 'International' => 'International', 'De-facto Security Forces' => 'De-facto Security Forces',]),
                             FileUpload::make('attachment')->downloadable()
                                 ->disk('public')->columnSpanFull(),
-                        ])->columns(7)->columnSpanFull(),
+                        ])->columns(5)->columnSpanFull(),
+                    Section::make([
+                        Forms\Components\Repeater::make('armed')->grid(3)->label('Armed Close Protection Officers (If Applicable)')->columnSpanFull()->schema([
+                            Forms\Components\Select::make('type')->searchable()->disableOptionsWhenSelectedInSiblingRepeaterItems()->required()->columns(2)->label(' ')->options(['National' => 'National', 'International' => 'International', 'De-facto Security Forces' => 'De-facto Security Forces',]),
+                            Forms\Components\TextInput::make('total')->numeric()->required()
+                        ])->maxItems(3)->columns(2)->default(function () {
+                            return [
+                                ['type' => 'National', 'total' => 0],
+                                ['type' => 'International', 'total' => 0],
+                                ['type' => 'De-facto Security Forces', 'total' => 0],
+                            ];
+                        })->minItems(3)
+                    ]),
                     Forms\Components\Repeater::make('driver_vehicle_detail')
                         ->addActionLabel('Add')
                         ->label('Drivers/Vehicles Detail')->schema([
@@ -151,9 +166,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                     Forms\Components\Hidden::make('company_id')
                         ->default(getCompany()->id)
                         ->required(),
-                    MediaManagerInput::make('attachment')->orderable(false)->folderTitleFieldName("requested_by")
-                        ->disk('public')
-                        ->schema([])->maxItems(1)->columnSpanFull(),
+
                 ])->columns(2)
 
             ]);

@@ -131,49 +131,51 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                         ])->relationship('approvable')->columns()
                     ];
                 }),
-                Tables\Actions\Action::make('viewVisitorRequest')->label('View')->visible(fn($record) => substr($record->approvable_type, 11) === "VisitorRequest")->infolist(function () {
-                    return [
-                        Fieldset::make('Visitor Access')->schema([
-                            Section::make('Visitor Access Request')->schema([
-                                Section::make('Visit’s Details')->schema([
-                                    TextEntry::make('employee.info')->label('Requested By'),
-                                    TextEntry::make('visit_date')->date()->label('Visit Date'),
-                                    TextEntry::make('arrival_time')->time()->label('Arrival Time'),
-                                    TextEntry::make('departure_time')->time()->label('Departure Time'),
-                                    TextEntry::make('purpose')->label('Purpose')->columnSpanFull(),
-                                ])->columns(4),
-
-                                RepeatableEntry::make('visitors_detail')
-                                    ->label('Visitors Detail')
-                                    ->schema([
-                                        TextEntry::make('name')->label('Full Name'),
-                                        TextEntry::make('id')->label('ID/Passport'),
-                                        TextEntry::make('phone')->label('Phone'),
-                                        TextEntry::make('organization')->label('Organization'),
-                                        TextEntry::make('type')->label('Type'),
-                                        TextEntry::make('remarks')->label('Remarks'),
-                                    ])->columns(6)->columnSpanFull(),
-
-                                RepeatableEntry::make('driver_vehicle_detail')
-                                    ->label('Drivers/Vehicles Detail')
-                                    ->schema([
-                                        TextEntry::make('name')->label('Full Name'),
-                                        TextEntry::make('id')->label('ID/Passport'),
-                                        TextEntry::make('phone')->label('Phone'),
-                                        TextEntry::make('model')->label('Model'),
-                                        TextEntry::make('color')->label('Color'),
-                                        TextEntry::make('Registration_Plate')->label('Registration Plate'),
-                                    ])->columns(6)->columnSpanFull(),
-                                ImageEntry::make('file')->label('File Upload')->state(function ($record){
-                                    if ($record?->media){
-                                        return $record?->media?->where('collection_name','attachment')->first()?->original_url;
-                                    }
-                                })
-
-                            ])->columns(2)
-                        ])->relationship('approvable')->columns()
-                    ];
-                })->modalWidth(MaxWidth::SevenExtraLarge),
+                Tables\Actions\Action::make('viewVisitorRequest')->url(fn($record)=>VisitorRequestResource::getUrl('view',['record'=>$record->approvable_id]))->label('View')->visible(fn($record) => substr($record->approvable_type, 11) === "VisitorRequest")
+//                    ->infolist(function () {
+//                    return [
+//                        Fieldset::make('Visitor Access')->schema([
+//                            Section::make('Visitor Access Request')->schema([
+//                                Section::make('Visit’s Details')->schema([
+//                                    TextEntry::make('employee.info')->label('Requested By'),
+//                                    TextEntry::make('visit_date')->date()->label('Visit Date'),
+//                                    TextEntry::make('arrival_time')->time()->label('Arrival Time'),
+//                                    TextEntry::make('departure_time')->time()->label('Departure Time'),
+//                                    TextEntry::make('purpose')->label('Purpose')->columnSpanFull(),
+//                                ])->columns(4),
+//
+//                                RepeatableEntry::make('visitors_detail')
+//                                    ->label('Visitors Detail')
+//                                    ->schema([
+//                                        TextEntry::make('name')->label('Full Name'),
+//                                        TextEntry::make('id')->label('ID/Passport'),
+//                                        TextEntry::make('phone')->label('Phone'),
+//                                        TextEntry::make('organization')->label('Organization'),
+//                                        TextEntry::make('type')->label('Type'),
+//                                        TextEntry::make('remarks')->label('Remarks'),
+//                                    ])->columns(6)->columnSpanFull(),
+//
+//                                RepeatableEntry::make('driver_vehicle_detail')
+//                                    ->label('Drivers/Vehicles Detail')
+//                                    ->schema([
+//                                        TextEntry::make('name')->label('Full Name'),
+//                                        TextEntry::make('id')->label('ID/Passport'),
+//                                        TextEntry::make('phone')->label('Phone'),
+//                                        TextEntry::make('model')->label('Model'),
+//                                        TextEntry::make('color')->label('Color'),
+//                                        TextEntry::make('Registration_Plate')->label('Registration Plate'),
+//                                    ])->columns(6)->columnSpanFull(),
+//                                ImageEntry::make('file')->label('File Upload')->state(function ($record){
+//                                    if ($record?->media){
+//                                        return $record?->media?->where('collection_name','attachment')->first()?->original_url;
+//                                    }
+//                                })
+//
+//                            ])->columns(2)
+//                        ])->relationship('approvable')->columns()
+//                    ];
+//                })
+                    ->modalWidth(MaxWidth::SevenExtraLarge),
                 Action::make('viewPurchaseRequest')->label('View')->modalWidth(MaxWidth::Full)->infolist(function () {
                     return [
                         Fieldset::make('PR')->relationship('approvable')->schema([

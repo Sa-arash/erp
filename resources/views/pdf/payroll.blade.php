@@ -419,25 +419,14 @@
                 <td class="label">{{$deduction->title }}</td>
                 <td></td>
                 <td></td>
-                <td style="text-align: right"
+                <td style="text-align: center"
                     colspan="3">{{$deduction->pivot->amount >0? number_format( $deduction->pivot->amount):$deduction->pivot->percent."%"." (".$deduction->on_change.")" }}</td>
             </tr>
         @endforeach
 
         <tr class="">
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
+            <td colspan="5"></td>
+
             <td style="background: #e0e0e0;border-bottom: 2px solid black;border-top:2px solid black " class="label">Net Pay</td>
 
             <td style="background: #e0e0e0;text-align: right;border-bottom: 2px solid black;border-top:2px solid black "

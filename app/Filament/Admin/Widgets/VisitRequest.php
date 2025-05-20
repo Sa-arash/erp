@@ -11,29 +11,28 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Notifications\Notification;
+use Filament\Support\Enums\IconSize;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
-use Illuminate\Support\Carbon;
 
 class VisitRequest extends BaseWidget
 {
-    protected int | string | array $columnSpan = 'full';
-
+    protected int|string|array $columnSpan = 'full';
+    protected static ?string $heading = 'Visitor  Request';
     public function table(Table $table): Table
     {
-        return $table->defaultSort('id','desc')
+        return $table->emptyStateHeading('No Visitor  Request')->defaultSort('id', 'desc')
             ->query(
-                VisitorRequest::query()->where('company_id', getCompany()->id)->where('requested_by',getEmployee()->id)
-                // ->where('status', '!=', 'FinishedCeo')
+                VisitorRequest::query()->where('company_id', getCompany()->id)->where('requested_by', getEmployee()->id)
+            // ->where('status', '!=', 'FinishedCeo')
             )
             ->columns([
                 Tables\Columns\TextColumn::make('#')->rowIndex(),
@@ -95,15 +94,17 @@ class VisitRequest extends BaseWidget
             ])
 
             ->actions([
-                Tables\Actions\DeleteAction::make()->visible(fn($record)=>$record->status==="Pending")->action(function ($record){
+                Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')
+                    ->url(fn($record) => route('pdf.requestVisit', ['id' => $record->id]))->openUrlInNewTab(),
+                Tables\Actions\DeleteAction::make()->visible(fn($record) => $record->status === "Pending")->action(function ($record) {
                     $record->approvals()->delete();
                     $record->delete();
                     Notification::make('success')->success()->title('Deleted')->send();
                 }),
                 Tables\Actions\ReplicateAction::make()->label('Duplicate')->modalHeading('Duplicate')->form(
                     [
-                        Section::make('Visitor Access Request')->schema([
-                            Section::make('Visit’s Details')->schema([
+                        Section::make('Visitor Access Details')->schema([
+                            Section::make('')->schema([
                                 Select::make('agency')->options(getCompany()->agency)->createOptionForm([
                                     TextInput::make('title')->required()
                                 ])->createOptionUsing(function ($data){
@@ -129,12 +130,22 @@ class VisitRequest extends BaseWidget
                                 TextInput::make('id')->label('ID/Passport')->required(),
                                 TextInput::make('phone')->label('Phone'),
                                 TextInput::make('organization')->label('Organization'),
-                                Textarea::make('remarks')->columnSpan(3)->label('Remarks'),
-                                ToggleButtons::make('type')->required()->grouped()->columnSpan(2)->label('Type')->options(['National' => 'National', 'International' => 'International', 'De-facto Security Forces' => 'De-facto Security Forces',]),
+                                TextInput::make('remarks')->label('Remarks'),
                                 FileUpload::make('attachment')->downloadable()
                                     ->disk('public')->columnSpanFull(),
-
                             ])->columns(5)->columnSpanFull(),
+                            Section::make([
+                                Repeater::make('armed')->grid(3)->label('Armed Close Protection Officers (If Applicable)')->columnSpanFull()->schema([
+                                    Select::make('type')->columnSpan(2)->searchable()->disableOptionsWhenSelectedInSiblingRepeaterItems()->required()->columns(2)->label(' ')->options(['National' => 'National', 'International' => 'International', 'De-facto Security Forces' => 'De-facto Security Forces',]),
+                                    TextInput::make('total')->numeric()->required()
+                                ])->maxItems(3)->columns(3)->default(function () {
+                                    return [
+                                        ['type' => 'National', 'total' => 0],
+                                        ['type' => 'International', 'total' => 0],
+                                        ['type' => 'De-facto Security Forces', 'total' => 0],
+                                    ];
+                                })->minItems(3)->reorderableWithDragAndDrop(false)
+                            ]),
                             Repeater::make('driver_vehicle_detail')
                                 ->addActionLabel('Add')
                                 ->label('Drivers/Vehicles Detail')->schema([
@@ -143,8 +154,8 @@ class VisitRequest extends BaseWidget
                                     TextInput::make('phone')->label('Phone'),
                                     Select::make('model')->options(getCompany()->visitrequest_model)->createOptionForm([
                                         TextInput::make('title')->required()
-                                    ])->createOptionUsing(function ($data){
-                                        $array=getCompany()->visitrequest_model;
+                                    ])->createOptionUsing(function ($data) {
+                                        $array = getCompany()->visitrequest_model;
                                         if (isset($array)){
                                             $array[$data['title']]=$data['title'];
 
@@ -194,6 +205,7 @@ class VisitRequest extends BaseWidget
                         'driver_vehicle_detail'=>$data['driver_vehicle_detail'],
                         'requested_by'=>getEmployee()->id,
                         'company_id'=>getCompany()->id,
+                        'armed' => $data['armed']
                     ]);
 
                     // sendAR(getEmployee(),,getCompany());
@@ -207,8 +219,8 @@ class VisitRequest extends BaseWidget
             ->headerActions([
                 Action::make('Visit Request')->label('New Visit Request')->modalWidth(MaxWidth::Full)->form(
                     [
-                        Section::make('Visitor Access Request')->schema([
-                            Section::make('Visit’s Details')->schema([
+                        Section::make('Visitor Access Details')->schema([
+                            Section::make('')->schema([
                                 Select::make('agency')->options(getCompany()->agency)->createOptionForm([
                                     TextInput::make('title')->required()
                                 ])->createOptionUsing(function ($data){
@@ -234,12 +246,21 @@ class VisitRequest extends BaseWidget
                                 TextInput::make('id')->label('ID/Passport')->required(),
                                 TextInput::make('phone')->label('Phone'),
                                 TextInput::make('organization')->label('Organization'),
-                                Textarea::make('remarks')->columnSpan(3)->label('Remarks'),
-                                ToggleButtons::make('type')->required()->grouped()->columnSpan(2)->label('Type')->options(['National' => 'National', 'International' => 'International', 'De-facto Security Forces' => 'De-facto Security Forces',]),
-                                FileUpload::make('attachment')->downloadable()
-                                    ->disk('public')->columnSpanFull(),
-
+                                TextInput::make('remarks')->label('Remarks'),
+                                FileUpload::make('attachment')->downloadable()->disk('public')->columnSpanFull(),
                             ])->columns(5)->columnSpanFull(),
+                            Section::make([
+                                Repeater::make('armed')->grid(3)->label('Armed Close Protection Officers (If Applicable)')->columnSpanFull()->schema([
+                                    Select::make('type')->columnSpan(2)->searchable()->disableOptionsWhenSelectedInSiblingRepeaterItems()->required()->columns(2)->label(' ')->options(['National' => 'National', 'International' => 'International', 'De-facto Security Forces' => 'De-facto Security Forces',]),
+                                    TextInput::make('total')->numeric()->required()
+                                ])->maxItems(3)->columns(3)->default(function () {
+                                    return [
+                                        ['type' => 'National', 'total' => 0],
+                                        ['type' => 'International', 'total' => 0],
+                                        ['type' => 'De-facto Security Forces', 'total' => 0],
+                                    ];
+                                })->minItems(3)->reorderableWithDragAndDrop(false)
+                            ]),
                             Repeater::make('driver_vehicle_detail')
                                 ->addActionLabel('Add')
                                 ->label('Drivers/Vehicles Detail')->schema([
@@ -248,8 +269,8 @@ class VisitRequest extends BaseWidget
                                     TextInput::make('phone')->label('Phone'),
                                     Select::make('model')->options(getCompany()->visitrequest_model)->createOptionForm([
                                         TextInput::make('title')->required()
-                                    ])->createOptionUsing(function ($data){
-                                        $array=getCompany()->visitrequest_model;
+                                    ])->createOptionUsing(function ($data) {
+                                        $array = getCompany()->visitrequest_model;
                                         if (isset($array)){
                                             $array[$data['title']]=$data['title'];
 
@@ -297,18 +318,22 @@ class VisitRequest extends BaseWidget
                         'purpose'=>$data['purpose'],
                         'ICON'=>$data['ICON'],
                         'visitors_detail'=>$data['visitors_detail'],
-                        'driver_vehicle_detail'=>$data['driver_vehicle_detail'],
-                        'requested_by'=>getEmployee()->id,
-                        'company_id'=>getCompany()->id,
-                    ]);
+                       'driver_vehicle_detail' => $data['driver_vehicle_detail'],
+                       'requested_by' => getEmployee()->id,
+                       'company_id' => getCompany()->id,
+                       'armed' => $data['armed']
+                   ]);
                     // sendAR(getEmployee(),,getCompany());
                     sendSecurity($visitorRequest, getCompany());
                     // sendSecurity(getEmployee(),$visitorRequest,getCompany());
                     Notification::make('success')->color('success')->success()->title('Request Sent')->send()->sendToDatabase(auth()->user());
 
-                })->label('Visitor Access Request')
+                })->label('Visitor Access Request'),
+
             ])
-            ->bulkActions([])
+            ->bulkActions([
+
+            ])
         ;
     }
     public static function getPages(): array

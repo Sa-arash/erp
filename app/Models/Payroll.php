@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
     {
         use HasFactory;
 
-        protected $fillable=['total_allowance','total_deduction','account_id','employee_id','amount_pay','payment_date','start_date','end_date','status','user_id','company_id'];
+        protected $fillable=['invoice_id','total_allowance','total_deduction','account_id','employee_id','amount_pay','payment_date','start_date','end_date','status','user_id','company_id'];
 
     protected $casts=['status'=>PayrollStatus::class];
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -28,6 +28,10 @@ use Illuminate\Database\Eloquent\Model;
     public function account(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Account::class);
+    }
+    public function invoice(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Invoice::class);
     }
     public function benefits(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {

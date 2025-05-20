@@ -63,8 +63,8 @@ class CreateFactor extends CreateRecord
                         'account_id' => null,
                         'description' => null,
                         'creditor' => 0,
-                        'company_id' => getCompany()->id,
-                        'debtor' => round(collect($produtTotal)->sum()*$currency?->exchange_rate,2),
+                            'company_id' => getCompany()->id,
+                        'debtor' => number_format(round(collect($produtTotal)->sum()*$currency?->exchange_rate,2),2),
                         'exchange_rate' => $currency?->exchange_rate,
                         'debtor_foreign'=>0,
                         'creditor_foreign'=>0
@@ -75,7 +75,7 @@ class CreateFactor extends CreateRecord
                     [
                         'account_id' => null,
                         'description' => null,
-                        'creditor' => round(collect($produtTotal)->sum()*$currency?->exchange_rate,2),
+                        'creditor' => number_format(round(collect($produtTotal)->sum()*$currency?->exchange_rate,2),2),
                         'company_id' => getCompany()->id,
                         'debtor' => 0,
                         'exchange_rate' => $currency?->exchange_rate,

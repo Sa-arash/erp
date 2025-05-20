@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('payrolls', function (Blueprint $table) {
             $table->id();
             $table->foreignId('employee_id')->constrained('employees')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('invoice_id')->constrained('invoices')->cascadeOnUpdate()->cascadeOnDelete();
             $table->bigInteger('amount_pay');
             $table->bigInteger('total_deduction')->default(0);
             $table->bigInteger('total_allowance')->default(0);

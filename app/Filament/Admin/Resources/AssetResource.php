@@ -71,7 +71,7 @@ class AssetResource extends Resource
                         } else {
                             return "0001";
                         }
-                    })->required()->numeric()->label('Asset Number')->maxLength(50),
+                    })->required()->numeric()->label('Asset Number')->readOnly()->maxLength(50),
                     Forms\Components\TextInput::make('serial_number')->label('Serial Number')->maxLength(50),
                     Forms\Components\TextInput::make('price')->prefix(defaultCurrency()?->symbol)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->required()->numeric()->label('Purchase Price'),
                     Forms\Components\Select::make('warehouse_id')->default(getCompany()->warehouse_id)->live()->label('Warehouse/Building')->options(getCompany()->warehouses()->pluck('title', 'id'))->required()->searchable()->preload(),
@@ -117,6 +117,7 @@ class AssetResource extends Resource
                         Forms\Components\TextInput::make('value')->required(),
                     ])->columnSpanFull()->columns()
                 ])->columns(4)->columnSpanFull()->default(function () {
+
                     if (isset($_GET['po'])) {
                         $asset = Asset::query()->where('company_id', getCompany()->id)->latest()->first();
                         if ($asset) {
@@ -124,6 +125,7 @@ class AssetResource extends Resource
                         } else {
                             $number = "0001";
                         }
+
                         $PO = PurchaseOrder::query()->firstWhere('id', $_GET['po']);
                         $assets = [];
                         if ($PO) {
@@ -148,8 +150,19 @@ class AssetResource extends Resource
                             }
                             return $assets;
                         }
+                    }else{
+
+                        return [
+                            [
+                                'product_id'=>null,
+                                'buy_date'=>null,
+                                'number'=>null,
+                                'price'=>null,
+                                'purchase_order_id'=>null,
+                            ]
+                        ];
                     }
-                })->defaultItems(1)->collapsed(false)->cloneable()->addActionLabel('New Asset')
+                })->collapsed(false)->cloneable()->addActionLabel('New Asset')
             ]);
     }
 

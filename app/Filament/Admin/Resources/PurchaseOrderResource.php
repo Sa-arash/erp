@@ -694,7 +694,7 @@ implements HasShieldPermissions
 
             ], getModelFilter())
             ->actions([
-                Tables\Actions\Action::make('Invoice')->visible(fn($record) => auth()->user()->can('invoice_purchase::order') and $record->invoice == null)->label('Invoice')->tooltip('Invoice')->icon('heroicon-o-credit-card')->iconSize(IconSize::Medium)->color('warning')->url(fn($record) => PurchaseOrderResource::getUrl('InvoicePurchaseOrder', ['record' => $record->id])),
+                Tables\Actions\Action::make('Invoice')->visible(fn($record) => $record->status==="Approved" and auth()->user()->can('invoice_purchase::order') and $record->invoice == null)->label('Invoice')->tooltip('Invoice')->icon('heroicon-o-credit-card')->iconSize(IconSize::Medium)->color('warning')->url(fn($record) => PurchaseOrderResource::getUrl('InvoicePurchaseOrder', ['record' => $record->id])),
 
                 Tables\Actions\Action::make('prPDF')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.po', ['id' => $record->id]))->openUrlInNewTab(),
                 Tables\Actions\EditAction::make()->hidden(fn($record) => $record->status == 'Approved'),

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->time('departure_time');
             $table->boolean('ICON')->default(0);
             $table->string('agency')->nullable();
+            $table->text('armed')->nullable();
             $table->text('purpose');
             $table->json('visitors_detail')->nullable();
             $table->json('driver_vehicle_detail')->nullable();

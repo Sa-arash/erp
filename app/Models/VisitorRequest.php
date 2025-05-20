@@ -14,6 +14,7 @@ class VisitorRequest extends Model implements HasMedia
     protected $casts = [
         'visitors_detail' => 'array',
         'driver_vehicle_detail' => 'array',
+        'armed'=>'array'
     ];
     public function employee(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

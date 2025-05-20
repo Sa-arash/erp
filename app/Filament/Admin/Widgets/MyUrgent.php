@@ -20,6 +20,8 @@ use Filament\Widgets\TableWidget as BaseWidget;
 class MyUrgent extends BaseWidget
 {
     protected int | string | array $columnSpan='full';
+    protected static ?string $heading='Urgent Leave';
+
     public function table(Table $table): Table
     {
         return $table

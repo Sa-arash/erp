@@ -198,14 +198,14 @@
                 <td colspan="3">Specific Visit Details</td>
             </tr>
             <tr>
-                <td>Date of Visit</td>
-                <td>Time of Arrival</td>
-                <td>Time of Departure</td>
+                <td style="width: 33%">Date of Visit</td>
+                <td style="width: 33%">Time of Arrival</td>
+                <td style="width: 33%">Time of Departure</td>
             </tr>
             <tr>
-                <td>{{ \Illuminate\Support\Carbon::create($requestVisit->visit_date)->format('Y/m/d') }}</td>
-                <td>{{ \Carbon\Carbon::parse($requestVisit->arrival_time)->format('h:i A') }}</td>
-                <td>{{ \Carbon\Carbon::parse($requestVisit->departure_time)->format('h:i A') }}</td>
+                <td style="width: 33%">{{ \Illuminate\Support\Carbon::create($requestVisit->visit_date)->format('d/F/Y') }}</td>
+                <td style="width: 33%">{{ \Carbon\Carbon::parse($requestVisit->arrival_time)->format('h:i A') }}</td>
+                <td style="width: 33%">{{ \Carbon\Carbon::parse($requestVisit->departure_time)->format('h:i A') }}</td>
 
             </tr>
             <tr>
@@ -222,11 +222,10 @@
                 <td colspan="7">Visitor(s) Details</td>
             </tr>
             <tr>
-                <td></td>
+                <td>NO</td>
                 <td>Name</td>
                 <td>ID/Passport</td>
                 <td>Cell Phone</td>
-                <td>Type</td>
                 <td>Organization</td>
                 <td>Remarks</td>
             </tr>
@@ -236,10 +235,9 @@
             @foreach ($requestVisit->visitors_detail as $visitor)
                 <tr>
                     <td>{{ $i++ }}</td>
-                    <td>{{ $visitor['name'] ?? '---' }}</td>
+                    <td style="text-align: left">{{ $visitor['name'] ?? '---' }}</td>
                     <td>{{ $visitor['id' ?? '---'] }}</td>
                     <td>{{ $visitor['phone'] ?? '---' }}</td>
-                    <td>{{ $visitor['type'] ?? '---' }}</td>
                     <td>{{ $visitor['organization'] ?? '---' }}</td>
                     <td>{{ $visitor['remarks'] ?? '---' }}</td>
                 </tr>
@@ -268,27 +266,27 @@
             </tr>
             <tr>
                 <td><strong>Total</strong></td>
-
-                <td colspan="5">&nbsp;</td>
+                <td colspan="">&nbsp;</td>
+                <td colspan="">&nbsp;</td>
+                <td colspan="3">&nbsp;</td>
             </tr>
             <tr>
-                <td colspan="6" class="no-border" style="text-align: right;"> &nbsp;</td>
+                <td colspan="7" class="no-border" style="text-align: right;"> &nbsp;</td>
             </tr>
         </table>
 
         <table>
             <tr class="section-title">
-                <td class="text-center" colspan="6">Driver(s)/Vehicle(s) Details</td>
+                <td class="text-center" colspan="7">Driver(s)/Vehicle(s) Details</td>
             </tr>
             <tr>
                 <td class="text-center" colspan="3"><strong>Driver’s Details</strong></td>
-                <td class="text-center" colspan="3"><strong>Vehicle Details</strong></td>
+                <td class="text-center" colspan="4"><strong>Vehicle Details</strong></td>
             </tr>
 
 
-
-
             <tr>
+                <td>NO</td>
                 <td>Full Name</td>
                 <td>ID Type & No.</td>
                 <td>Cell Phone</td>
@@ -296,10 +294,14 @@
                 <td>Color</td>
                 <td>Registration Plate</td>
             </tr>
+            @php
+            $j=1;
+            @endphp
 
             {{-- @dd($requestVisit) --}}
             @foreach ($requestVisit->driver_vehicle_detail as $driver)
                 <tr>
+                    <td>{{ $j++ }}</td>
                     <td>{{ $driver['name'] ?? '---' }}</td>
                     <td>{{ $driver['id'] ?? '---' }}</td>
                     <td>{{ $driver['phone'] ?? '---' }}</td>
@@ -310,16 +312,16 @@
             @endforeach
 
             <tr>
-                <td colspan="6" class="no-border" style="text-align: right;"> &nbsp;</td>
+                <td colspan="7" class="no-border" style="text-align: right;"> &nbsp;</td>
             </tr>
         </table>
 
         <table>
             <tr>
-                <td class="no-border">Requestor’s Signature:
+                <td style="text-align: left;width:22%" class="no-border">Requestor’s Signature:
                 </td>
 
-                <td class="no-border">
+                <td class="no-border" style="">
                     @if(file_exists($requestVisit->employee->media->where('collection_name', 'signature')->first()?->getPath()))
                     <img src="{{ $requestVisit->employee->media->where('collection_name', 'signature')->first()->getPath() }}"
                         style="width: 120px;height: 50px" alt="">
@@ -327,8 +329,8 @@
                 </td>
 
                 <td class="no-border">Date:</td>
-                <td class="no-border">
-                    {{ \Illuminate\Support\Carbon::create($requestVisit->visit_date)->format('Y/m/d') }}</td>
+                <td class="no-border" >
+                    {{ \Illuminate\Support\Carbon::create($requestVisit->visit_date)->format('d/F/Y ') }}</td>
             </tr>
 
         </table>
@@ -338,17 +340,17 @@
         @if (isset($requestVisit->approvals[0]))
             <table class="equal-table ">
                 <tr class="section-title bg-lightgreen">
-                    <td colspan="4" class="equal-cell bg-lightgreen">Endorsement and Approval</td>
+                    <td colspan="4" style="text-align: left" class="equal-cell bg-lightgreen">Endorsement and Approval</td>
                 </tr>
                 <tr>
-                    <td class="equal-cell">FSU UNHCR</td>
-                    <td class="equal-cell"></td>
+                    <td style="text-align: left" class="equal-cell">FSU UNHCR</td>
+                    <td  class="equal-cell"></td>
                     <td class="equal-cell"></td>
                     <td class="equal-cell">Date:</td>
                 </tr>
                 @foreach ($requestVisit->approvals as $approve)
                 <tr>
-                    <td class="equal-cell">FSA FAO</td>
+                    <td style="text-align: left" class="equal-cell">FSA FAO</td>
                     <td class="equal-cell"></td>
                     <td class="equal-cell" rowspan="2">
                         @if ($approve->employee->media->where('collection_name', 'signature')->first()?->original_url and $approve->status->name === 'Approve')
@@ -359,16 +361,17 @@
                     </td>
                 </tr>
                     <tr>
-                        <td class="equal-cell">ICON SFP</td>
-                        <td class="equal-cell">{{$approve->employee->fullName}}</td>
+                        <td style="text-align: left" class="equal-cell">ICON SFP</td>
+                        <td class="equal-cell"><span style="border-bottom: 1px solid black">Digitally Signed By:</span>
+                            <br> {{$approve->employee->fullName}}</td>
 
                         <td class="equal-cell">Date:
-                            {{ $approve->approve_date ? \Carbon\Carbon::make($approve->approve_date)->format('Y.m.d H:i:s') : "" }} +04'30
+                            {{ $approve->approve_date ? \Carbon\Carbon::make($approve->approve_date)->format('d/F/Y H:i:s') : "" }} +04:30
                         </td>
                     </tr>
                 @endforeach
                 <tr>
-                    <td class="equal-cell">Remarks to CSM</td>
+                    <td  style="text-align: left" class="equal-cell">Remarks to CSM</td>
                     <td class="equal-cell"></td>
                     <td class="equal-cell">{{ $requestVisit->status == "approved" ? '■': '□' }}  Approved</td>
                     <td class="equal-cell">{{ $requestVisit->status == "notApproved" ? '■': '□' }} Not Approved</td>

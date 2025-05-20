@@ -364,12 +364,12 @@ implements HasShieldPermissions
                             $currentMonth = $currentDate->month; // ماه جاری
                             $nextMonth = $currentDate->copy()->addMonth()->month;
                             $daysUntilNextMonth = $currentDate->daysInMonth - $currentDate->day;
-                        
+
                             $options = [];
-                        
+
                             // اضافه کردن نام ماه جاری با ایندکس شماره ماه
                             $options[$currentMonth - 1] = $currentDate->format('F'); // ایندکس از 0 شروع می‌شود
-                        
+
                             // اگر 5 روز یا کمتر به پایان ماه باقی مانده باشد، نام ماه بعدی را اضافه کن
                             if ($daysUntilNextMonth <= 5) {
                                 $options[$nextMonth - 1] = $currentDate->copy()->addMonth()->format('F'); // ایندکس از 0 شروع می‌شود
@@ -504,7 +504,7 @@ implements HasShieldPermissions
                             $totalAllowances += $totalOvertime;
                             $totalDeductions += $totalLeaves;
                             // محاسبه حقوق نهایی
-
+                            $grossAmount+=($totalOvertime -$totalLeaves);
                             // ایجاد Payroll
                             $payroll = Payroll::query()->create([
                                 'amount_pay' => $grossAmount,
@@ -741,7 +741,7 @@ implements HasShieldPermissions
                         ]);
                         return Notification::make('approvePayroll')->title('Approve Payroll ' . $record->employee->fullName)->actions([\Filament\Notifications\Actions\Action::make('Payroll')->url(route('pdf.payroll',['id'=>$record->id]))->openUrlInNewTab()->color('aColor')])->success()->send()->sendToDatabase(auth()->user());
                     })]
-                )->modalWidth(MaxWidth::FitContent)->visible(fn($record) => $record->status->value === "pending"),
+                )->modalWidth(MaxWidth::FitContent)->visible(fn($record) => $record->status->value === "pending" and auth()->user()->can('approve_payroll')),
                 Tables\Actions\Action::make('payment')->visible(fn($record) => $record->status->value === "accepted" and auth()->user()->can('payment_payroll'))->label('Payment')->tooltip('Payment')->icon('heroicon-o-credit-card')->iconSize(IconSize::Medium)->color('warning')->action(function ($data, $record) {
                     $debtor = 0;
                     $creditor = 0;
@@ -793,7 +793,8 @@ implements HasShieldPermissions
                         'payment_date' => $data['date'],
                         'status' => 'payed',
                         'account_id' => $debtorID,
-                        'reference' => $data['reference']
+                        'reference' => $data['reference'],
+                        'invoice_id'=>$invoice->id
 
                     ]);
                     return Notification::make('Create Invoice Payroll')->success()->title('Pay Payroll')->actions([\Filament\Notifications\Actions\Action::make('Payroll')->url(route('pdf.payroll',['id'=>$record->id]))->openUrlInNewTab()])->send()->sendToDatabase(auth()->user());

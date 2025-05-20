@@ -9,12 +9,12 @@ use Filament\Widgets\TableWidget as BaseWidget;
 
 class MyOvertime extends BaseWidget
 {
-    
+
     protected int | string | array $columnSpan='full';
     public function table(Table $table): Table
     {
-        
-        return $table
+
+        return $table->heading('Overtime')->emptyStateHeading('No Overtime')
             ->query(
                  Overtime::query()->where('employee_id',auth()->user()->id)
             )

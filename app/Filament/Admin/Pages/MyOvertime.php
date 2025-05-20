@@ -9,9 +9,9 @@ use Filament\Pages\Page;
 class MyOvertime extends Page
 {
     use HasPageShield;
-    
+
     protected static ?string $navigationIcon = 'heroicon-o-squares-plus';
-    protected static ?string $navigationLabel = "My Overtimes";
+    protected static ?string $navigationLabel = "My Overtime";
     protected static string $view = 'filament.admin.pages.my-overtime';
     protected function getHeaderWidgets(): array
     {

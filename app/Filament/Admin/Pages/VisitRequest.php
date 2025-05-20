@@ -12,7 +12,7 @@ class VisitRequest extends Page
 
     protected static ?string $navigationIcon = 'heroicon-o-document-text';
     protected static ?string $navigationLabel = "Visitor Access Request";
-
+    protected ?string $heading = 'Visitor Access Request';
     protected static string $view = 'filament.admin.pages.c-e-oapproval';
 
     protected function getHeaderWidgets(): array
