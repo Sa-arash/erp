@@ -231,6 +231,7 @@
             </tr>
             @php
             $i=1;
+$tdsArend='';
             @endphp
             @foreach ($requestVisit->visitors_detail as $visitor)
                 <tr>
@@ -249,29 +250,29 @@
 
         <table>
             <tr class="section-title">
-                <td colspan="6">Armed Close Protection Officers (If Applicable)</td>
+                <td colspan="4">Armed Close Protection Officers (If Applicable)</td>
             </tr>
             <tr>
                 <td><strong>Type</strong></td>
-                <td>
-                    {!! $requestVisit->employee->card_status === 'National Staff' ? '■ National' : '□ National' !!}
-                </td>
-                <td>
-                    {!! $requestVisit->employee->card_status === 'International Staff' ? '■ International' : '□ International' !!}
-                </td>
-                <td colspan="3">
-                    {!! $requestVisit->employee->card_status === 'International Resident' ? '■ De-facto Security Forces' : '□ De-facto Security Forces' !!}
-                </td>
+                @foreach($requestVisit->armed as $item)
+                    @php
+                        $total=$item['total'] !=0? $item['total']:"";
+                        $tdsArend.="<td>{$total} </td>";
+                    @endphp
+                    @if($item['total'] !=0)
+                        <td>■ {{$item['type'] }}</td>
 
+                    @else
+                        <td>□ {{$item['type'] }}</td>
+                    @endif
+                @endforeach
             </tr>
             <tr>
                 <td><strong>Total</strong></td>
-                <td colspan="">&nbsp;</td>
-                <td colspan="">&nbsp;</td>
-                <td colspan="3">&nbsp;</td>
+                {!! $tdsArend !!}
             </tr>
             <tr>
-                <td colspan="7" class="no-border" style="text-align: right;"> &nbsp;</td>
+                <td colspan="4" class="no-border" style="text-align: right;"> &nbsp;</td>
             </tr>
         </table>
 

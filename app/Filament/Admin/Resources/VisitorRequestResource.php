@@ -187,12 +187,11 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('InSide_date')->label('Check IN ')->time(),
                 Tables\Columns\TextColumn::make('OutSide_date')->label('Check OUT ')->time(),
                 Tables\Columns\TextColumn::make('Track Time')->state(function ($record) {
-//                    $startTime = $record->InSide_date;
-//                    $endTime = $record->OutSide_date;
-//                    if ($startTime and $endTime) {
-//                        $difference = calculateTime($startTime, $endTime);
-//                        return $difference;
-//                    }
+                    $startTime = $record->InSide_date;
+                    $endTime = $record->OutSide_date;
+                    if ($startTime and $endTime) {
+                        return  diffVisit($startTime, $endTime);
+                    }
                 })->label('Track Time'),
                 Tables\Columns\TextColumn::make('status')->label('Head of Security ')->tooltip(fn($record)=>isset($record->approvals[0])? $record->approvals[0]->approve_date : false )->alignCenter()->state(fn($record)=>match ($record->status){
                     'approved'=>'Approved',

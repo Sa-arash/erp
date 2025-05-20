@@ -49,6 +49,23 @@ class VisitRequest extends BaseWidget
                 Tables\Columns\TextColumn::make('departure_time')->time('H:m'),
                 Tables\Columns\TextColumn::make('InSide_date')->label('CheckIn ')->time('H:m'),
                 Tables\Columns\TextColumn::make('OutSide_date')->label('Checkout ')->time('H:m'),
+                Tables\Columns\TextColumn::make('Track Time')->state(function ($record) {
+                    $startTime = $record->InSide_date;
+                    $endTime = $record->OutSide_date;
+                    if ($startTime and $endTime) {
+                        return  diffVisit($startTime, $endTime);
+                    }
+                })->label('Track Time'),
+
+                Tables\Columns\TextColumn::make('Time Leave')->state(function ($record) {
+                    $endTime = $record->departure_time;
+                    if ( $record->InSide_date and $record->OutSide_date==null  and $endTime ) {
+                        return diffLeave( $endTime);
+                    }else{
+                       return '---';
+                    }
+                })->label('Time Leave'),
+
                 Tables\Columns\TextColumn::make('status')->badge()->state((function ($record) {
                     switch ($record->status) {
                         case "approved":
@@ -69,28 +86,8 @@ class VisitRequest extends BaseWidget
                     }
                 })->tooltip(fn($record)=>isset($record->approvals[0])? $record->approvals[0]->approve_date : false )->alignCenter(),
 
-                Tables\Columns\TextColumn::make('employee.fullName')
-                ->label('Requester')
-                ->numeric()
-                ->toggleable(isToggledHiddenByDefault: true)
-                ->sortable(),
-//                Tables\Columns\TextColumn::make('Time Leave')->state(function ($record) {
-//
-//                    $startTime = Carbon::make($record->InSide_date)->format('H:i:s');
-//                    $endTime = $record->departure_time;
-//                    if ($startTime and $endTime) {
-//                        $difference = calculateTime($startTime, $endTime);
-//                        return $difference;
-//                    }
-//                })->label('Time Leave'),
-                Tables\Columns\TextColumn::make('Track Time')->state(function ($record) {
-//                    $startTime = $record->InSide_date;
-//                    $endTime = $record->OutSide_date;
-//                    if ($startTime and $endTime) {
-//                        $difference = calculateTime($startTime, $endTime);
-//                        return $difference;
-//                    }
-                })->label('Track Time'),
+
+
             ])
 
             ->actions([

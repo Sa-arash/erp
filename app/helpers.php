@@ -877,7 +877,30 @@ function calculateTime($startDateTime, $endDateTime): \Carbon\CarbonInterval|str
 
     return $interval;
 }
+function diffVisit($start,$end){
+    $start = new DateTime($start);
+    $end = new DateTime($end);
 
+    $interval = $start->diff($end);
+    $hours = $interval->days * 24 + $interval->h;
+    $minutes = $interval->i;
+    return $hours.'Hours '.$minutes.' Minute';
+}
+function diffLeave($end){
+    $now = new DateTime(); // زمان فعلی (مثلاً 2025-05-20 19:50:19)
+    $endTimeStr = $now->format("Y-m-d") . $end; // ساختن زمان خروج برای همون روز
+    $endTime = new DateTime($endTimeStr);
+
+// اختلاف بین حالا و زمان خروج
+    if ($now > $endTime) {
+        return "Ended";
+    } else {
+        $interval = $now->diff($endTime);
+        return $interval->h .':'.$interval->i." To Leave";
+    }
+
+
+}
 function numberToWords($number, $currency)
 {
     if (!is_numeric($number)) {
