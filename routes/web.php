@@ -1,6 +1,5 @@
 <?php
 
-use App\Filament\Admin\Pages\VisitRequest;
 use App\Models\Account;
 use App\Models\AccountType;
 use App\Models\Approval;
@@ -64,6 +63,7 @@ use App\Models\Typeleave;
 use App\Models\Unit;
 use App\Models\UrgentLeave;
 use App\Models\User;
+use App\Models\VisitorRequest;
 use App\Models\Warehouse;
 use Filament\Facades\Filament;
 use Filament\Http\Responses\Auth\LoginResponse;
@@ -135,7 +135,7 @@ Route::get('/testLog', function () {
     Unit::query()->first()?->log,
     UrgentLeave::query()->first()?->log,
     User::query()->first()?->log,
-    VisitRequest::query()->first()?->log,
+    VisitorRequest::query()->first()?->log,
     Warehouse::query()->first()?->log,
    
 
