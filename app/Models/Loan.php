@@ -13,6 +13,11 @@ class Loan extends Model
 
     protected $fillable = ['approve_admin_date','approve_finance_date','admin_id','finance_id','first_installment_due_date', 'description', 'employee_id', 'loan_code', 'answer_date', 'request_amount', 'request_date', 'number_of_installments', 'number_of_payed_installments', 'status', 'user_id', 'company_id', 'amount'];
 
+
+    public function getLogAttribute(){
+        return $this?->employee->fullName."#-#".$this?->loan_code;
+    }
+
     protected $casts = ['status' => LoanStatus::class];
 
     public function approvals(): \Illuminate\Database\Eloquent\Relations\MorphMany

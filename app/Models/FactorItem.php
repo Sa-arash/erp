@@ -8,6 +8,10 @@ class FactorItem extends Model
 {
     protected $guarded=['id'];
 
+    public function getLogAttribute(){
+        return $this?->title."#-#".$this?->quantity."#-#".$this?->factor?->title."#-#".$this?->factor?->invoice?->number;
+    }
+
     public function factor(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Factor::class);

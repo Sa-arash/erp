@@ -13,6 +13,11 @@ class Task extends Model implements HasMedia
 
     protected $guarded = ['id'];
     protected $casts=['status'=>TaskStatus::class];
+
+    public function getLogAttribute(){
+        return $this?->employee?->fullName."#-#".$this?->title."#-#".$this?->status;
+    }
+
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);

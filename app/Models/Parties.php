@@ -21,6 +21,15 @@ class Parties extends Model
         'account_code_customer',
     ];
 
+    public function getLogAttribute(){
+
+        if ($this->type==="vendor"){
+            return $this?->type ."#-#".$this?->name ."#-#". $this?->accountVendor?->code ;
+        }
+
+        return $this?->type ."#-#".$this?->name ."#-#".$this?->accountCustomer?->code;
+    }
+
     public function getInfoAttribute()
     {
         if ($this->type==="vendor"){

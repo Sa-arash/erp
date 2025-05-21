@@ -14,6 +14,10 @@ class PurchaseOrderItem extends Model
     }
     protected $appends=['total'];
 
+    public function getLogAttribute(){
+        return $this?->product?->title."#-#".$this?->purchaseOrder?->purchase_orders_number;
+    }
+
     public function getTotalAttribute(){
         $freights = $this->freights ;
         $q = $this->quantity;

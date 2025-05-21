@@ -24,6 +24,10 @@ class Transaction extends Model
 
     ];
 
+    public function getLogAttribute(){
+        return $this?->invoice?->number."#-#".$this?->account?->code."#-#".$this?->user?->employee?->fullName;
+    }
+
     protected $casts = [
         'attribute' => 'array'
     ];

@@ -19,6 +19,10 @@ class AssetEmployeeItem extends Model
         'company_id',
     ];
 
+    public function getLogAttribute(){
+        return $this->asset?->product?->title."#-#".$this?->assetEmployee?->employee?->fullName."#-#".$this?->warehouse?->title."#-#".$this?->structure?->title;
+    }
+
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);

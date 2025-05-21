@@ -8,6 +8,9 @@ class TakeOutItem extends Model
 {
     protected $guarded=['id'];
 
+    public function getLogAttribute(){
+        return $this?->employee?->fullName."#-#".$this?->asset?->product?->title."#-#".$this?->returned_date;
+    }
     public function asset(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Asset::class);

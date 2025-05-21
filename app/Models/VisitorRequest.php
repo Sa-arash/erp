@@ -16,6 +16,9 @@ class VisitorRequest extends Model implements HasMedia
         'driver_vehicle_detail' => 'array',
         'armed'=>'array'
     ];
+    public function getLogAttribute(){
+        return $this?->employee?->fullName."#-#".$this?->purpose."#-#".$this?->approval_date;
+    }
     public function employee(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Employee::class, 'requested_by');

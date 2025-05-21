@@ -15,6 +15,11 @@ class ProductCategory extends Model
         'company_id',
         'account_id',
     ];
+
+    public function getLogAttribute(){
+        return $this?->title."#-#".$this?->account->code;
+    }
+
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);

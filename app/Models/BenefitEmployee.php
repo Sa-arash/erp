@@ -9,4 +9,8 @@ class BenefitEmployee extends Model
 {
     use HasFactory;
     protected $fillable=['company_id','benefit_id'];
+
+    public function getLogAttribute(){
+        return $this?->created_at;
+    }
 }

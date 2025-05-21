@@ -17,6 +17,10 @@ class Structure extends Model
         'sort',
         'location'
     ];
+    public function getLogAttribute(){
+        return $this?->title."#-#".$this?->warehouse?->title;
+    }
+
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);

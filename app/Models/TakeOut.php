@@ -9,6 +9,9 @@ class TakeOut extends Model
     protected $guarded=['id'];
     protected $casts=['itemsOut'=>'array'];
 
+    public function getLogAttribute(){
+        return $this?->employee?->fullName."#-#".$this?->date;
+    }
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);

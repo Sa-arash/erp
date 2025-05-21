@@ -25,6 +25,10 @@ class Account extends Model
         'closed_at',
         'currency_id',
     ];
+    public function getLogAttribute(){
+        return $this?->name."#-#".$this?->code;
+    }
+
     public function getTitleAttribute(){
         return $this->name." (".$this->code." )";
     }

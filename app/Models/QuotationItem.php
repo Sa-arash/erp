@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class QuotationItem extends Model
 {
     protected $guarded=['id'];
+    public function getLogAttribute(){
+        return $this?->item?->purchaseRequest?->purchase_number;
+    }
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);

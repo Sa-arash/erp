@@ -11,7 +11,9 @@ class Department extends Model
 
     protected $fillable = ['title','abbreviation', 'company_id', 'description','employee_id','color'];
 
-
+    public function getLogAttribute(){
+        return $this?->title."#-#".$this?->color."#-#".$this?->employee?->fullName;
+    }
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);

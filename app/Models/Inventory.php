@@ -17,6 +17,11 @@ class Inventory extends Model
         'company_id',
     ];
 
+    public function getLogAttribute(){
+        return $this?->product->title."#-#".$this?->warehouse->title."#-#".$this?->structure->title;
+    }
+
+
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);

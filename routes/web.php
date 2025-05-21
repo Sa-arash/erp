@@ -1,9 +1,151 @@
 <?php
 
+use App\Filament\Admin\Pages\VisitRequest;
+use App\Models\Account;
+use App\Models\AccountType;
+use App\Models\Approval;
+use App\Models\Asset;
+use App\Models\AssetEmployee;
+use App\Models\AssetEmployeeItem;
+use App\Models\Bank;
+use App\Models\Bank_category;
+use App\Models\Benefit;
+use App\Models\BenefitEmployee;
+use App\Models\BenefitPayroll;
+use App\Models\Bid;
+use App\Models\Brand;
+use App\Models\Cheque;
+use App\Models\Company;
+use App\Models\CompanyUser;
+use App\Models\Contract;
+use App\Models\Currency;
+use App\Models\Customer;
+use App\Models\Department;
+use App\Models\Documentation;
+use App\Models\Duty;
+use App\Models\Employee;
+use App\Models\Expense;
+use App\Models\Factor;
+use App\Models\FactorItem;
+use App\Models\FinancialPeriod;
+use App\Models\Holiday;
+use App\Models\Income;
+use App\Models\Inventory;
+use App\Models\Invoice;
+use App\Models\Leave;
+use App\Models\Loan;
+use App\Models\LoanPay;
+use App\Models\Overtime;
+use App\Models\Package;
+use App\Models\Parties;
+use App\Models\Payroll;
+use App\Models\Position;
+use App\Models\Product;
+use App\Models\ProductCategory;
+use App\Models\ProductSubCategory;
+use App\Models\Project;
+use App\Models\PurchaseOrder;
+use App\Models\PurchaseOrderItem;
+use App\Models\PurchaseRequest;
+use App\Models\PurchaseRequestItem;
+use App\Models\Quotation;
+use App\Models\QuotationItem;
+use App\Models\Separation;
+use App\Models\Service;
+use App\Models\Stock;
+use App\Models\Structure;
+use App\Models\TakeOut;
+use App\Models\TakeOutItem;
+use App\Models\Task;
+use App\Models\TaskEmployee;
+use App\Models\TaskReports;
+use App\Models\Transaction;
+use App\Models\Typeleave;
+use App\Models\Unit;
+use App\Models\UrgentLeave;
+use App\Models\User;
+use App\Models\Warehouse;
 use Filament\Facades\Filament;
 use Filament\Http\Responses\Auth\LoginResponse;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Session;
+
+
+Route::get('/testLog', function () {
+    dd(
+    Account::query()->first()?->log,
+    AccountType::query()->first()?->log,
+    Approval::query()->first()->log,
+    Asset::query()->first()?->log,
+    AssetEmployee::query()->first()?->log,
+    AssetEmployeeItem::query()->first()?->log,
+    // Bank_category::query()->first()?->log,
+    Bank::query()->first()?->log,
+    Benefit::query()->first()?->log,
+    BenefitEmployee::query()->first()?->log,
+    BenefitPayroll::query()->first()?->log,
+    Bid::query()->first()?->log,
+    Brand::query()->first()?->log,
+    Cheque::query()->first()?->log,
+    Company::query()->first()?->log,
+    CompanyUser::query()->first()?->log,
+    Contract::query()->first()?->log,
+    Currency::query()->first()?->log,
+    Customer::query()->first()?->log,
+    Department::query()->first()?->log,
+    Documentation::query()->first()?->log,
+    Employee::query()->first()?->log,
+    // Expense::query()->first()?->log,
+    Factor::query()->first()?->log,
+    FactorItem::query()->first()?->log,
+    FinancialPeriod::query()->first()?->log,
+    Holiday::query()->first()?->log,
+    // Income::query()->first()?->log,
+    Inventory::query()->first()?->log,
+    Invoice::query()->first()?->log,
+    Leave::query()->first()?->log,
+    Loan::query()->first()?->log,
+    LoanPay::query()->first()?->log,
+    Overtime::query()->first()?->log,
+    Package::query()->first()?->log,
+    Parties::query()->first()?->log,
+    Payroll::query()->first()?->log,
+    Position::query()->first()?->log,
+    Product::query()->first()?->log,
+    // ProductCategory::query()->first()?->log,
+    // ProductSubCategory::query()->first()?->log,
+    Project::query()->first()?->log,
+    PurchaseOrder::query()->first()?->log,
+    PurchaseOrderItem::query()->first()?->log,
+    PurchaseRequest::query()->first()?->log,
+    PurchaseRequestItem::query()->first()?->log,
+    Quotation::query()->first()?->log,
+    QuotationItem::query()->first()?->log,
+    Separation::query()->first()?->log,
+    Service::query()->first()?->log,
+    Stock::query()->first()?->log,
+    Structure::query()->first()?->log,
+    TakeOut::query()->first()?->log,
+    TakeOutItem::query()->first()?->log,
+    Task::query()->first()?->log,
+    TaskEmployee::query()->first()?->log,
+    TaskReports::query()->first()?->log,
+    Transaction::query()->first()?->log,
+    Typeleave::query()->first()?->log,
+    Unit::query()->first()?->log,
+    UrgentLeave::query()->first()?->log,
+    User::query()->first()?->log,
+    VisitRequest::query()->first()?->log,
+    Warehouse::query()->first()?->log,
+   
+
+
+
+
+
+   );
+});
+
 
 Route::get('/', function () {
 

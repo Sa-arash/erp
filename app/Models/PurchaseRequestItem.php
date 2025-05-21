@@ -33,6 +33,10 @@ class PurchaseRequestItem extends Model implements HasMedia
     protected $casts=[
         'status'=>ItemStatus::class
     ];
+    public function getLogAttribute(){
+        return $this?->product?->title."#-#".$this?->purchaseRequest?->purchase_number;
+    }
+
     public function getDepartmentAttribute(){
         return $this->product->department_id  ;
     }

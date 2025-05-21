@@ -12,6 +12,12 @@ class Asset extends Model
         'attributes' => 'array',
     ];
 
+  
+    
+    public function getLogAttribute()
+    {
+        return $this->product?->title . "#-#" . $this->product?->sku . "#-#" . $this?->serial_number ;
+    }
     public function getTitleAttribute()
     {
         if ($this->serial_number){

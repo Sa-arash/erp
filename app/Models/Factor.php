@@ -8,6 +8,12 @@ class Factor extends Model
 {
     protected $guarded=['id'];
 
+    
+    public function getLogAttribute(){
+        return $this?->title."#-#".$this?->type."#-#".$this?->invoice?->number."#-#".$this?->from."#-#".$this?->to;
+    }
+
+
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);

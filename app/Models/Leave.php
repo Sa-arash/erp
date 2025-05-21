@@ -13,6 +13,10 @@ class Leave extends Model
 
     protected $fillable = ['type','explain_leave','is_circumstances','admin_id','comment','employee_id', 'typeleave_id', 'start_leave', 'end_leave', 'days', 'document', 'description', 'status','user_id','approval_date', 'company_id'];
 
+    public function getLogAttribute(){
+        return $this?->employee->fullName."#-#".$this?->typeLeave?->title."#-#".$this?->days."#-#".$this?->typeLeave?->start_leave."#-#".$this?->typeLeave?->end_leave;
+    }
+
     protected $casts = ['status' => LeaveStatus2::class];
 
     public function approvals(): \Illuminate\Database\Eloquent\Relations\MorphMany

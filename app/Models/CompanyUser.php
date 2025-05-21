@@ -11,7 +11,12 @@ class CompanyUser extends Model
 
     protected $fillable=['user_id','company_id'];
     
-    public function user(){
-        $this->belongsTo(User::class);
+    public function getLogAttribute(){
+        return $this?->user?->name;
     }
+    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+   
 }

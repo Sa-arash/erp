@@ -12,6 +12,9 @@ class Bank_category extends Model
 
     protected $fillable = ['title', 'description', 'company_id', 'type', 'parent_id'];
 
+    public function getLogAttribute(){
+        return $this?->title."#-#".$this?->type."#-#".$this?->parent?->title;
+    }
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);
@@ -29,6 +32,9 @@ class Bank_category extends Model
     {
         return $this->hasMany(Income::class, 'category_id', 'id');
     }
-
+    public function parent(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Bank_category::class, 'parent_id', 'id');
+    }
 
 }

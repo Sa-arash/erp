@@ -26,6 +26,9 @@ class Bank extends Model
         'currency_id'
     ];
 
+    public function getLogAttribute(){
+        return $this?->name."#-#".$this?->account_code;
+    }
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);

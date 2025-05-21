@@ -25,6 +25,10 @@ class Product extends Model implements HasMedia
         'description',
         'company_id',
     ];
+
+    public function getLogAttribute(){
+        return $this?->title."#-#".$this?->sku;
+    }
     public function getInfoAttribute(){
         return "(SKU#".$this->sku.") ". $this->title  ;
     }

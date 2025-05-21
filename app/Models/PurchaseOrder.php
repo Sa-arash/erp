@@ -9,6 +9,10 @@ class PurchaseOrder extends Model
     protected $guarded = ['id'];
 
 
+    public function getLogAttribute(){
+        return $this?->purchase_orders_number."#-#".$this?->date_of_po;
+    }
+
     public function approvals(): \Illuminate\Database\Eloquent\Relations\MorphMany
     {
         return $this->morphMany(Approval::class, 'approvable', 'approvable_type', 'approvable_id');

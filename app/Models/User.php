@@ -25,6 +25,9 @@ class User extends Authenticatable implements HasTenants, FilamentUser, HasName,
     use InteractsWithMediaFolders;
 
 
+    public function getLogAttribute(){
+        return $this?->name."#-#".$this?->email;
+    }
     public function getFilamentName(): string
     {
         return $this->employee->fullName ?? $this->name;

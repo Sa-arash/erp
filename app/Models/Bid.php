@@ -10,6 +10,10 @@ class Bid extends Model
 
     protected $casts = ['position_procurement_controller' => 'array', 'procurement_committee_members' => 'array'];
 
+    public function getLogAttribute(){
+        return $this?->purchaseRequest?->purchase_number."#-#".$this?->opening_date;
+    }
+//   
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);

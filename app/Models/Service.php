@@ -12,9 +12,8 @@ class Service extends Model implements HasMedia
     protected $guarded=['id'];
     protected $casts=['images'=>'array'];
 
-    public function employee(): \Illuminate\Database\Eloquent\Relations\BelongsTo
-    {
-        return $this->belongsTo(Employee::class);
+    public function getLogAttribute(){
+        return $this?->employee?->fullName."#-#".$this?->asset?->product?->title."#-#".$this?->request_date;
     }
 
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo

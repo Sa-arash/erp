@@ -8,6 +8,9 @@ class Quotation extends Model
 {
     protected $guarded = ['id'];
 
+    public function getLogAttribute(){
+        return $this?->purchaseRequest?->purchase_number."#-#".$this?->party?->name;
+    }
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);

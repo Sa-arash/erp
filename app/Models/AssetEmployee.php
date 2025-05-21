@@ -18,6 +18,11 @@ class AssetEmployee extends Model
         'note',
         'company_id',
     ];
+
+    public function getLogAttribute(){
+        return $this?->employee?->fullName."#-#".$this?->date."#-#".$this?->status;
+    }
+
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);

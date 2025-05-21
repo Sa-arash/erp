@@ -11,6 +11,9 @@ class Project extends Model implements HasMedia
     use InteractsWithMedia;
 
     protected $guarded=['id'];
+    public function getLogAttribute(){
+        return $this?->name."#-#".$this?->code;
+    }
 
     protected $casts=[
         'members'=>'array',

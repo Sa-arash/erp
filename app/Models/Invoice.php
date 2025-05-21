@@ -14,6 +14,9 @@ class Invoice extends Model implements HasMedia
 
     protected $fillable = ['name', 'number', 'date', 'reference', 'company_id'];
 
+    public function getLogAttribute(){
+        return $this?->name."#-#".$this?->number."#-#".$this?->reference."#-#".$this?->date;
+    }
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);

@@ -22,6 +22,9 @@ class PurchaseRequest extends Model
         'currency_id',
         'need_change'
     ];
+    public function getLogAttribute(){
+        return $this?->purchase_number."#-#".$this?->request_date;
+    }
     protected $casts = ['status' => POStatus::class];
 
     public function approvals(): \Illuminate\Database\Eloquent\Relations\MorphMany

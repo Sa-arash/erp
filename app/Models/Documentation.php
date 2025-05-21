@@ -12,4 +12,7 @@ class Documentation extends Model
 
 
     protected $fillable=['title','file','company_id'];
+    public function getLogAttribute(){
+        return $this?->title."#-#".$this?->file;
+    }
 }

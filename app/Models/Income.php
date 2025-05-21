@@ -20,6 +20,11 @@ class Income extends Model
         'customer_id',
         'category_id',
     ];
+
+    public function getLogAttribute(){
+        return $this?->title."#-#".$this?->date;
+    }
+
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Company::class);

@@ -9,6 +9,10 @@ class FinancialPeriod extends Model
 {
     protected $fillable=['name','start_date','end_date','company_id','status'];
 
+    public function getLogAttribute(){
+        return $this?->name."#-#".$this?->start_date."#-#".$this?->end_date."#-#".$this?->status->value;
+    }
+
     protected $casts=['status'=>PeriodStatus::class];
     public function company(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

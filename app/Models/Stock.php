@@ -8,6 +8,9 @@ class Stock extends Model
 {
     protected $guarded=['id'];
 
+    public function getLogAttribute(){
+        return $this?->employee?->fullName."#-#".$this?->inventory?->warehouse?->title."#-#".$this?->quantity;
+    }
     public function inventory(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Inventory::class);
