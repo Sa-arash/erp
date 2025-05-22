@@ -177,7 +177,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
 
         return $table->defaultSort('id', 'desc')->headerActions([
             ExportAction::make('export')->exports([
-                ExcelExport::make()->withColumns([
+                ExcelExport::make()->askForFilename('Visitor Form')->withColumns([
                     Column::make('employee.fullName'),
                     Column::make('visit_date'),
                     Column::make('arrival_time'),
@@ -264,6 +264,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
+                DateRangeFilter::make('visit_date'),
                 Tables\Filters\SelectFilter::make('requested_by')->options(getCompany()->employees->pluck('info', 'id'))->searchable()->preload()->label('Employee'),
                 DateRangeFilter::make('visit_date')->label('Visit Date'),
                 Tables\Filters\SelectFilter::make('status')->options(['approved' => 'approved', 'notApproved' => 'notApproved'])->searchable()
@@ -359,7 +360,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
 
                 }),
                 ExportBulkAction::make()->color('purple')->label('Export Visitor Requests')->exports([
-                    ExcelExport::make()->withColumns([
+                    ExcelExport::make()->askForFilename('Visitor Form')->withColumns([
                         Column::make('employee.fullName'),
                         Column::make('visit_date'),
                         Column::make('arrival_time'),

@@ -221,13 +221,7 @@ class AdminPanelProvider extends PanelProvider
             ->tenantProfile(EditTeamProfile::class)
             ->navigationItems([
 
-
-
-
-
                 ...$reportNavigationItems,
-
-
                 // ...EditTeamProfile::getNavigationItems()
                 // ...PayRoll::getNavigationItems()
             ])->navigationGroups([
