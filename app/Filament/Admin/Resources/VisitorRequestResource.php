@@ -13,18 +13,18 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
 use Filament\Infolists\Components\IconEntry;
-use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
 use Filament\Tables;
-use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Table;
-use Illuminate\Support\HtmlString;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
-use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
+use pxlrbt\FilamentExcel\Columns\Column;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 class VisitorRequestResource extends Resource implements HasShieldPermissions
 {
@@ -175,7 +175,54 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
     public static function table(Table $table): Table
     {
 
-        return $table->defaultSort('id', 'desc')
+        return $table->defaultSort('id', 'desc')->headerActions([
+            ExportAction::make('export')->exports([
+                ExcelExport::make()->withColumns([
+                    Column::make('employee.fullName'),
+                    Column::make('visit_date'),
+                    Column::make('arrival_time'),
+                    Column::make('departure_time'),
+                    Column::make('agency'),
+                    Column::make('purpose'),
+                    Column::make('visitors_detail')->formatStateUsing(function ($state) {
+                        if (!is_array($state)) {
+                            return '-';
+                        }
+                        $i = 0;
+                        return collect($state['name'])->map(fn($item, $index) => ($i + 1) . ") " .
+                            "Name: {$state['name']}, " .
+                            "ID: {$state['id']}, " .
+                            "Phone: {$state['phone']}, " .
+                            "Organization: {$state['organization']}, " .
+                            "Remarks: {$state['remarks']}")->implode("\n");
+                    }),
+                    Column::make('driver_vehicle_detail')->formatStateUsing(function ($state) {
+                        if (!is_array($state)) {
+                            return '-';
+                        }
+                        $i = 0;
+
+                        return collect($state['name'])->map(fn($item, $index) => ($i + 1) . ") " .
+                            "Name: {$state['name']}, " .
+                            "ID: {$state['id']}, " .
+                            "Phone: {$state['phone']}, " .
+                            "Model: {$state['model']}, " .
+                            "Color: {$state['color']}, " .
+                            "Plate: {$state['Registration_Plate']}")->implode("\n");
+                    }),
+                    Column::make('approval_date'),
+                    Column::make('status'),
+                    Column::make('armed'),
+                    Column::make('gate_status'),
+                    Column::make('InSide_date'),
+                    Column::make('OutSide_date'),
+                    Column::make('inSide_comment'),
+                    Column::make('OutSide_comment'),
+                    Column::make('employee.fullName'),
+                    Column::make('created_at'),
+                ]),
+            ])->label('Export Visitor Requests')->color('purple')
+        ])
             ->columns([
 
                 Tables\Columns\TextColumn::make('')->rowIndex(),
@@ -309,9 +356,56 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
             ->bulkActions([
                 Tables\Actions\BulkAction::make('print')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->color('primary')->action(function ($records) {
                     return redirect(route('pdf.requestVisits', ['ids' => implode('-', $records->pluck('id')->toArray())]));
+
                 }),
+                ExportBulkAction::make()->color('purple')->label('Export Visitor Requests')->exports([
+                    ExcelExport::make()->withColumns([
+                        Column::make('employee.fullName'),
+                        Column::make('visit_date'),
+                        Column::make('arrival_time'),
+                        Column::make('departure_time'),
+                        Column::make('agency'),
+                        Column::make('purpose'),
+                        Column::make('visitors_detail')->formatStateUsing(function ($state) {
+                            if (!is_array($state)) {
+                                return '-';
+                            }
+                            $i = 0;
+                            return collect($state['name'])->map(fn($item, $index) => ($i + 1) . ") " .
+                                "Name: {$state['name']}, " .
+                                "ID: {$state['id']}, " .
+                                "Phone: {$state['phone']}, " .
+                                "Organization: {$state['organization']}, " .
+                                "Remarks: {$state['remarks']}")->implode("\n");
+                        }),
+                        Column::make('driver_vehicle_detail')->formatStateUsing(function ($state) {
+                            if (!is_array($state)) {
+                                return '-';
+                            }
+                            $i = 0;
+
+                            return collect($state['name'])->map(fn($item, $index) => ($i + 1) . ") " .
+                                "Name: {$state['name']}, " .
+                                "ID: {$state['id']}, " .
+                                "Phone: {$state['phone']}, " .
+                                "Model: {$state['model']}, " .
+                                "Color: {$state['color']}, " .
+                                "Plate: {$state['Registration_Plate']}")->implode("\n");
+                        }),
+                        Column::make('approval_date'),
+                        Column::make('status'),
+                        Column::make('armed'),
+                        Column::make('gate_status'),
+                        Column::make('InSide_date'),
+                        Column::make('OutSide_date'),
+                        Column::make('inSide_comment'),
+                        Column::make('OutSide_comment'),
+                        Column::make('employee.fullName'),
+                        Column::make('created_at'),
+                    ])])->label('Export Visitor Requests')->color('purple') ,
             ]);
     }
+
 
     public static function getRelations(): array
     {

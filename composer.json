@@ -20,6 +20,7 @@
         "malzariey/filament-daterangepicker-filter": "^3.1",
         "milon/barcode": "^12.0",
         "niklasravnsborg/laravel-pdf": "^4.1",
+        "pxlrbt/filament-excel": "^2.4",
         "tomatophp/filament-media-manager": "^1.1",
         "z3d0x/filament-logger": "^0.8.0"
     },

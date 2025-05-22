@@ -222,7 +222,7 @@
                 <td colspan="7">Visitor(s) Details</td>
             </tr>
             <tr>
-                <td>NO</td>
+                <td>#</td>
                 <td>Name</td>
                 <td>ID/Passport</td>
                 <td>Cell Phone</td>
@@ -287,7 +287,7 @@ $tdsArend='';
 
 
             <tr>
-                <td>NO</td>
+                <td>#</td>
                 <td>Full Name</td>
                 <td>ID Type & No.</td>
                 <td>Cell Phone</td>

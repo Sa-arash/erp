@@ -1,6 +1,6 @@
 
 @include('pdf.header', [
-    'titles' => ['Tasks List'],
+    'titles' => [''],
     'css' => false,
     'title' => 'Visitor Access Requests'
 ])
@@ -43,7 +43,6 @@
 </head>
 <body>
 
-<div class="header">Visitor Access Requests Report</div>
 
 <table>
     <thead>
