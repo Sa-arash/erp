@@ -51,7 +51,16 @@ class TakeOutResource extends Resource implements HasShieldPermissions
     {
         return $table
             ->defaultSort('id', 'desc')->headerActions([
-                ExportAction::make()->exports([
+                ExportAction::make()->after(function (){
+                    if (Auth::check()) {
+                        activity()
+                            ->causedBy(Auth::user())
+                            ->withProperties([
+                                'action' => 'export',
+                            ])
+                            ->log('Export' . 'Gate Pass');
+                    }
+                })->exports([
                     ExcelExport::make()->withColumns([
                         Column::make('employee.fullName')->heading("Employee"),
                         Column::make('assets.product.title')->formatStateUsing(fn($record) => $record->assets->pluck('title')->toArray())->heading('Registered Asset'),

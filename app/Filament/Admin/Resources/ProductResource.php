@@ -25,7 +25,11 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Unique;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Columns\Column;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
 
 class ProductResource extends Resource
@@ -151,7 +155,42 @@ class ProductResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->query(Product::query()->whereIn('product_type',['unConsumable','consumable']))
+        return $table
+        ->headerActions([
+            ExportAction::make()
+            ->after(function (){
+                if (Auth::check()) {
+                    activity()
+                        ->causedBy(Auth::user())
+                        ->withProperties([
+                            'action' => 'export',
+                        ])
+                        ->log('Export' . "Product");
+                }
+            })->exports([
+                ExcelExport::make()->withColumns([
+                    Column::make('sku')->heading('SKU'),
+                    Column::make('title')->heading('Product Name'),
+                    Column::make('account.title')->heading('Category '),
+                    Column::make('subAccount.title')->heading('Sub Category '),
+                    Column::make('product_type')->formatStateUsing(function($record){
+                        if ($record->product_type==='consumable'){
+                            return 'Consumable';
+                        }elseif($record->product_type==='unConsumable'){
+                            return 'Non-Consumable';
+                        }
+                    }),
+                    Column::make('id')->formatStateUsing(fn($record) => $record->assets->count())->heading('Quantity'),
+                    Column::make('created_at')->formatStateUsing(fn($record) => $record->inventories()?->sum('quantity'))->heading('Available'),
+    
+                    Column::make('updated_at')->formatStateUsing(fn($record) => $record->assets->sum('price'))->heading('Total Value')
+                ]),
+            ])->label('Export Product')->color('purple')
+        ])
+
+
+
+        ->query(Product::query()->whereIn('product_type',['unConsumable','consumable']))
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('sku')->label('SKU')->searchable(),

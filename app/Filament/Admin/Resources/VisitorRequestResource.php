@@ -177,7 +177,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
     {
 
         return $table->defaultSort('id', 'desc')->headerActions([
-            ExportAction::make('export')->action(function (){
+            ExportAction::make('export')->after(function (){
                 if (Auth::check()) {
                     activity()
                         ->causedBy(Auth::user())

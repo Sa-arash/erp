@@ -13,6 +13,10 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Columns\Column;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 class BrandResource extends Resource
 {
@@ -34,6 +38,24 @@ class BrandResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+        ->defaultSort('id', 'desc')->headerActions([
+            ExportAction::make()
+            ->after(function (){
+                if (Auth::check()) {
+                    activity()
+                        ->causedBy(Auth::user())
+                        ->withProperties([
+                            'action' => 'export',
+                        ])
+                        ->log('Export' . "Brand");
+                }
+            })->exports([
+                ExcelExport::make()->withColumns([
+                    Column::make('title'),
+                    Column::make('id')->formatStateUsing(fn ($record)=>number_format($record->assets->count()))->heading('Quantity'),
+                ]),
+            ])->label('Export Brand')->color('purple')
+        ])
             ->columns([
                 Tables\Columns\TextColumn::make('title')->searchable(),
                 Tables\Columns\TextColumn::make('asset')->url(fn($record)=>AssetResource::getUrl('index',['tableFilters[brand_id][value]'=>$record->id]))->color('aColor')->badge()->alignCenter()->state(fn ($record)=>number_format($record->assets->count()))->label('Quantity'),
