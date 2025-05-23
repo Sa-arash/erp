@@ -21,6 +21,10 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Columns\Column;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 class AssetEmployeeResource extends Resource
 {
@@ -87,7 +91,28 @@ class AssetEmployeeResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->defaultSort('id','desc')
+        return $table
+        ->defaultSort('id', 'desc')->headerActions([
+            ExportAction::make()
+            ->after(function (){
+                if (Auth::check()) {
+                    activity()
+                        ->causedBy(Auth::user())
+                        ->withProperties([
+                            'action' => 'export',
+                        ])
+                        ->log('Export' . "Check in/Check out Assets");
+                }
+            })->exports([
+                ExcelExport::make()->withColumns([
+                    Column::make('employee.fullName')->heading('Employee'),
+                    Column::make('date'),
+                    Column::make('description'),
+                    Column::make('type'),
+                    Column::make('status'),
+                ]),
+            ])->label('Export Check in/Check out Assets')->color('purple')
+        ])
             ->columns([
 
                 Tables\Columns\TextColumn::make('')->rowIndex(),

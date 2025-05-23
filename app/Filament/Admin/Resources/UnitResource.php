@@ -14,6 +14,10 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Columns\Column;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 class UnitResource extends Resource
 {
@@ -44,6 +48,23 @@ class UnitResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+        ->defaultSort('id', 'desc')->headerActions([
+            ExportAction::make()
+            ->after(function (){
+                if (Auth::check()) {
+                    activity()
+                        ->causedBy(Auth::user())
+                        ->withProperties([
+                            'action' => 'export',
+                        ])
+                        ->log('Export' . "Unit");
+                }
+            })->exports([
+                ExcelExport::make()->withColumns([
+                    Column::make('title')->heading('Unit Name'),
+                ]),
+            ])->label('Export Unit')->color('purple')
+        ])
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('title')->label('Unit Name')
