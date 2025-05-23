@@ -22,9 +22,7 @@ use Filament\Support\Enums\IconSize;
 use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\HtmlString;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
@@ -151,14 +149,19 @@ class AssetResource extends Resource
                             return $assets;
                         }
                     }else{
-
+                        $asset = Asset::query()->where('company_id', getCompany()->id)->latest()->first();
+                        if ($asset) {
+                            $code = generateNextCodeAsset($asset->number);
+                        } else {
+                            $code = "0001";
+                        }
                         return [
                             [
-                                'product_id'=>null,
-                                'buy_date'=>null,
-                                'number'=>null,
-                                'price'=>null,
-                                'purchase_order_id'=>null,
+                                'product_id' => null,
+                                'buy_date' => null,
+                                'number' => $code,
+                                'price' => null,
+                                'purchase_order_id' => null,
                             ]
                         ];
                     }
@@ -192,7 +195,11 @@ class AssetResource extends Resource
                     return substr($str, 1, strlen($str) - 1);
                 })->label('Location')->sortable(),
                 Tables\Columns\TextColumn::make('employee')->state(function ($record) {
-                    return $record->employees->last()?->assetEmployee?->employee?->fullName;
+                    if ($record->employees?->last()) {
+                        $data = $record->employees?->last()?->assetEmployee;
+                        if ($data->type === 'Assigned')
+                            return $data?->employee?->fullName;
+                    }
                 })->badge()->url(function ($record) {
                     if ($record->employees->last()?->assetEmployee?->employee_id) {
                         return EmployeeResource::getUrl('view', ['record' => $record->employees->last()?->assetEmployee?->employee_id]);

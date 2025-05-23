@@ -10,6 +10,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\Section;
 use Filament\Notifications\Notification;
 use Filament\Support\RawJs;
+use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Role;
 
 function getCompany(): ?\Illuminate\Database\Eloquent\Model
@@ -912,4 +913,14 @@ function numberToWords($number, $currency)
 
     // Capitalize first letter and add "US Dollar"
     return ucfirst($words) . $currency;
+}
+function exportLog($description){
+    if (Auth::check()) {
+        activity()
+            ->causedBy(Auth::user())
+            ->withProperties([
+                'action' => 'export',
+            ])
+            ->log($description);
+    }
 }

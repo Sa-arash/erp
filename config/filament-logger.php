@@ -44,10 +44,16 @@ return [
         ],
     ],
 
+    'export' => [
+         [
+             'log_name' => 'Export',
+             'color' => 'primary',
+         ]
+    ],
     'custom' => [
-        // [
-        //     'log_name' => 'Custom',
-        //     'color' => 'primary',
-        // ]
+         [
+             'log_name' => 'Custom',
+             'color' => 'primary',
+         ]
     ],
 ];

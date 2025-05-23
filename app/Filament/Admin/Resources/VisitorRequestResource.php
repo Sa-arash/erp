@@ -20,6 +20,7 @@ use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
@@ -176,7 +177,16 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
     {
 
         return $table->defaultSort('id', 'desc')->headerActions([
-            ExportAction::make('export')->exports([
+            ExportAction::make('export')->action(function (){
+                if (Auth::check()) {
+                    activity()
+                        ->causedBy(Auth::user())
+                        ->withProperties([
+                            'action' => 'export',
+                        ])
+                        ->log('Export' . 'Visitor Access Request');
+                }
+            })->exports([
                 ExcelExport::make()->askForFilename('Visitor Form')->withColumns([
                     Column::make('employee.fullName'),
                     Column::make('visit_date'),
