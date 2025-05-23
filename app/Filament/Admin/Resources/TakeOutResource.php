@@ -19,7 +19,11 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Columns\Column;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 class TakeOutResource extends Resource implements HasShieldPermissions
 {
@@ -29,7 +33,7 @@ class TakeOutResource extends Resource implements HasShieldPermissions
     protected static ?string $navigationGroup = 'Security Management';
     protected static ?int $navigationSort = 99;
 
-    protected static ?string $label='Gate Pass';
+    protected static ?string $label = 'Gate Pass';
     public static function getPermissionPrefixes(): array
     {
         return [
@@ -45,16 +49,41 @@ class TakeOutResource extends Resource implements HasShieldPermissions
 
     public static function table(Table $table): Table
     {
-        return $table->defaultSort('id','desc')
+        return $table
+            ->defaultSort('id', 'desc')->headerActions([
+                ExportAction::make()->exports([
+                    ExcelExport::make()->withColumns([
+                        Column::make('employee.fullName')->heading("Employee"),
+                        Column::make('assets.product.title')->formatStateUsing(fn($record) => $record->assets->pluck('title')->toArray())->heading('Registered Asset'),
+                        Column::make('itemsOut')->heading('Unregistered Asset')->formatStateUsing(function ($record) {
+                            $data = [];
+                            if ($record->itemsOut) {
+                                foreach ($record->itemsOut as $item) {
+                                    $data[] = $item['name'];
+                                }
+                            }
+                            return $data;
+                        }),
+                        Column::make('from'),
+                        Column::make('to'),
+                        Column::make('date'),
+                        Column::make('return_date'),
+                        Column::make('mood'),
+                        Column::make('status'),
+                        Column::make('type'),
+                        Column::make('gate_status')->heading('Gate Status'),
+                    ]),
+                ])->label('Export Visitor Requests')->color('purple')
+            ])
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('employee.fullName'),
-                Tables\Columns\TextColumn::make('assets.product.title')->state(fn($record)=> $record->assets->pluck('title')->toArray())->badge()->label('Registered Asset'),
-                Tables\Columns\TextColumn::make('itemsOut')->label('Unregistered Asset')->state(function($record){
-                    $data=[];
-                    if ($record->itemsOut){
-                        foreach ($record->itemsOut as $item){
-                            $data[]=$item['name'];
+                Tables\Columns\TextColumn::make('assets.product.title')->state(fn($record) => $record->assets->pluck('title')->toArray())->badge()->label('Registered Asset'),
+                Tables\Columns\TextColumn::make('itemsOut')->label('Unregistered Asset')->state(function ($record) {
+                    $data = [];
+                    if ($record->itemsOut) {
+                        foreach ($record->itemsOut as $item) {
+                            $data[] = $item['name'];
                         }
                     }
                     return $data;
@@ -63,8 +92,8 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('to'),
                 Tables\Columns\TextColumn::make('date')->date(),
                 Tables\Columns\TextColumn::make('return_date')->date(),
-                Tables\Columns\TextColumn::make('mood')->color(function($state){
-                    switch ($state){
+                Tables\Columns\TextColumn::make('mood')->color(function ($state) {
+                    switch ($state) {
                         case "Approved":
                             return 'success';
                         case "Pending":
@@ -78,15 +107,15 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('gate_status')->label('Gate Status')->badge(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('employee_id')->options(Employee::query()->where('company_id',getCompany()->id)->pluck('fullName','id')),
+                Tables\Filters\SelectFilter::make('employee_id')->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id')),
                 DateRangeFilter::make('date')->label('Date'),
-            ],getModelFilter())
+            ], getModelFilter())
             ->actions([
                 Tables\Actions\Action::make('ActionOutSide')->label(' CheckOut')->form([
                     Forms\Components\DateTimePicker::make('OutSide_date')->withoutSeconds()->label(' Date And Time')->required()->default(now()),
                     Forms\Components\Textarea::make('OutSide_comment')->label(' Comment')
                 ])->requiresConfirmation()->action(function ($data, $record) {
-                    $record->update(['OutSide_date' => $data['OutSide_date'], 'OutSide_comment' => $data['OutSide_comment'],'gate_status'=>'CheckedOut']);
+                    $record->update(['OutSide_date' => $data['OutSide_date'], 'OutSide_comment' => $data['OutSide_comment'], 'gate_status' => 'CheckedOut']);
                     Notification::make('success')->success()->title('Submitted Successfully')->send();
                 })->visible(function ($record) {
                     if (auth()->user()->can('reception_take::out')) {
@@ -102,15 +131,15 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                     Forms\Components\DateTimePicker::make('InSide_date')->withoutSeconds()->label(' Date And Time')->required()->default(now()),
                     Forms\Components\Textarea::make('inSide_comment')->label(' Comment')
                 ])->requiresConfirmation()->action(function ($data, $record) {
-                    $record->update(['InSide_date' => $data['InSide_date'], 'inSide_comment' => $data['inSide_comment'],'gate_status'=>'CheckedIn']);
+                    $record->update(['InSide_date' => $data['InSide_date'], 'inSide_comment' => $data['inSide_comment'], 'gate_status' => 'CheckedIn']);
                     Notification::make('success')->success()->title('Submitted Successfully')->send();
-                })->visible(function($record){
-                    if ($record->status !=="Non-Returnable"){
-                        if (auth()->user()->can('reception_take::out')){
-                            if ($record->InSide_date!==null ){
+                })->visible(function ($record) {
+                    if ($record->status !== "Non-Returnable") {
+                        if (auth()->user()->can('reception_take::out')) {
+                            if ($record->InSide_date !== null) {
                                 return false;
                             }
-                            if ($record->OutSide_date !==null ){
+                            if ($record->OutSide_date !== null) {
                                 return true;
                             }
                         }
