@@ -26,6 +26,10 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Auth;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction as TablesExportAction;
+use pxlrbt\FilamentExcel\Columns\Column;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
 
 class InvoiceResource extends Resource
@@ -267,11 +271,35 @@ class InvoiceResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->defaultSort('id', 'desc')
-            ->headerActions([
-                Tables\Actions\ExportAction::make()
-                    ->exporter(InvoiceExporter::class)->color('purple')
-            ])
+        return $table 
+        ->defaultSort('id', 'desc')->headerActions([
+            TablesExportAction::make()
+            ->after(function (){
+                if (Auth::check()) {
+                    activity()
+                        ->causedBy(Auth::user())
+                        ->withProperties([
+                            'action' => 'export',
+                        ])
+                        ->log('Export' . "Journal Entry");
+                }
+            })->exports([
+                ExcelExport::make()->askForFilename("Journal Entry")->withColumns([
+                   Column::make('number')->heading('Voucher NO'),
+                   Column::make('date')->formatStateUsing(fn($record) => Carbon::parse($record->date)->format("Y-m-d")),
+                   Column::make('name')->heading('Voucher Title'),
+                   Column::make('reference'),
+                ]),
+            ])->label('Export Journal Entry')->color('purple')
+        ])
+
+
+
+        
+            // ->headerActions([
+            //     Tables\Actions\ExportAction::make()
+            //         ->exporter(InvoiceExporter::class)->color('purple')
+            // ])
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('number')->searchable()->label('Voucher NO'),

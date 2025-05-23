@@ -188,7 +188,7 @@ class AssetResource extends Resource
                         ->log('Export' . "Assets");
                 }
             })->exports([
-                ExcelExport::make()->withColumns([
+                ExcelExport::make()->askForFilename("Assets")->withColumns([
                    Column::make('product.sku')->heading("product sku"),
                    Column::make('purchase_order_id')->heading('PO No')->formatStateUsing(fn($record) => $record->purchase_order_id === null ? "---" : PurchaseOrder::find($record->purchase_order_id)->purchase_orders_number),
                    Column::make('titlen')->heading('Asset Name'),

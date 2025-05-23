@@ -104,7 +104,7 @@ class AssetEmployeeResource extends Resource
                         ->log('Export' . "Check in/Check out Assets");
                 }
             })->exports([
-                ExcelExport::make()->withColumns([
+                ExcelExport::make()->askForFilename("Check in/Check out Assets")->withColumns([
                     Column::make('employee.fullName')->heading('Employee'),
                     Column::make('date'),
                     Column::make('description'),

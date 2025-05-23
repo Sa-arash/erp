@@ -168,7 +168,7 @@ class ProductResource extends Resource
                         ->log('Export' . "Product");
                 }
             })->exports([
-                ExcelExport::make()->withColumns([
+                ExcelExport::make()->askForFilename("Product")->withColumns([
                     Column::make('sku')->heading('SKU'),
                     Column::make('title')->heading('Product Name'),
                     Column::make('account.title')->heading('Category '),

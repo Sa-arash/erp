@@ -18,7 +18,11 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Columns\Column;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 use function Laravel\Prompts\select;
 
@@ -45,6 +49,25 @@ class HolidayResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+        ->defaultSort('id', 'desc')->headerActions([
+            ExportAction::make()
+                ->after(function () {
+                    if (Auth::check()) {
+                        activity()
+                            ->causedBy(Auth::user())
+                            ->withProperties([
+                                'action' => 'export',
+                            ])
+                            ->log('Export' . "Holiday");
+                    }
+                })->exports([
+                    ExcelExport::make()->askForFilename("Holiday")->withColumns([
+                       Column::make('name')->heading('Details'),
+                       Column::make('date'),
+
+                    ]),
+                ])->label('Export Holiday')->color('purple')
+        ])
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('name')->label('Details')->searchable(),

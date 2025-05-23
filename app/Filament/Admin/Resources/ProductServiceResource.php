@@ -126,7 +126,7 @@ class ProductServiceResource extends Resource
                         ->log('Export' . "Service");
                 }
             })->exports([
-                ExcelExport::make()->withColumns([
+                ExcelExport::make()->askForFilename("Service")->withColumns([
                     Column::make('title')->heading('Service Name'),
                     Column::make('sku')->heading('Service Code'),
                     Column::make('account.title')->heading('Category '),

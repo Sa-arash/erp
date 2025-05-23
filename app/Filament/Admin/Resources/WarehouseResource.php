@@ -24,6 +24,10 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Columns\Column;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 class WarehouseResource extends Resource
 {
@@ -51,7 +55,33 @@ class WarehouseResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->query(function (){
+        return $table
+        ->headerActions([
+            ExportAction::make()
+            ->after(function (){
+                if (Auth::check()) {
+                    activity()
+                        ->causedBy(Auth::user())
+                        ->withProperties([
+                            'action' => 'export',
+                        ])
+                        ->log('Export' . "Warehouse");
+                }
+            })->exports([
+                ExcelExport::make()->askForFilename("Warehouse")->withColumns([
+                    Column::make('title')->heading('Location Name'),
+                    Column::make('employee.fullName')->heading('Manager By'),
+                    Column::make('phone'),
+                    Column::make('country'),
+                    Column::make('state'),
+                    Column::make('city'),
+                    Column::make('address'),
+                ]),
+            ])->label('Export Warehouse')->color('purple')
+        ])
+        
+        
+        ->query(function (){
             $warehouse=Warehouse::query()->where('type',1)->firstWhere('employee_id',getEmployee()->id);
             if ($warehouse){
                 return Warehouse::query()->where('type',1)->where('company_id',getCompany()->id)->where('employee_id',getEmployee()->id);

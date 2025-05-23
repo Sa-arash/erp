@@ -50,7 +50,7 @@ class BrandResource extends Resource
                         ->log('Export' . "Brand");
                 }
             })->exports([
-                ExcelExport::make()->withColumns([
+                ExcelExport::make()->askForFilename("Brand")->withColumns([
                     Column::make('title'),
                     Column::make('id')->formatStateUsing(fn ($record)=>number_format($record->assets->count()))->heading('Quantity'),
                 ]),

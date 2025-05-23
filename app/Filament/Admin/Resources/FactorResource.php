@@ -28,6 +28,10 @@ use Filament\Support\Enums\IconSize;
 use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Columns\Column;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 class FactorResource extends Resource
 {
@@ -50,8 +54,8 @@ class FactorResource extends Resource
 
                     Forms\Components\Wizard\Step::make('Invoice')->schema([
                         Forms\Components\Section::make([
-                            Forms\Components\TextInput::make('title')->live(true)->afterStateUpdated(function ($state,Forms\Set $set){
-                                $set('invoice.name',$state);
+                            Forms\Components\TextInput::make('title')->live(true)->afterStateUpdated(function ($state, Forms\Set $set) {
+                                $set('invoice.name', $state);
                             })->required()->maxLength(255),
                             Forms\Components\ToggleButtons::make('type')->live()->afterStateUpdated(function (Forms\Set $set, string $operation) {
                                 $set('party_id', null);
@@ -355,11 +359,11 @@ class FactorResource extends Resource
                                         }, $get->getData()['items']);
                                         if (defaultCurrency()?->id == $get->getData()['currency_id']) {
                                             return collect($produtTotal)->sum() ? number_format(collect($produtTotal)->sum(), 2) . defaultCurrency()?->symbol : '?';
-                                        }else{
-                                            $currency=Currency::query()->firstWhere('id',$get->getData()['currency_id']);
-                                            if (collect($produtTotal)->sum()){
+                                        } else {
+                                            $currency = Currency::query()->firstWhere('id', $get->getData()['currency_id']);
+                                            if (collect($produtTotal)->sum()) {
 
-                                                return   "Total is ".number_format(collect($produtTotal)->sum()*$currency?->exchange_rate, 2 ).' '.$currency?->name . ' Equal '. number_format(collect($produtTotal)->sum(), 2).' '. defaultCurrency()?->name ;
+                                                return   "Total is " . number_format(collect($produtTotal)->sum() * $currency?->exchange_rate, 2) . ' ' . $currency?->name . ' Equal ' . number_format(collect($produtTotal)->sum(), 2) . ' ' . defaultCurrency()?->name;
                                             }
                                         }
                                     }
@@ -499,8 +503,7 @@ class FactorResource extends Resource
                                                             $fail("The paid amount does not match the total price. Total amount:" . number_format($productSum, 2) . ", Remaining amount: " . number_format($remainingAmount, 2));
                                                         }
                                                     }
-                                                    }
-
+                                                }
                                             },
                                         ]),
                                     Forms\Components\Hidden::make('isCurrency'),
@@ -610,7 +613,37 @@ class FactorResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->defaultSort('id','desc')
+        return $table
+            ->defaultSort('id', 'desc')->headerActions([
+                ExportAction::make()
+                    ->after(function () {
+                        if (Auth::check()) {
+                            activity()
+                                ->causedBy(Auth::user())
+                                ->withProperties([
+                                    'action' => 'export',
+                                ])
+                                ->log('Export' . "Invoices");
+                        }
+                    })->exports([
+                        ExcelExport::make()->askForFilename("Invoices")->withColumns([
+                            Column::make('title'),
+                            Column::make('party.name')->heading('Vendor/Customer'),
+                            Column::make('account.name')->heading('Expense/Income'),
+                            Column::make('from'),
+                            Column::make('to'),
+                            Column::make('type')
+                                ->formatStateUsing(fn($record) => $record->type == "1" ? "Income" : "Expense"),
+                            Column::make('id')->heading('Total')
+                                ->formatStateUsing(fn($record) => number_format($record->items->map(fn($item) => (($item['quantity'] * str_replace(',', '', $item['unit_price'])) - (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['discount']) / 100)))?->sum(), 2)),
+                            Column::make('created_at')->heading('Date'),
+                            Column::make('updated_at'),
+
+                        ]),
+                    ])->label('Export Invoices')->color('purple')
+            ])
+
+
             ->columns([
                 Tables\Columns\TextColumn::make('title')
                     ->searchable(),
@@ -644,13 +677,13 @@ class FactorResource extends Resource
                 //
             ])
             ->actions([
-//                Tables\Actions\EditAction::make(),
-            Tables\Actions\DeleteAction::make()->action(function ($record){
-                $record->invoice()->delete();
-                $record->delete();
-                Notification::make('success')->success()->title('Deleted')->send();
-            }),
-                Tables\Actions\Action::make('print')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->color('primary')->url(fn($record)=>route('pdf.sales', ['id' => $record->id]))
+                //                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make()->action(function ($record) {
+                    $record->invoice()->delete();
+                    $record->delete();
+                    Notification::make('success')->success()->title('Deleted')->send();
+                }),
+                Tables\Actions\Action::make('print')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->color('primary')->url(fn($record) => route('pdf.sales', ['id' => $record->id]))
 
             ])
             ->bulkActions([
@@ -673,8 +706,8 @@ class FactorResource extends Resource
 
             Forms\Components\Wizard\Step::make('Invoice')->schema([
                 Forms\Components\Section::make([
-                    Forms\Components\TextInput::make('title')->live(true)->afterStateUpdated(function ($state,Forms\Set $set){
-                        $set('invoice.name',$state);
+                    Forms\Components\TextInput::make('title')->live(true)->afterStateUpdated(function ($state, Forms\Set $set) {
+                        $set('invoice.name', $state);
                     })->required()->maxLength(255),
                     Forms\Components\Hidden::make('setPrice')->live()->default(0)->nullable(),
                     Forms\Components\ToggleButtons::make('type')->live()->afterStateUpdated(function (Forms\Set $set) {
@@ -684,7 +717,6 @@ class FactorResource extends Resource
                         $set('from', null);
                         $set('invoice.transactions', []);
                         $set('setPrice', 0);
-
                     })->required()->default(0)->boolean('Income', 'Expense')->grouped(),
                     Select::make('currency_id')->live()->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([
                         \Filament\Forms\Components\Section::make([
@@ -702,23 +734,23 @@ class FactorResource extends Resource
                             TextInput::make('symbol')->required()->maxLength(255),
                             TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                         ])->columns(3)
-                    ])->afterStateUpdated(function (Forms\Set $set,$state){
-                        $set('setPrice',0);
-                        $currency=Currency::query()->firstWhere('id',$state);
-                        if ($currency){
-                            $set('currency',$currency->symbol);
+                    ])->afterStateUpdated(function (Forms\Set $set, $state) {
+                        $set('setPrice', 0);
+                        $currency = Currency::query()->firstWhere('id', $state);
+                        if ($currency) {
+                            $set('currency', $currency->symbol);
                         }
                     }),
                     SelectTree::make('account_id')->label(fn(Forms\Get $get) => $get('type') === "1" ? "Income Account" : "Expense Account")->searchable()->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: function ($query, Get $get) {
                         $type = $get('type') === "1" ? "Income" : "Expense";
                         return $query->where('group', [$type])->where('company_id', getCompany()->id);
                     })->defaultOpenLevel(3)->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
-                            if ($get('type') !== "0") {
-                                $set('from', getCompany()->AccountTitle);
-                            } else {
-                                $set('to', getCompany()->AccountTitle);
-                            }
-                        })->live(true),
+                        if ($get('type') !== "0") {
+                            $set('from', getCompany()->AccountTitle);
+                        } else {
+                            $set('to', getCompany()->AccountTitle);
+                        }
+                    })->live(true),
                     Forms\Components\Select::make('party_id')->label(fn(Forms\Get $get) => $get('type') === "1" ? "Customer" : "Vendor")->searchable()->required()->options(function (Forms\Get $get) {
                         $type = $get('type') === "1" ? "customer" : "vendor";
                         return getCompany()->parties->whereIn('type', [$type, 'both'])->pluck('info', 'id');
@@ -951,7 +983,7 @@ class FactorResource extends Resource
                         $unitPrice = $get('unit_price') === null ?  0 : (float)str_replace(',', '', $get('unit_price'));
                         $discount = $get('discount') === null ?  0 : (float)$get('discount');
                         $set('total', number_format(($count * $unitPrice) - (($count * $unitPrice) * $discount) / 100, 2));
-                    })->required()->label(fn(Get $get)=>'Unit Price')->live(true),
+                    })->required()->label(fn(Get $get) => 'Unit Price')->live(true),
                     Forms\Components\TextInput::make('discount')->label('Discount(%)')->numeric()->live(true)->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
                         $count = $get('quantity') === null ? 0 : (float)$get('quantity');
                         $unitPrice = $get('unit_price') === null ?  0 : (float)str_replace(',', '', $get('unit_price'));
@@ -959,8 +991,8 @@ class FactorResource extends Resource
                         $set('total', number_format(($count * $unitPrice) - (($count * $unitPrice) * $discount) / 100, 2));
                     })->default(0)->required(),
                     Forms\Components\TextInput::make('total')->live()->readOnly()->default(0)->required()->label('Total'),
-                ])->columnSpanFull()->columns(7)->afterStateUpdated(function (Forms\Set $set){
-                    $set('setPrice',0);
+                ])->columnSpanFull()->columns(7)->afterStateUpdated(function (Forms\Set $set) {
+                    $set('setPrice', 0);
                 }),
             ])->columns(2),
             Forms\Components\Wizard\Step::make('journal')->label('Journal Entry')->schema([
@@ -983,7 +1015,7 @@ class FactorResource extends Resource
                             ->required()->default(now()),
                         Forms\Components\FileUpload::make('document')->placeholder('Browse')->extraInputAttributes(['style' => 'height:30px!important;'])
                             ->nullable(),
-                        Placeholder::make('total :')->live()->content(function (Get $get,Forms\Set $set) {
+                        Placeholder::make('total :')->live()->content(function (Get $get, Forms\Set $set) {
                             if ($get->getData()['items']) {
                                 $produtTotal = array_map(function ($item) {
                                     // dd($item);
@@ -999,12 +1031,13 @@ class FactorResource extends Resource
 
                                 if (defaultCurrency()?->id == $get->getData()['currency_id']) {
                                     return collect($produtTotal)->sum() ? number_format(collect($produtTotal)->sum(), 2) . defaultCurrency()?->symbol : '?';
-                                }else{
-                                    $currency=Currency::query()->firstWhere('id',$get->getData()['currency_id']);
-                                    if (collect($produtTotal)->sum()){
-                                        return   "Total is ".number_format(collect($produtTotal)->sum(), 2 ).' '.$currency?->name . ' Equal '. number_format(collect($produtTotal)->sum()*$currency?->exchange_rate, 2).' '. defaultCurrency()?->name ;
+                                } else {
+                                    $currency = Currency::query()->firstWhere('id', $get->getData()['currency_id']);
+                                    if (collect($produtTotal)->sum()) {
+                                        return   "Total is " . number_format(collect($produtTotal)->sum(), 2) . ' ' . $currency?->name . ' Equal ' . number_format(collect($produtTotal)->sum() * $currency?->exchange_rate, 2) . ' ' . defaultCurrency()?->name;
                                     }
-                                }                            }
+                                }
+                            }
                         })->columnSpan(3)->inlineLabel()
                     ])->columns(8),
 
@@ -1058,30 +1091,29 @@ class FactorResource extends Resource
                                 ->rules([
                                     fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
 
-                                            if ($get->getData()['type'] === "1") {
-                                                if ($get('debtor') == 0) {
-                                                    $fail('The debtor field must be not zero.');
-                                                } else {
-                                                    $produtTotal = array_map(function ($item) {
-                                                        return (($item['quantity'] * str_replace(',', '', $item['unit_price'])) - (($item['quantity'] * str_replace(',', '', $item['unit_price'])) * $item['discount']) / 100);
-                                                    }, $get->getData()['items']);
-                                                    $invoiceTotal = array_map(function ($item) {
-                                                        return (str_replace(',', '', $item['debtor']));
-                                                    }, $get->getData()['invoice']['transactions']);
-                                                    $currency=Currency::query()->firstWhere('id',$get->getData()['currency_id']);
+                                        if ($get->getData()['type'] === "1") {
+                                            if ($get('debtor') == 0) {
+                                                $fail('The debtor field must be not zero.');
+                                            } else {
+                                                $produtTotal = array_map(function ($item) {
+                                                    return (($item['quantity'] * str_replace(',', '', $item['unit_price'])) - (($item['quantity'] * str_replace(',', '', $item['unit_price'])) * $item['discount']) / 100);
+                                                }, $get->getData()['items']);
+                                                $invoiceTotal = array_map(function ($item) {
+                                                    return (str_replace(',', '', $item['debtor']));
+                                                }, $get->getData()['invoice']['transactions']);
+                                                $currency = Currency::query()->firstWhere('id', $get->getData()['currency_id']);
 
-                                                    $productSum = collect($produtTotal)->sum()*$currency->exchange_rate;
-                                                    $invoiceSum = collect($invoiceTotal)->sum();
+                                                $productSum = collect($produtTotal)->sum() * $currency->exchange_rate;
+                                                $invoiceSum = collect($invoiceTotal)->sum();
 
-                                                    if (round($invoiceSum,2) != round($productSum,2)) {
-                                                        $remainingAmount = round($invoiceSum,2) - round($productSum,2);
-                                                        $fail("The paid amount does not match the total price. Total amount:" . number_format($productSum, 2) . ", Remaining amount: " . number_format($remainingAmount, 2));
-                                                    }
+                                                if (round($invoiceSum, 2) != round($productSum, 2)) {
+                                                    $remainingAmount = round($invoiceSum, 2) - round($productSum, 2);
+                                                    $fail("The paid amount does not match the total price. Total amount:" . number_format($productSum, 2) . ", Remaining amount: " . number_format($remainingAmount, 2));
                                                 }
-                                            } elseif ($get('debtor') != 0) {
-                                                $fail('The debtor field must be zero.');
                                             }
-
+                                        } elseif ($get('debtor') != 0) {
+                                            $fail('The debtor field must be zero.');
+                                        }
                                     },
                                 ]),
                             Forms\Components\TextInput::make('creditor')->readOnly(function (Get $get) {
@@ -1098,30 +1130,29 @@ class FactorResource extends Resource
                                     fn(Get $get): Closure => function (string $attribute, $value, Closure $fail, $operation) use ($get) {
 
 
-                                            if ($get->getData()['type'] !== "1") {
+                                        if ($get->getData()['type'] !== "1") {
 
 
-                                                if ($get('creditor') == 0) {
-                                                    $fail('The creditor field must be not zero.');
-                                                } else {
-                                                    $produtTotal = array_map(function ($item) {
-                                                        return (($item['quantity'] * str_replace(',', '', $item['unit_price'])) - (($item['quantity'] * str_replace(',', '', $item['unit_price'])) * $item['discount']) / 100);
-                                                    }, $get->getData()['items']);
-                                                    $invoiceTotal = array_map(function ($item) {
-                                                        return (str_replace(',', '', $item['creditor']));
-                                                    }, $get->getData()['invoice']['transactions']);
-                                                    $currency=Currency::query()->firstWhere('id',$get->getData()['currency_id']);
+                                            if ($get('creditor') == 0) {
+                                                $fail('The creditor field must be not zero.');
+                                            } else {
+                                                $produtTotal = array_map(function ($item) {
+                                                    return (($item['quantity'] * str_replace(',', '', $item['unit_price'])) - (($item['quantity'] * str_replace(',', '', $item['unit_price'])) * $item['discount']) / 100);
+                                                }, $get->getData()['items']);
+                                                $invoiceTotal = array_map(function ($item) {
+                                                    return (str_replace(',', '', $item['creditor']));
+                                                }, $get->getData()['invoice']['transactions']);
+                                                $currency = Currency::query()->firstWhere('id', $get->getData()['currency_id']);
 
-                                                    $productSum = collect($produtTotal)->sum()*$currency->exchange_rate;
-                                                    $invoiceSum = collect($invoiceTotal)->sum();
-                                                    if (round($invoiceSum,2) != round($productSum,2)) {
-                                                        $remainingAmount = round($invoiceSum,2) - round($productSum,2);
-                                                        $fail("The paid amount does not match the total price. Total amount:" . number_format(round($invoiceSum,2), 2) . ", Remaining amount: " . number_format($remainingAmount, 2));
-                                                    }
+                                                $productSum = collect($produtTotal)->sum() * $currency->exchange_rate;
+                                                $invoiceSum = collect($invoiceTotal)->sum();
+                                                if (round($invoiceSum, 2) != round($productSum, 2)) {
+                                                    $remainingAmount = round($invoiceSum, 2) - round($productSum, 2);
+                                                    $fail("The paid amount does not match the total price. Total amount:" . number_format(round($invoiceSum, 2), 2) . ", Remaining amount: " . number_format($remainingAmount, 2));
                                                 }
-                                            } elseif ($get('creditor') != 0) {
-                                                $fail('The creditor field must be zero.');
-
+                                            }
+                                        } elseif ($get('creditor') != 0) {
+                                            $fail('The creditor field must be zero.');
                                         }
                                     },
                                 ]),
@@ -1130,7 +1161,7 @@ class FactorResource extends Resource
                                 return $get('isCurrency');
                             }),
                             Section::make([
-                                Select::make('currency_id')->live()->label('Currency')->required()->relationship('currency', 'name', modifyQueryUsing: fn($query,$state) => $query->where('id', $state))->searchable()->preload()->createOptionForm([
+                                Select::make('currency_id')->live()->label('Currency')->required()->relationship('currency', 'name', modifyQueryUsing: fn($query, $state) => $query->where('id', $state))->searchable()->preload()->createOptionForm([
                                     Section::make([
                                         TextInput::make('name')->required()->maxLength(255),
                                         TextInput::make('symbol')->required()->maxLength(255),
@@ -1233,7 +1264,7 @@ class FactorResource extends Resource
         return [
             'index' => Pages\ListFactors::route('/'),
             'create' => Pages\CreateFactor::route('/create'),
-//            'edit' => Pages\EditFactor::route('/{record}/edit'),
+            //            'edit' => Pages\EditFactor::route('/{record}/edit'),
         ];
     }
 }

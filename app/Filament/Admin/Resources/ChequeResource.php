@@ -21,6 +21,10 @@ use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Columns\Column;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 class ChequeResource extends Resource
 {
@@ -59,7 +63,38 @@ class ChequeResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->defaultSort('id','desc')
+        return $table
+            ->defaultSort('id', 'desc')->headerActions([
+                ExportAction::make()
+                    ->after(function () {
+                        if (Auth::check()) {
+                            activity()
+                                ->causedBy(Auth::user())
+                                ->withProperties([
+                                    'action' => 'export',
+                                ])
+                                ->log('Export' . "AR/AP");
+                        }
+                    })->exports([
+                        ExcelExport::make()->askForFilename("AR&AP")->withColumns([
+                            Column::make('transaction.description')->heading('Description'),
+                            Column::make('amount'),
+                            Column::make('issue_date'),
+                            Column::make('due_date'),
+                            Column::make('payer_name'),
+                            Column::make('payee_name'),
+                            Column::make('id')->heading('Due Days')->formatStateUsing(function ($record) {
+                                $daysUntilDue = Carbon::make($record->due_date)->diffInDays(now(), false);
+                                return abs($daysUntilDue) . ($daysUntilDue < 0 ? ' Days Due' : ' Days Passed');
+                            }),
+                            Column::make('type')->formatStateUsing(fn($record) => $record->type ? "Payable" : "Receivable"),
+                            Column::make('status'),
+
+                        ]),
+                    ])->label('Export AR/AP')->color('purple')
+            ])
+
+
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('transaction.description')->sortable(),
@@ -69,20 +104,20 @@ class ChequeResource extends Resource
                 Tables\Columns\TextColumn::make('payer_name')->searchable(),
                 Tables\Columns\TextColumn::make('payee_name')->searchable(),
                 Tables\Columns\TextColumn::make('Due Days')->label('Due Days')->state(function ($record) {
-                        $daysUntilDue = Carbon::make($record->due_date)->diffInDays(now(), false);
-                        return abs($daysUntilDue) . ($daysUntilDue < 0 ? ' Days Due' : ' Days Passed');
-                    })  
+                    $daysUntilDue = Carbon::make($record->due_date)->diffInDays(now(), false);
+                    return abs($daysUntilDue) . ($daysUntilDue < 0 ? ' Days Due' : ' Days Passed');
+                })
                     ->color(function ($record) {
                         $daysUntilDue = Carbon::make($record->due_date)->diffInDays(now(), false);
-                        
-                        return match(true) {
+
+                        return match (true) {
                             $daysUntilDue < 0 => 'success',
                             $daysUntilDue === 0 => 'warning',
                             default => 'danger'
                         };
                     })
                     ->badge()
-                    ->searchable(),         
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('type')->state(fn($record) => $record->type ? "Payable" : "Receivable")->badge(),
                 Tables\Columns\TextColumn::make('status')->badge(),
             ])
@@ -94,26 +129,26 @@ class ChequeResource extends Resource
                     ])
                     ->query(function (Builder $query, array $data): Builder {
                         return $query->when(
-                                $data['days'],
-                                fn (Builder $query, $day): Builder => $query->whereDate('due_date', '<=',now()->addDays((int)$day)->endOfDay()),
-                            );
+                            $data['days'],
+                            fn(Builder $query, $day): Builder => $query->whereDate('due_date', '<=', now()->addDays((int)$day)->endOfDay()),
+                        );
                     })
             ], getModelFilter())
             ->actions([
-                Tables\Actions\Action::make('invoice')->visible(fn($record)=> (bool)$record->transaction_id)->url(fn($record)=>$record->transaction_id ? InvoiceResource::getUrl('edit',['record'=>$record->transaction->invoice_id]) : false),
+                Tables\Actions\Action::make('invoice')->visible(fn($record) => (bool)$record->transaction_id)->url(fn($record) => $record->transaction_id ? InvoiceResource::getUrl('edit', ['record' => $record->transaction->invoice_id]) : false),
                 Tables\Actions\EditAction::make()->hidden(fn($record) => $record->status->name === "Paid"),
                 Tables\Actions\Action::make('action')->requiresConfirmation()->extraModalFooterActions([
-                    Tables\Actions\Action::make('Paid')->label('Paid')->form(function ($record){
-                        if ($record->transaction){
-                          return [
-                              Forms\Components\Section::make([
-                                  Forms\Components\TextInput::make('number')->label('Voucher NO')->default(getDocumentCode())->required()->readOnly(),
-                                  Forms\Components\TextInput::make('name')->label('Voucher Title')->default(fn($record) => "Cheque " . $record->payer_name . " - " . $record->payee_name . " Paid")->required(),
-                                  Forms\Components\DatePicker::make('date')->label('Date ')->required()->default(fn($record) => $record->due_date),
-                                  SelectTree::make('account_id')->defaultOpenLevel(3)->required()->live()->label('Account')->model(Transaction::class)->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('stamp', 'Assets')->where('company_id', getCompany()->id))->searchable(),
+                    Tables\Actions\Action::make('Paid')->label('Paid')->form(function ($record) {
+                        if ($record->transaction) {
+                            return [
+                                Forms\Components\Section::make([
+                                    Forms\Components\TextInput::make('number')->label('Voucher NO')->default(getDocumentCode())->required()->readOnly(),
+                                    Forms\Components\TextInput::make('name')->label('Voucher Title')->default(fn($record) => "Cheque " . $record->payer_name . " - " . $record->payee_name . " Paid")->required(),
+                                    Forms\Components\DatePicker::make('date')->label('Date ')->required()->default(fn($record) => $record->due_date),
+                                    SelectTree::make('account_id')->defaultOpenLevel(3)->required()->live()->label('Account')->model(Transaction::class)->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('stamp', 'Assets')->where('company_id', getCompany()->id))->searchable(),
 
-                              ])->columns()
-                          ];
+                                ])->columns()
+                            ];
                         }
                     })->action(function ($data, $record) {
                         if (isset($record->transaction)) {
@@ -176,14 +211,14 @@ class ChequeResource extends Resource
                         $record->update(['status' => "returned"]);
                         Notification::make('Blocked')->success()->title('Returned')->send()->sendToDatabase(auth()->user());
                     })->color('warning'),
-//                    Tables\Actions\Action::make('Post_dated')->label('Post Dated')->requiresConfirmation()->action(function ($record){
-//                        $record->update(['status'=>"Post_dated"]);
-//                        Notification::make('Post_dated-cheque')->success()->title('Post Dated')->send()->sendToDatabase(auth()->user());
-//                    })->color('info'),
-//                    Tables\Actions\Action::make('Canceled')->label('Cancelled')->requiresConfirmation()->action(function ($record){
-//                        $record->update(['status'=>"Cancelled"]);
-//                        Notification::make('cancelled-cheque')->success()->title('Cancelled Cheque')->send()->sendToDatabase(auth()->user());
-//                    })->color('danger'),
+                    //                    Tables\Actions\Action::make('Post_dated')->label('Post Dated')->requiresConfirmation()->action(function ($record){
+                    //                        $record->update(['status'=>"Post_dated"]);
+                    //                        Notification::make('Post_dated-cheque')->success()->title('Post Dated')->send()->sendToDatabase(auth()->user());
+                    //                    })->color('info'),
+                    //                    Tables\Actions\Action::make('Canceled')->label('Cancelled')->requiresConfirmation()->action(function ($record){
+                    //                        $record->update(['status'=>"Cancelled"]);
+                    //                        Notification::make('cancelled-cheque')->success()->title('Cancelled Cheque')->send()->sendToDatabase(auth()->user());
+                    //                    })->color('danger'),
                 ])->modalWidth(MaxWidth::ThreeExtraLarge)->modalSubmitAction(false)->hidden(fn($record) => $record->status->name === "Paid")
             ])
             ->bulkActions([

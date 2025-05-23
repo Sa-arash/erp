@@ -15,6 +15,10 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Auth;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Columns\Column;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
 
 class ProjectResource extends Resource
@@ -65,7 +69,34 @@ class ProjectResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->recordUrl(fn($record)=>ProjectResource::getUrl('view',['record'=>$record->id]))
+        return $table
+        
+        ->defaultSort('id', 'desc')->headerActions([
+            ExportAction::make()
+                ->after(function () {
+                    if (Auth::check()) {
+                        activity()
+                            ->causedBy(Auth::user())
+                            ->withProperties([
+                                'action' => 'export',
+                            ])
+                            ->log('Export' . "Project");
+                    }
+                })->exports([
+                    ExcelExport::make()->askForFilename("Project")->withColumns([
+                       Column::make('name'),
+                       Column::make('code'),
+                       Column::make('start_date'),
+                       Column::make('end_date'),
+                       Column::make('employee.fullName')->heading('Manager'),
+                       Column::make('priority_level'),
+                       Column::make('budget')->formatStateUsing(fn($record)=>number_format($record->budget,2).defaultCurrency()->symbol),
+
+                    ]),
+                ])->label('Export Project')->color('purple')
+        ])
+        
+        ->recordUrl(fn($record)=>ProjectResource::getUrl('view',['record'=>$record->id]))
             ->columns([
                 Tables\Columns\TextColumn::make('#')->rowIndex(),
                 Tables\Columns\TextColumn::make('name')->searchable(),

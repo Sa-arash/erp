@@ -61,7 +61,7 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                             ->log('Export' . 'Gate Pass');
                     }
                 })->exports([
-                    ExcelExport::make()->withColumns([
+                    ExcelExport::make()->askForFilename("Gate Pass")->withColumns([
                         Column::make('employee.fullName')->heading("Employee"),
                         Column::make('assets.product.title')->formatStateUsing(fn($record) => $record->assets->pluck('title')->toArray())->heading('Registered Asset'),
                         Column::make('itemsOut')->heading('Unregistered Asset')->formatStateUsing(function ($record) {

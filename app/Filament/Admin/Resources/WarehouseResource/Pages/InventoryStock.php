@@ -11,8 +11,12 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ManageRelatedRecords;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Support\Facades\Auth;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Columns\Column;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 class InventoryStock extends ManageRelatedRecords
 {
     protected static string $resource = WarehouseResource::class;
@@ -58,7 +62,46 @@ class InventoryStock extends ManageRelatedRecords
 
     public function table(Table $table): Table
     {
-        return $table->defaultSort('id', 'desc')
+        return $table
+        ->defaultSort('id', 'desc')->headerActions([
+            ExportAction::make()
+            ->after(function (){
+                if (Auth::check()) {
+                    activity()
+                        ->causedBy(Auth::user())
+                        ->withProperties([
+                            'action' => 'export',
+                        ])
+                        ->log('Export' . "Stock");
+                }
+            })->exports([
+                ExcelExport::make()->askForFilename("Stock")->withColumns([
+                   Column::make('employee.fullName'),
+                   Column::make('inventory.product.info'),
+                   Column::make('description'),
+                   Column::make('quantity'),
+                   Column::make('package.title')->formatStateUsing(fn($record)=> isset($record->package?->quantity)? '('.$record->quantity /$record->package?->quantity.' * '. $record->package?->quantity .')'.$record->package->title:'---')->badge(),
+                   Column::make('purchaseOrder.purchase_orders_number')->heading('PO NO'),
+                   Column::make('type')->formatStateUsing(fn($record) => $record->type === 1 ? "Stock In" : "Stock Out"),
+                   Column::make('transaction')->formatStateUsing(function($record){
+                        if ($record->transaction){
+                          return  $record->type ?"Stock In" : "Stock Out";
+                        }
+    
+                    } ),
+                   Column::make('created_at')->heading('Stock Date'),
+                ]),
+            ])->label('Export Stock')->color('purple')
+        ])
+
+
+
+
+
+
+
+
+
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('employee.fullName'),

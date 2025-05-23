@@ -60,7 +60,7 @@ class UnitResource extends Resource
                         ->log('Export' . "Unit");
                 }
             })->exports([
-                ExcelExport::make()->withColumns([
+                ExcelExport::make()->askForFilename("Unit")->withColumns([
                     Column::make('title')->heading('Unit Name'),
                 ]),
             ])->label('Export Unit')->color('purple')
