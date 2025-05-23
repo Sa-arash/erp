@@ -23,8 +23,12 @@ use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\HtmlString;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Columns\Column;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 class AssetResource extends Resource
 {
@@ -172,6 +176,72 @@ class AssetResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+        ->defaultSort('id', 'desc')->headerActions([
+            ExportAction::make()
+            ->after(function (){
+                if (Auth::check()) {
+                    activity()
+                        ->causedBy(Auth::user())
+                        ->withProperties([
+                            'action' => 'export',
+                        ])
+                        ->log('Export' . "Assets");
+                }
+            })->exports([
+                ExcelExport::make()->withColumns([
+                   Column::make('product.sku')->heading("product sku"),
+                   Column::make('purchase_order_id')->heading('PO No')->formatStateUsing(fn($record) => $record->purchase_order_id === null ? "---" : PurchaseOrder::find($record->purchase_order_id)->purchase_orders_number),
+                   Column::make('titlen')->heading('Asset Name'),
+                   Column::make('price')->heading('Purchase Price'),
+    
+                   Column::make('warehouse.title')->heading('Warehouse/Building'),
+                   Column::make('structure')->formatStateUsing(function ($record) {
+                        $str = getParents($record->structure);
+                        return substr($str, 1, strlen($str) - 1);
+                    })->heading('Location'),
+                   Column::make('employee')->formatStateUsing(function ($record) {
+                        if ($record->employees?->last()) {
+                            $data = $record->employees?->last()?->assetEmployee;
+                            if ($data->type === 'Assigned')
+                                return $data?->employee?->fullName;
+                        }
+                    })->heading('Employee'),
+                   Column::make('quality'),
+                   Column::make('depreciation_years'),
+                   Column::make('depreciation_amount'),
+                   Column::make('buy_date')->heading('Purchase Date'),
+                   Column::make('guarantee_date'),
+                   Column::make('status'),
+                   Column::make('product.department.title')->heading('Product Department'),
+                ]),
+            ])->label('Export Assets')->color('purple')
+        ])
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('product.sku')->state(fn() => '___________')->label('SKU')->searchable()->description(function ($record) {

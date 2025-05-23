@@ -45,6 +45,10 @@ class Product extends Model implements HasMedia
     {
         return $this->belongsTo(Account::class,'sub_account_id');
     }
+    public function department(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Department::class,'department_id');
+    }
     public function unit(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Unit::class);
