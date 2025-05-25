@@ -30,6 +30,15 @@ function genderOption(): array
     ];
 }
 
+
+function genderOption(): array
+{
+    return [
+        "0" => "Woman",
+        "1" => "Man",
+    ];
+}
+
 function SumOfReport1($type, $creditor, $debtor)
 {
     if ($type == "creditor") {
