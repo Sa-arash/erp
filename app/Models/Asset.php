@@ -54,9 +54,16 @@ class Asset extends Model
     {
         return $this->hasMany(AssetEmployeeItem::class);
     }
-    public function assetEmployee(): \Illuminate\Database\Eloquent\Relations\hasManyThrough
+    public function assetEmployee(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
     {
-        return $this->hasManyThrough(AssetEmployee::class,AssetEmployeeItem::class,'id','id','id','asset_employee_id');
+        return $this->hasManyThrough(
+            AssetEmployee::class, // مدل مقصد
+            AssetEmployeeItem::class, // مدل واسط
+            'asset_id', // کلید خارجی در مدل واسط (AssetEmployeeItem)
+            'id', // کلید خارجی در مدل مقصد (AssetEmployee)
+            'id', // کلید محلی در مدل اصلی (Asset)
+            'asset_employee_id' // کلید محلی در مدل واسط (AssetEmployeeItem)
+        );
     }
     public function brand(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
