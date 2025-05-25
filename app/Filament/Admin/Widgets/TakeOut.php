@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Widgets;
 
 use App\Models\Asset;
+use App\Models\Unit;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
@@ -64,8 +65,10 @@ protected static ?string $heading='Gate Pass';
                     ])->columnSpanFull()->columns(),
                     Repeater::make('itemsOut')->label('Unregistered Asset')->orderable(false)->schema([
                         TextInput::make('name')->required(),
+                        TextInput::make('quantity')->required(),
+                        Select::make('unit')->options(Unit::query()->where('company_id', getCompany()->id)->pluck('title','title'))->required(),
                         TextInput::make('remarks')->nullable(),
-                    ])->columnSpanFull()->columns()
+                    ])->columnSpanFull()->columns(4)
                 ])->columns(4)
 
             ])->modalWidth(MaxWidth::SixExtraLarge)->action(function ($data) {
@@ -132,6 +135,8 @@ protected static ?string $heading='Gate Pass';
                         RepeatableEntry::make('itemsOut')->label('itemsOut')->schema([
                             TextEntry::make('name'),
                             TextEntry::make('remarks'),
+                               TextEntry::make('quantity'),
+                            TextEntry::make('unit'),
                         ])->columnSpanFull()->columns(),
                         \Filament\Infolists\Components\Section::make([
                             TextEntry::make('OutSide_date')->dateTime(),
