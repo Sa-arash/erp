@@ -1,4 +1,4 @@
-<!doctype html>
+{{-- <!doctype html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -375,4 +375,362 @@
     </div>
 
 </div>
+</body> --}}
+
+
+@include('pdf.header',['title'=>'Gate Pass','titles'=>[],'css'=>false])
+<style>
+body {
+font-family: Arial, sans-serif;
+font-size: 10pt;
+margin: 20mm; /* Adjust margins as needed for print, typically for A4 */
+box-sizing: border-box;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+/* Header Section */
+.header-section-table {
+    margin-bottom: 25px; /* Space after header */
+}
+
+.header-section-table td {
+    padding: 0;
+    vertical-align: top;
+}
+
+.logo-cell {
+    width: 60%; /* Adjusted width for logo side based on visual */
+}
+
+.logo {
+    width: 150px; /* Approximate width from image */
+    height: auto;
+    display: block;
+    padding-top: 10px; /* Space from top of page */
+}
+
+.date-cell {
+    width: 40%; /* Adjusted width for date side */
+    text-align: right;
+    padding-top: 20px; /* Align date with general top of page content */
+    font-size: 10pt;
+}
+
+.gate-pass-title {
+    font-size: 16pt;
+    font-weight: bold;
+    padding-bottom: 5px;
+    border-bottom: 2px solid black; /* Thicker line under Gate Pass */
+    margin-bottom: 20px;
+    padding-top: 5px; /* Adjust vertical position */
+}
+
+/* Main Info Table (From, To, Name, etc.) */
+.main-info-table {
+    margin-bottom: 20px;
+}
+
+.main-info-table td {
+    border: 1px solid black;
+    padding: 6px 8px; /* Consistent padding for cells */
+    vertical-align: middle;
+    height: 20px; /* Ensure consistent height for rows */
+}
+
+.main-info-table td:nth-child(1), /* From, Name, Designation labels */
+.main-info-table td:nth-child(3)  /* To, Badge Number, Department labels */
+{
+    width: 18%; /* Adjusted width for labels */
+    font-weight: normal;
+}
+
+.main-info-table td:nth-child(2), /* From, Name, Designation values */
+.main-info-table td:nth-child(4)  /* To, Badge Number, Department values */
+{
+    width: 32%; /* Adjusted width for values */
+    font-weight: normal;
+}
+
+.main-info-table u {
+    text-decoration: underline;
+}
+
+/* Item List Section */
+.item-list-prompt {
+    margin-bottom: 10px;
+    font-size: 10pt;
+}
+
+.item-list-table {
+    margin-bottom: 20px;
+}
+
+.item-list-table th,
+.item-list-table td {
+    border: 1px solid black;
+    padding: 6px 8px; /* Consistent padding for cells */
+    text-align: left;
+    vertical-align: middle;
+    height: 20px; /* Consistent height for data rows */
+}
+
+.item-list-table th {
+    background-color: #f0f0f0; /* Light gray background for headers */
+    font-weight: bold;
+}
+
+.item-list-table th:nth-child(1), /* SN */
+.item-list-table td:nth-child(1) {
+    width: 5%;
+    text-align: center;
+}
+
+.item-list-table th:nth-child(2), /* Item Description */
+.item-list-table td:nth-child(2) {
+    width: 45%;
+}
+
+.item-list-table th:nth-child(3), /* Quantity */
+.item-list-table td:nth-child(3) {
+    width: 15%;
+}
+
+.item-list-table th:nth-child(4), /* Unit */
+.item-list-table td:nth-child(4) {
+    width: 15%;
+}
+
+.item-list-table th:nth-child(5), /* Remarks */
+.item-list-table td:nth-child(5) {
+    width: 20%;
+}
+
+/* Reason for Taking out */
+.reason-field {
+    margin-top: 15px;
+    font-size: 10pt;
+    padding-bottom: 5px; /* Space for the underline */
+    border-bottom: 1px solid black; /* Line under the reason */
+    margin-bottom: 25px; /* Space after this section */
+    font-weight: bold;
+}
+
+.reason-field span {
+    font-weight: normal; /* "GIFT" is not bold */
+}
+
+/* Status and Check Table */
+.status-check-table {
+    margin-bottom: 50px; /* Space before the final signature */
+}
+
+.status-check-table td {
+    border: 1px solid black;
+    padding: 6px 8px;
+    vertical-align: middle;
+    height: 20px; /* Consistent height for all rows */
+}
+
+.status-check-table td:nth-child(1) { /* Status column */
+    width: 30%;
+    font-weight: bold;
+}
+
+.status-check-table td:nth-child(2) { /* Check one column */
+    width: 10%;
+    text-align: center;
+}
+
+.status-check-table td:nth-child(3) { /* Right column (Checked by, Verified by, Names, Signatures) */
+    width: 60%;
+    font-weight: bold; /* Labels like "Checked by" are bold */
+}
+
+.status-check-table td.signature-label-normal,
+.status-check-table td.name-label-normal {
+    font-weight: normal; /* Name and Signature labels are not bold */
+}
+
+.status-check-table td.dashed-line {
+    font-weight: normal;
+    text-align: center;
+}
+
+/* Footer Signature */
+.security-signature-container {
+    width: 100%;
+    text-align: right; /* Aligns the table to the right */
+    margin-top: 30px; /* Space from above content */
+}
+
+.security-signature-table {
+    width: 280px; /* Fixed width to match the image's line length */
+    margin-left: auto; /* Push to the right */
+    border: none;
+}
+
+.security-signature-table td {
+    border: none;
+    padding: 0;
+    text-align: center;
+}
+
+.security-signature-line {
+    border-bottom: 1px solid black;
+    height: 1px; /* Ensure the line is visible */
+    width: 100%;
+    margin-bottom: 5px; /* Space between line and text */
+    display: block; /* Ensures border-bottom works correctly */
+}
+
+.security-signature-text {
+    font-weight: bold;
+    font-size: 10pt;
+}
+
+.security-signature-text u {
+    text-decoration: underline;
+}
+</style>
+</head>
+<body>
+
+
+
+<div class="gate-pass-title">Gate Pass</div>
+<table class="header-section-table">
+    <tr>
+        <td class="logo-cell">
+        </td>
+        <td class="date-cell">
+            DATE: {{ \Illuminate\Support\Carbon::create($takeOut->date)->format('d F Y') }}
+        </td>
+    </tr>
+</table>
+<table class="main-info-table">
+    <tr>
+        <td>From:</td>
+        <td>{{$takeOut->from}}</td>
+        <td>To:</td>
+        <td>{{$takeOut->to}}</td>
+    </tr>
+    <tr>
+        <td>Name:</td>
+        <td>{{$takeOut->employee->fullName}}</td>
+        <td>Badge Number:</td>
+        <td><u>{{$takeOut->employee->ID_number}}</u></td>
+    </tr>
+    <tr>
+        <td>Designation:</td>
+        <td>{{$takeOut->employee->position?->title}}</td>
+        <td>Department:</td>
+        <td>{{$takeOut->employee->department?->title}}</td>
+    </tr>
+</table>
+
+<p class="item-list-prompt">Please allow the following items/materials out.</p>
+
+<table class="item-list-table">
+    <thead>
+        <tr>
+            <th>SN</th>
+            <th>Item Description</th>
+            <th>Quantity</th>
+            <th>Unit</th>
+            <th>Remarks</th>
+        </tr>
+    </thead>
+    <tbody>
+        @php
+            $i=1;
+        @endphp
+        @foreach ($takeOut->items as $item)
+            {{-- @dd($item->asset); --}}
+        <tr>
+            <td>{{$i++}}</td>
+            <td>{{$item->asset->title}}</td>
+            <td>1</td>
+            <td>Each</td>
+            <td>{{$item->remarks}}</td>
+        </tr>
+        
+        @endforeach
+
+        @foreach ($takeOut->itemsOut  as $itemOut)
+        {{-- @dd($itemOut ); --}}
+        <tr>
+            <td>{{$i++}}</td>
+            <td>{{ $itemOut["name"] }}</td>
+            <td>{{ $itemOut["quantity"] }}</td>
+            <td>{{ $itemOut["unit"] }}</td>
+            <td>{{$itemOut["remarks"]}}</td>
+        </tr>
+        
+        @endforeach
+    </tbody>
+</table>
+
+<div class="reason-field">Reason for Taking out: <span>GIFT</span></div>
+
+<table class="status-check-table">
+    <tr>
+        <td>Status</td>
+        <td>Check one</td>
+        <td>Checked by: Department Head/Line Manager</td>
+    </tr>
+    <tr>
+        <td>Returnable</td>
+        <td>{{$takeOut->status == "Returnable" ? '✓':''}}</td>
+        <td class="name-label-normal">Name:</td>
+    </tr>
+    <tr>
+        <td>Non-Returnable</td>
+        <td>{{$takeOut->status == "Non-Returnable" ? '✓':''}}</td>
+        <td class="signature-label-normal">Signature:</td>
+    </tr>
+    <tr>
+        <td>Modification</td>
+        <td>{{$takeOut->type == "Modification" ? '✓':''}}</td>
+        <td class="dashed-line">&mdash;</td>
+    </tr>
+    <tr>
+        <td>Personal Belonging</td>
+        <td>{{$takeOut->type == "Personal Belonging" ? '✓':''}}</td>
+        <td>Verified by: Admin/HR Department</td>
+    </tr>
+    <tr>
+        <td>Domestic Waste</td>
+        <td>{{$takeOut->type == "Domestic Waste" ? '✓':''}}</td>
+        <td class="name-label-normal">Name:</td>
+    </tr>
+    <tr>
+        <td>Construction Waste</td>
+        <td>{{$takeOut->type == "Construction Waste" ? '✓':''}}</td>
+        <td class="signature-label-normal">Signature:</td>
+    </tr>
+    <tr>
+        <td></td>
+        <td></td>
+        <td class="dashed-line">&mdash;</td>
+    </tr>
+</table>
+
+<div class="security-signature-container">
+    <table class="security-signature-table">
+        <tr>
+            <td>
+                <span class="security-signature-line"></span>
+                <div class="security-signature-text">Security Department - <u>UNC</u></div>
+            </td>
+        </tr>
+    </table>
+</div>
 </body>
+</html>
+
+
+منابع
