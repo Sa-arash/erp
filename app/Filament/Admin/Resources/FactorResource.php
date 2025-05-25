@@ -618,11 +618,8 @@ class FactorResource extends Resource
                 ExportAction::make()
                     ->after(function () {
                         if (Auth::check()) {
-                            activity()
+                            activity()->inLog('Export')
                                 ->causedBy(Auth::user())
-                                ->withProperties([
-                                    'action' => 'export',
-                                ])
                                 ->log('Export' . "Invoices");
                         }
                     })->exports([
@@ -630,12 +627,11 @@ class FactorResource extends Resource
                             Column::make('title'),
                             Column::make('party.name')->heading('Vendor/Customer'),
                             Column::make('account.name')->heading('Expense/Income'),
+                            Column::make('currency.name')->heading('Currency'),
                             Column::make('from'),
                             Column::make('to'),
-                            Column::make('type')
-                                ->formatStateUsing(fn($record) => $record->type == "1" ? "Income" : "Expense"),
-                            Column::make('id')->heading('Total')
-                                ->formatStateUsing(fn($record) => number_format($record->items->map(fn($item) => (($item['quantity'] * str_replace(',', '', $item['unit_price'])) - (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['discount']) / 100)))?->sum(), 2)),
+                            Column::make('type')->formatStateUsing(fn($record) => $record->type == "1" ? "Income" : "Expense"),
+                            Column::make('id')->heading('Total')->formatStateUsing(fn($record) => number_format($record->items->map(fn($item) => (($item['quantity'] * str_replace(',', '', $item['unit_price'])) - (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['discount']) / 100)))?->sum(), 2)),
                             Column::make('created_at')->heading('Date'),
                             Column::make('updated_at'),
 
@@ -718,29 +714,25 @@ class FactorResource extends Resource
                         $set('invoice.transactions', []);
                         $set('setPrice', 0);
                     })->required()->default(0)->boolean('Income', 'Expense')->grouped(),
-                    Select::make('currency_id')->live()->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([
-                        \Filament\Forms\Components\Section::make([
+                    Select::make('currency_id')->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([\Filament\Forms\Components\Section::make([
                             TextInput::make('name')->required()->maxLength(255),
                             TextInput::make('symbol')->required()->maxLength(255),
                             TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-                        ])->columns(3)
-                    ])->createOptionUsing(function ($data) {
+                        ])->columns(3)])->createOptionUsing(function ($data) {
                         $data['company_id'] = getCompany()->id;
                         Notification::make('success')->title('success')->success()->send();
                         return Currency::query()->create($data)->getKey();
-                    })->editOptionForm([
-                        \Filament\Forms\Components\Section::make([
+                    })->editOptionForm([\Filament\Forms\Components\Section::make([
                             TextInput::make('name')->required()->maxLength(255),
                             TextInput::make('symbol')->required()->maxLength(255),
                             TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-                        ])->columns(3)
-                    ])->afterStateUpdated(function (Forms\Set $set, $state) {
+                        ])->columns(3)])->afterStateUpdated(function (Forms\Set $set, $state) {
                         $set('setPrice', 0);
                         $currency = Currency::query()->firstWhere('id', $state);
                         if ($currency) {
                             $set('currency', $currency->symbol);
                         }
-                    }),
+                    })->live(),
                     SelectTree::make('account_id')->label(fn(Forms\Get $get) => $get('type') === "1" ? "Income Account" : "Expense Account")->searchable()->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: function ($query, Get $get) {
                         $type = $get('type') === "1" ? "Income" : "Expense";
                         return $query->where('group', [$type])->where('company_id', getCompany()->id);
@@ -978,12 +970,20 @@ class FactorResource extends Resource
                                 $fail('The :attribute is invalid.');
                             }
                         },
-                    ])->mask(RawJs::make('$money($input)'))->stripCharacters(',')->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
+                    ])->mask(RawJs::make('$money($input)'))->label(function(Get $get) {
+                        if (isset($get->getData()['currency_id'])){
+                            $currency=Currency::query()->firstWhere('id',$get->getData()['currency_id']);
+                           return 'Unit Price ('.$currency->name.')';
+                        }
+                        return  'Unit Price';
+
+                    } )->stripCharacters(',')->afterStateUpdated(function (Forms\Get $get, Forms\Set $set,Forms\Components\Component $component) {
+
                         $count = $get('quantity') === null ? 0 : (float)$get('quantity');
                         $unitPrice = $get('unit_price') === null ?  0 : (float)str_replace(',', '', $get('unit_price'));
                         $discount = $get('discount') === null ?  0 : (float)$get('discount');
                         $set('total', number_format(($count * $unitPrice) - (($count * $unitPrice) * $discount) / 100, 2));
-                    })->required()->label(fn(Get $get) => 'Unit Price')->live(true),
+                    })->required()->live(true),
                     Forms\Components\TextInput::make('discount')->label('Discount(%)')->numeric()->live(true)->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
                         $count = $get('quantity') === null ? 0 : (float)$get('quantity');
                         $unitPrice = $get('unit_price') === null ?  0 : (float)str_replace(',', '', $get('unit_price'));

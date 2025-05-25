@@ -917,7 +917,7 @@ function numberToWords($number, $currency)
 function exportLog($description){
     if (Auth::check()) {
         activity()
-            ->causedBy(Auth::user())
+            ->causedBy(Auth::user())->useLog('Export')
             ->withProperties([
                 'action' => 'export',
             ])
