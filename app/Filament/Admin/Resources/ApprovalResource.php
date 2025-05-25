@@ -394,6 +394,11 @@ class ApprovalResource extends Resource implements HasShieldPermissions
     {
         return Approval::query()->where('employee_id', getEmployee()?->id)->where('status', 'Pending')->count() ?? 0;
     }
+    public static function getNavigationBadgeColor(): string|array|null
+    {
+        return Approval::query()->where('employee_id', getEmployee()?->id)->where('read_at', null)->count() ? "warning":'info' ;
+    }
+
 
     public static function getRelations(): array
     {
