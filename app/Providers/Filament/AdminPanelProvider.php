@@ -200,10 +200,10 @@ class AdminPanelProvider extends PanelProvider
                 FilamentShieldPlugin::make()
                     ->gridColumns([
                         'default' => 1,
-                        'sm' => 2,
-                        'lg' => 3
+                        'sm' => 1,
+                        'lg' => 1
                     ])
-                    ->sectionColumnSpan(1)
+                    ->sectionColumnSpan(2)
                     ->checkboxListColumns([
                         'default' => 1,
                         'sm' => 2,

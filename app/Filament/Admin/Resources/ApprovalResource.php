@@ -67,7 +67,15 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('created_at')->label('Request Date')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('approve_date')->label('Approval Date')->date(),
                 Tables\Columns\TextColumn::make('comment')->sortable(),
-                Tables\Columns\TextColumn::make('status')->label('Security Head')->badge(),
+                Tables\Columns\TextColumn::make('status')->state(fn($record)=>match ($record->status->value){
+                    'Approve'=>'Approved',
+                    'NotApprove'=>'Not Approve',
+                    'Pending'=>'Pending',
+                })->color(fn($state)=>match ($state){
+                    'Approved'=>'success',
+                    'Not Approve'=>'danger',
+                    'Pending'=>'info',
+                })->label('Status')->badge(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')->label('Status')->options(['Approve'=>'Approve','NotApprove'=>'NotApprove','Pending'=>'Pending'])->searchable(),
@@ -127,10 +135,14 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                             })->schema([
                                 TextEntry::make('asset.title'),
                                 TextEntry::make('remarks'),
-                            ])->columnSpanFull()->columns()
+                            ])->columnSpanFull()->columns(),
+                            RepeatableEntry::make('itemsOut')->label('Unregistered Asset')->schema([
+                                TextEntry::make('name'),
+                                TextEntry::make('remarks'),
+                            ])->columnSpanFull()->columns(),
                         ])->relationship('approvable')->columns()
                     ];
-                }),
+                })->modalWidth(MaxWidth::SevenExtraLarge),
                 Tables\Actions\Action::make('viewVisitorRequest')->url(fn($record)=>VisitorRequestResource::getUrl('view',['record'=>$record->approvable_id]))->label('View')->visible(fn($record) => substr($record->approvable_type, 11) === "VisitorRequest")
 //                    ->infolist(function () {
 //                    return [
@@ -246,9 +258,23 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                         }
                     }elseif (substr($record->approvable_type, 11) === "TakeOut"){
                         if ($data['status'] === "Approve") {
+                            if ($record->approvable->mood==="Pending"){
+                                $record->approvable->update([
+                                    'mood' => 'Approved Manager'
+                                ]);
+                                sendApprove($record->approvable,'admin_take::out');
+
+                            }elseif ($record->approvable->mood==="Approved Manager"){
+                                $record->approvable->update([
+                                    'mood' => 'Approved Admin'
+                                ]);
+                                sendSecurity($record->approvable,company: getCompany());
+                            }else{
                                 $record->approvable->update([
                                     'mood' => 'Approved'
                                 ]);
+                            }
+
                         }else{
                             $record->approvable->update([
                                 'mood' => 'NotApproved'

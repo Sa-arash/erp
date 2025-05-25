@@ -158,17 +158,17 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                                 })->allowHtml()
                                 ->searchable()
                                 ->preload()
-                                ->label('Color')
-                                ,
-                                 // حتماً اینو فعال کنید که HTML داخل لیبل‌ها کار کنه
+                                ->label('Color'),
+                            Forms\Components\TextInput::make('Registration_Plate')->required(),
+                            FileUpload::make('image')->imageEditor()->image()->columnSpanFull(),
 
-        Forms\Components\TextInput::make('Registration_Plate')->required(),
                         ])->columns(6)->columnSpanFull(),
                     Forms\Components\Hidden::make('company_id')
                         ->default(getCompany()->id)
                         ->required(),
 
-                ])->columns(2)
+                ])->columns(2),
+
 
             ]);
     }

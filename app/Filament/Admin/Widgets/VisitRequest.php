@@ -66,6 +66,7 @@ class VisitRequest extends BaseWidget
                     }
                 })->label('Time Leave'),
 
+                Tables\Columns\TextColumn::make('approvals.approve_date')->label('Approval Status'),
                 Tables\Columns\TextColumn::make('status')->badge()->state((function ($record) {
                     switch ($record->status) {
                         case "approved":
@@ -84,7 +85,7 @@ class VisitRequest extends BaseWidget
                         case "Not Approved":
                             return 'danger';
                     }
-                })->tooltip(fn($record)=>isset($record->approvals[0])? $record->approvals[0]->approve_date : false )->alignCenter(),
+                })->alignCenter(),
 
 
 
@@ -188,6 +189,8 @@ class VisitRequest extends BaseWidget
                                         ->label('Color')
                                     ,
                                     TextInput::make('Registration_Plate')->required(),
+                                    FileUpload::make('image')->imageEditor()->image()->columnSpanFull(),
+
                                 ])->columns(3)->columnSpanFull(),
                         ])->columns(2)
                     ]
@@ -303,6 +306,8 @@ class VisitRequest extends BaseWidget
                                         ->label('Color')
                                     ,
                                     TextInput::make('Registration_Plate')->required(),
+                                    FileUpload::make('image')->imageEditor()->image()->columnSpanFull(),
+
                                 ])->columns(3)->columnSpanFull(),
                         ])->columns(2)
                     ]

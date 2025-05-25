@@ -44,6 +44,7 @@ class TakeOutResource extends Resource implements HasShieldPermissions
             'delete',
             'delete_any',
             'reception',
+            'admin'
         ];
     }
 
@@ -82,7 +83,7 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                         Column::make('type'),
                         Column::make('gate_status')->heading('Gate Status'),
                     ]),
-                ])->label('Export Visitor Requests')->color('purple')
+                ])->label('Export Gate Pass')->color('purple')
             ])
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
@@ -120,7 +121,7 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                 DateRangeFilter::make('date')->label('Date'),
             ], getModelFilter())
             ->actions([
-                Tables\Actions\Action::make('ActionOutSide')->label(' CheckOut')->form([
+                Tables\Actions\Action::make('ActionOutSide')->label(' Check OUT')->form([
                     Forms\Components\DateTimePicker::make('OutSide_date')->withoutSeconds()->label(' Date And Time')->required()->default(now()),
                     Forms\Components\Textarea::make('OutSide_comment')->label(' Comment')
                 ])->requiresConfirmation()->action(function ($data, $record) {
@@ -136,7 +137,7 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                     }
                     return false;
                 }),
-                Tables\Actions\Action::make('ActionInSide')->label('CheckIn')->form([
+                Tables\Actions\Action::make('ActionInSide')->label('Check IN')->form([
                     Forms\Components\DateTimePicker::make('InSide_date')->withoutSeconds()->label(' Date And Time')->required()->default(now()),
                     Forms\Components\Textarea::make('inSide_comment')->label(' Comment')
                 ])->requiresConfirmation()->action(function ($data, $record) {

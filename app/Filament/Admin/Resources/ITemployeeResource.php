@@ -100,6 +100,7 @@ class ITemployeeResource extends Resource
                 Tables\Columns\TextColumn::make('duty.title')->alignLeft()->numeric()->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('department.title')->alignLeft()->color('aColor')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('position.title')->alignLeft()->label('Position')->sortable(),
+                Tables\Columns\TextColumn::make('user.created_at')->dateTime()->alignLeft()->label('Created User')->sortable(),
                 //                Tables\Columns\TextColumn::make('payrolls_count')->counts('payrolls')->badge()->url(fn($record): string => (PayrollResource::getUrl('index', ['tableFilters[employee_id][value]' => $record->id])))->sortable(),
 
             ])

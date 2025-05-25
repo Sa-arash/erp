@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('to');
             $table->string('from');
             $table->text('reason')->nullable();
-            $table->enum('mood',['Approved','Pending','NotApproved'])->default('Pending');
+            $table->enum('mood',['Approved','Approved Manager','Approved Admin','Pending','NotApproved'])->default('Pending');
             $table->enum('status',['Returnable','Non-Returnable']);
             $table->enum('type',['Modification','Personal Belonging','Domestic Waste','Construction Waste']);
             $table->enum('gate_status',['Pending','CheckedIn','CheckedOut','Canceled'])->default('Pending');

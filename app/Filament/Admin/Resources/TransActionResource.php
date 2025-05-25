@@ -22,7 +22,7 @@ class TransActionResource extends Resource
 {
     protected static ?string $model = Transaction::class;
     protected static ?string $label = 'Journal Report';
-    protected static ?string $navigationGroup ="Accounting Report";
+    protected static ?string $navigationGroup ="Finance Management";
     protected static ?int $navigationSort = 0;
 
     public static function canCreate(): bool

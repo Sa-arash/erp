@@ -81,7 +81,7 @@ protected static ?string $heading='Gate Pass';
                     $item['company_id'] = $id;
                     $takeOut->items()->create($item);
                 }
-                sendAdmin($employee,$takeOut,getCompany());
+                sendAR($employee,$takeOut,getCompany());
                 Notification::make('success')->color('success')->success()->title('Request Sent')->send()->sendToDatabase(auth()->user());
             })->color('warning')
         ])

@@ -359,8 +359,8 @@
                 <td>{{$approve->employee->fullName}}</td>
                 <td>{{$approve->position}}</td>
                 <td>
-                    @if($approve->employee->media->where('collection_name','signature')->first()?->original_url)
-                        <img src="{{$employee->media->where('collection_name','signature')->first()->getPath()}}" style="width: 100px;height: 60px" alt="">
+                    @if(file_exists($approve->employee?->media->where('collection_name','signature')->first()?->getPath()))
+                        <img src="{{$approve->employee->media->where('collection_name','signature')->first()->getPath()}}" style="width: 100px;height: 60px" alt="">
                     @endif
                 </td>
             </tr>

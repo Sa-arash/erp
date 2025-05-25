@@ -1,4 +1,4 @@
-@include('pdf.header', ['title'=>'Balance Sheet','titles' => ['Balance Sheet']])
+@include('pdf.header', ['title'=>'Balance Sheet','titles' => ['']])
 
 <div style="text-align: left; padding: 0; margin: 0;">
     <p style="margin: 0; padding: 0;text-align:center">As of {{ $endDate ? \Carbon\Carbon::parse($endDate)->format('Y-m-d') : \Carbon\Carbon::parse(now())->format('Y-m-d') }}</p>
