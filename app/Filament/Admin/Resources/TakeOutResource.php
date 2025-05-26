@@ -44,7 +44,7 @@ class TakeOutResource extends Resource implements HasShieldPermissions
             'delete',
             'delete_any',
             'reception',
-            'admin'
+            'Admin'
         ];
     }
 
@@ -126,19 +126,19 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                     Forms\Components\Textarea::make('OutSide_comment')->label(' Comment')
                 ])->requiresConfirmation()->action(function ($data, $record) {
                     foreach($record->items as $item){
-                       
+
                         $latestAssetEmployee = $item->asset->assetEmployee->sortByDesc('date')->first();
 
                         if ($latestAssetEmployee) {
-                      
+
                             $newAssetEmployee = $latestAssetEmployee->replicate();
-                    
+
                             $newAssetEmployee->type = 'GatePass';
-                    
+
                             $newAssetEmployee->save();
                         }
                     }
-                   
+
                     $record->update(['OutSide_date' => $data['OutSide_date'], 'OutSide_comment' => $data['OutSide_comment'], 'gate_status' => 'CheckedOut']);
                     Notification::make('success')->success()->title('Submitted Successfully')->send();
                 })->visible(function ($record) {
@@ -156,15 +156,15 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                     Forms\Components\Textarea::make('inSide_comment')->label(' Comment')
                 ])->requiresConfirmation()->action(function ($data, $record) {
                     foreach($record->items as $item){
-                       
+
                         $latestAssetEmployee = $item->asset->assetEmployee->sortByDesc('date')->first();
 
                         if ($latestAssetEmployee) {
-                      
+
                             $newAssetEmployee = $latestAssetEmployee->replicate();
-                    
+
                             $newAssetEmployee->type = 'Assigned';
-                    
+
                             $newAssetEmployee->save();
                         }
                     }

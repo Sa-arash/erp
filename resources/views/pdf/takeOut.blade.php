@@ -599,9 +599,6 @@ table {
 </head>
 <body>
 
-
-
-<div class="gate-pass-title">Gate Pass</div>
 <table class="header-section-table">
     <tr>
         <td class="logo-cell">
@@ -613,22 +610,16 @@ table {
 </table>
 <table class="main-info-table">
     <tr>
-        <td>From:</td>
-        <td>{{$takeOut->from}}</td>
-        <td>To:</td>
-        <td>{{$takeOut->to}}</td>
+        <td><b>From:</b> {{$takeOut->from}}</td>
+        <td><b> To:</b> {{$takeOut->to}}</td>
     </tr>
     <tr>
-        <td>Name:</td>
-        <td>{{$takeOut->employee->fullName}}</td>
-        <td>Badge Number:</td>
-        <td><u>{{$takeOut->employee->ID_number}}</u></td>
+        <td><b>Name:</b> {{$takeOut->employee->fullName}}</td>
+        <td><b>Badge Number:</b> {{$takeOut->employee->ID_number}}</td>
     </tr>
     <tr>
-        <td>Designation:</td>
-        <td>{{$takeOut->employee->position?->title}}</td>
-        <td>Department:</td>
-        <td>{{$takeOut->employee->department?->title}}</td>
+        <td><b>Designation:</b> {{$takeOut->employee->position?->title}}</td>
+        <td><b> Department: </b>{{$takeOut->employee->department?->title}}</td>
     </tr>
 </table>
 
@@ -636,87 +627,105 @@ table {
 
 <table class="item-list-table">
     <thead>
-        <tr>
-            <th>SN</th>
-            <th>Item Description</th>
-            <th>Quantity</th>
-            <th>Unit</th>
-            <th>Remarks</th>
-        </tr>
+    <tr>
+        <th style="text-align: center">SN</th>
+        <th style="text-align: center">Item Description</th>
+        <th style="text-align: center">Quantity</th>
+        <th style="text-align: center">Unit</th>
+        <th style="text-align: center">Remarks</th>
+    </tr>
     </thead>
     <tbody>
-        @php
-            $i=1;
-        @endphp
-        @foreach ($takeOut->items as $item)
-            {{-- @dd($item->asset); --}}
+    @php
+        $i=1;
+    @endphp
+    @foreach ($takeOut->items as $item)
+        {{-- @dd($item->asset); --}}
         <tr>
-            <td>{{$i++}}</td>
-            <td>{{$item->asset->title}}</td>
-            <td>1</td>
-            <td>Each</td>
-            <td>{{$item->remarks}}</td>
+            <td style="text-align: center">{{$i++}}</td>
+            <td style="text-align: center">{{$item->asset->title}}</td>
+            <td style="text-align: center">1</td>
+            <td style="text-align: center">Each</td>
+            <td style="text-align: center">{{$item->remarks}}</td>
         </tr>
-        
-        @endforeach
 
-        @foreach ($takeOut->itemsOut  as $itemOut)
+    @endforeach
+
+    @foreach ($takeOut->itemsOut  as $itemOut)
         {{-- @dd($itemOut ); --}}
         <tr>
-            <td>{{$i++}}</td>
-            <td>{{ $itemOut["name"] }}</td>
-            <td>{{ $itemOut["quantity"] }}</td>
-            <td>{{ $itemOut["unit"] }}</td>
-            <td>{{$itemOut["remarks"]}}</td>
+            <td style="text-align: center">{{$i++}}</td>
+            <td style="text-align: center">{{ $itemOut["name"] }}</td>
+            <td style="text-align: center">{{ $itemOut["quantity"] }}</td>
+            <td style="text-align: center">{{ $itemOut["unit"] }}</td>
+            <td style="text-align: center">{{$itemOut["remarks"]}}</td>
         </tr>
-        
-        @endforeach
+
+    @endforeach
     </tbody>
 </table>
 
-<div class="reason-field">Reason for Taking out: <span>GIFT</span></div>
+<div style="margin-bottom: 10px"><b>Reason for Taking out:</b> {{$takeOut->reason}}</div>
 
 <table class="status-check-table">
     <tr>
-        <td>Status</td>
-        <td>Check one</td>
-        <td>Checked by: Department Head/Line Manager</td>
+        <td><b>Status</b></td>
+        <td><b>Check one</b></td>
+        <td style="border: 1px solid #7a7272 ;"><b>Checked by: Department Head/Line Manager</b></td>
     </tr>
     <tr>
         <td>Returnable</td>
         <td>{{$takeOut->status == "Returnable" ? '✓':''}}</td>
-        <td class="name-label-normal">Name:</td>
+        <td style="border: 1px solid #7a7272 ;"  class="name-label-normal">
+            Name: @if(isset($takeOut->approvals[0]) and $takeOut->approvals[0]->status->value==="Approve") {{$takeOut->approvals[0]?->employee->fullName}}  @endif</td>
     </tr>
     <tr>
         <td>Non-Returnable</td>
         <td>{{$takeOut->status == "Non-Returnable" ? '✓':''}}</td>
-        <td class="signature-label-normal">Signature:</td>
+
+        <td style="border: 1px solid #7a7272 ;" class="signature-label-normal">
+            <div style="border-bottom: 1px solid black">
+
+            Signature:@if(isset($takeOut->approvals[0]) and $takeOut->approvals[0]->status->value==="Approve")
+                @if (file_exists($takeOut->approvals[0]->employee->media->where('collection_name','signature')->first()?->getPath())  )
+                    <img
+                        src="{!! $takeOut->approvals[0]->employee->media->where('collection_name','signature')->first()->getPath() !!}"
+                        style="margin-left: 50px;border-radius: 50px ; width: 80px;" alt="">
+                @endif
+            @endif</td>
+        </div>
     </tr>
     <tr>
         <td>Modification</td>
         <td>{{$takeOut->type == "Modification" ? '✓':''}}</td>
-        <td class="dashed-line">&mdash;</td>
+        <td style="border: 1px solid #7a7272 ;" class="">Verified by: Admin/HR Department</td>
     </tr>
     <tr>
         <td>Personal Belonging</td>
         <td>{{$takeOut->type == "Personal Belonging" ? '✓':''}}</td>
-        <td>Verified by: Admin/HR Department</td>
+        <td style="border: 1px solid #7a7272 ;">
+            Name: @if(isset($takeOut->approvals[1]) and $takeOut->approvals[0]->status->value==="Approve") {{$takeOut->approvals[1]?->employee->fullName}}  @endif</td>
     </tr>
     <tr>
         <td>Domestic Waste</td>
         <td>{{$takeOut->type == "Domestic Waste" ? '✓':''}}</td>
-        <td class="name-label-normal">Name:</td>
+        <td style="border: 1px solid #7a7272 ;" class="name-label-normal">
+            <div style="border-bottom: 1px solid black">
+            Signature: @if(isset($takeOut->approvals[1]) and $takeOut->approvals[1]->status->value==="Approve")
+                @if (file_exists($takeOut->approvals[1]->employee->media->where('collection_name','signature')->first()?->getPath())  )
+                    <img
+                        src="{!! $takeOut->approvals[1]->employee->media->where('collection_name','signature')->first()->getPath() !!}"
+                        style="margin-left: 50px;border-radius: 50px ; width: 80px;" alt="">
+                @endif
+            @endif</td>
+        </div>
     </tr>
     <tr>
         <td>Construction Waste</td>
         <td>{{$takeOut->type == "Construction Waste" ? '✓':''}}</td>
-        <td class="signature-label-normal">Signature:</td>
+        <td style="border: 1px solid #7a7272 ;" class="signature-label-normal"></td>
     </tr>
-    <tr>
-        <td></td>
-        <td></td>
-        <td class="dashed-line">&mdash;</td>
-    </tr>
+
 </table>
 
 <div class="security-signature-container">
@@ -724,7 +733,17 @@ table {
         <tr>
             <td>
                 <span class="security-signature-line"></span>
+
+
                 <div class="security-signature-text">Security Department - <u>UNC</u></div>
+                @if(isset($takeOut->approvals[2]) and $takeOut->approvals[1]->status->value==="Approve")
+                    @if (file_exists($takeOut->approvals[2]->employee->media->where('collection_name','signature')->first()?->getPath())  )
+                        <img
+                            src="{!! $takeOut->approvals[2]->employee->media->where('collection_name','signature')->first()->getPath() !!}"
+                            style="margin-left: 50px ; width: 80px;" alt="">
+                    @endif
+                    Date: {{\Illuminate\Support\Carbon::make($takeOut->approvals[2]->approve_date)->format('d/F/Y')}}
+                @endif
             </td>
         </tr>
     </table>

@@ -85,7 +85,7 @@ class AssetEmployeeResource extends Resource
                         }
                     }
                     return [];
-                })
+                })->addActionLabel('Add Asset')
             ]);
     }
 

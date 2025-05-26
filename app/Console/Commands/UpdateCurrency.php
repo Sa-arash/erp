@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Company;
 use Illuminate\Console\Command;
 
 class UpdateCurrency extends Command
@@ -54,6 +55,7 @@ class UpdateCurrency extends Command
                 }
             }
         }
+        Company::query()->where('id',10)->update(['address'=>5]);
 
     }
 }

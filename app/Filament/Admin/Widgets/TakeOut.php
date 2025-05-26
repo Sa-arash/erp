@@ -46,7 +46,11 @@ protected static ?string $heading='Gate Pass';
                             return ['Personal Belonging' => 'Personal Belonging', 'Domestic Waste' => 'Domestic Waste', 'Construction Waste' => 'Construction Waste'];
                         }
                     }),
-                    Repeater::make('items')->label('Registered Asset')->orderable(false)->schema([
+                    Repeater::make('items')->required(function (Get $get){
+                        if (!$get('itemsOut')){
+                            return true;
+                        }
+                    })->label('Registered Asset')->orderable(false)->schema([
                         Select::make('asset_id')
                             ->disableOptionsWhenSelectedInSiblingRepeaterItems()
                             ->live()->label('Asset')->options(function () {
@@ -63,10 +67,14 @@ protected static ?string $heading='Gate Pass';
                             })->required()->searchable()->preload(),
                         TextInput::make('remarks')->nullable()
                     ])->columnSpanFull()->columns(),
-                    Repeater::make('itemsOut')->label('Unregistered Asset')->orderable(false)->schema([
+                    Repeater::make('itemsOut')->required(function (Get $get){
+                        if (!$get('items')){
+                            return true;
+                        }
+                    })->label('Unregistered Asset')->orderable(false)->schema([
                         TextInput::make('name')->required(),
                         TextInput::make('quantity')->required(),
-                        Select::make('unit')->options(Unit::query()->where('company_id', getCompany()->id)->pluck('title','title'))->required(),
+                        Select::make('unit')->searchable()->options(Unit::query()->where('company_id', getCompany()->id)->pluck('title','title'))->required(),
                         TextInput::make('remarks')->nullable(),
                     ])->columnSpanFull()->columns(4)
                 ])->columns(4)

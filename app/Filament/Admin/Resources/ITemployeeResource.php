@@ -64,6 +64,7 @@ class ITemployeeResource extends Resource
             'password',
             'role',
             'email',
+            'disable',
         ];
     }
     public static function canCreate(): bool
@@ -107,7 +108,7 @@ class ITemployeeResource extends Resource
             ->filters([
                 TernaryFilter::make('Have Account')->queries(
                     true: fn (Builder $query) => $query->whereHas('user',function ($query){
-                        return $query;
+                        return $query->where('status',1);
                     }),
                     false: fn (Builder $query) =>$query->whereHas('user',function ($query){
                         return $query;
@@ -210,6 +211,12 @@ class ITemployeeResource extends Resource
                         $user->roles()->sync($rolesWithCompanyId);
                         Notification::make('success')->success()->title('Submitted Successfully')->send();
                     })->icon('heroicon-s-shield-check')->color('danger'),
+                    Tables\Actions\Action::make('disable')->visible(fn($record) => $record->user and auth()->user()->can('disable_i::temployee') )->label(fn($record)=>$record?->user?->status? 'Disable':"Enable")->form([
+                    ])->requiresConfirmation()->action(function ($record) {
+
+                        $record->user->update(['status' => !$record->user->status]);
+                        Notification::make('success')->success()->title('Submitted Successfully')->send();
+                    })->icon(fn($record)=>$record?->user?->status? 'heroicon-o-x-circle':'heroicon-s-check')->color('warning'),
                 ])->color('warning'),
 
             ])->actionsColumnLabel('Actions')

@@ -40,9 +40,9 @@ class User extends Authenticatable implements HasTenants, FilamentUser, HasName,
 
     public function canAccessPanel(Panel $panel): bool
     {
-        if ($panel->getId()==="super-admin" and $this->is_super ===1){
+        if ($panel->getId()==="super-admin" and $this->is_super ===1 ){
             return  true;
-        }elseif ($panel->getId()==="admin"){
+        }elseif ($panel->getId()==="admin" and $this->status==1){
             return  true;
         }else{
             return  false;
@@ -95,7 +95,8 @@ class User extends Authenticatable implements HasTenants, FilamentUser, HasName,
         'name',
         'email',
         'password',
-        'is_super'
+        'is_super',
+        'status'
 
     ];
 

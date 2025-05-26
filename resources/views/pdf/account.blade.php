@@ -1,6 +1,6 @@
 
     @include('pdf.header',
-    ['titles'=>[$accountTitle??'Account Report'],'css'=>true,'title'=>'Account Report'])
+    ['titles'=>[$accountTitle??''],'css'=>true,'title'=>'Account Report'])
 
     <br>
 
@@ -31,11 +31,11 @@
 
     @foreach ($transactions as $transaction)
         <tr>
-            <td>{{ $transaction->invoice->number }}</td>
-            <td class="nowrap-text">{{ (new DateTime($transaction->invoice->date))->format('Y/m/d') }}</td>
+            <td>{{ $transaction?->invoice?->number }}</td>
+            <td class="nowrap-text">{{ (new DateTime($transaction?->invoice?->date))->format('Y/m/d') }}</td>
             <td>{{ $transaction->account->name }}</td>
             <td>{{ $transaction->account->code }}</td>
-            <td>{{ $transaction->invoice->name }}</td>
+            <td>{{ $transaction?->invoice?->name }}</td>
             <td>{{ number_format($transaction->debtor) }}</td>
             <td>{{ number_format($transaction->creditor) }}</td>
             @if(count($accounts) === 1)

@@ -130,7 +130,7 @@ class InvoiceResource extends Resource
                         })->defaultOpenLevel(3)->live()->label('Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('company_id', getCompany()->id))->searchable(),
                         Forms\Components\TextInput::make('description')->required(),
 
-                        Forms\Components\TextInput::make('debtor')->prefix(defaultCurrency()->symbol)->live(true)->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
+                        Forms\Components\TextInput::make('debtor')->prefix(defaultCurrency()->name)->live(true)->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
                             if ($get('Cheque')) {
                                 if($state >= $get('creditor'))
                                 {
@@ -150,7 +150,7 @@ class InvoiceResource extends Resource
                                 }
                             },
                         ]),
-                        Forms\Components\TextInput::make('creditor')->prefix(defaultCurrency()->symbol)->readOnly(function (Get $get) {
+                        Forms\Components\TextInput::make('creditor')->prefix(defaultCurrency()->name)->readOnly(function (Get $get) {
                             return $get('isCurrency');
                         })->live(true)
                             ->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
@@ -179,7 +179,7 @@ class InvoiceResource extends Resource
                             return $get('isCurrency');
                         }),
                         Section::make([
-                            Select::make('currency_id')->live()->label('Currency')->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([
+                            Select::make('currency_id')->live()->label('Currency')->required()->relationship('currency', 'name', modifyQueryUsing: fn($query, $state) => $query->where('id', $state))->searchable()->preload()->createOptionForm([
                                 Section::make([
                                     TextInput::make('name')->required()->maxLength(255),
                                     TextInput::make('symbol')->required()->maxLength(255),
@@ -271,7 +271,7 @@ class InvoiceResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table 
+        return $table
         ->defaultSort('id', 'desc')->headerActions([
             TablesExportAction::make()
             ->after(function (){
@@ -295,7 +295,7 @@ class InvoiceResource extends Resource
 
 
 
-        
+
             // ->headerActions([
             //     Tables\Actions\ExportAction::make()
             //         ->exporter(InvoiceExporter::class)->color('purple')

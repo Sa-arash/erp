@@ -31,6 +31,7 @@ use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\HtmlString;
 use OpenSpout\Common\Entity\Style\CellAlignment;
 
@@ -135,11 +136,13 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                             })->schema([
                                 TextEntry::make('asset.title'),
                                 TextEntry::make('remarks'),
-                            ])->columnSpanFull()->columns(),
+                            ])->columnSpanFull()->columns(2),
                             RepeatableEntry::make('itemsOut')->label('Unregistered Asset')->schema([
                                 TextEntry::make('name'),
+                                TextEntry::make('quantity'),
+                                TextEntry::make('unit'),
                                 TextEntry::make('remarks'),
-                            ])->columnSpanFull()->columns(),
+                            ])->columnSpanFull()->columns(4),
                         ])->relationship('approvable')->columns()
                     ];
                 })->modalWidth(MaxWidth::SevenExtraLarge),
@@ -396,9 +399,13 @@ class ApprovalResource extends Resource implements HasShieldPermissions
     }
     public static function getNavigationBadgeColor(): string|array|null
     {
-        return Approval::query()->where('employee_id', getEmployee()?->id)->where('read_at', null)->count() ? "warning":'info' ;
+        return Approval::query()->where('employee_id', getEmployee()?->id)->where('read_at', null)->count() ? "danger":'info' ;
     }
+    public static function getNavigationIcon(): string|Htmlable|null
+    {
+        return Approval::query()->where('employee_id', getEmployee()?->id)->where('read_at', null)->count() ? "dangerCheck":parent::getNavigationIcon() ;
 
+    }
 
     public static function getRelations(): array
     {

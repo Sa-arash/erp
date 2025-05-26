@@ -19,7 +19,9 @@ class ViewAsset extends ViewRecord
                TextEntry::make('product.title')->inlineLabel(),
                TextEntry::make('sku')->badge()->inlineLabel(),
                TextEntry::make('serial_number')->badge()->inlineLabel(),
-               TextEntry::make('status')->badge()->inlineLabel(),
+               TextEntry::make('status')->state(fn($record)=>match ($record->status){
+                   'inuse' => "In Use", 'inStorageUsable' => "In Storage",  'loanedOut' => "Loaned Out",'outForRepair' => 'Out For Repair','StorageUnUsable' => " Scrap"
+               })->badge()->inlineLabel(),
                TextEntry::make('price')->numeric()->inlineLabel(),
                TextEntry::make('warehouse.title')->badge()->inlineLabel(),
                TextEntry::make('structure.title')->badge()->label('Location')->inlineLabel(),
