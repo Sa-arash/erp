@@ -43,20 +43,16 @@ class AssetEmployeeResource extends Resource
 
         return $form
             ->schema([
-                Forms\Components\Select::make('employee_id')->label('Employee')->options(function () {
-                    $data = [];
-                    $employees = getCompany()->employees;
-                    foreach ($employees as $employee) {
-                        $data[$employee->id] = $employee->fullName . " (ID # " . $employee->ID_number . " )";
-                    }
-                    return $data;
-                })->searchable()->requiredWithout('person')->prohibits('person'),
-
-
-
-
-
-                Select::make('person')
+                Forms\Components\Section::make([
+                    Forms\Components\Select::make('employee_id')->label('Employee')->options(function () {
+                        $data = [];
+                        $employees = getCompany()->employees;
+                        foreach ($employees as $employee) {
+                            $data[$employee->id] = $employee->fullName . " (ID # " . $employee->ID_number . " )";
+                        }
+                        return $data;
+                    })->searchable()->requiredWithout('person')->prohibits('person'),
+                    Select::make('person')
                         ->label('Person')
                         ->options(getCompany()->asset_employees_persons)
                         ->createOptionForm([
@@ -71,16 +67,8 @@ class AssetEmployeeResource extends Resource
                             getCompany()->update(['asset_employees_persons' => $array]);
                             return $data['title'];
                         })->searchable()->preload()->requiredWithout('employee_id')->prohibits('employee_id'),
-
-
-               
-                   
-
-
-
-
-
-                Forms\Components\DateTimePicker::make('date')->label('Distribution Date')->withoutTime()->default(now())->required(),
+                    Forms\Components\DateTimePicker::make('date')->label('Distribution Date')->withoutTime()->default(now())->required(),
+                ])->columns(3),
                 Forms\Components\Textarea::make('description')->columnSpanFull(),
                 Forms\Components\Repeater::make('AssetEmployeeItem')->relationship('assetEmployeeItem')->schema([
                     Forms\Components\Select::make('asset_id')
