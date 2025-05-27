@@ -29,7 +29,7 @@ class StockConsumable extends BaseWidget
                 Tables\Columns\TextColumn::make('')->label('#')->rowIndex(),
                 Tables\Columns\TextColumn::make('sku')->label('SKU'),
                 Tables\Columns\TextColumn::make('title')->label('Material Specification')->searchable(),
-                Tables\Columns\TextColumn::make('second_title2')->label('Specification in Dari Language')->toggleable(true,false)->searchable(query: fn($query,$search)=>$query->where('second_title',"%{$search}%")),
+                Tables\Columns\TextColumn::make('second_title')->label('Specification in Dari Language')->toggleable(true,false)->searchable(),
                 Tables\Columns\ImageColumn::make('image')->action(Tables\Actions\Action::make('image')->modalSubmitAction(false)->infolist(function ($record){
                     if ($record->media->first()?->original_url){
                         return  [
