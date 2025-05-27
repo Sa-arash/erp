@@ -47,6 +47,7 @@ return new class extends Migration
             $table->string('signature_finance')->nullable();
             $table->text('asset_types')->nullable();
             $table->text('asset_depreciation_years')->nullable();
+            $table->text('asset_employees_persons')->nullable();
             $table->text('logo')->nullable();
             $table->timestamps();
         });

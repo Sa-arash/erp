@@ -67,6 +67,21 @@ class AssetResource extends Resource
                         SelectTree::make('structure_id')->default(getCompany()->structure_asset_id)->searchable()->label('Location')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id', modifyQueryUsing: function ($query, Forms\Get $get) {
                             return $query->where('warehouse_id', $get('warehouse_id'));
                         })->required(),
+                        Select::make('type')
+                        ->label('Asset Type')
+                        ->options(getCompany()->asset_types)
+                        ->createOptionForm([
+                            Forms\Components\TextInput::make('title')->required()
+                        ])->createOptionUsing(function ($data) {
+                            $array = getCompany()->asset_types;
+                            if (isset($array)) {
+                                $array[$data['title']] = $data['title'];
+                            } else {
+                                $array = [$data['title'] => $data['title']];
+                            }
+                            getCompany()->update(['asset_types' => $array]);
+                            return $data['title'];
+                        })->searchable()->preload()->required(),
                         select::make('brand_id')->searchable()->label('Brand')->required()->options(getCompany()->brands->pluck('title', 'id'))
                             ->createOptionForm([
                                 Forms\Components\Section::make([
@@ -96,21 +111,7 @@ class AssetResource extends Resource
 
                     DatePicker::make('buy_date')->label('Purchase Date')->default(now()),
                     DatePicker::make('guarantee_date')->label('Guarantee Date')->default(now()),
-                    Select::make('type')
-                        ->label('Asset Type')
-                        ->options(getCompany()->asset_types)
-                        ->createOptionForm([
-                            Forms\Components\TextInput::make('title')->required()
-                        ])->createOptionUsing(function ($data) {
-                            $array = getCompany()->asset_types;
-                            if (isset($array)) {
-                                $array[$data['title']] = $data['title'];
-                            } else {
-                                $array = [$data['title'] => $data['title']];
-                            }
-                            getCompany()->update(['asset_types' => $array]);
-                            return $data['title'];
-                        })->searchable()->preload(),
+                   
 
                     Select::make('depreciation_years')
                         ->label('Depreciation Years')
@@ -418,7 +419,7 @@ class AssetResource extends Resource
                                 }
                                 getCompany()->update(['asset_types' => $array]);
                                 return $data['title'];
-                            })->searchable()->preload(),
+                            })->searchable()->preload()->required(),
 
                         Select::make('depreciation_years')
                             ->label('Depreciation Years')
