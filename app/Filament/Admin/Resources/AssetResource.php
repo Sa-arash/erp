@@ -519,7 +519,10 @@ class AssetResource extends Resource
                 ]),
                 Tables\Actions\BulkAction::make('print')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->color('primary')->action(function ($records) {
                     return redirect(route('pdf.assets', ['ids' => implode('-', $records->pluck('id')->toArray())]));
-                })
+                }),
+                Tables\Actions\BulkAction::make('printBarcode')->label('Print Barcode ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->color('primary')->action(function ($records) {
+                    return redirect(route('pdf.barcodes', ['codes' => implode('-', $records->pluck('id')->toArray())]));
+                })->color('success'),
 
             ]);
     }

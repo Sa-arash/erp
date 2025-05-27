@@ -137,7 +137,7 @@ Route::get('/testLog', function () {
     User::query()->first()?->log,
     VisitorRequest::query()->first()?->log,
     Warehouse::query()->first()?->log,
-   
+
 
 
 
@@ -231,6 +231,7 @@ Route::get('/pdf/requestVisit/{id}',[\App\Http\Controllers\PdfController::class,
 Route::get('/pdf/requestVisit/{ids}/all',[\App\Http\Controllers\PdfController::class,'requestVisits'])->name('pdf.requestVisits');
 Route::get('/pdf/accountCurrency/{period}/{account}',[\App\Http\Controllers\PdfController::class,'accountCurrency'])->name('pdf.accountCurrency');
 Route::get('/pdf/barcode/{code}',[\App\Http\Controllers\PdfController::class,'barcode'])->name('pdf.barcode');
+Route::get('/pdf/barcodes/{codes}',[\App\Http\Controllers\PdfController::class,'barcodes'])->name('pdf.barcodes');
 Route::get('/pdf/qrcodeView/{code}',[\App\Http\Controllers\PdfController::class,'qrcodeView'])->name('pdf.qrcode.view');
 Route::get('/pdf/qrcode/{code}',[\App\Http\Controllers\PdfController::class,'qrcode'])->name('pdf.qrcode');
 Route::get('/pdf/loan/{id}',[\App\Http\Controllers\PdfController::class,'loan'])->name('pdf.loan');

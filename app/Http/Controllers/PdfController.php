@@ -577,11 +577,22 @@ class PdfController extends Controller
         );
         return $pdf->stream();
     }
+    public function barcodes($codes)
+    {
+
+        $pdf = Pdf::loadView(
+            'pdf.barcodes',
+            compact( 'codes'),[], [
+                'format' => [50, 35],
+            ]
+        );
+        return $pdf->stream();
+    }
     public function qrcodeView($code)
     {
         $companyID=Asset::query()->firstWhere('id',$code)?->company_id;
         $pdf = Pdf::loadView(
-            'pdf.qrcode',
+            'pdf.qrcodeview',
             compact( 'code','companyID'),[],
             [
                 'format' => [80, 80],

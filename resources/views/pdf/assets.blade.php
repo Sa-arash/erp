@@ -72,7 +72,6 @@
 <body>
 
 <div class="container">
-    <h2 style="text-align: center;">Assets</h2>
     @php
         $i=0;
     @endphp
