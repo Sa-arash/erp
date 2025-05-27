@@ -47,9 +47,7 @@ class AssetResource extends Resource
                 Forms\Components\Hidden::make('purchase_order_id')->default($_GET['po'] ?? ''),
                 Forms\Components\Repeater::make('assets')->schema([
                     Section::make([
-                        MediaManagerInput::make('images')->orderable(false)->folderTitleFieldName("product_id")->image(true)
-                            ->disk('public')
-                            ->schema([])->maxItems(1),
+                       
 
                         Select::make('department_id')->label('Department')->required()->columnSpan(['default' => 8, 'md' => 2, 'xl' => 2, '2xl' => 1])->live()->options(getCompany()->departments->pluck('title', 'id'))->searchable()->preload(),
 
@@ -153,7 +151,10 @@ class AssetResource extends Resource
                     Forms\Components\Repeater::make('attributes')->grid(3)->defaultItems(0)->addActionLabel('Add To  Attribute')->schema([
                         Forms\Components\TextInput::make('title')->required(),
                         Forms\Components\TextInput::make('value')->required(),
-                    ])->columnSpanFull()->columns()
+                    ])->columnSpanFull()->columns(),
+                    MediaManagerInput::make('images')->orderable(false)->folderTitleFieldName("product_id")->image(true)
+                    ->disk('public')
+                    ->schema([])->maxItems(1)->columnSpanFull(),
                 ])->columns(4)->columnSpanFull()->default(function () {
 
                     if (isset($_GET['po'])) {
@@ -257,7 +258,9 @@ class AssetResource extends Resource
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\ImageColumn::make('media.original_url')->state(function ($record) {
                     return $record->media->where('collection_name', 'images')->first()?->original_url;
-                })->disk('public')->defaultImageUrl(fn($record) => $record->gender === "male" ? asset('img/user.png') : asset('img/female.png'))->alignLeft()->label('Profile Picture')->width(50)->height(50)->extraAttributes(['style' => 'border-radius:50px!important']),
+                })->disk('public')
+                ->defaultImageUrl(fn($record) => asset('img/defaultAsset.png'))
+                ->alignLeft()->label('Asset Picture')->width(50)->height(50)->extraAttributes(['style' => 'border-radius:50px!important']),
                 Tables\Columns\TextColumn::make('product.sku')->state(fn() => '___________')->label('Barcode')->searchable()->description(function ($record) {
 
                     $barcode = '<img src="data:image/png;base64,' . \Milon\Barcode\Facades\DNS1DFacade::getBarcodePNG($record->number, 'C39', 1, 20) . '" alt="barcode"/>';

@@ -10,6 +10,7 @@ use App\Models\AssetEmployeeItem;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Textarea;
+use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
@@ -51,6 +52,15 @@ class ViewAsset extends ViewRecord
     {
         return $infolist->schema([
            Section::make([
+
+
+
+            
+            ImageEntry::make('media.original_url')->state(function ($record) {
+                return $record->media->where('collection_name', 'images')->first()?->original_url;
+            })->disk('public')
+            ->defaultImageUrl(fn($record) => asset('img/defaultAsset.png'))
+            ->alignLeft()->label('Asset Picture')->width(80)->height(80)->extraAttributes(['style' => 'border-radius:50px!important'])->inlineLabel(),
                TextEntry::make('product.title')->inlineLabel(),
                TextEntry::make('sku')->badge()->inlineLabel(),
                TextEntry::make('serial_number')->badge()->inlineLabel(),
