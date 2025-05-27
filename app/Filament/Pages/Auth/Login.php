@@ -10,14 +10,7 @@ use Illuminate\Support\HtmlString;
 class Login extends \Filament\Pages\Auth\Login
 {
 
-   public function getHeading():HtmlString
-    {
-        return new HtmlString('
-            <div class="flex justify-center mb-4">
-                <img src="' . asset('img/login.jpg') . '" alt="Logo" style="width: 180px"  >
-            </div>
-        ');
-    }
+
     protected function getForms(): array
     {
         return [

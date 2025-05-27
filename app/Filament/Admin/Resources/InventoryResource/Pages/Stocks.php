@@ -52,21 +52,21 @@ class Stocks extends ManageRelatedRecords
                    Column::make('inventory.product.info'),
                    Column::make('description'),
                    Column::make('quantity'),
-                   Column::make('package.title')->formatStateUsing(fn($record)=> isset($record->package?->quantity)? '('.$record->quantity /$record->package?->quantity.' * '. $record->package?->quantity .')'.$record->package->title:'---')->badge(),
+                   Column::make('package.title')->formatStateUsing(fn($record)=> isset($record->package?->quantity)? '('.$record->quantity /$record->package?->quantity.' * '. $record->package?->quantity .')'.$record->package->title:'---'),
                    Column::make('purchaseOrder.purchase_orders_number')->heading('PO NO'),
                    Column::make('type')->formatStateUsing(fn($record) => $record->type === 1 ? "Stock In" : "Stock Out"),
                    Column::make('transaction')->formatStateUsing(function($record){
                         if ($record->transaction){
                           return  $record->type ?"Stock In" : "Stock Out";
                         }
-    
+
                     } ),
                    Column::make('created_at')->heading('Stock Date'),
                 ]),
             ])->label('Export Stock')->color('purple')
         ])
-        
-        
+
+
         ->heading(fn()=>$this->record->product->info)
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
