@@ -47,7 +47,7 @@ class AssetResource extends Resource
                 Forms\Components\Hidden::make('purchase_order_id')->default($_GET['po'] ?? ''),
                 Forms\Components\Repeater::make('assets')->schema([
                     Section::make([
-                       
+
 
                         Select::make('department_id')->label('Department')->required()->columnSpan(['default' => 8, 'md' => 2, 'xl' => 2, '2xl' => 1])->live()->options(getCompany()->departments->pluck('title', 'id'))->searchable()->preload(),
 
@@ -82,7 +82,7 @@ class AssetResource extends Resource
                         SelectTree::make('structure_id')->default(getCompany()->structure_asset_id)->searchable()->label('Location')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id', modifyQueryUsing: function ($query, Forms\Get $get) {
                             return $query->where('warehouse_id', $get('warehouse_id'));
                         })->required(),
-                       
+
                         select::make('brand_id')->searchable()->label('Brand')->required()->options(getCompany()->brands->pluck('title', 'id'))
                             ->createOptionForm([
                                 Forms\Components\Section::make([
@@ -108,13 +108,13 @@ class AssetResource extends Resource
                         Forms\Components\TextInput::make('serial_number')->label('Serial Number')->maxLength(50),
                         Forms\Components\TextInput::make('manufacturer'),
                         Forms\Components\TextInput::make('price')->prefix(defaultCurrency()?->symbol)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->required()->numeric()->label('Purchase Price'),
-                   
+
                     ])->columns(4),
-                    
+
 
                     DatePicker::make('buy_date')->label('Purchase Date')->default(now()),
                     DatePicker::make('guarantee_date')->label('Guarantee Date')->default(now()),
-                   
+
 
                     Select::make('depreciation_years')
                         ->label('Depreciation Years')
@@ -282,13 +282,9 @@ class AssetResource extends Resource
                     if ($record->employees?->last()) {
                         $data = $record->employees?->last()?->assetEmployee;
                         if ($data->type === 'Assigned')
-                            return $data?->employee?->fullName;
+                            return  $data?->employee_id?  $data?->employee?->fullName :$data->person;
                     }
-                })->badge()->url(function ($record) {
-                    if ($record->employees->last()?->assetEmployee?->employee_id) {
-                        return EmployeeResource::getUrl('view', ['record' => $record->employees->last()?->assetEmployee?->employee_id]);
-                    }
-                })->label('Custodian'),
+                })->badge()->label('Custodian'),
                 Tables\Columns\TextColumn::make('updated_at')->dateTime()->label('Date Update'),
                 Tables\Columns\TextColumn::make('Due Date')->state(function ($record) {
                     if ($record->employees?->last()) {
