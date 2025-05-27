@@ -34,7 +34,7 @@ class  ViewEmployee extends ViewRecord
     {
         parent::mount($record);
 
-        // فقط اگه لاگین کرده بود
+        
         if (Auth::check()) {
             activity()
                 ->causedBy(Auth::user())
