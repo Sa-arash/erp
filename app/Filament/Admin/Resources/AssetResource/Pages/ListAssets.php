@@ -19,15 +19,7 @@ class ListAssets extends ListRecords
     {
         return [
             Actions\CreateAction::make(),
-            Actions\Action::make('AssetTypes')->label('Set Type For Asset')->form([
-                TextInput::make('asset_types')->default(getCompany()->asset_types)->options(getCompany()->asset_types)->searchable()->preload()->multiple()
-
-            ])->action(function ($data) {
-
-                getCompany()->update(['asset_types' => $data['asset_types']]);
-
-                Notification::make('success')->success()->title('Set Asset Type Successfully')->send();
-            }),
+           
         ];
     }
 
