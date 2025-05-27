@@ -10,6 +10,7 @@ use App\Models\AssetEmployeeItem;
 use App\Models\Structure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
@@ -49,6 +50,8 @@ class AssetEmployeeResource extends Resource
                     }
                     return $data;
                 })->searchable()->required(),
+                TextInput::make('person'),
+                TextInput::make('name'),
                 Forms\Components\DateTimePicker::make('date')->label('Distribution Date')->withoutTime()->default(now())->required(),
                 Forms\Components\Textarea::make('description')->columnSpanFull(),
                 Forms\Components\Repeater::make('AssetEmployeeItem')->relationship('assetEmployeeItem')->schema([

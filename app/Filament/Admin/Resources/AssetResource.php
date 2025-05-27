@@ -62,11 +62,7 @@ class AssetResource extends Resource
                                 }
                                 return $data;
                             }
-                        })->required()->searchable()->preload(),
-                        Forms\Components\Select::make('warehouse_id')->default(getCompany()->warehouse_id)->live()->label('Warehouse/Building')->options(getCompany()->warehouses()->pluck('title', 'id'))->required()->searchable()->preload(),
-                        SelectTree::make('structure_id')->default(getCompany()->structure_asset_id)->searchable()->label('Location')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id', modifyQueryUsing: function ($query, Forms\Get $get) {
-                            return $query->where('warehouse_id', $get('warehouse_id'));
-                        })->required(),
+                        })->required()->searchable()->preload()->columnSpan(2),
                         Select::make('type')
                         ->label('Asset Type')
                         ->options(getCompany()->asset_types)
@@ -82,6 +78,11 @@ class AssetResource extends Resource
                             getCompany()->update(['asset_types' => $array]);
                             return $data['title'];
                         })->searchable()->preload()->required(),
+                        Forms\Components\Select::make('warehouse_id')->default(getCompany()->warehouse_id)->live()->label('Warehouse/Building')->options(getCompany()->warehouses()->pluck('title', 'id'))->required()->searchable()->preload(),
+                        SelectTree::make('structure_id')->default(getCompany()->structure_asset_id)->searchable()->label('Location')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id', modifyQueryUsing: function ($query, Forms\Get $get) {
+                            return $query->where('warehouse_id', $get('warehouse_id'));
+                        })->required(),
+                       
                         select::make('brand_id')->searchable()->label('Brand')->required()->options(getCompany()->brands->pluck('title', 'id'))
                             ->createOptionForm([
                                 Forms\Components\Section::make([
@@ -105,9 +106,11 @@ class AssetResource extends Resource
                             }
                         })->required()->numeric()->label('Asset Number')->readOnly()->maxLength(50),
                         Forms\Components\TextInput::make('serial_number')->label('Serial Number')->maxLength(50),
+                        Forms\Components\TextInput::make('manufacturer'),
+                        Forms\Components\TextInput::make('price')->prefix(defaultCurrency()?->symbol)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->required()->numeric()->label('Purchase Price'),
+                   
                     ])->columns(4),
-                    Forms\Components\TextInput::make('price')->prefix(defaultCurrency()?->symbol)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->required()->numeric()->label('Purchase Price'),
-                    Forms\Components\TextInput::make('manufacturer'),
+                    
 
                     DatePicker::make('buy_date')->label('Purchase Date')->default(now()),
                     DatePicker::make('guarantee_date')->label('Guarantee Date')->default(now()),
