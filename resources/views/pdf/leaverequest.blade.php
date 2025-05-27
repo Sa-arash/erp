@@ -1,5 +1,4 @@
-
-@include('pdf.header',['title'=>'Leave Request – R&R/Home','titles'=>[],'css'=>false])
+@include('pdf.header', ['title' => 'Leave Request – R&R/Home', 'titles' => [], 'css' => false])
 <style>
     body {
         font-family: Calibri, sans-serif;
@@ -87,9 +86,11 @@
         background-color: yellow;
         /* یا هر استایل دیگری که می‌خواهید */
     }
-    @page  {
+
+    @page {
         margin-top: 2px;
     }
+
     .phone-field {
         display: flex;
         justify-content: space-between;
@@ -119,17 +120,17 @@
     <table>
         <tr>
             <td style="border: none" colspan="2">Check the type of Leave the being requested:</td>
-            <td style="border: none" >
+            <td style="border: none">
                 <div class="checkbox"></div>
-                @if(!$leave->type)
+                @if (!$leave->type)
                     ☒
-                    @endif
+                @endif
                 R&amp;R
             </td>
             <td style="border: none">
                 <div class="checkbox filled"></div>
-                @if($leave->type)
-                ☒
+                @if ($leave->type)
+                    ☒
                 @endif
                 Home Leave
             </td>
@@ -199,7 +200,7 @@
         </tr>
     </table>
 
-    <table  style="border: 1px solid black">
+    <table style="border: 1px solid black">
         <tr class="section-title ">
             <td colspan="8">Leave Information</td>
         </tr>
@@ -221,82 +222,96 @@
             <td class="font-bold" style="border: none; padding: 0 10px;">Year</td>
             <td class="font-bold" style="border: none; padding: 0 10px;">of Days</td>
         </tr>
-        @if($lastleave)
-        <tr style=" padding: 0 10px;">
+        @if ($lastleave)
+            <tr style=" padding: 0 10px;">
 
-            <td class="font-bold" style="border: none; padding: 0 10px;">Last Leave</td>
-            <td class="font-bold" style="border: none; padding: 0 10px;">
-                {{ \Carbon\Carbon::parse($lastleave->start_leave)->format('d') }}/<br>
-                <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
-            </td>
-            <td class="font-bold" style="border: none; padding: 0 10px;">
-                {{ \Carbon\Carbon::parse($lastleave->start_leave)->format('M') }}/<br>
-                <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
-            </td>
-            <td class="font-bold" style="border: none; padding: 0 10px;">
-                {{ \Carbon\Carbon::parse($lastleave->start_leave)->format('Y') }}<br>
-                <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
-            </td>
+                <td class="font-bold" style="border: none; padding: 0 10px;">Last Leave</td>
+                <td class="font-bold" style="border: none; padding: 0 10px;">
+                    {{ \Carbon\Carbon::parse($lastleave->start_leave)->format('d') }}/<br>
+                    <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+                </td>
+                <td class="font-bold" style="border: none; padding: 0 10px;">
+                    {{ \Carbon\Carbon::parse($lastleave->start_leave)->format('M') }}/<br>
+                    <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+                </td>
+                <td class="font-bold" style="border: none; padding: 0 10px;">
+                    {{ \Carbon\Carbon::parse($lastleave->start_leave)->format('Y') }}<br>
+                    <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+                </td>
 
 
-            <td class="font-bold" style="border: none; padding: 0 10px;">
-                {{ \Carbon\Carbon::parse($lastleave->end_leave)->format('d') }}/<br>
-                <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
-            </td>
-            <td class="font-bold" style="border: none; padding: 0 10px;">
-                {{ \Carbon\Carbon::parse($lastleave->end_leave)->format('M') }}/<br>
-                <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
-            </td>
-            <td class="font-bold" style="border: none; padding: 0 10px;">
-                {{ \Carbon\Carbon::parse($lastleave->end_leave)->format('Y') }}<br>
-                <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
-            </td>
-            <td class="font-bold" style="border: none; padding: 0 10px;">
-                @php
-                    $startLast = \Carbon\Carbon::make($lastleave->start_leave)->startOfDay();
-                    $endLast = \Carbon\Carbon::make($lastleave->end_leave)->startOfDay();
-                    $CompanyHoliday = count(getDaysBetweenDates($startLast, $endLast, $lastleave->company->weekend_days));
-                    $holidays = \App\Models\Holiday::query()->where('company_id', $lastleave->company->id)->whereBetween('date', [$startLast, $endLast])->count();
+                <td class="font-bold" style="border: none; padding: 0 10px;">
+                    {{ \Carbon\Carbon::parse($lastleave->end_leave)->format('d') }}/<br>
+                    <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+                </td>
+                <td class="font-bold" style="border: none; padding: 0 10px;">
+                    {{ \Carbon\Carbon::parse($lastleave->end_leave)->format('M') }}/<br>
+                    <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+                </td>
+                <td class="font-bold" style="border: none; padding: 0 10px;">
+                    {{ \Carbon\Carbon::parse($lastleave->end_leave)->format('Y') }}<br>
+                    <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+                </td>
+                <td class="font-bold" style="border: none; padding: 0 10px;">
+                  
+                    @php
+                        $startLast = \Carbon\Carbon::make($lastleave->start_leave)->startOfDay();
+                        $endLast = \Carbon\Carbon::make($lastleave->end_leave)->startOfDay();
+                        $CompanyHoliday = count(
+                            getDaysBetweenDates($startLast, $endLast, $lastleave->company->weekend_days),
+                        );
+                        $holidaysCount = \App\Models\Holiday::query()
+                            ->where('company_id', $lastleave->company->id)
+                            ->whereBetween('date', [$startLast, $endLast])
+                            ->count();
 
-                @endphp
+                    @endphp
 
-                @if ($startLast && $endLast)
-                    {{ round($startLast->diffInDays($endLast) + 1,0)-$CompanyHoliday-$holidays }}
-                @endif
-                <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
-            </td>
-        </tr>
+                    @if ($startLast && $endLast)
+                        {{ round($startLast->diffInDays($endLast) + 1, 0) - $CompanyHoliday - $holidaysCount }}
+                    @endif
+                    <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
+                </td>
+            </tr>
         @else
             <tr style=" padding: 0 10px;">
 
                 <td class="font-bold" style="border: none; padding: 0 10px;">Last Leave</td>
                 <td class="font-bold" style="border: none; padding: 0 10px;">
                     <br>
+                    ---
                     <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
                 </td>
                 <td class="font-bold" style="border: none; padding: 0 10px;">
                     <br>
+                    ---
                     <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
                 </td>
                 <td class="font-bold" style="border: none; padding: 0 10px;">
                     <br>
+                    ---
                     <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
                 </td>
 
 
                 <td class="font-bold" style="border: none; padding: 0 10px;">
-                   <br>
+                    <br>
+                    ---
                     <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
                 </td>
                 <td class="font-bold" style="border: none; padding: 0 10px;">
                     <br>
+                    ---
                     <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
                 </td>
                 <td class="font-bold" style="border: none; padding: 0 10px;">
                     <br>
+                    ---
                     <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
                 </td>
                 <td class="font-bold" style="border: none; padding: 0 10px;">
+                    <br>
+                    ---
                     <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
                 </td>
             </tr>
@@ -318,13 +333,16 @@
             </td>
 
 
-            <td class="font-bold" style="border: none; padding: 0 10px;">{{ \Carbon\Carbon::parse($leave->end_leave)->format('d') }}/<br>
+            <td class="font-bold" style="border: none; padding: 0 10px;">
+                {{ \Carbon\Carbon::parse($leave->end_leave)->format('d') }}/<br>
                 <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
             </td>
-            <td class="font-bold" style="border: none; padding: 0 10px;">{{ \Carbon\Carbon::parse($leave->end_leave)->format('M') }}/<br>
+            <td class="font-bold" style="border: none; padding: 0 10px;">
+                {{ \Carbon\Carbon::parse($leave->end_leave)->format('M') }}/<br>
                 <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
             </td>
-            <td class="font-bold" style="border: none; padding: 0 10px;">{{ \Carbon\Carbon::parse($leave->end_leave)->format('Y') }}<br>
+            <td class="font-bold" style="border: none; padding: 0 10px;">
+                {{ \Carbon\Carbon::parse($leave->end_leave)->format('Y') }}<br>
                 <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
             </td>
             <td class="font-bold" style="border: none; padding: 0 10px;">
@@ -337,7 +355,7 @@
                 @endphp
 
                 @if ($start && $end)
-                     {{ round($start->diffInDays($end) + 1,0)-$CompanyHoliday }}
+                    {{ round($start->diffInDays($end) + 1, 0) - $CompanyHoliday }}
                 @else
                     تاریخ‌ها نامعتبر هستند
                 @endif
@@ -354,15 +372,18 @@
             <td not-center colspan="8">Are you aware of any circumstances that will delay or prevent your return to
                 the site
                 from leave?
-                {{ $leave->is_circumstances  ? 'Yes ■ No□': 'Yes □ No■' }}
+                {{ $leave->is_circumstances ? 'Yes ■ No□' : 'Yes □ No■' }}
             </td>
         </tr>
         <tr>
-            <td class="not-center" colspan="8" style="height:30px;">If yes, please explain: @if($leave->is_circumstances) {{$leave->explain_leave}} @endif</td>
+            <td class="not-center" colspan="8" style="height:30px;">If yes, please explain: @if ($leave->is_circumstances)
+                    {{ $leave->explain_leave }}
+                @endif
+            </td>
         </tr>
     </table>
 
-    <table >
+    <table>
         <tr class="section-title">
             <td colspan="2">Leave Details</td>
         </tr>
@@ -374,47 +395,47 @@
             <td colspan="2" class="small-text">
 
                 @php
-                $j=1;
+                    $j = 1;
                 @endphp
-               <table>
-                   <tr>
-                   @foreach($types as $type)
-                       <th style="font-size: 10px ;">  {{$type?->abbreviation}}= <span>{{$type?->title}}</span></th>
-                       @php
-                       $j++;
-                       @endphp
-                       @if($j==7)
-                       @php
-                           $j=1;
-                       @endphp
-                   </tr>
-                   <tr>
-                           @endif
-                   @endforeach
-                   </tr>
-               </table>
+                <table>
+                    <tr>
+                        @foreach ($types as $type)
+                            <th style="font-size: 10px ;"> {{ $type?->abbreviation }}=
+                                <span>{{ $type?->title }}</span></th>
+                            @php
+                                $j++;
+                            @endphp
+                            @if ($j == 7)
+                                @php
+                                    $j = 1;
+                                @endphp
+                    </tr>
+                    <tr>
+                        @endif
+                        @endforeach
+                    </tr>
+                </table>
 
             </td>
         </tr>
         <tr>
             <td>
                 @php
-                // dd($company->weekend_days); //=>    ->options([
-                        // 'saturday' => 'Saturday',
-                        // 'sunday' => 'Sunday',
-                        // 'monday' => 'Monday',
-                        // 'tuesday' => 'Tuesday',
-                        // 'wednesday' => 'Wednesday',
-                        // 'thursday' => 'Thursday',
-                        // 'friday' => 'Friday',
+                    // dd($company->weekend_days); //=>    ->options([
+                    // 'saturday' => 'Saturday',
+                    // 'sunday' => 'Sunday',
+                    // 'monday' => 'Monday',
+                    // 'tuesday' => 'Tuesday',
+                    // 'wednesday' => 'Wednesday',
+                    // 'thursday' => 'Thursday',
+                    // 'friday' => 'Friday',
 
-
-    //                     dd($holidays);
-    // //                     => 0 => array:6 [▼
-    // // "id" => 1
-    // // "name" => "test"
-    // // "date" => "2025-05-11 00:00:00"
-    // // "company_id" => 1
+                    //                     dd($holidays);
+                    // //                     => 0 => array:6 [▼
+                    // // "id" => 1
+                    // // "name" => "test"
+                    // // "date" => "2025-05-11 00:00:00"
+                    // // "company_id" => 1
                     $startDate = \Carbon\Carbon::parse($leave->start_leave);
                     $endDate = \Carbon\Carbon::parse($leave->end_leave);
                     $daysInMonth = $startDate->daysInMonth; // تعداد روزهای ماه جاری
@@ -439,22 +460,26 @@
                             // dd($currentDate->format('l'),$company->weekend_days,);
                             $isWeekend = in_array(strtolower($currentDate->format('l')), $company->weekend_days);
                             $holidayName = '';
-            foreach ($holidays as $holiday) {
-                if ($currentDate->isSameDay($holiday['date'])) {
-                    $holidayName = $holiday['name'];
-                    break; // اگر تعطیلی پیدا شد، از حلقه خارج می‌شویم
-                }
-            }
+                            foreach ($holidays as $holiday) {
+                                if ($currentDate->isSameDay($holiday['date'])) {
+                                    $holidayName = $holiday['name'];
+                                    break; // اگر تعطیلی پیدا شد، از حلقه خارج می‌شویم
+                                }
+                            }
                         @endphp
 
                         <td class="{{ $isInLeavePeriod ? 'hilite' : '' }}">
                             {{ $i }}
                             <br>
-                            @if($isInLeavePeriod) {{$leave->typeLeave?->abbreviation}} @endif
-                            @if($isWeekend) B @endif
-                            @if($holidayName)
-                            {{-- {{ $holidayName }}  --}}
-                            H
+                            @if ($isInLeavePeriod)
+                                {{ $leave->typeLeave?->abbreviation }}
+                            @endif
+                            @if ($isWeekend)
+                                B
+                            @endif
+                            @if ($holidayName)
+                                {{-- {{ $holidayName }}  --}}
+                                H
                             @endif <!-- نمایش نام تعطیلی رسمی -->
                         </td>
 
@@ -486,21 +511,27 @@
                         $currentDate->between($startDate, $endDate) ||
                         $currentDate->isSameDay($startDate) ||
                         $currentDate->isSameDay($endDate); // بررسی اینکه آیا تاریخ در بازه مرخصی است
-                        $isWeekend = in_array(strtolower($currentDate->format('l')), $company->weekend_days);
-                        $holidayName = '';
-                        foreach ($holidays as $holiday) {
-                if ($currentDate->isSameDay($holiday['date'])) {
-                    $holidayName = $holiday['name'];
-                    break; // اگر تعطیلی پیدا شد، از حلقه خارج می‌شویم
-                }
-            }
+                    $isWeekend = in_array(strtolower($currentDate->format('l')), $company->weekend_days);
+                    $holidayName = '';
+                    foreach ($holidays as $holiday) {
+                        if ($currentDate->isSameDay($holiday['date'])) {
+                            $holidayName = $holiday['name'];
+                            break; // اگر تعطیلی پیدا شد، از حلقه خارج می‌شویم
+                        }
+                    }
                 @endphp
 
                 <td class="{{ $isInLeavePeriod ? 'hilite' : '' }}">
                     {{ $i }}
-                    @if($isInLeavePeriod) {{$leave->typeLeave?->abbreviation}} @endif
-                    @if($isWeekend) B @endif
-                    @if($holidayName) H @endif <!-- نمایش نام تعطیلی رسمی -->
+                    @if ($isInLeavePeriod)
+                        {{ $leave->typeLeave?->abbreviation }}
+                    @endif
+                    @if ($isWeekend)
+                        B
+                    @endif
+                    @if ($holidayName)
+                        H
+                    @endif <!-- نمایش نام تعطیلی رسمی -->
                 </td>
 
                 @if ($i % 7 == 0 || $i == $nextMonthDaysInMonth)
@@ -517,32 +548,36 @@
             <td style="border: none" colspan="2">Emergency Contact Information</td>
         </tr>
         <tr>
-            <td style="border: none" colspan="2"><b><i style="font-size: 12px">Please provide a point of contact who can be reached in the event of an emergency during your leave</i></b></td>
+            <td style="border: none" colspan="2"><b><i style="font-size: 12px">Please provide a point of contact
+                        who can be reached in the event of an emergency during your leave</i></b></td>
         </tr>
         @if ($leave->employee->emergency_contact)
-                <tr>
-                    <td style="border: none"><b>Email: {{ $leave->employee->emergency_contact[0]['email'] ?? '' }}</b></td>
-                    @php
-                        $number = $leave->employee->emergency_contact[0]['number'];
+            <tr>
+                <td style="border: none"><b>Email: {{ $leave->employee->emergency_contact[0]['email'] ?? '' }}</b>
+                </td>
+                @php
+                    $number = $leave->employee->emergency_contact[0]['number'];
 
-                        $part1 = substr($number, 0, 3);       // سه رقم اول
-                        $part2 = substr($number, 3, 3);       // سه رقم بعدی
-                        $rest  = substr($number, 6);          // باقی‌مانده
-                    @endphp
+                    $part1 = substr($number, 0, 3); // سه رقم اول
+                    $part2 = substr($number, 3, 3); // سه رقم بعدی
+                    $rest = substr($number, 6); // باقی‌مانده
+                @endphp
 
-                    <p>Part 1: {{ $part1 }}</p>
-                    <p>Part 2: {{ $part2 }}</p>
-                    <p>Rest: {{ $rest }}</p>
+                <p>Part 1: {{ $part1 }}</p>
+                <p>Part 2: {{ $part2 }}</p>
+                <p>Rest: {{ $rest }}</p>
 
-                    <td style="border: none"><b>Contact Number: </b><span>{{ $part1 }}__</span><span>{{ $part2 }}__</span><span>{{ $rest }}</span></td>
-                </tr>
+                <td style="border: none"><b>Contact Number:
+                    </b><span>{{ $part1 }}__</span><span>{{ $part2 }}__</span><span>{{ $rest }}</span>
+                </td>
+            </tr>
         @else
-        <tr>
-            <td><b>Email:</b> </td>
-            <td><b>Contact Number: </b>
-                _______    _________     ________
-            </td>
-        </tr>
+            <tr>
+                <td><b>Email:</b> </td>
+                <td><b>Contact Number: </b>
+                    _______ _________ ________
+                </td>
+            </tr>
         @endif
 
     </table>
@@ -555,7 +590,8 @@
             </td>
         </tr>
         <tr>
-            <td style="border: none"> <hr><b>Employee Signature</b><br>
+            <td style="border: none">
+                <hr><b>Employee Signature</b><br>
 
                 <div class="signature-space">
                     @if ($leave->employee->media->where('collection_name', 'signature')->first())
@@ -570,7 +606,8 @@
                 {{ \Carbon\Carbon::parse($leave->created_at)->format('d / M / Y') }}
 
             </td>
-            <td style="border: none" > <hr><b>Supervisor's Signature</b><br>
+            <td style="border: none">
+                <hr><b>Supervisor's Signature</b><br>
                 <div class="signature-space">
                     @if ($leave->approvals->first()?->employee?->media->where('collection_name', 'signature')?->first())
                         <img width="60" height="60"
@@ -578,7 +615,8 @@
                     @endif
                 </div>
             </td>
-            <td style="border: none"> <hr><b>Date</b><br>
+            <td style="border: none">
+                <hr><b>Date</b><br>
                 {{ $leave->approvals?->first()?->approve_date ? \Carbon\Carbon::parse($leave->approvals->first()->approve_date)->format('d / M / Y') : ' ' }}
             </td>
         </tr>
@@ -586,11 +624,12 @@
         <tr>
 
 
-            <td style="border: none" colspan="2">  <hr><b>Admin/HR Dept Signature</b><br>
+            <td style="border: none" colspan="2">
+                <hr><b>Admin/HR Dept Signature</b><br>
                 <div class="signature-space"></div>
                 @if ($leave->admin?->media->where('collection_name', 'signature')?->first())
                     <img width="60" height="60"
-                         src="{{ $leave->admin?->media->where('collection_name', 'signature')?->first()?->getPath() }}">
+                        src="{{ $leave->admin?->media->where('collection_name', 'signature')?->first()?->getPath() }}">
                 @endif
             </td>
             <td style="border: none">
@@ -598,31 +637,41 @@
 
             </td>
 
-            <td  style="border: 20px">
-                <table >
+            <td style="border: 20px">
+                <table>
                     <tr>
-                        <th colspan="2" style="border: 1px solid black; padding: 5px; text-align: center; font-weight: bold; text-decoration: underline;">
+                        <th colspan="2"
+                            style="border: 1px solid black; padding: 5px; text-align: center; font-weight: bold; text-decoration: underline;">
                             Request Approved
                         </th>
                     </tr>
                     <tr>
                         <td style="border: 1px solid black; padding: 5px;">
-                            <span style="display: inline-block; width: 14px; height: 14px; text-align: center; line-height: 14px; vertical-align: middle; font-size: 12px; margin-right: 5px;">
-                                @if($leave->approvals->first()?->status->value !=='NotApprove') ☒ @endif</span>
+                            <span
+                                style="display: inline-block; width: 14px; height: 14px; text-align: center; line-height: 14px; vertical-align: middle; font-size: 12px; margin-right: 5px;">
+                                @if ($leave->approvals->first()?->status->value !== 'NotApprove')
+                                    ☒
+                                @endif
+                            </span>
                             <b>Approved</b>
                         </td>
                         <td style="border: 1px solid black; padding: 5px;">
-                            <span style="display: inline-block; width: 14px; height: 14px; text-align: center; line-height: 14px; vertical-align: middle; font-size: 12px; margin-right: 5px;">@if($leave->approvals->first()?->status->value !=='NotApprove') ☐ @endif</span>
+                            <span
+                                style="display: inline-block; width: 14px; height: 14px; text-align: center; line-height: 14px; vertical-align: middle; font-size: 12px; margin-right: 5px;">
+                                @if ($leave->approvals->first()?->status->value !== 'NotApprove')
+                                    ☐
+                                @endif
+                            </span>
                             <b>Denied</b>
                         </td>
                     </tr>
                     <tr>
                         <td colspan="2" style="border: 1px solid black; padding: 0px 20px 20px;">
                             If denied, rationale:
-                            @if($leave->approvals->first()?->status->value==="NotApprove")
-                                {{$leave->approvals->first()?->comment}}
+                            @if ($leave->approvals->first()?->status->value === 'NotApprove')
+                                {{ $leave->approvals->first()?->comment }}
                             @else
-                                 __________
+                                __________
                             @endif
                         </td>
                     </tr>

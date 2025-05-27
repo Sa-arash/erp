@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('number')->nullable();
             $table->string('serial_number', 250)->nullable();
+            $table->string('type')->nullable();
+            $table->string('manufacturer')->nullable();
             $table->string('model', 250)->nullable();
             $table->enum('quality', ['new', 'used', 'refurbished'])->default('new');
             $table->decimal('price', 20, 2)->nullable();

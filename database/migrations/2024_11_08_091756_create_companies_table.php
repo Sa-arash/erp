@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('companies', function (Blueprint $table) {
             $table->id();
-            $table->string('title',120);
+            $table->string('title', 120);
             $table->string('country');
             $table->string('address')->nullable();
             $table->string('contact_information')->nullable();
@@ -45,7 +45,8 @@ return new class extends Migration
             $table->string('supersedes_security')->nullable();
             $table->string('stamp_finance')->nullable();
             $table->string('signature_finance')->nullable();
-//          $table->text('company_type');
+            $table->text('asset_types')->nullable();
+            $table->text('designation_year')->nullable();
             $table->text('logo')->nullable();
             $table->timestamps();
         });
