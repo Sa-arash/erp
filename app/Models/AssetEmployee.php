@@ -17,6 +17,7 @@ class AssetEmployee extends Model
         'description',
         'note',
         'company_id',
+        'person',
     ];
 
     public function getLogAttribute(){

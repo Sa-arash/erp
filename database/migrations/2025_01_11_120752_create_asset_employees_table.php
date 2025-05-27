@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('asset_employees', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('employee_id')->constrained('employees')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('employee_id')->nullable()->constrained('employees')->cascadeOnUpdate()->cascadeOnDelete();
             $table->text('person')->nullable();
             $table->timestamp('date');
             $table->timestamp('approve_date')->nullable();
