@@ -14,15 +14,15 @@ class ListAssetEmployees extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()->label(' Check Out'),
+            Actions\CreateAction::make()->label(' Check OUT'),
         ];
     }
     public function getTabs(): array
     {
         return [
             "All"=>Tab::make()->query(fn(\Illuminate\Database\Eloquent\Builder $query) => $query),
-            "Check Out"=>Tab::make()->query(fn(\Illuminate\Database\Eloquent\Builder $query) => $query->where('type','Assigned')),
-            "Check In"=>Tab::make()->query(fn(\Illuminate\Database\Eloquent\Builder $query) => $query->where('type','Returned')),
+            "Check OUT"=>Tab::make()->query(fn(\Illuminate\Database\Eloquent\Builder $query) => $query->where('type','Assigned')),
+            "Check IN"=>Tab::make()->query(fn(\Illuminate\Database\Eloquent\Builder $query) => $query->where('type','Returned')),
         ];
     }
 }

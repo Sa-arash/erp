@@ -353,7 +353,7 @@ implements HasShieldPermissions
     {
         return $table->defaultSort('created_at', 'desc')
             ->headerActions([
-                Tables\Actions\ExportAction::make()->label('Export Payrolls')->exporter(PayrollExporter::class)->color('purple'),
+                Tables\Actions\ExportAction::make()->label('Export Payroll')->exporter(PayrollExporter::class)->color('purple'),
                 Tables\Actions\Action::make('Generate Payroll')->form([
                     Forms\Components\Section::make([
                         Forms\Components\Select::make('employees')->required()->multiple()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->hintAction(Forms\Components\Actions\Action::make('all')->action(function (Forms\Set $set){
@@ -361,20 +361,14 @@ implements HasShieldPermissions
                         })),
                         Forms\Components\Select::make('month')->options(function() {
                             $currentDate = Carbon::now();
-                            $currentMonth = $currentDate->month; // ماه جاری
-                            $nextMonth = $currentDate->copy()->addMonth()->month;
-                            $daysUntilNextMonth = $currentDate->daysInMonth - $currentDate->day;
-
+                            $currentMonth = $currentDate->month; 
                             $options = [];
-
-                            // اضافه کردن نام ماه جاری با ایندکس شماره ماه
-                            $options[$currentMonth - 1] = $currentDate->format('F'); // ایندکس از 0 شروع می‌شود
-
-                            // اگر 5 روز یا کمتر به پایان ماه باقی مانده باشد، نام ماه بعدی را اضافه کن
-                            if ($daysUntilNextMonth <= 5) {
-                                $options[$nextMonth - 1] = $currentDate->copy()->addMonth()->format('F'); // ایندکس از 0 شروع می‌شود
+                        
+                           
+                            for ($month = 1; $month <= $currentMonth; $month++) {
+                                $options[$month - 1] = $currentDate->copy()->month($month)->format('F'); 
                             }
-                        // dd($options);
+                        
                             return $options;
                         })->live()->default(now()->month - 1)->searchable()->required(),
                         Forms\Components\Select::make('year')->default(now()->year)->required()->searchable()->options([2024 => 2024, 2025 => 2025, 2026 => 2026, 2027 => 2027, 2028 => 2028, 2029 => 2029, 2030 => 2030]),
@@ -935,7 +929,7 @@ implements HasShieldPermissions
                     ->url(fn($record) => route('pdf.payroll', ['id' => $record->id]))->openUrlInNewTab(),
             ])
             ->bulkActions([
-                Tables\Actions\ExportBulkAction::make()->label('Export Payrolls')->exporter(PayrollExporter::class)->color('purple'),
+                Tables\Actions\ExportBulkAction::make()->label('Export Payroll')->exporter(PayrollExporter::class)->color('purple'),
 
                 Tables\Actions\BulkActionGroup::make([
 //                    Tables\Actions\DeleteBulkAction::make(),

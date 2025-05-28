@@ -15,12 +15,13 @@
             <th>Employee</th>
             <th>Month</th>
             <th>Year</th>
-            <th>Base Salary (Mount)</th>
+            <th>Base Salary (Amount)</th>
             <th>Total Allowance</th>
             <th>Total Deduction</th>
-            <th>Net Pay</th>
-            <th>Status</th>
+            <th colspan="2">Net Pay</th>
+            <th >Status</th>
         </tr>
+        
         </thead>
         <tbody>
         @php
@@ -43,13 +44,13 @@
         <tr style="margin:  0!important;text-align: center!important;" >
             <td >{{$i++}}</td>
             <td >{{$payroll->employee->fullName}}</td>
-            <td>{{$month->format('M')}}</td>
+            <td>{{$month->format('F')}}</td>
             <td>{{$year}}</td>
             <td>{{number_format($payroll->employee?->base_salary).' '.$payroll->employee?->currency?->name}}</td>
-            <td>{{number_format($payroll->total_allowance)}}</td>
-            <td>{{number_format($payroll->total_deduction)}}</td>
-            <td>{{number_format($payroll->amount_pay)}}</td>
-            <td>{{$payroll->status->name}}</td>
+            <td>{{number_format($payroll->total_allowance).' '.$payroll->employee?->currency?->name}}</td>
+            <td>{{number_format($payroll->total_deduction).' '.$payroll->employee?->currency?->name}}</td>
+            <td colspan="2">{{number_format($payroll->amount_pay).' '.$payroll->employee?->currency?->name}}</td>
+            <td >{{$payroll->status->name}}</td>
         </tr>
         @endforeach
         </tbody>

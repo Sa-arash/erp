@@ -24,14 +24,14 @@ class BrandResource extends Resource
     protected static ?string $navigationGroup = 'Logistic Management';
     protected static ?string $cluster = StackManagementSettings::class;
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
-    protected static ?string $label="Brand";
-    protected static ?string $pluralLabel="Brand ";
+    protected static ?string $label="Brands";
+    protected static ?string $pluralLabel="Brands ";
 
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('title')->columnSpanFull()->required()->maxLength(255),
+                Forms\Components\TextInput::make('title')->columnSpanFull()->required()->maxLength(255)->label('Add New Brand'),
             ]);
     }
 
@@ -47,7 +47,7 @@ class BrandResource extends Resource
                         ->withProperties([
                             'action' => 'export',
                         ])
-                        ->log('Export' . "Brand");
+                        ->log('Export' . "Brands");
                 }
             })->exports([
                 ExcelExport::make()->askForFilename("Brand")->withColumns([
@@ -65,6 +65,7 @@ class BrandResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make()->modelLabel('Edit Brand'),
+                Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

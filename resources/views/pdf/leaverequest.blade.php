@@ -87,10 +87,7 @@
         /* یا هر استایل دیگری که می‌خواهید */
     }
 
-    @page {
-        margin-top: 2px;
-    }
-
+      
     .phone-field {
         display: flex;
         justify-content: space-between;
@@ -680,7 +677,8 @@
             </td>
         </tr>
     </table>
-
+    <br><br>
+    <span style="font-size: 12px;color: gray; margin-left:40% !important; margin-top: auto ">Print Date: {{now()->format('Y/F/d H:iA')}}</span>
 
 </body>
 

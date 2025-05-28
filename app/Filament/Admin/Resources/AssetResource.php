@@ -50,19 +50,19 @@ class AssetResource extends Resource
 
 
                         Select::make('department_id')->label('Department')->required()->columnSpan(['default' => 8, 'md' => 2, 'xl' => 2, '2xl' => 1])->live()->options(getCompany()->departments->pluck('title', 'id'))->searchable()->preload(),
-
                         Forms\Components\Select::make('product_id')->label('Product')->options(function (Get $get) {
-
+                            
                             if ($get('department_id')) {
                                 $data = [];
                                 $products = getCompany()->products->where('product_type', 'unConsumable')->where('department_id', $get('department_id'));
-
+                                
                                 foreach ($products as $product) {
                                     $data[$product->id] = $product->title . " (" . $product->sku . ")";
                                 }
                                 return $data;
                             }
-                        })->required()->searchable()->preload()->columnSpan(2),
+                        })->required()->searchable()->preload()->columnSpan(1),
+                        TextInput::make('discription'),
                         Select::make('type')
                         ->label('Asset Type')
                         ->options(getCompany()->asset_types)
@@ -83,6 +83,7 @@ class AssetResource extends Resource
                             return $query->where('warehouse_id', $get('warehouse_id'));
                         })->required(),
 
+                        Forms\Components\TextInput::make('manufacturer'),
                         select::make('brand_id')->searchable()->label('Brand')->required()->options(getCompany()->brands->pluck('title', 'id'))
                             ->createOptionForm([
                                 Forms\Components\Section::make([
@@ -96,28 +97,63 @@ class AssetResource extends Resource
                                 ])->getKey();
                             }),
                         Forms\Components\TextInput::make('model')->nullable()->label('Model'),
+                      
 
-                        Forms\Components\TextInput::make('number')->default(function () {
-                            $asset = Asset::query()->where('company_id', getCompany()->id)->latest()->first();
-                            if ($asset) {
-                                return generateNextCodeAsset($asset->number);
-                            } else {
-                                return "0001";
-                            }
-                        })->required()->numeric()->label('Asset Number')->readOnly()->maxLength(50),
                         Forms\Components\TextInput::make('serial_number')->label('Serial Number')->maxLength(50),
-                        Forms\Components\TextInput::make('manufacturer'),
-                        Forms\Components\TextInput::make('price')->prefix(defaultCurrency()?->symbol)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->required()->numeric()->label('Purchase Price'),
+                        Select::make('status')
+                        ->options(getCompany()->asset_types)
+                        ->createOptionForm([
+                            Forms\Components\TextInput::make('title')->required()
+                        ])->createOptionUsing(function ($data) {
+                            $array = getCompany()->asset_types;
+                            if (isset($array)) {
+                                $array[$data['title']] = $data['title'];
+                            } else {
+                                $array = [$data['title'] => $data['title']];
+                            }
+                            getCompany()->update(['asset_types' => $array]);
+                            return $data['title'];
+                        })->searchable()->preload()->required(),
+                        
+                    Forms\Components\Select::make('quality')->label('Condition')
+                    ->options(
+                        [
+                            'new' => "New",
+                            'used' => "Used",
+                            'refurbished' => "Refurbished",
+                        ]
+                    )
+                    ->default('new')->searchable()->preload()
+                    ->required(),
 
+                    Forms\Components\Select::make('check_out_to')
+                    ->options(function () {
+                        $data = [];
+                        $employees = getCompany()->employees;
+                        foreach ($employees as $employee) {
+                            $data[$employee->id] = $employee->fullName;
+                        }
+                        return $data;
+                    })->searchable()->preload()
+                    ->required(),
+                    DatePicker::make('guarantee_date')->label('Due Date')->default(now()),
+
+                    Textarea::make('note')->columnSpan(2),
                     ])->columns(4),
-
-
+                    
+                    
                     DatePicker::make('buy_date')->label('Purchase Date')->default(now()),
-                    DatePicker::make('guarantee_date')->label('Guarantee Date')->default(now()),
+                    Forms\Components\TextInput::make('price')->prefix(defaultCurrency()?->symbol)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->required()->numeric()->label('Purchase Price'),
+                   Select::make('vendor_id')->label('Vendor')
+                   ->options(function () {
+                    return getCompany()->parties->where('type', ['vendor'])->pluck('info', 'id');
+                })
+                
+                ,
 
 
                     Select::make('depreciation_years')
-                        ->label('Depreciation Years')
+                        ->label('Recovery Period')
                         ->options(getCompany()->asset_depreciation_years)
                         ->createOptionForm([
                             Forms\Components\TextInput::make('title')->required()
@@ -132,23 +168,21 @@ class AssetResource extends Resource
                             return $data['title'];
                         })->searchable()->preload(),
 
-
-                    Forms\Components\Select::make('quality')->label('Condition')
-                        ->options(
-                            [
-                                'new' => "New",
-                                'used' => "Used",
-                                'refurbished' => "Refurbished",
-                            ]
-                        )
-                        ->default('new')->searchable()->preload()
-                        ->required(),
-
-                    Forms\Components\TextInput::make('depreciation_amount')
-                        ->label('Depreciation Amount')
+                        Forms\Components\TextInput::make('depreciation_amount')
+                        ->label('Market Value')
                         ->numeric()
                         ->mask(RawJs::make('$money($input)'))->stripCharacters(',')
                         ->placeholder('Enter amount'),
+                        Forms\Components\TextInput::make('number')->default(function () {
+                            $asset = Asset::query()->where('company_id', getCompany()->id)->latest()->first();
+                            if ($asset) {
+                                return generateNextCodeAsset($asset->number);
+                            } else {
+                                return "0001";
+                            }
+                        })->required()->numeric()->label('Asset Number')->readOnly()->maxLength(50),
+                        
+                    
 
 
                     Forms\Components\Hidden::make('status')->default('inStorageUsable')->required(),
@@ -232,7 +266,7 @@ class AssetResource extends Resource
                         ExcelExport::make()->askForFilename("Assets")->withColumns([
                             Column::make('product.sku')->heading("product sku"),
                             Column::make('purchase_order_id')->heading('PO No')->formatStateUsing(fn($record) => $record->purchase_order_id === null ? "---" : PurchaseOrder::find($record->purchase_order_id)->purchase_orders_number),
-                            Column::make('titlen')->heading('Asset Description'),
+                            Column::make('discription')->heading('Asset Description'),
                             Column::make('price')->heading('Purchase Price'),
 
                             Column::make('warehouse.title')->heading('Warehouse/Building'),
@@ -380,6 +414,7 @@ class AssetResource extends Resource
                         ->schema([
                         ])->maxItems(1),
                         Forms\Components\Select::make('product_id')->label('Product')->options(getCompany()->products()->pluck('title', 'id'))->required()->searchable()->preload(),
+
                         select::make('brand_id')->searchable()->label('Brand')->required()->options(getCompany()->brands->pluck('title', 'id'))
                             ->createOptionForm([
                                 Forms\Components\Section::make([

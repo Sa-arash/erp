@@ -268,10 +268,15 @@
         .deductions {
             margin-top: 40px;
         }
+        .bold{
+            font-weight: bold;
+        }
+      
     </style>
 </head>
 
 <body>
+    <br>
 
     <div class="clearfix">
         <div class="company-info">
@@ -299,19 +304,19 @@
             <td style="vertical-align: top; width: 70%; padding: 0; margin: 0;">
                 <table style="border-collapse: collapse; margin: 0; padding: 0;">
                     <tr>
-                        <td style=" padding: 2px 6px 2px 0;">Employee:</td>
+                        <td style=" padding: 2px 6px 2px 0;" class="bold">Employee:</td>
                         <td><span style=" padding: 0 3px;">{{ $payroll->employee->fullName }}</span></td>
                     </tr>
                     <tr>
-                        <td style=" padding: 2px 6px 2px 0;">Employee#:</td>
+                        <td style=" padding: 2px 6px 2px 0;" class="bold">Employee#:</td>
                         <td><span style=" padding: 0 3px;">  {{ $payroll->employee->ID_number }}</span></td>
                     </tr>
                     <tr>
-                        <td style=" padding: 2px 6px 2px 0;">Department:</td>
+                        <td style=" padding: 2px 6px 2px 0;" class="bold">Department:</td>
                         <td><span style=" padding: 0 3px;">{{ $payroll->employee->department->title }}</span></td>
                     </tr>
                     <tr>
-                        <td style=" padding: 2px 6px 2px 0;">Address:</td>
+                        <td style=" padding: 2px 6px 2px 0;" class="bold">Address:</td>
                         <td>
                             <span style=" padding: 0 3px;">
                                 {{ $payroll->employee->address }}
@@ -323,20 +328,20 @@
             <!-- Earnings Statement -->
             {{-- @dd($payroll) --}}
             <td style="vertical-align: top; width: 30%; padding: 0; margin: 0;">
-                <div style="font-size: 16px; font-weight: bold; margin-bottom: 10px;">Earnings Statement</div>
+                <div style="font-size: 16px; font-weight: bold; margin-bottom: 10px;" class="bold">Earnings Statement</div>
                 <br>
                 <table style="border-collapse: collapse; margin: 0; padding: 0;">
                     <tr>
-                        <td style=" padding: 2px 6px 2px 0;">Period Beginning:</td>
-                        <td><span style=" padding: 0 3px;">{{\Carbon\Carbon::parse($payroll->start_date)->format('Y/m/d')}}</span></td>
+                        <td style=" padding: 2px 6px 2px 0;" class="bold">Period Beginning:</td>
+                        <td><span style=" padding: 0 3px;">{{\Carbon\Carbon::parse($payroll->start_date)->format('d/m/Y')}}</span></td>
                     </tr>
                     <tr>
-                        <td style=" padding: 2px 6px 2px 0;">Period Ending:</td>
-                        <td><span style=" padding: 0 3px;">{{\Carbon\Carbon::parse($payroll->end_date)->format('Y/m/d')}}</span></td>
+                        <td style=" padding: 2px 6px 2px 0;" class="bold">Period Ending:</td>
+                        <td><span style=" padding: 0 3px;">{{\Carbon\Carbon::parse($payroll->end_date)->format('d/m/Y')}}</span></td>
                     </tr>
                     <tr>
-                        <td style=" padding: 2px 6px 2px 0;">Pay Date:</td>
-                        <td><span style=" padding: 0 3px;">{{\Carbon\Carbon::parse($payroll->pay_date)->format('Y/m/d')}}</span></td>
+                        <td style=" padding: 2px 6px 2px 0;" class="bold">Pay Date:</td>
+                        <td><span style=" padding: 0 3px;">{{\Carbon\Carbon::parse($payroll->pay_date)->format('d/m/Y')}}</span></td>
                     </tr>
                 </table>
             </td>
@@ -344,6 +349,7 @@
 
         </tr>
     </table>
+    <hr>
     <br>
     <br>
 
@@ -470,13 +476,14 @@
                 <table class="">
                     <tbody>
                     <tr>
-                        <td colspan="2">Transaction number:</td>
+                        <td colspan="2" class="bold">Transaction number:</td>
                         <td
-                            colspan="2">{{$payroll->invoice?->number? str_pad($payroll->invoice?->number, 9, '0', STR_PAD_LEFT):" ---------" }}</td>
+
+                            colspan="2">{{$payroll->id ? str_pad($payroll->id, 5, '0', STR_PAD_LEFT):" ---------" }}</td>
                     </tr>
                     <tr>
-                        <td colspan="2" class="">Pay Date:</td>
-                        <td colspan="3">{{\Carbon\Carbon::parse($payroll->pay_date)->format('Y/m/d')}}  </td>
+                        <td colspan="2"  class="bold">Pay Date:</td>
+                        <td colspan="3">{{\Carbon\Carbon::parse($payroll->pay_date)->format('d/m/Y')}}  </td>
 
                     </tr>
                     <tr>

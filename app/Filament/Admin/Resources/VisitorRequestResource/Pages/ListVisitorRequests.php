@@ -18,7 +18,7 @@ class ListVisitorRequests extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make()->label(' New Visitor Access Request'),
+            Actions\CreateAction::make()->label(' New VAR'),
             Actions\Action::make('config')->label('Print Config')->form([
                 TextInput::make('title')->default(fn()=>getCompany()->title_security)->required()->maxLength(255),
                 TextInput::make('description_security')->label('Description')->default(fn()=>getCompany()->description_security)->required()->maxLength(255),

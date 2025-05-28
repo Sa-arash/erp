@@ -34,7 +34,7 @@ class AssetEmployeeResource extends Resource
     protected static ?string $navigationGroup = 'Logistic Management';
     protected static ?int $navigationSort = 9;
 
-    protected static ?string $label = "Check in/Check out Assets";
+    protected static ?string $label = "Assets IN / OUT ";
 
     protected static ?string $navigationIcon = 'heroicon-s-arrows-up-down';
 
@@ -120,17 +120,17 @@ class AssetEmployeeResource extends Resource
                                 ->withProperties([
                                     'action' => 'export',
                                 ])
-                                ->log('Export' . "Check in/Check out Assets");
+                                ->log('Export' . "Check IN/Check OUT Assets");
                         }
                     })->exports([
-                        ExcelExport::make()->askForFilename("Check in&Check out Assets")->withColumns([
+                        ExcelExport::make()->askForFilename("Check IN&Check OUT Assets")->withColumns([
                             Column::make('id')->formatStateUsing(fn($record)=>$record->employee_id ? $record->employee->fullName : $record->person )->heading('Employee/Person'),
                             Column::make('date'),
                             Column::make('description'),
                             Column::make('type'),
                             Column::make('status'),
                         ]),
-                    ])->label('Export Check in/Check out Assets')->color('purple')
+                    ])->label('Export Report')->color('purple')
             ])
             ->columns([
 
@@ -139,7 +139,7 @@ class AssetEmployeeResource extends Resource
                 Tables\Columns\TextColumn::make('date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('description')->sortable(),
                 Tables\Columns\TextColumn::make('type')->color(fn($state) => $state === "Returned" ?  "danger" : "success")->sortable()->badge(),
-                Tables\Columns\TextColumn::make('status')->sortable()->badge(),
+                Tables\Columns\TextColumn::make('status')->state(fn($record)=> $record->status === "Approve" ? "Approved" : $record->status)->sortable()->badge(),
 
             ])
             ->filters([

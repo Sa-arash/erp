@@ -36,8 +36,8 @@ class ProductResource extends Resource
 {
     protected static ?string $model = Product::class;
     protected static ?string $navigationGroup = 'Logistic Management';
-    protected static ?string $pluralLabel = "Product";
-    protected static ?string $label="Product";
+    protected static ?string $pluralLabel = "Products";
+    protected static ?string $label="Products";
 
     protected static ?string $navigationIcon = 'heroicon-m-cube';
     protected static ?string $cluster = StackManagementSettings::class;
