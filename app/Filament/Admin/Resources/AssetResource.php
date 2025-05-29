@@ -13,6 +13,7 @@ use App\Models\Parties;
 use App\Models\PurchaseOrder;
 use App\Models\Structure;
 use App\Models\Transaction;
+use Closure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
@@ -148,6 +149,59 @@ class AssetResource extends Resource
 
                         DatePicker::make('buy_date')->label('Purchase Date')->default(now()),
                         Forms\Components\TextInput::make('price')->prefix(defaultCurrency()?->symbol)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->required()->numeric()->label('Purchase Price'),
+                        Section::make([
+                            Select::make('currency_id')->live()->label('Currency')->required()->searchable()->preload()->createOptionForm([
+                                Section::make([
+                                    TextInput::make('name')->required()->maxLength(255),
+                                    TextInput::make('symbol')->required()->maxLength(255),
+                                    TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                                ])->columns(3)
+                            ])->createOptionUsing(function ($data) {
+                                $data['company_id'] = getCompany()->id;
+                                Notification::make('success')->title('success')->success()->send();
+                                return Currency::query()->create($data)->getKey();
+                            })->editOptionForm([
+                                Section::make([
+                                    TextInput::make('name')->required()->maxLength(255),
+                                    TextInput::make('symbol')->required()->maxLength(255),
+                                    TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                                ])->columns(3)
+                            ])->afterStateUpdated(function ($state, Forms\Set $set) {
+                                $currency = Currency::query()->firstWhere('id', $state);
+                                if ($currency) {
+                                    $set('exchange_rate', $currency->exchange_rate);
+                                }
+                            })->editOptionAction(function ($state, Forms\Set $set) {
+                                $currency = Currency::query()->firstWhere('id', $state);
+                                if ($currency) {
+                                    $set('exchange_rate', $currency->exchange_rate);
+                                }
+                            }),
+                            TextInput::make('exchange_rate')->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                            Forms\Components\TextInput::make('debtor_foreign')->live(true)->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
+                                $set('debtor', number_format((float) str_replace(',', '', $state) * (float) str_replace(',', '', $get('exchange_rate'))));
+                            })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)->rules([
+                                fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                                    if ($get('debtor_foreign') == 0 && $get('creditor_foreign') == 0) {
+                                        $fail('Only one of these values can be zero.');
+                                    } elseif ($get('debtor_foreign') != 0 && $get('creditor_foreign') != 0) {
+                                        $fail('At least one of the values must be zero.');
+                                    }
+                                },
+                            ]),
+                            Forms\Components\TextInput::make('creditor_foreign')->live(true)->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
+                                $set('creditor', number_format((float) str_replace(',', '', $state) * (float) str_replace(',', '', $get('exchange_rate'))));
+                            })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)->rules([
+                                fn(Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                                    if ($get('debtor_foreign') == 0 && $get('creditor_foreign') == 0) {
+                                        $fail('Only one of these values can be zero.');
+                                    } elseif ($get('debtor_foreign') != 0 && $get('creditor_foreign') != 0) {
+                                        $fail('At least one of the values must be zero.');
+                                    }
+                                },
+                            ]),
+                        ])->columns(4),
+                        
                         Forms\Components\TextInput::make('scrap_value')->prefix(defaultCurrency()?->symbol)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->required()->numeric()->label('Scrap Value'),
 
                         Forms\Components\Select::make('party_id')->label("Vendor")->searchable()->required()
@@ -656,6 +710,7 @@ class AssetResource extends Resource
 
                         DatePicker::make('buy_date')->label('Purchase Date')->default(now()),
                         Forms\Components\TextInput::make('price')->prefix(defaultCurrency()?->symbol)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->required()->numeric()->label('Purchase Price'),
+                        
                         Forms\Components\TextInput::make('scrap_value')->prefix(defaultCurrency()?->symbol)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->numeric()->label('Scrap Value'),
 
                         Forms\Components\Select::make('party_id')->label("Vendor")->searchable()->required()
