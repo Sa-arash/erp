@@ -112,17 +112,22 @@ class AssetResource extends Resource
                                 ->default('inStorageUsable')
                                 ->options(['inuse' => 'In Use', 'inStorageUsable' => 'In Storage Usable', 'storageUnUsable' => 'Storage Unusable', 'underRepair' => 'Under Repair', 'outForRepair' => 'Out For Repair', 'loanedOut' => 'Loaned Out',]),
 
-                            Forms\Components\Select::make('quality')->label('Condition')
-                                ->options(
-                                    [
-                                        'new' => "New",
-                                        'used' => "Used",
-                                        'refurbished' => "Refurbished",
-                                    ]
-                                )
-                                ->default('new')->searchable()->preload()
-                                ->required(),
-
+                                Select::make('quality')
+                                ->label('Condition')
+                                ->options(getCompany()->asset_qualities)
+                                ->createOptionForm([
+                                    Forms\Components\TextInput::make('title')->required()
+                                ])->createOptionUsing(function ($data) {
+                                    $array = getCompany()->asset_qualities;
+                                    if (isset($array)) {
+                                        $array[$data['title']] = $data['title'];
+                                    } else {
+                                        $array = [$data['title'] => $data['title']];
+                                    }
+                                    getCompany()->update(['asset_qualities' => $array]);
+                                    return $data['title'];
+                                })->searchable()->preload()->required(),
+                          
                             Forms\Components\Select::make('check_out_to')
                                 ->options(function () {
                                     $data = [];
@@ -135,7 +140,7 @@ class AssetResource extends Resource
                                 ->required(),
                             DatePicker::make('guarantee_date')->label('Due Date')->default(now()),
                             DatePicker::make('warranty_date')->label('Warranty End'),
-                            TextInput::make('po_number'),
+                            TextInput::make('po_number')->label("PO Number"),
                             Textarea::make('note')->columnSpanFull(),
                         ])->columns(4),
 
@@ -615,16 +620,21 @@ class AssetResource extends Resource
                                 ->default('inStorageUsable')
                                 ->options(['inuse' => 'In Use', 'inStorageUsable' => 'In Storage Usable', 'storageUnUsable' => 'Storage Unusable', 'underRepair' => 'Under Repair', 'outForRepair' => 'Out For Repair', 'loanedOut' => 'Loaned Out',]),
 
-                            Forms\Components\Select::make('quality')->label('Condition')
-                                ->options(
-                                    [
-                                        'new' => "New",
-                                        'used' => "Used",
-                                        'refurbished' => "Refurbished",
-                                    ]
-                                )
-                                ->default('new')->searchable()->preload()
-                                ->required(),
+                                Select::make('quality')
+                                ->label('Condition')
+                                ->options(getCompany()->asset_qualities)
+                                ->createOptionForm([
+                                    Forms\Components\TextInput::make('title')->required()
+                                ])->createOptionUsing(function ($data) {
+                                    $array = getCompany()->asset_qualities;
+                                    if (isset($array)) {
+                                        $array[$data['title']] = $data['title'];
+                                    } else {
+                                        $array = [$data['title'] => $data['title']];
+                                    }
+                                    getCompany()->update(['asset_qualities' => $array]);
+                                    return $data['title'];
+                                })->searchable()->preload()->required(),
 
                             Forms\Components\Select::make('check_out_to')
                                 ->options(function () {
@@ -638,7 +648,7 @@ class AssetResource extends Resource
                                 ->required(),
                             DatePicker::make('guarantee_date')->label('Due Date')->default(now()),
                             DatePicker::make('warranty_date')->label('Warranty End'),
-                            TextInput::make('po_number'),
+                            TextInput::make('po_number')->label("PO Number"),
                             Textarea::make('note')->columnSpanFull(),
                        
 

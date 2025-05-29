@@ -48,6 +48,7 @@ return new class extends Migration
             $table->text('asset_types')->nullable();
             $table->text('asset_depreciation_years')->nullable();
             $table->text('asset_employees_persons')->nullable();
+            $table->text('asset_qualities')->nullable();
             $table->text('logo')->nullable();
             $table->timestamps();
         });
