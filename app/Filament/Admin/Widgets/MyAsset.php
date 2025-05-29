@@ -3,12 +3,8 @@
 namespace App\Filament\Admin\Widgets;
 
 use App\Models\Asset;
-use App\Models\AssetEmployee;
 use App\Models\AssetEmployeeItem;
-use App\Models\Employee;
 use App\Models\Service;
-use App\Models\Structure;
-use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
@@ -21,11 +17,8 @@ use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
-use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\File;
 
 class MyAsset extends BaseWidget
 {
@@ -40,20 +33,28 @@ class MyAsset extends BaseWidget
         return $table
             ->emptyStateHeading('No Asset')
             ->query(
-                AssetEmployeeItem::query()->where('type', 0)->whereHas('assetEmployee', function ($query) {
-                    return $query->where('employee_id', auth()->user()->employee->id)->where('type', 'Assigned');
-                })
+                function () {
+                    $sub = AssetEmployeeItem::selectRaw('MAX(id) as id')
+                        ->whereHas('assetEmployee', function ($q) {
+                            $q->where('employee_id', getEmployee()->id);
+                        })
+                        ->groupBy('asset_id');
+
+                    return AssetEmployeeItem::query()
+                        ->whereIn('id', $sub)
+                        ->where('type', 'Assigned');
+                }
             )
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
-                Tables\Columns\ImageColumn::make('asset.product.image')->defaultImageUrl(asset('img/images.jpeg'))->state(function ($record){
+                Tables\Columns\ImageColumn::make('asset.product.image')->defaultImageUrl(asset('img/images.jpeg'))->state(function ($record) {
                     return $record->asset->product->media->first()?->original_url;
                 })->label('Item Photo'),
                 Tables\Columns\TextColumn::make('asset.titlen')->label('Product'),
                 Tables\Columns\TextColumn::make('warehouse.title')->label('Warehouse/Building')->sortable(),
                 Tables\Columns\TextColumn::make('structure.title')->label('Location')->sortable(),
                 Tables\Columns\TextColumn::make('asset.serial_number')->label('Serial Number'),
-                Tables\Columns\TextColumn::make('assetEmployee.approve_date')->label('Distribution Date')->date(),
+                Tables\Columns\TextColumn::make('created_at')->label('Distribution Date')->dateTime(),
                 Tables\Columns\TextColumn::make('return_date')->label('Return Date')->date(),
             ])
              ->actions([
@@ -97,74 +98,74 @@ class MyAsset extends BaseWidget
                  })
              ])
             ->bulkActions([
-                Tables\Actions\BulkAction::make('return')->label('Return To Warehouse')
-                    ->modalHeading('Return Asset')
-                    ->form(function ($records) {
-                        return [
-                            Section::make([
-                                Textarea::make('reason')->label('Description')->placeholder('Enter the reason for returning the asset.')->required(),
-                                DatePicker::make('date')->default(now())->required(),
-                                Select::make('warehouse_id')->live()->label('Location')->options(getCompany()->warehouses()->pluck('title', 'id'))->required()->searchable()->preload(),
-                                SelectTree::make('structure_id')->label('Address')->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id', modifyQueryUsing: function ($query, Get $get) {
-                                    return $query->where('warehouse_id', $get('warehouse_id'));
-                                })->required(),
-                            ])->columns(),
-                            Repeater::make('AssetEmployeeItem')->label('Assets')->model(AssetEmployee::class)->relationship('assetEmployeeItem')->schema([
-                                Select::make('asset_id')
-                                    ->disableOptionsWhenSelectedInSiblingRepeaterItems()
-                                    ->live()->label('Asset')->options(function () {
-                                        $data = [];
-                                        $assets = Asset::query()->with('product')->whereHas('employees', function ($query) {
-                                            return $query->where('return_date', null)->where('return_approval_date', null)->whereHas('assetEmployee', function ($query) {
-                                                return $query->where('employee_id', getEmployee()->id);
-                                            });
-                                        })->where('company_id', getCompany()->id)->get();
-                                        foreach ($assets as $asset) {
-                                            $data[$asset->id] = $asset->product?->title . " ( SKU #" . $asset->product?->sku . " )";
-                                        }
-                                        return $data;
-                                    })->required()->searchable()->preload(),
-                            ])->formatStateUsing(function () use ($records) {
-                                // بررسی کنید که آیا $records شامل داده‌های مورد انتظار است
-                                if ($records->isEmpty()) {
-                                    throw new \Exception('No records selected.');
-                                }
-
-                                return $records->toArray();
-                            })->columns(1)->addable(false)->deletable(false)->grid()
-                        ];
-                    })
-                    ->action(function (array $data, $records) {
-                        // بررسی کنید که آیا $records شامل داده‌های مورد انتظار است
-                        if ($records->isEmpty()) {
-                            throw new \Exception('No records selected.');
-                        }
-
-                        $AssetEmployee = AssetEmployee::query()->create([
-                            'employee_id' => auth()->user()->employee->id,
-                            'date' => $data['date'],
-                            'type' => 'Returned',
-                            'status' => 'Pending',
-                            'description' => $data['reason'],
-                            'company_id' => getCompany()->id,
-                        ]);
-
-                        foreach ($records as $record) {
-                            $record->update([
-                                'return_date' => $data['date']
-                            ]);
-
-                            $AssetEmployee->assetEmployeeItem()->create([
-                                'asset_employee_id' => $AssetEmployee->id,
-                                'asset_id' => $record->asset_id,
-                                'warehouse_id' => $record->warehouse_id,
-                                'structure_id' => $record->structure_id,
-                                'company_id' => getCompany()->id,
-                            ]);
-                        }
-
-                        Notification::make('success')->success()->title("Your Request is Send")->send();
-                    })->color('danger'),
+//                Tables\Actions\BulkAction::make('return')->label('Return To Warehouse')
+//                    ->modalHeading('Return Asset')
+//                    ->form(function ($records) {
+//                        return [
+//                            Section::make([
+//                                Textarea::make('reason')->label('Description')->placeholder('Enter the reason for returning the asset.')->required(),
+//                                DatePicker::make('date')->default(now())->required(),
+//                                Select::make('warehouse_id')->live()->label('Location')->options(getCompany()->warehouses()->pluck('title', 'id'))->required()->searchable()->preload(),
+//                                SelectTree::make('structure_id')->label('Address')->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id', modifyQueryUsing: function ($query, Get $get) {
+//                                    return $query->where('warehouse_id', $get('warehouse_id'));
+//                                })->required(),
+//                            ])->columns(),
+//                            Repeater::make('AssetEmployeeItem')->label('Assets')->model(AssetEmployee::class)->relationship('assetEmployeeItem')->schema([
+//                                Select::make('asset_id')
+//                                    ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+//                                    ->live()->label('Asset')->options(function () {
+//                                        $data = [];
+//                                        $assets = Asset::query()->with('product')->whereHas('employees', function ($query) {
+//                                            return $query->where('return_date', null)->where('return_approval_date', null)->whereHas('assetEmployee', function ($query) {
+//                                                return $query->where('employee_id', getEmployee()->id);
+//                                            });
+//                                        })->where('company_id', getCompany()->id)->get();
+//                                        foreach ($assets as $asset) {
+//                                            $data[$asset->id] = $asset->product?->title . " ( SKU #" . $asset->product?->sku . " )";
+//                                        }
+//                                        return $data;
+//                                    })->required()->searchable()->preload(),
+//                            ])->formatStateUsing(function () use ($records) {
+//                                // بررسی کنید که آیا $records شامل داده‌های مورد انتظار است
+//                                if ($records->isEmpty()) {
+//                                    throw new \Exception('No records selected.');
+//                                }
+//
+//                                return $records->toArray();
+//                            })->columns(1)->addable(false)->deletable(false)->grid()
+//                        ];
+//                    })
+//                    ->action(function (array $data, $records) {
+//                        // بررسی کنید که آیا $records شامل داده‌های مورد انتظار است
+//                        if ($records->isEmpty()) {
+//                            throw new \Exception('No records selected.');
+//                        }
+//
+//                        $AssetEmployee = AssetEmployee::query()->create([
+//                            'employee_id' => auth()->user()->employee->id,
+//                            'date' => $data['date'],
+//                            'type' => 'Returned',
+//                            'status' => 'Pending',
+//                            'description' => $data['reason'],
+//                            'company_id' => getCompany()->id,
+//                        ]);
+//
+//                        foreach ($records as $record) {
+//                            $record->update([
+//                                'return_date' => $data['date']
+//                            ]);
+//
+//                            $AssetEmployee->assetEmployeeItem()->create([
+//                                'asset_employee_id' => $AssetEmployee->id,
+//                                'asset_id' => $record->asset_id,
+//                                'warehouse_id' => $record->warehouse_id,
+//                                'structure_id' => $record->structure_id,
+//                                'company_id' => getCompany()->id,
+//                            ]);
+//                        }
+//
+//                        Notification::make('success')->success()->title("Your Request is Send")->send();
+//                    })->color('danger'),
                 Tables\Actions\BulkAction::make('Take Out')->modalWidth(MaxWidth::SixExtraLarge)->color('warning')->form(function ($records) {
                     return [
                         Section::make([
@@ -186,13 +187,23 @@ class MyAsset extends BaseWidget
                                     ->disableOptionsWhenSelectedInSiblingRepeaterItems()
                                     ->live()->label('Asset')->options(function () {
                                         $data = [];
-                                        $assets = Asset::query()->with('product')->whereHas('employees', function ($query) {
-                                            return $query->where('return_date', null)->where('return_approval_date', null)->whereHas('assetEmployee', function ($query) {
+                                        $sub = AssetEmployeeItem::selectRaw('MAX(id) as id')
+                                            ->whereHas('assetEmployee', function ($q) {
+                                                $q->where('employee_id', getEmployee()->id);
+                                            })
+                                            ->groupBy('asset_id');
+
+                                         $assetA=AssetEmployeeItem::query()
+                                            ->whereIn('id', $sub)
+                                            ->where('type', 'Assigned')->pluck('asset_id')->toArray();
+
+                                        $assets = Asset::query()->with('product')->whereIn('id',$assetA)->whereHas('employees', function ($query) {
+                                            return $query->whereHas('assetEmployee', function ($query) {
                                                 return $query->where('employee_id', getEmployee()->id);
                                             });
                                         })->where('company_id', getCompany()->id)->get();
                                         foreach ($assets as $asset) {
-                                            $data[$asset->id] = $asset->product?->title . " ( SKU #" . $asset->product?->sku . " )";
+                                            $data[$asset->id] = $asset->product?->title." ".$asset->description . " ( SKU #" . $asset->product?->sku . " )";
                                         }
                                         return $data;
                                     })->required()->searchable()->preload(),

@@ -32,7 +32,7 @@ class EmployeesRelationManager extends RelationManager
             return $table->defaultSort('id', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('#')->rowIndex(),
-                Tables\Columns\TextColumn::make('assetEmployee.employee.fullName')->url(fn($record)=>EmployeeResource::getUrl('index',['view'=>$record->assetEmployee->employey_id]))->color('aColor')->badge(),
+                Tables\Columns\TextColumn::make('assetEmployee.employee.fullName')->state(fn($record)=>$record->assetEmployee->employee_id ? $record->assetEmployee->employee->fullName : $record->assetEmployee->person)->badge()->label('Employee/Person'),
                 Tables\Columns\TextColumn::make('warehouse.title')->label('Location'),
                 Tables\Columns\TextColumn::make('structure.title')->label('Address'),
                 Tables\Columns\TextColumn::make('created_at')->label(' Date')->date(),

@@ -57,17 +57,19 @@ class ViewAsset extends ViewRecord
                         return $data['title'];
                     })->searchable()->preload()->requiredWithout('employee_id')->prohibits('employee_id'),
                     Textarea::make('description')->label('Comment')->columnSpanFull(),
-                    Select::make('warehouse_id')->live()->label('Warehouse/Building')->options(getCompany()->warehouses()->pluck('title', 'id'))->required()->searchable()->preload(),
+                    Select::make('warehouse_id')->live()->label('Warehouse/Building')->options(getCompany()->warehouses()->pluck('title', 'id'))->searchable()->preload(),
                     SelectTree::make('structure_id')->label('Location')->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id', modifyQueryUsing: function ($query, Get $get) {
                         return $query->where('warehouse_id', $get('warehouse_id'));
-                    })->required(),
+                    }),
                     DatePicker::make('due_date'),
                 ])->columns(3)
             ])->action(function ($record,$data){
                 $company=getCompany();
                 if ($data['employee_id']){
+                    $record->update(['warehouse_id'=>$data['warehouse_id'],'structure_id'=>$data['structure_id'],'check_out_to'=>$data['employee_id']]);
                     $assetEmployee=AssetEmployee::query()->firstWhere('employee_id',$data['employee_id']);
                 }else{
+                    $record->update(['warehouse_id'=>$data['warehouse_id'],'structure_id'=>$data['structure_id'],'check_out_person'=>$data['person']]);
                     $assetEmployee=AssetEmployee::query()->firstWhere('person',$data['person']);
                 }
                 if ($assetEmployee){
@@ -97,9 +99,8 @@ class ViewAsset extends ViewRecord
                         'structure_id'=>$data['structure_id'],
                         'description'=>$data['description']
                     ]);
-                    $record->update(['check_out_to'=>$assetEmployee->employee_id]);
                 }
-            })->disabled(fn($record) => $record->check_out_to )->modalWidth(MaxWidth::FiveExtraLarge),
+            })->disabled(fn($record) => $record->check_out_to or $record->check_out_person  )->modalWidth(MaxWidth::FiveExtraLarge),
 
             Action::make('Check IN')->label('Check IN')->color('warning')->fillForm(function ($record){
                 return [
@@ -129,10 +130,10 @@ class ViewAsset extends ViewRecord
                        return $data['title'];
                    })->searchable()->preload()->requiredWithout('employee_id')->prohibits('employee_id'),
                    Textarea::make('description')->label('Comment')->columnSpanFull(),
-                   Select::make('warehouse_id')->live()->label('Warehouse/Building')->options(getCompany()->warehouses()->pluck('title', 'id'))->required()->searchable()->preload(),
+                   Select::make('warehouse_id')->live()->label('Warehouse/Building')->options(getCompany()->warehouses()->pluck('title', 'id'))->searchable()->preload(),
                    SelectTree::make('structure_id')->label('Location')->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id', modifyQueryUsing: function ($query, Get $get) {
                        return $query->where('warehouse_id', $get('warehouse_id'));
-                   })->required(),
+                   }),
                ])->columns()
             ])->action(function ($data,$record){
                 $company=getCompany();
@@ -153,10 +154,10 @@ class ViewAsset extends ViewRecord
                         'structure_id' => $data['structure_id'],
                         'description' => $data['description']
                     ]);
-                    $record->update(['check_out_to' => null]);
+                    $record->update(['warehouse_id'=>$data['warehouse_id'],'structure_id'=>$data['structure_id'],'check_out_to' => null,'check_out_person'=>null]);
                     Notification::make('success')->success()->title('Successfully')->send();
                 }
-            }),
+            })->disabled(fn($record)=>$record->check_out_person ===null and $record->check_out_to===null),
         ];
     }
 

@@ -11,9 +11,6 @@ class AssetEmployee extends Model
     protected $fillable=[
         'employee_id',
         'date',
-        'approve_date',
-        'description',
-        'note',
         'company_id',
         'person',
     ];

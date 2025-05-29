@@ -3,6 +3,7 @@
 namespace App\Filament\Admin\Widgets;
 
 use App\Models\Asset;
+use App\Models\AssetEmployeeItem;
 use App\Models\Unit;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
@@ -55,13 +56,23 @@ protected static ?string $heading='Gate Pass';
                             ->disableOptionsWhenSelectedInSiblingRepeaterItems()
                             ->live()->label('Asset')->options(function () {
                                 $data = [];
-                                $assets = Asset::query()->with('product')->whereHas('employees', function ($query) {
-                                    return $query->where('return_date', null)->where('return_approval_date', null)->whereHas('assetEmployee', function ($query) {
+                                $sub = AssetEmployeeItem::selectRaw('MAX(id) as id')
+                                    ->whereHas('assetEmployee', function ($q) {
+                                        $q->where('employee_id', getEmployee()->id);
+                                    })
+                                    ->groupBy('asset_id');
+
+                                $assetA=AssetEmployeeItem::query()
+                                    ->whereIn('id', $sub)
+                                    ->where('type', 'Assigned')->pluck('asset_id')->toArray();
+
+                                $assets = Asset::query()->with('product')->whereIn('id',$assetA)->whereHas('employees', function ($query) {
+                                    return $query->whereHas('assetEmployee', function ($query) {
                                         return $query->where('employee_id', getEmployee()->id);
                                     });
                                 })->where('company_id', getCompany()->id)->get();
                                 foreach ($assets as $asset) {
-                                    $data[$asset->id] = $asset->product?->title . " ( SKU #" . $asset->product?->sku . " )";
+                                    $data[$asset->id] = $asset->product?->title." ".$asset->description . " ( SKU #" . $asset->product?->sku . " )";
                                 }
                                 return $data;
                             })->required()->searchable()->preload(),
