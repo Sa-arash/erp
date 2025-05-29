@@ -970,7 +970,7 @@ implements HasShieldPermissions
                 Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')
                     ->url(fn($record) => route('pdf.payroll', ['id' => $record->id]))->openUrlInNewTab(),
                     Tables\Actions\EditAction::make(),
-                    ActionsDeleteAction::make(),
+                    ActionsDeleteAction::make()->hidden(fn($record)=>$record->invoice!==null || $record->status === "accepted"),
             ])
             ->bulkActions([
                 ExportBulkAction::make()
