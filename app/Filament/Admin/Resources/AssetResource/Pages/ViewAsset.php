@@ -80,7 +80,7 @@ class ViewAsset extends ViewRecord
                     // party_id
                     TextEntry::make('warehouse.title')->badge()->inlineLabel(),
                     TextEntry::make('structure.title')->badge()->label('Location')->inlineLabel(),
-                    TextEntry::make('check_out_to.fullname')->badge()->label('Check Out To')->inlineLabel(),
+                    TextEntry::make('check_out_to.fullName')->badge()->label('Check Out To')->inlineLabel(),
                     TextEntry::make('party.name')->badge()->label('Vendor')->inlineLabel(),
                     TextEntry::make('buy_date')->inlineLabel()->label('Buy Date'),
                     TextEntry::make('guarantee_date')->inlineLabel()->label('Due Date'),
