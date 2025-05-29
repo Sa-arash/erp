@@ -24,6 +24,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
+use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
@@ -135,15 +136,23 @@ class AssetEmployeeResource extends Resource
             ->columns([
 
                 Tables\Columns\TextColumn::make('')->rowIndex(),
-                Tables\Columns\TextColumn::make('employee.fullName')->state(fn($record)=>$record->employee_id ? $record->employee->fullName : $record->person )->label('Employee/Person')->sortable(),
+                Tables\Columns\TextColumn::make('employee.fullName')
+                    ->state(fn($record) => $record->employee_id ? $record->employee->fullName : $record->person)
+                    ->label('Employee/Person')
+                    ->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('description')->sortable(),
-                Tables\Columns\TextColumn::make('type')->color(fn($state) => $state === "Returned" ?  "danger" : "success")->sortable()->badge(),
-                Tables\Columns\TextColumn::make('status')->state(fn($record)=> $record->status === "Approve" ? "Approved" : $record->status)->sortable()->badge(),
+                Tables\Columns\TextColumn::make('type')
+                    ->color(fn($state) => $state === "Returned" ? "danger" : "success")
+                    ->sortable()
+                    ->badge(),
+                Tables\Columns\TextColumn::make('status')
+                    ->state(fn($record) => $record->status === "Approve" ? "Approved" : $record->status)
+                    ->sortable()->badge(),
 
             ])
             ->filters([
-                //
+                DateRangeFilter::make('date'),
             ])
             ->actions([
                 //                Tables\Actions\EditAction::make(),
