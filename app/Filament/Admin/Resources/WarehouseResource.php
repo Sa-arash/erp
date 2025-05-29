@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
@@ -129,9 +130,27 @@ class WarehouseResource extends Resource
 
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-//                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                ExportBulkAction::make()
+                ->after(function (){
+                    if (Auth::check()) {
+                        activity()
+                            ->causedBy(Auth::user())
+                            ->withProperties([
+                                'action' => 'export',
+                            ])
+                            ->log('Export' . "Warehouse");
+                    }
+                })->exports([
+                    ExcelExport::make()->askForFilename("Warehouse")->withColumns([
+                        Column::make('title')->heading('Location Name'),
+                        Column::make('employee.fullName')->heading('Manager By'),
+                        Column::make('phone'),
+                        Column::make('country'),
+                        Column::make('state'),
+                        Column::make('city'),
+                        Column::make('address'),
+                    ]),
+                ])->label('Export Warehouse')->color('purple')
             ]);
     }
 

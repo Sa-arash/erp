@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
@@ -90,7 +91,34 @@ class Stocks extends ManageRelatedRecords
             ],getModelFilter())
 
             ->bulkActions([
-
+                ExportBulkAction::make()
+                ->after(function (){
+                    if (Auth::check()) {
+                        activity()
+                            ->causedBy(Auth::user())
+                            ->withProperties([
+                                'action' => 'export',
+                            ])
+                            ->log('Export' . "Stock");
+                    }
+                })->exports([
+                    ExcelExport::make()->askForFilename("Stock")->withColumns([
+                       Column::make('employee.fullName'),
+                       Column::make('inventory.product.info'),
+                       Column::make('description'),
+                       Column::make('quantity'),
+                       Column::make('package.title')->formatStateUsing(fn($record)=> isset($record->package?->quantity)? '('.$record->quantity /$record->package?->quantity.' * '. $record->package?->quantity .')'.$record->package->title:'---'),
+                       Column::make('purchaseOrder.purchase_orders_number')->heading('PO NO'),
+                       Column::make('type')->formatStateUsing(fn($record) => $record->type === 1 ? "Stock In" : "Stock Out"),
+                       Column::make('transaction')->formatStateUsing(function($record){
+                            if ($record->transaction){
+                              return  $record->type ?"Stock In" : "Stock Out";
+                            }
+    
+                        } ),
+                       Column::make('created_at')->heading('Stock Date'),
+                    ]),
+                ])->label('Export Stock')->color('purple')
             ]);
     }
 }

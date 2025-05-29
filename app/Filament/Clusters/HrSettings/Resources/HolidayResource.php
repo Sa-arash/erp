@@ -21,6 +21,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
@@ -126,9 +127,23 @@ class HolidayResource extends Resource
                 Tables\Actions\EditAction::make()->modelLabel('Edit'),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-//                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                ExportBulkAction::make()
+                ->after(function () {
+                    if (Auth::check()) {
+                        activity()
+                            ->causedBy(Auth::user())
+                            ->withProperties([
+                                'action' => 'export',
+                            ])
+                            ->log('Export' . "Holiday");
+                    }
+                })->exports([
+                    ExcelExport::make()->askForFilename("Holiday")->withColumns([
+                       Column::make('name')->heading('Details'),
+                       Column::make('date'),
+
+                    ]),
+                ])->label('Export Holiday')->color('purple')
             ]);
     }
 

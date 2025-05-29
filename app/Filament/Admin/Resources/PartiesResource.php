@@ -25,6 +25,7 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
@@ -268,9 +269,49 @@ class PartiesResource extends Resource
 
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                ExportBulkAction::make()
+                    ->after(function () {
+                        if (Auth::check()) {
+                            activity()
+                                ->causedBy(Auth::user())
+                                ->withProperties([
+                                    'action' => 'export',
+                                ])
+                                ->log('Export' . "Customers/Vendors");
+                        }
+                    })->exports([
+                        ExcelExport::make()->askForFilename("Customers&Vendors")->withColumns([
+                            Column::make('name'),
+                            Column::make('id')->formatStateUsing(function ($record) {
+                                if ($record->type === "both") {
+                                    return $record->accountVendor?->code . " - " . $record->accountCustomer?->code;
+                                } elseif ($record->type === "vendor") {
+                                    return $record->accountVendor?->code;
+                                } else {
+                                    return $record->accountCustomer?->code;
+                                }
+                            })->heading('Account Code'),
+                            Column::make('type'),
+                            Column::make('phone'),
+
+                            Column::make('email'),
+                            Column::make('company_id')->heading("balance")
+                                ->formatStateUsing(
+                                    function ($record) {
+                                        if ($record->type === 'customer') {
+                                            return '' . number_format($record->accountCustomer->transactions->sum('debtor') - $record->accountCustomer->transactions->sum('creditor'));
+                                        } elseif ($record->type === 'vendor') {
+                                            return $record->accountVendor->transactions->sum('creditor') - $record->accountVendor->transactions->sum('debtor');
+                                        } elseif ($record->type === 'both') {
+                                            return ($record->accountVendor->transactions->sum('creditor') - $record->accountVendor->transactions->sum('debtor'))
+                                                -
+                                                ($record->accountCustomer->transactions->sum('debtor') - $record->accountCustomer->transactions->sum('creditor'));
+                                        }
+                                    }
+                                ),
+
+                        ]),
+                    ])->label('Export Customers/Vendors')->color('purple')
             ]);
     }
 

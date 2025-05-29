@@ -34,6 +34,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\HtmlString;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
@@ -902,9 +903,46 @@ class AssetResource extends Resource
                 })
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    //                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                ExportBulkAction::make()
+                ->after(function () {
+                    if (Auth::check()) {
+                        activity()
+                            ->causedBy(Auth::user())
+                            ->withProperties([
+                                'action' => 'export',
+                            ])
+                            ->log('Export' . "Assets");
+                    }
+                })->exports([
+                    ExcelExport::make()->askForFilename("Assets")->withColumns([
+                        Column::make('product.sku')->heading("product sku"),
+                        Column::make('purchase_order_id')->heading('PO No')->formatStateUsing(fn($record) => $record->purchase_order_id === null ? "---" : PurchaseOrder::find($record->purchase_order_id)->purchase_orders_number),
+                        Column::make('description')->heading('Asset Description'),
+                        Column::make('price')->heading('Purchase Price'),
+
+                        Column::make('warehouse.title')->heading('Warehouse/Building'),
+                        Column::make('structure')->formatStateUsing(function ($record) {
+                            $str = getParents($record->structure);
+                            return substr($str, 1, strlen($str) - 1);
+                        })->heading('Location'),
+                        Column::make('employee')->formatStateUsing(function ($record) {
+                            if ($record->employees?->last()) {
+                                $data = $record->employees?->last()?->assetEmployee;
+                                if ($data->type === 'Assigned')
+                                    return $data?->employee?->fullName;
+                            }
+                        })->heading('Employee'),
+                        Column::make('manufacturer')->heading('Manufacturer'),
+                        Column::make('quality')->heading('Condition'),
+                        Column::make('depreciation_years'),
+                        Column::make('depreciation_amount'),
+                        Column::make('buy_date')->heading('Purchase Date'),
+                        Column::make('guarantee_date'),
+                        Column::make('status'),
+                        Column::make('product.department.title')->heading('Product Department'),
+                    ]),
+                ])->label('Export')->color('purple'),
+               
                 Tables\Actions\BulkAction::make('print')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->color('primary')->action(function ($records) {
                     return redirect(route('pdf.assets', ['ids' => implode('-', $records->pluck('id')->toArray())]));
                 }),

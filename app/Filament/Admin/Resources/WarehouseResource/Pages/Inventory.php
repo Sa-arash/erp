@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
@@ -117,6 +118,29 @@ class Inventory extends ManageRelatedRecords
                     Session::push('inventoryID',$record->id);
                     return WarehouseResource::getUrl('stock',['record'=>$this->record->id,'inventory'=>$record->id]);
                 })
+            ])->bulkActions([
+                ExportBulkAction::make()
+                ->after(function (){
+                    if (Auth::check()) {
+                        activity()
+                            ->causedBy(Auth::user())
+                            ->withProperties([
+                                'action' => 'export',
+                            ])
+                            ->log('Export' . "Inventory");
+                    }
+                })->exports([
+                    ExcelExport::make()->askForFilename("Inventory")->withColumns([
+                       Column::make('product.info')->heading('product info'),
+                       Column::make('product.unit.title')->heading('product unit title'),
+                       Column::make('warehouse.title')->heading('Warehouse'),
+                       Column::make('structure')->formatStateUsing(function ($record) {
+                            $str = getParents($record->structure);
+                            return substr($str, 1, strlen($str) - 1);
+                        })->heading('Location'),
+                       Column::make('quantity'),
+                    ]),
+                ])->label('Export Inventory')->color('purple')
             ]);
     }
 

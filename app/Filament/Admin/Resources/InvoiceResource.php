@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction as TablesExportAction;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
@@ -331,11 +332,24 @@ class InvoiceResource extends Resource
                     ->url(fn($record) => route('pdf.document', ['document' => $record->id])),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    //                    Tables\Actions\DeleteBulkAction::make(),
-                    Tables\Actions\ExportAction::make()
-                        ->exporter(InvoiceExporter::class)->color('purple')
+                ExportBulkAction::make()
+            ->after(function (){
+                if (Auth::check()) {
+                    activity()
+                        ->causedBy(Auth::user())
+                        ->withProperties([
+                            'action' => 'export',
+                        ])
+                        ->log('Export' . "Journal Entry");
+                }
+            })->exports([
+                ExcelExport::make()->askForFilename("Journal Entry")->withColumns([
+                   Column::make('number')->heading('Voucher NO'),
+                   Column::make('date')->formatStateUsing(fn($record) => Carbon::parse($record->date)->format("Y-m-d")),
+                   Column::make('name')->heading('Voucher Title'),
+                   Column::make('reference'),
                 ]),
+            ])->label('Export Journal Entry')->color('purple')
             ]);
     }
 

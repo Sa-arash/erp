@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Unique;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
@@ -150,9 +151,24 @@ class ProductServiceResource extends Resource
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-//                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                ExportBulkAction::make()
+                ->after(function (){
+                    if (Auth::check()) {
+                        activity()
+                            ->causedBy(Auth::user())
+                            ->withProperties([
+                                'action' => 'export',
+                            ])
+                            ->log('Export' . "Service");
+                    }
+                })->exports([
+                    ExcelExport::make()->askForFilename("Service")->withColumns([
+                        Column::make('title')->heading('Service Name'),
+                        Column::make('sku')->heading('Service Code'),
+                        Column::make('account.title')->heading('Category '),
+                        Column::make('subAccount.title')->heading('Sub Category '),
+                    ]),
+                ])->label('Export Service')->color('purple')
             ]);
     }
 

@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Unique;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
@@ -235,9 +236,35 @@ class ProductResource extends Resource
                 Tables\Actions\ViewAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-//                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                ExportBulkAction::make()
+                ->after(function (){
+                    if (Auth::check()) {
+                        activity()
+                            ->causedBy(Auth::user())
+                            ->withProperties([
+                                'action' => 'export',
+                            ])
+                            ->log('Export' . "Product");
+                    }
+                })->exports([
+                    ExcelExport::make()->askForFilename("Product")->withColumns([
+                        Column::make('sku')->heading('SKU'),
+                        Column::make('title')->heading('Product Name'),
+                        Column::make('account.title')->heading('Category '),
+                        Column::make('subAccount.title')->heading('Sub Category '),
+                        Column::make('product_type')->formatStateUsing(function($record){
+                            if ($record->product_type==='consumable'){
+                                return 'Consumable';
+                            }elseif($record->product_type==='unConsumable'){
+                                return 'Non-Consumable';
+                            }
+                        }),
+                        Column::make('id')->formatStateUsing(fn($record) => $record->assets->count())->heading('Quantity'),
+                        Column::make('created_at')->formatStateUsing(fn($record) => $record->inventories()?->sum('quantity'))->heading('Available'),
+        
+                        Column::make('updated_at')->formatStateUsing(fn($record) => $record->assets->sum('price'))->heading('Total Value')
+                    ]),
+                ])->label('Export Product')->color('purple')
             ]);
     }
 

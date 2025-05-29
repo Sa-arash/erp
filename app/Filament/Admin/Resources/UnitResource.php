@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
@@ -93,9 +94,21 @@ class UnitResource extends Resource
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+                ExportBulkAction::make()
+            ->after(function (){
+                if (Auth::check()) {
+                    activity()
+                        ->causedBy(Auth::user())
+                        ->withProperties([
+                            'action' => 'export',
+                        ])
+                        ->log('Export' . "Unit");
+                }
+            })->exports([
+                ExcelExport::make()->askForFilename("Unit")->withColumns([
+                    Column::make('title')->heading('Unit Name'),
                 ]),
+            ])->label('Export Unit')->color('purple')
             ]);
     }
 

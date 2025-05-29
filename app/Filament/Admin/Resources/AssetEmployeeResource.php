@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
@@ -183,9 +184,27 @@ class AssetEmployeeResource extends Resource
                 })->visible(fn($record) => $record->status === "Pending")->hidden(fn($record) =>  $record->type != "Returned")
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+               
+                ExportBulkAction::make()
+                    ->after(function () {
+                        if (Auth::check()) {
+                            activity()
+                                ->causedBy(Auth::user())
+                                ->withProperties([
+                                    'action' => 'export',
+                                ])
+                                ->log('Export' . "Check IN/Check OUT Assets");
+                        }
+                    })->exports([
+                        ExcelExport::make()->askForFilename("Check IN&Check OUT Assets")->withColumns([
+                            Column::make('id')->formatStateUsing(fn($record)=>$record->employee_id ? $record->employee->fullName : $record->person )->heading('Employee/Person'),
+                            Column::make('date'),
+                            Column::make('description'),
+                            Column::make('type'),
+                            Column::make('status'),
+                        ]),
+                    ])->label('Export Report')->color('purple')
+                
             ]);
     }
 

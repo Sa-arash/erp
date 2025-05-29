@@ -22,6 +22,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
@@ -214,9 +215,38 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                     ->url(fn($record) => route('pdf.takeOut', ['id' => $record->id]))->openUrlInNewTab(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                ExportBulkAction::make()->after(function (){
+                    if (Auth::check()) {
+                        activity()
+                            ->causedBy(Auth::user())
+                            ->withProperties([
+                                'action' => 'export',
+                            ])
+                            ->log('Export' . 'Gate Pass');
+                    }
+                })->exports([
+                    ExcelExport::make()->askForFilename("Gate Pass")->withColumns([
+                        Column::make('employee.fullName')->heading("Employee"),
+                        Column::make('assets.product.title')->formatStateUsing(fn($record) => $record->assets->pluck('title')->toArray())->heading('Registered Asset'),
+                        Column::make('itemsOut')->heading('Unregistered Asset')->formatStateUsing(function ($record) {
+                            $data = [];
+                            if ($record->itemsOut) {
+                                foreach ($record->itemsOut as $item) {
+                                    $data[] = $item['name'];
+                                }
+                            }
+                            return $data;
+                        }),
+                        Column::make('from'),
+                        Column::make('to'),
+                        Column::make('date'),
+                        Column::make('return_date'),
+                        Column::make('mood'),
+                        Column::make('status'),
+                        Column::make('type'),
+                        Column::make('gate_status')->heading('Gate Status'),
+                    ]),
+                ])->label('Export Gate Pass')->color('purple')
             ]);
     }
 

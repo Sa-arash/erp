@@ -23,6 +23,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
@@ -222,9 +223,34 @@ class ChequeResource extends Resource
                 ])->modalWidth(MaxWidth::ThreeExtraLarge)->modalSubmitAction(false)->hidden(fn($record) => $record->status->name === "Paid")
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+              
+                ExportBulkAction::make()
+                ->after(function () {
+                    if (Auth::check()) {
+                        activity()
+                            ->causedBy(Auth::user())
+                            ->withProperties([
+                                'action' => 'export',
+                            ])
+                            ->log('Export' . "AR/AP");
+                    }
+                })->exports([
+                    ExcelExport::make()->askForFilename("AR&AP")->withColumns([
+                        Column::make('transaction.description')->heading('Description'),
+                        Column::make('amount'),
+                        Column::make('issue_date'),
+                        Column::make('due_date'),
+                        Column::make('payer_name'),
+                        Column::make('payee_name'),
+                        Column::make('id')->heading('Due Days')->formatStateUsing(function ($record) {
+                            $daysUntilDue = Carbon::make($record->due_date)->diffInDays(now(), false);
+                            return abs($daysUntilDue) . ($daysUntilDue < 0 ? ' Days Due' : ' Days Passed');
+                        }),
+                        Column::make('type')->formatStateUsing(fn($record) => $record->type ? "Payable" : "Receivable"),
+                        Column::make('status'),
+
+                    ]),
+                ])->label('Export AR/AP')->color('purple')
             ]);
     }
 

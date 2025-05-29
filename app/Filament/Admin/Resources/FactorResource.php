@@ -30,6 +30,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
@@ -781,9 +782,28 @@ class FactorResource extends Resource
 
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                ExportBulkAction::make()
+                    ->after(function () {
+                        if (Auth::check()) {
+                            activity()->inLog('Export')
+                                ->causedBy(Auth::user())
+                                ->log('Export' . "Invoices");
+                        }
+                    })->exports([
+                        ExcelExport::make()->askForFilename("Invoices")->withColumns([
+                            Column::make('title'),
+                            Column::make('party.name')->heading('Vendor/Customer'),
+                            Column::make('account.name')->heading('Expense/Income'),
+                            Column::make('currency.name')->heading('Currency'),
+                            Column::make('from'),
+                            Column::make('to'),
+                            Column::make('type')->formatStateUsing(fn($record) => $record->type == "1" ? "Income" : "Expense"),
+                            Column::make('id')->heading('Total')->formatStateUsing(fn($record) => number_format($record->items->map(fn($item) => (($item['quantity'] * str_replace(',', '', $item['unit_price'])) - (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['discount']) / 100)))?->sum(), 2)),
+                            Column::make('created_at')->heading('Date'),
+                            Column::make('updated_at'),
+
+                        ]),
+                    ])->label('Export Invoices')->color('purple')
             ]);
     }
 

@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
@@ -122,9 +123,28 @@ class ProjectResource extends Resource
                 })
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-//                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                ExportBulkAction::make()
+                ->after(function () {
+                    if (Auth::check()) {
+                        activity()
+                            ->causedBy(Auth::user())
+                            ->withProperties([
+                                'action' => 'export',
+                            ])
+                            ->log('Export' . "Project");
+                    }
+                })->exports([
+                    ExcelExport::make()->askForFilename("Project")->withColumns([
+                       Column::make('name'),
+                       Column::make('code'),
+                       Column::make('start_date'),
+                       Column::make('end_date'),
+                       Column::make('employee.fullName')->heading('Manager'),
+                       Column::make('priority_level'),
+                       Column::make('budget')->formatStateUsing(fn($record)=>number_format($record->budget,2).defaultCurrency()->symbol),
+
+                    ]),
+                ])->label('Export Project')->color('purple')
             ]);
     }
 

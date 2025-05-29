@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
@@ -68,9 +69,24 @@ class BrandResource extends Resource
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+               
+                ExportBulkAction::make()
+            ->after(function (){
+                if (Auth::check()) {
+                    activity()
+                        ->causedBy(Auth::user())
+                        ->withProperties([
+                            'action' => 'export',
+                        ])
+                        ->log('Export' . "Brands");
+                }
+            })->exports([
+                ExcelExport::make()->askForFilename("Brand")->withColumns([
+                    Column::make('title'),
+                    Column::make('id')->formatStateUsing(fn ($record)=>number_format($record->assets->count()))->heading('Quantity'),
                 ]),
+            ])->label('Export Brand')->color('purple')
+                
             ]);
     }
 

@@ -5,7 +5,6 @@ namespace App\Filament\Admin\Resources;
 use App\Enums\LeaveStatus;
 use App\Enums\PayrollStatus;
 use App\Filament\Admin\Resources\PayrollResource\Pages;
-use App\Filament\Exports\PayrollExporter;
 use App\Filament\Resources\HolidayResource;
 use App\Models\Account;
 use App\Models\Bank_category;
@@ -41,9 +40,14 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\HtmlString;
 use Malzariey\FilamentDaterangepickerFilter\Fields\DateRangePicker;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
+use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
+use pxlrbt\FilamentExcel\Columns\Column;
+use pxlrbt\FilamentExcel\Exports\ExcelExport;
 use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
 
 
@@ -351,9 +355,34 @@ implements HasShieldPermissions
 
     public static function table(Table $table): Table
     {
-        return $table->defaultSort('created_at', 'desc')
+        return $table
+        ->defaultSort('created_at', 'desc')
             ->headerActions([
-                Tables\Actions\ExportAction::make()->label('Export Payroll')->exporter(PayrollExporter::class)->color('purple'),
+                    ExportAction::make()
+                        ->after(function () {
+                            if (Auth::check()) {
+                                activity()
+                                    ->causedBy(Auth::user())
+                                    ->withProperties([
+                                        'action' => 'export',
+                                    ])
+                                    ->log('Export' . "Payroll");
+                            }
+                        })->exports([
+                            ExcelExport::make()->askForFilename("Payroll")->withColumns([
+                               Column::make('employee_id')->formatStateUsing(fn($record)=>$record->employee->fullName)->heading('Employee'),
+                               Column::make('created_at')->heading("Month")->formatStateUsing(fn($record) => Carbon::parse($record->start_date)->format('F')),
+                               Column::make('updated_at')->heading("Year")->formatStateUsing(fn($record) => Carbon::parse($record->start_date)->year),
+                               
+                               Column::make('id')->formatStateUsing(fn($record)=>number_format($record->employee->base_salary)."".$record->employee->currency?->symbol)->heading('Base Salary'),
+                               Column::make('total_allowance')->formatStateUsing(fn($record)=>number_format($record->total_allowance)."".$record->employee->currency?->symbol)->heading('Total Allowance'),
+                               Column::make('total_deduction')->formatStateUsing(fn($record)=>number_format($record->total_deduction)."".$record->employee->currency?->symbol)->heading('Total Deduction'),
+                               Column::make('amount_pay')->formatStateUsing(fn($record)=>number_format($record->amount_pay)."".$record->employee->currency?->symbol)->heading('Net Pay'),
+                               Column::make('status'),
+                            ]),
+                        ])->label('Export Payroll')->color('purple'),
+                    
+
                 Tables\Actions\Action::make('Generate Payroll')->form([
                     Forms\Components\Section::make([
                         Forms\Components\Select::make('employees')->required()->multiple()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->hintAction(Forms\Components\Actions\Action::make('all')->action(function (Forms\Set $set){
@@ -945,7 +974,29 @@ implements HasShieldPermissions
                     ->url(fn($record) => route('pdf.payroll', ['id' => $record->id]))->openUrlInNewTab(),
             ])
             ->bulkActions([
-                Tables\Actions\ExportBulkAction::make()->label('Export Payroll')->exporter(PayrollExporter::class)->color('purple'),
+                ExportBulkAction::make()
+                ->after(function () {
+                    if (Auth::check()) {
+                        activity()
+                            ->causedBy(Auth::user())
+                            ->withProperties([
+                                'action' => 'export',
+                            ])
+                            ->log('Export' . "Payroll");
+                    }
+                })->exports([
+                    ExcelExport::make()->askForFilename("Payroll")->withColumns([
+                       Column::make('employee_id')->formatStateUsing(fn($record)=>$record->employee->fullName)->heading('Employee'),
+                       Column::make('created_at')->heading("Month")->formatStateUsing(fn($record) => Carbon::parse($record->start_date)->format('F')),
+                       Column::make('updated_at')->heading("Year")->formatStateUsing(fn($record) => Carbon::parse($record->start_date)->year),
+                       
+                       Column::make('id')->formatStateUsing(fn($record)=>number_format($record->employee->base_salary)."".$record->employee->currency?->symbol)->heading('Base Salary'),
+                       Column::make('total_allowance')->formatStateUsing(fn($record)=>number_format($record->total_allowance)."".$record->employee->currency?->symbol)->heading('Total Allowance'),
+                       Column::make('total_deduction')->formatStateUsing(fn($record)=>number_format($record->total_deduction)."".$record->employee->currency?->symbol)->heading('Total Deduction'),
+                       Column::make('amount_pay')->formatStateUsing(fn($record)=>number_format($record->amount_pay)."".$record->employee->currency?->symbol)->heading('Net Pay'),
+                       Column::make('status'),
+                    ]),
+                ])->label('Export Payroll')->color('purple'),
 
                 Tables\Actions\BulkActionGroup::make([
 //                    Tables\Actions\DeleteBulkAction::make(),
