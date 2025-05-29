@@ -23,6 +23,7 @@ use App\Models\Transaction;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Carbon\Carbon;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
+use Filament\Actions\DeleteAction;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -36,6 +37,7 @@ use Filament\Support\Enums\IconSize;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Support\RawJs;
 use Filament\Tables;
+use Filament\Tables\Actions\DeleteAction as ActionsDeleteAction;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -78,27 +80,27 @@ implements HasShieldPermissions
             ->schema([
                 Forms\Components\Section::make([
                     Forms\Components\Select::make('employee_id')->disabled(fn($operation) => $operation === "edit")->live()->suffixIcon('employee')->suffixIconColor('primary')->label('Employee')->searchable()->preload()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->required()->afterStateUpdated(function (Forms\Set $set, Forms\Get $get) {
-                            $employee = Employee::query()->with(['department', 'position'])->firstWhere('id', $get('employee_id'));
-                            if ($employee) {
-                                $amount = $employee->base_salary;
-                                $titleDepartment = $employee->department?->title;
-                                $titlePosition = $employee->position?->title;
-                                $salary = $employee->daily_salary;
-                                $set('amount_pay', number_format($amount));
-                                $set('department', $titleDepartment);
-                                $set('position', $titlePosition);
-                                $set('salary', number_format($salary));
-                                $set('base', number_format($amount));
-                                $set('currency', $employee->currency?->name);
-                            } else {
-                                $set('amount_pay', null);
-                                $set('department', null);
-                                $set('position', null);
-                                $set('salary', null);
-                                $set('base', null);
-                                $set('currency', null);
-                            }
-                        }),
+                        $employee = Employee::query()->with(['department', 'position'])->firstWhere('id', $get('employee_id'));
+                        if ($employee) {
+                            $amount = $employee->base_salary;
+                            $titleDepartment = $employee->department?->title;
+                            $titlePosition = $employee->position?->title;
+                            $salary = $employee->daily_salary;
+                            $set('amount_pay', number_format($amount));
+                            $set('department', $titleDepartment);
+                            $set('position', $titlePosition);
+                            $set('salary', number_format($salary));
+                            $set('base', number_format($amount));
+                            $set('currency', $employee->currency?->name);
+                        } else {
+                            $set('amount_pay', null);
+                            $set('department', null);
+                            $set('position', null);
+                            $set('salary', null);
+                            $set('base', null);
+                            $set('currency', null);
+                        }
+                    }),
                     Forms\Components\Select::make('year')->disabled(fn($operation) => $operation === "edit")->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
                         $month = $get('month') + 1;
                         $year = $get('year') != null ? $get('year') : now()->year;
@@ -152,16 +154,16 @@ implements HasShieldPermissions
                                     return $query->where('is_payroll', 0);
                                 })->where('status', 'accepted')->where('employee_id', $employee->id)->whereBetween('start_leave', [$startDate, $endDate])->whereBetween('end_leave', [$get('start_date'), $get('end_date')])->get();
                                 $overtimes = Overtime::query()->where('status', 'accepted')->where('employee_id', $employee->id)->whereBetween('overtime_date', [$startDate, $endDate])->sum('hours');
-                                $dailySalary=$employee->daily_salary;
-                                if (!$employee->daily_salary){
+                                $dailySalary = $employee->daily_salary;
+                                if (!$employee->daily_salary) {
                                     $dayCount = Carbon::create($startDate)->daysInMonth;
-                                    $dailySalary =$employee->base_salary /$dayCount ;
+                                    $dailySalary = $employee->base_salary / $dayCount;
                                 }
 
-                                if ($dailySalary and $company->daily_working_hours ){
+                                if ($dailySalary and $company->daily_working_hours) {
                                     $hoursPay = $dailySalary / $company->daily_working_hours;
-                                }else{
-                                    $hoursPay=0;
+                                } else {
+                                    $hoursPay = 0;
                                     Notification::make('error')->danger()->title('Daily Salary Or Company is Zero')->send();
                                 }
                                 $totalAllowance = number_format(($overtimes * $hoursPay) * $company->overtime_rate, 2) . $company->currency;
@@ -218,12 +220,10 @@ implements HasShieldPermissions
                                     if ($benefit->price_type) {
                                         $set("percent", $benefit->percent);
                                         $set("amount", 0);
-
                                     } else {
                                         $set("amount", $benefit->amount);
                                         $set("percent", 0);
                                     }
-
                                 } else {
                                     $set("amount", 0);
                                     $set("percent", 0);
@@ -245,12 +245,10 @@ implements HasShieldPermissions
                                     if ($benefit->price_type) {
                                         $set("percent", $benefit->percent);
                                         $set("amount", 0);
-
                                     } else {
                                         $set("amount", $benefit->amount);
                                         $set("percent", 0);
                                     }
-
                                 } else {
                                     $set("amount", 0);
                                     $set("percent", 0);
@@ -271,14 +269,14 @@ implements HasShieldPermissions
                     ])->columns(2)->footerActions([Forms\Components\Actions\Action::make('Calculate')->action(function (Forms\Set $set, Forms\Get $get) {
                         $employee = Employee::query()->firstWhere('id', $get('employee_id'));
 
-// مقدار اولیه
+                        // مقدار اولیه
                         $baseAmount = $employee->base_salary ?? 0; // حقوق پایه
                         $grossAmount = $baseAmount; // شروع مقدار Gross با Base Salary
 
                         $totalAllowance = 0; // مجموع Allowance
                         $totalDeduction = 0; // مجموع Deduction
 
-// تابع محاسبه مزایا و کسورات
+                        // تابع محاسبه مزایا و کسورات
                         function calculateBenefit($benefit, $baseAmount, &$grossAmount, $basedOn, $type = 'allowance')
                         {
                             $amount = 0;
@@ -302,7 +300,7 @@ implements HasShieldPermissions
                             return $amount;
                         }
 
-// ابتدا محاسبه Allowances و Deductions وابسته به base_salary
+                        // ابتدا محاسبه Allowances و Deductions وابسته به base_salary
                         foreach ($get('Allowance') as $benefit) {
                             if (isset($benefit['benefit_id'])) {
                                 $totalAllowance += calculateBenefit($benefit, $baseAmount, $grossAmount, 'base_salary', 'allowance');
@@ -315,7 +313,7 @@ implements HasShieldPermissions
                             }
                         }
 
-// سپس محاسبه Allowances و Deductions وابسته به gross_salary
+                        // سپس محاسبه Allowances و Deductions وابسته به gross_salary
                         foreach ($get('Allowance') as $benefit) {
                             if (isset($benefit['benefit_id'])) {
                                 $totalAllowance += calculateBenefit($benefit, $baseAmount, $grossAmount, 'gross', 'allowance');
@@ -328,15 +326,14 @@ implements HasShieldPermissions
                             }
                         }
 
-// تنظیم مقدار نهایی
+                        // تنظیم مقدار نهایی
                         $total = $grossAmount;
 
-// ذخیره مقادیر در متغیرهای خروجی
+                        // ذخیره مقادیر در متغیرهای خروجی
                         $set('amount_pay', number_format($total));
                         $set('total_allowance', number_format($totalAllowance));
                         $set('total_deduction', number_format($totalDeduction));
                         $set('calculation_done', true);
-
                     })])->key('sectionID'),
 
                     Forms\Components\Section::make([
@@ -356,48 +353,48 @@ implements HasShieldPermissions
     public static function table(Table $table): Table
     {
         return $table
-        ->defaultSort('created_at', 'desc')
+            ->defaultSort('created_at', 'desc')
             ->headerActions([
-                    ExportAction::make()
-                        ->after(function () {
-                            if (Auth::check()) {
-                                activity()
-                                    ->causedBy(Auth::user())
-                                    ->withProperties([
-                                        'action' => 'export',
-                                    ])
-                                    ->log('Export' . "Payroll");
-                            }
-                        })->exports([
-                            ExcelExport::make()->askForFilename("Payroll")->withColumns([
-                               Column::make('employee_id')->formatStateUsing(fn($record)=>$record->employee->fullName)->heading('Employee'),
-                               Column::make('created_at')->heading("Month")->formatStateUsing(fn($record) => Carbon::parse($record->start_date)->format('F')),
-                               Column::make('updated_at')->heading("Year")->formatStateUsing(fn($record) => Carbon::parse($record->start_date)->year),
-                               
-                               Column::make('id')->formatStateUsing(fn($record)=>number_format($record->employee->base_salary)."".$record->employee->currency?->symbol)->heading('Base Salary'),
-                               Column::make('total_allowance')->formatStateUsing(fn($record)=>number_format($record->total_allowance)."".$record->employee->currency?->symbol)->heading('Total Allowance'),
-                               Column::make('total_deduction')->formatStateUsing(fn($record)=>number_format($record->total_deduction)."".$record->employee->currency?->symbol)->heading('Total Deduction'),
-                               Column::make('amount_pay')->formatStateUsing(fn($record)=>number_format($record->amount_pay)."".$record->employee->currency?->symbol)->heading('Net Pay'),
-                               Column::make('status'),
-                            ]),
-                        ])->label('Export Payroll')->color('purple'),
-                    
+                ExportAction::make()
+                    ->after(function () {
+                        if (Auth::check()) {
+                            activity()
+                                ->causedBy(Auth::user())
+                                ->withProperties([
+                                    'action' => 'export',
+                                ])
+                                ->log('Export' . "Payroll");
+                        }
+                    })->exports([
+                        ExcelExport::make()->askForFilename("Payroll")->withColumns([
+                            Column::make('employee_id')->formatStateUsing(fn($record) => $record->employee->fullName)->heading('Employee'),
+                            Column::make('created_at')->heading("Month")->formatStateUsing(fn($record) => Carbon::parse($record->start_date)->format('F')),
+                            Column::make('updated_at')->heading("Year")->formatStateUsing(fn($record) => Carbon::parse($record->start_date)->year),
+
+                            Column::make('id')->formatStateUsing(fn($record) => number_format($record->employee->base_salary) . "" . $record->employee->currency?->symbol)->heading('Base Salary'),
+                            Column::make('total_allowance')->formatStateUsing(fn($record) => number_format($record->total_allowance) . "" . $record->employee->currency?->symbol)->heading('Total Allowance'),
+                            Column::make('total_deduction')->formatStateUsing(fn($record) => number_format($record->total_deduction) . "" . $record->employee->currency?->symbol)->heading('Total Deduction'),
+                            Column::make('amount_pay')->formatStateUsing(fn($record) => number_format($record->amount_pay) . "" . $record->employee->currency?->symbol)->heading('Net Pay'),
+                            Column::make('status'),
+                        ]),
+                    ])->label('Export Payroll')->color('purple'),
+
 
                 Tables\Actions\Action::make('Generate Payroll')->form([
                     Forms\Components\Section::make([
-                        Forms\Components\Select::make('employees')->required()->multiple()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->hintAction(Forms\Components\Actions\Action::make('all')->action(function (Forms\Set $set){
-                            $set('employees',getCompany()->employees()->pluck('id')->toArray());
+                        Forms\Components\Select::make('employees')->required()->multiple()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->hintAction(Forms\Components\Actions\Action::make('all')->action(function (Forms\Set $set) {
+                            $set('employees', getCompany()->employees()->pluck('id')->toArray());
                         })),
-                        Forms\Components\Select::make('month')->options(function() {
+                        Forms\Components\Select::make('month')->options(function () {
                             $currentDate = Carbon::now();
-                            $currentMonth = $currentDate->month; 
+                            $currentMonth = $currentDate->month;
                             $options = [];
-                        
-                           
+
+
                             for ($month = 1; $month <= $currentMonth; $month++) {
-                                $options[$month - 1] = $currentDate->copy()->month($month)->format('F'); 
+                                $options[$month - 1] = $currentDate->copy()->month($month)->format('F');
                             }
-                        
+
                             return $options;
                         })->live()->default(now()->month - 1)->searchable()->required(),
                         Forms\Components\Select::make('year')->default(now()->year)->required()->searchable()->options([2024 => 2024, 2025 => 2025, 2026 => 2026, 2027 => 2027, 2028 => 2028, 2029 => 2029, 2030 => 2030]),
@@ -423,9 +420,9 @@ implements HasShieldPermissions
                             ->first();
 
                         if ($existingPayroll) {
-                            Notification::make('warning')->warning()->title($employee->fullName." Has Payroll For This Month")->send();
+                            Notification::make('warning')->warning()->title($employee->fullName . " Has Payroll For This Month")->send();
                         }
-                        if ($existingPayroll==null){
+                        if ($existingPayroll == null) {
                             // Allowances
                             foreach ($employee->benefits as $benefit) {
                                 if ($benefit->type === "allowance") {
@@ -453,7 +450,7 @@ implements HasShieldPermissions
                                 }
                             }
 
-// Deductions
+                            // Deductions
                             foreach ($employee->benefits as $benefit) {
                                 if ($benefit->type === "deduction") {
                                     if ($benefit->on_change === "base_salary") {
@@ -502,32 +499,32 @@ implements HasShieldPermissions
                                 ->whereBetween('overtime_date', [$startDate, $endDate])
                                 ->sum('hours');
 
-                            if ($company->daily_working_hours ){
-                                $dailySalary=$employee->daily_salary;
-                                if (!$employee->daily_salary){
+                            if ($company->daily_working_hours) {
+                                $dailySalary = $employee->daily_salary;
+                                if (!$employee->daily_salary) {
                                     $dayCount = Carbon::create($data['year'], $data['month'] + 1, 1)->daysInMonth;
-                                    $dailySalary =$employee->base_salary /$dayCount ;
+                                    $dailySalary = $employee->base_salary / $dayCount;
                                 }
-                                if ($dailySalary and $company->daily_working_hours ){
+                                if ($dailySalary and $company->daily_working_hours) {
                                     $hoursPay = $dailySalary / $company->daily_working_hours;
-                                }else{
-                                    $hoursPay=0;
+                                } else {
+                                    $hoursPay = 0;
                                     Notification::make('error')->danger()->title('Daily Salary Or Company is Zero')->send();
                                 }
                                 $totalOvertime = ($overtimes * $hoursPay) * $company->overtime_rate;
-                            }else{
+                            } else {
 
                                 Notification::make('error')->danger()->actions([
-                                    Action::make('setting')->url(route('filament.admin.hr-settings.resources.holidays.index',['tenant'=>getCompany()->id])),
-                                    Action::make('employee')->url(EmployeeResource::getUrl('edit',['record'=>$employee->id])),
-                                ])->title('Daily Salary  Or Company Daily Working Hours Is 0' )->send();
-                                return ;
+                                    Action::make('setting')->url(route('filament.admin.hr-settings.resources.holidays.index', ['tenant' => getCompany()->id])),
+                                    Action::make('employee')->url(EmployeeResource::getUrl('edit', ['record' => $employee->id])),
+                                ])->title('Daily Salary  Or Company Daily Working Hours Is 0')->send();
+                                return;
                             }
                             // افزودن اضافه‌کاری به مزایا و مرخصی به کسورات
                             $totalAllowances += $totalOvertime;
                             $totalDeductions += $totalLeaves;
                             // محاسبه حقوق نهایی
-                            $grossAmount+=($totalOvertime -$totalLeaves);
+                            $grossAmount += ($totalOvertime - $totalLeaves);
                             // ایجاد Payroll
                             $payroll = Payroll::query()->create([
                                 'amount_pay' => $grossAmount,
@@ -567,15 +564,14 @@ implements HasShieldPermissions
                                 BenefitPayroll::query()->create(array_merge($benefitData, ['payroll_id' => $payroll->id]));
                             }
                         }
-
                     }
 
 
                     Notification::make('success')->success()->title('Generate Payroll')->send()->sendToDatabase(auth()->user());
                 }),
-                Tables\Actions\Action::make('print')->label('Print')->action(function(Table $table){
-                    if ($table->getRecords()->pluck('id')->toArray()){
-                        return redirect(route('pdf.payrolls',['ids'=>implode('-',$table->getRecords()->pluck('id')->toArray())]));
+                Tables\Actions\Action::make('print')->label('Print')->action(function (Table $table) {
+                    if ($table->getRecords()->pluck('id')->toArray()) {
+                        return redirect(route('pdf.payrolls', ['ids' => implode('-', $table->getRecords()->pluck('id')->toArray())]));
                     }
                 })
             ])
@@ -585,10 +581,10 @@ implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('month')->state(fn($record) => Carbon::parse($record->start_date)->format('F'))->alignLeft()->sortable(),
                 Tables\Columns\TextColumn::make('year')->state(fn($record) => Carbon::parse($record->start_date)->year)->alignLeft()->sortable(),
                 //   Tables\Columns\TextColumn::make('payment_date')->alignCenter()->state(fn($record) => $record->payment_date ? Carbon::make($record->payment_date)->format('Y/m/d') : "Not Paid")->sortable(),
-                Tables\Columns\TextColumn::make('employee.base_salary')->state(fn($record)=>number_format($record->employee->base_salary)."".$record->employee->currency?->symbol)->copyable()->label('Base Salary')->alignLeft()->numeric()->sortable(),
-                Tables\Columns\TextColumn::make('total_allowance')->state(fn($record)=>number_format($record->total_allowance)."".$record->employee->currency?->symbol)->copyable()->label('Total Allowance')->alignLeft()->numeric()->sortable(),
-                Tables\Columns\TextColumn::make('total_deduction')->state(fn($record)=>number_format($record->total_deduction)."".$record->employee->currency?->symbol)->copyable()->label('Total Deduction')->alignLeft()->numeric()->sortable(),
-                Tables\Columns\TextColumn::make('amount_pay')->state(fn($record)=>number_format($record->amount_pay)."".$record->employee->currency?->symbol)->copyable()->label('Total Net Pay')->label('Net Pay')->alignLeft()->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('employee.base_salary')->state(fn($record) => number_format($record->employee->base_salary) . "" . $record->employee->currency?->symbol)->copyable()->label('Base Salary')->alignLeft()->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('total_allowance')->state(fn($record) => number_format($record->total_allowance) . "" . $record->employee->currency?->symbol)->copyable()->label('Total Allowance')->alignLeft()->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('total_deduction')->state(fn($record) => number_format($record->total_deduction) . "" . $record->employee->currency?->symbol)->copyable()->label('Total Deduction')->alignLeft()->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('amount_pay')->state(fn($record) => number_format($record->amount_pay) . "" . $record->employee->currency?->symbol)->copyable()->label('Total Net Pay')->label('Net Pay')->alignLeft()->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('status')->badge()->alignLeft(),
             ])
             ->filters([
@@ -613,7 +609,7 @@ implements HasShieldPermissions
                             12 => 'December'
                         ])
                         ->label('Month'),
-                
+
                     Forms\Components\Select::make('year')
                         ->searchable()
                         ->preload()
@@ -631,18 +627,17 @@ implements HasShieldPermissions
                     return $query
                         ->when(
                             $data['month'],
-                            fn (Builder $query, $month): Builder => $query->whereMonth('start_date', (int)$month)
+                            fn(Builder $query, $month): Builder => $query->whereMonth('start_date', (int)$month)
                         )
                         ->when(
                             $data['year'],
-                            fn (Builder $query, $year): Builder => $query->whereYear('start_date', (int)$year)
+                            fn(Builder $query, $year): Builder => $query->whereYear('start_date', (int)$year)
                         );
                 })->columns(2),
                 DateRangeFilter::make('start_date'),
                 DateRangeFilter::make('end_date'),
             ], getModelFilter())
             ->actions([
-                Tables\Actions\EditAction::make(),
 
                 Tables\Actions\ViewAction::make('approve')->iconSize(IconSize::Medium)->color('success')->tooltip(fn($record) => ($record->status->value) === 'Accepted' ? 'Change Status' : 'Approve')->icon(fn($record) => ($record->status->value) === 'Accepted' ? 'heroicon-m-cog-8-tooth' : 'heroicon-o-check-badge')->label(fn($record) => ($record->status->value) === 'Accepted' ? 'Change Status' : 'Approve')->iconSize(IconSize::Medium)->color('success')->form(function ($record) {
                     return [
@@ -660,14 +655,14 @@ implements HasShieldPermissions
                                     if ($employee) {
                                         $leaves = Leave::query()->where('status', 'accepted')->where('employee_id', $employee->id)->whereBetween('start_leave', [$get('start_date'), $get('end_date')])->whereBetween('end_leave', [$get('start_date'), $get('end_date')])->get();
                                         $overtimes = Overtime::query()->where('status', 'accepted')->where('employee_id', $employee->id)->whereBetween('overtime_date', [$get('start_date'), $get('end_date')])->sum('hours');
-                                        if ($company->daily_working_hours and $employee->daily_salary  ){
+                                        if ($company->daily_working_hours and $employee->daily_salary) {
                                             $hoursPay = $employee->daily_salary / $company->daily_working_hours;
-                                        }else{
+                                        } else {
                                             Notification::make('error')->danger()->actions([
-                                                Action::make('setting')->url(route('filament.admin.hr-settings.resources.holidays.index',['tenant'=>getCompany()->id])),
-                                                Action::make('employee')->url(EmployeeResource::getUrl('edit',['record'=>$employee->id])),
-                                            ])->title('Daily Salary  Or Company Daily Working Hours Is 0' )->send();
-                                            return ;
+                                                Action::make('setting')->url(route('filament.admin.hr-settings.resources.holidays.index', ['tenant' => getCompany()->id])),
+                                                Action::make('employee')->url(EmployeeResource::getUrl('edit', ['record' => $employee->id])),
+                                            ])->title('Daily Salary  Or Company Daily Working Hours Is 0')->send();
+                                            return;
                                         }
                                         $totalAllowance = number_format($overtimes * $hoursPay * $company->overtime_rate, 2) . $company->currency;
                                         $contentOvertime = "
@@ -719,12 +714,10 @@ implements HasShieldPermissions
                                                 if ($benefit->percent > 0) {
                                                     $set("percent", $benefit->percent);
                                                     $set("amount", 0);
-
                                                 } else {
                                                     $set("amount", $benefit->amount);
                                                     $set("percent", 0);
                                                 }
-
                                             } else {
                                                 $set("amount", 0);
                                                 $set("percent", 0);
@@ -744,12 +737,10 @@ implements HasShieldPermissions
                                                 if ($benefit->percent > 0) {
                                                     $set("percent", $benefit->percent);
                                                     $set("amount", 0);
-
                                                 } else {
                                                     $set("amount", $benefit->amount);
                                                     $set("percent", 0);
                                                 }
-
                                             } else {
                                                 $set("amount", 0);
                                                 $set("percent", 0);
@@ -772,34 +763,35 @@ implements HasShieldPermissions
                             ])->columns(3),
                         ])->columns(3),
                     ];
-                })->extraModalFooterActions([
-                    Tables\Actions\Action::make('Accept')->color('success')->action(function ($record) {
-                        $record->update([
-                            'status' => 'accepted',
-                            'user_id' => auth()->id()
-                        ]);
-                        return Notification::make('approvePayroll')->title('Approve Payroll ' . $record->employee->fullName)->actions([\Filament\Notifications\Actions\Action::make('Payroll')->url(route('pdf.payroll',['id'=>$record->id]))->openUrlInNewTab()->color('aColor')])->success()->send()->sendToDatabase(auth()->user());
-                    })]
+                })->extraModalFooterActions(
+                    [
+                        Tables\Actions\Action::make('Accept')->color('success')->action(function ($record) {
+                            $record->update([
+                                'status' => 'accepted',
+                                'user_id' => auth()->id()
+                            ]);
+                            return Notification::make('approvePayroll')->title('Approve Payroll ' . $record->employee->fullName)->actions([\Filament\Notifications\Actions\Action::make('Payroll')->url(route('pdf.payroll', ['id' => $record->id]))->openUrlInNewTab()->color('aColor')])->success()->send()->sendToDatabase(auth()->user());
+                        })
+                    ]
                 )->modalWidth(MaxWidth::FitContent)->visible(fn($record) => $record->status->value === "pending" and auth()->user()->can('approve_payroll')),
                 Tables\Actions\Action::make('payment')->visible(fn($record) => $record->status->value === "accepted" and auth()->user()->can('payment_payroll'))->label('Payment')->tooltip('Payment')->icon('heroicon-o-credit-card')->iconSize(IconSize::Medium)->color('warning')->action(function ($data, $record) {
                     $debtor = 0;
                     $creditor = 0;
                     $debtorID = 0;
 
-                    foreach ($data['transactions'] as $key=> $transaction) {
+                    foreach ($data['transactions'] as $key => $transaction) {
                         if ($transaction['creditor'] > 0) {
                             $creditor += str_replace(',', '', $transaction['creditor']);
                             $debtorID = $transaction['account_id'];
-
                         } else {
                             $debtor += str_replace(',', '', $transaction['debtor']);
                         }
-                        if ($transaction['isCurrency']===0){
-                            if ($transaction['creditor_foreign'] >0 or $transaction['debtor_foreign'] >0){
+                        if ($transaction['isCurrency'] === 0) {
+                            if ($transaction['creditor_foreign'] > 0 or $transaction['debtor_foreign'] > 0) {
                                 Notification::make('warning')->title('Foreign Creditor Or Foreign Debtor Is Not Zero')->warning()->send();
                                 return;
                             }
-                            $data['transactions'][$key]['exchange_rate']=1;
+                            $data['transactions'][$key]['exchange_rate'] = 1;
                         }
                     }
                     if ($debtor !== $creditor) {
@@ -814,7 +806,13 @@ implements HasShieldPermissions
 
 
                     $invoice = Invoice::query()->create([
-                        'name' => $data['name'], 'number' => $data['number'], 'date' => $data['date'], 'description' => $data['description'], 'reference' => $data['reference'], 'status' => 'final', 'company_id' => getCompany()->id
+                        'name' => $data['name'],
+                        'number' => $data['number'],
+                        'date' => $data['date'],
+                        'description' => $data['description'],
+                        'reference' => $data['reference'],
+                        'status' => 'final',
+                        'company_id' => getCompany()->id
                     ]);
                     foreach ($data['transactions'] as $transaction) {
                         $transaction['financial_period_id'] = $period->id;
@@ -833,10 +831,10 @@ implements HasShieldPermissions
                         'status' => 'payed',
                         'account_id' => $debtorID,
                         'reference' => $data['reference'],
-                        'invoice_id'=>$invoice->id
+                        'invoice_id' => $invoice->id
 
                     ]);
-                    return Notification::make('Create Invoice Payroll')->success()->title('Pay Payroll')->actions([\Filament\Notifications\Actions\Action::make('Payroll')->url(route('pdf.payroll',['id'=>$record->id]))->openUrlInNewTab()])->send()->sendToDatabase(auth()->user());
+                    return Notification::make('Create Invoice Payroll')->success()->title('Pay Payroll')->actions([\Filament\Notifications\Actions\Action::make('Payroll')->url(route('pdf.payroll', ['id' => $record->id]))->openUrlInNewTab()])->send()->sendToDatabase(auth()->user());
                 })->form(function ($record) {
                     return [
                         Forms\Components\Section::make([
@@ -873,9 +871,7 @@ implements HasShieldPermissions
                                     })->live()->defaultOpenLevel(3)->live()->label('Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('company_id', getCompany()->id))->searchable(),
                                     Forms\Components\TextInput::make('description')->required(),
 
-                                    Forms\Components\TextInput::make('debtor')->prefix(defaultCurrency()->symbol)->live(true)->afterStateUpdated(function ($state, Forms\Set $set,Get $get) {
-
-                                    })->mask(RawJs::make('$money($input)'))->readOnly(function (Get $get) {
+                                    Forms\Components\TextInput::make('debtor')->prefix(defaultCurrency()->symbol)->live(true)->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {})->mask(RawJs::make('$money($input)'))->readOnly(function (Get $get) {
                                         return $get('isCurrency');
                                     })->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)->rules([
                                         fn(Get $get): \Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
@@ -935,7 +931,7 @@ implements HasShieldPermissions
                                         }),
                                         TextInput::make('exchange_rate')->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                                         Forms\Components\TextInput::make('debtor_foreign')->live(true)->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
-                                            $set('debtor', number_format((float) str_replace(',', '', $state) * (float) str_replace(',','',$get('exchange_rate'))));
+                                            $set('debtor', number_format((float) str_replace(',', '', $state) * (float) str_replace(',', '', $get('exchange_rate'))));
                                         })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)->rules([
                                             fn(Get $get): \Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
                                                 if ($get('debtor_foreign') == 0 && $get('creditor_foreign') == 0) {
@@ -946,7 +942,7 @@ implements HasShieldPermissions
                                             },
                                         ]),
                                         Forms\Components\TextInput::make('creditor_foreign')->live(true)->afterStateUpdated(function ($state, Get $get, Forms\Set $set) {
-                                            $set('creditor',number_format((float) str_replace(',', '', $state) * (float) str_replace(',','',$get('exchange_rate'))));
+                                            $set('creditor', number_format((float) str_replace(',', '', $state) * (float) str_replace(',', '', $get('exchange_rate'))));
                                         })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)->rules([
                                             fn(Get $get): \Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
                                                 if ($get('debtor_foreign') == 0 && $get('creditor_foreign') == 0) {
@@ -970,36 +966,39 @@ implements HasShieldPermissions
                         ])->columns(2)
                     ];
                 })->modalSubmitActionLabel('Payment')->modalWidth(MaxWidth::ScreenTwoExtraLarge),
+
                 Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')
                     ->url(fn($record) => route('pdf.payroll', ['id' => $record->id]))->openUrlInNewTab(),
+                    Tables\Actions\EditAction::make(),
+                    ActionsDeleteAction::make(),
             ])
             ->bulkActions([
                 ExportBulkAction::make()
-                ->after(function () {
-                    if (Auth::check()) {
-                        activity()
-                            ->causedBy(Auth::user())
-                            ->withProperties([
-                                'action' => 'export',
-                            ])
-                            ->log('Export' . "Payroll");
-                    }
-                })->exports([
-                    ExcelExport::make()->askForFilename("Payroll")->withColumns([
-                       Column::make('employee_id')->formatStateUsing(fn($record)=>$record->employee->fullName)->heading('Employee'),
-                       Column::make('created_at')->heading("Month")->formatStateUsing(fn($record) => Carbon::parse($record->start_date)->format('F')),
-                       Column::make('updated_at')->heading("Year")->formatStateUsing(fn($record) => Carbon::parse($record->start_date)->year),
-                       
-                       Column::make('id')->formatStateUsing(fn($record)=>number_format($record->employee->base_salary)."".$record->employee->currency?->symbol)->heading('Base Salary'),
-                       Column::make('total_allowance')->formatStateUsing(fn($record)=>number_format($record->total_allowance)."".$record->employee->currency?->symbol)->heading('Total Allowance'),
-                       Column::make('total_deduction')->formatStateUsing(fn($record)=>number_format($record->total_deduction)."".$record->employee->currency?->symbol)->heading('Total Deduction'),
-                       Column::make('amount_pay')->formatStateUsing(fn($record)=>number_format($record->amount_pay)."".$record->employee->currency?->symbol)->heading('Net Pay'),
-                       Column::make('status'),
-                    ]),
-                ])->label('Export Payroll')->color('purple'),
+                    ->after(function () {
+                        if (Auth::check()) {
+                            activity()
+                                ->causedBy(Auth::user())
+                                ->withProperties([
+                                    'action' => 'export',
+                                ])
+                                ->log('Export' . "Payroll");
+                        }
+                    })->exports([
+                        ExcelExport::make()->askForFilename("Payroll")->withColumns([
+                            Column::make('employee_id')->formatStateUsing(fn($record) => $record->employee->fullName)->heading('Employee'),
+                            Column::make('created_at')->heading("Month")->formatStateUsing(fn($record) => Carbon::parse($record->start_date)->format('F')),
+                            Column::make('updated_at')->heading("Year")->formatStateUsing(fn($record) => Carbon::parse($record->start_date)->year),
+
+                            Column::make('id')->formatStateUsing(fn($record) => number_format($record->employee->base_salary) . "" . $record->employee->currency?->symbol)->heading('Base Salary'),
+                            Column::make('total_allowance')->formatStateUsing(fn($record) => number_format($record->total_allowance) . "" . $record->employee->currency?->symbol)->heading('Total Allowance'),
+                            Column::make('total_deduction')->formatStateUsing(fn($record) => number_format($record->total_deduction) . "" . $record->employee->currency?->symbol)->heading('Total Deduction'),
+                            Column::make('amount_pay')->formatStateUsing(fn($record) => number_format($record->amount_pay) . "" . $record->employee->currency?->symbol)->heading('Net Pay'),
+                            Column::make('status'),
+                        ]),
+                    ])->label('Export Payroll')->color('purple'),
 
                 Tables\Actions\BulkActionGroup::make([
-//                    Tables\Actions\DeleteBulkAction::make(),
+                    //                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

@@ -35,8 +35,8 @@ protected static ?string $heading='Gate Pass';
                 \Filament\Forms\Components\Section::make([
                     TextInput::make('from')->label('From (Location)')->default(getEmployee()->structure?->title)->required()->maxLength(255),
                     TextInput::make('to')->label('To (Location)')->required()->maxLength(255),
-                    DatePicker::make('date')->default(now())->required()->label('Check Out Date'),
-                    DatePicker::make('return_date')->label('Check In Date'),
+                    DatePicker::make('date')->default(now())->required()->label('Check OUT Date'),
+                    DatePicker::make('return_date')->label('Check IN Date'),
                     Textarea::make('reason')->columnSpanFull()->required(),
                     ToggleButtons::make('status')->default('Returnable')->colors(['Returnable' => 'success', 'Non-Returnable' => 'danger'])->live()->required()->grouped()->options(['Returnable' => 'Returnable', 'Non-Returnable' => 'Non-Returnable']),
                     ToggleButtons::make('type')->default('Modification')->required()->grouped()->options(function (Get $get) {
@@ -50,7 +50,7 @@ protected static ?string $heading='Gate Pass';
                         if (!$get('itemsOut')){
                             return true;
                         }
-                    })->label('Registered Asset')->orderable(false)->schema([
+                    })->label('Registered Asset')->addActionLabel('Add to Register Asset')->orderable(false)->schema([
                         Select::make('asset_id')
                             ->disableOptionsWhenSelectedInSiblingRepeaterItems()
                             ->live()->label('Asset')->options(function () {
@@ -71,7 +71,7 @@ protected static ?string $heading='Gate Pass';
                         if (!$get('items')){
                             return true;
                         }
-                    })->label('Unregistered Asset')->orderable(false)->schema([
+                    })->label('Unregistered Asset')->addActionLabel('Add to UnRegister Asset')->orderable(false)->schema([
                         TextInput::make('name')->required(),
                         TextInput::make('quantity')->required(),
                         Select::make('unit')->searchable()->options(Unit::query()->where('company_id', getCompany()->id)->pluck('title','title'))->required(),
