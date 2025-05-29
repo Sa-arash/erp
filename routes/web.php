@@ -206,6 +206,7 @@ Route::get('/',function (){
 });
 Route::middleware('auth')->group(function(){
 
+Route::get('/pdf/asset/{id}',[\App\Http\Controllers\PdfController::class,'asset'])->name('pdf.asset');
 Route::get('/pdf/cashPayment/{id}',[\App\Http\Controllers\PdfController::class,'cashPayment'])->name('pdf.cashPayment');
 Route::get('/pdf/clearance/{id}',[\App\Http\Controllers\PdfController::class,'clearance'])->name('pdf.clearance');
 Route::get('/pdf/overtime/{id}',[\App\Http\Controllers\PdfController::class,'overtime'])->name('pdf.overtime');
