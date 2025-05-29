@@ -553,7 +553,7 @@ implements HasShieldPermissions
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('employee.fullName')->alignLeft()->numeric()->sortable(),
-                Tables\Columns\TextColumn::make('month')->state(fn($record) => Carbon::parse($record->start_date)->format('M'))->alignLeft()->sortable(),
+                Tables\Columns\TextColumn::make('month')->state(fn($record) => Carbon::parse($record->start_date)->format('F'))->alignLeft()->sortable(),
                 Tables\Columns\TextColumn::make('year')->state(fn($record) => Carbon::parse($record->start_date)->year)->alignLeft()->sortable(),
                 //   Tables\Columns\TextColumn::make('payment_date')->alignCenter()->state(fn($record) => $record->payment_date ? Carbon::make($record->payment_date)->format('Y/m/d') : "Not Paid")->sortable(),
                 Tables\Columns\TextColumn::make('employee.base_salary')->state(fn($record)=>number_format($record->employee->base_salary)."".$record->employee->currency?->symbol)->copyable()->label('Base Salary')->alignLeft()->numeric()->sortable(),
@@ -566,31 +566,47 @@ implements HasShieldPermissions
 
                 SelectFilter::make('employee_id')->multiple()->searchable()->preload()->options(Employee::where('company_id', getCompany()->id)->get()->pluck('fullName', 'id'))->label('Employee'),
                 Filter::make('filter')->form([
-                    Forms\Components\Select::make('month')->searchable()->preload()->options([
-                        'January',
-                        'February',
-                        'March',
-                        'April',
-                        'May',
-                        'June',
-                        'July',
-                        'August',
-                        'September',
-                        'October',
-                        'November',
-                        'December'
-                    ])->label('Month'),
-
-                    Forms\Components\Select::make('year')->searchable()->preload()->options([2025=>2025,2026=>2026,2027=>2027,2028=>2028,2029=>2029,2030=>2030,2031=>2031])->label('Year')
+                    Forms\Components\Select::make('month')
+                        ->searchable()
+                        ->preload()
+                        ->options([
+                            1 => 'January',
+                            2 => 'February',
+                            3 => 'March',
+                            4 => 'April',
+                            5 => 'May',
+                            6 => 'June',
+                            7 => 'July',
+                            8 => 'August',
+                            9 => 'September',
+                            10 => 'October',
+                            11 => 'November',
+                            12 => 'December'
+                        ])
+                        ->label('Month'),
+                
+                    Forms\Components\Select::make('year')
+                        ->searchable()
+                        ->preload()
+                        ->options([
+                            2025 => 2025,
+                            2026 => 2026,
+                            2027 => 2027,
+                            2028 => 2028,
+                            2029 => 2029,
+                            2030 => 2030,
+                            2031 => 2031
+                        ])
+                        ->label('Year')
                 ])->query(function (Builder $query, array $data): Builder {
                     return $query
                         ->when(
                             $data['month'],
-                            fn (Builder $query, $date): Builder =>$query->whereDate('start_date',now()->month((int)$data+1)->startOfMonth())->whereDate('end_date',now()->month((int)$data+1)->endOfMonth())   ,
+                            fn (Builder $query, $month): Builder => $query->whereMonth('start_date', (int)$month)
                         )
                         ->when(
                             $data['year'],
-                            fn (Builder $query, $date):Builder=> $query->whereDate('start_date',now()->year((int)$date)->startOfMonth())->whereDate('end_date',now()->year((int)$date)->endOfMonth()),
+                            fn (Builder $query, $year): Builder => $query->whereYear('start_date', (int)$year)
                         );
                 })->columns(2),
                 DateRangeFilter::make('start_date'),
