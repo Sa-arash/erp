@@ -28,7 +28,7 @@ class ViewAsset extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('Check OUT')->label('Check OUT')->color('success')->url(fn($record) => AssetEmployeeResource::getUrl('create', ['asset' => $record->id]))->disabled(fn($record) => $record->assetEmployee?->last()?->type === "Assigned"),
+            Action::make('Check OUT')->label('Check OUT')->color('success')->url(fn($record) => AssetEmployeeResource::getUrl('create', ['asset' => $record->id]))->disabled(fn($record) => $record->assetEmployee?->last()?->type !== "Assigned"),
             Action::make('approve')->form([
                 Placeholder::make('')->content(function ($record) {
                     return view('partials.asset-employee-info', ['record' => $record->assetEmployee?->last()]);
