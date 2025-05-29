@@ -12,9 +12,7 @@ class AssetEmployeeItem extends Model
         'asset_id',
         'due_date',
         'warehouse_id',
-        'return_date',
         'type',
-        'return_approval_date',
         'structure_id',
         'company_id',
     ];

@@ -16,9 +16,16 @@ class MyAsset extends Page
 
     public static function getNavigationBadge(): ?string
     {
-        return AssetEmployeeItem::query()->where('type', 0)->whereHas('assetEmployee', function ($query) {
-            return $query->where('employee_id', auth()->user()->employee->id)->where('type', 'Assigned');
-        })->count();
+        $sub = AssetEmployeeItem::selectRaw('MAX(id) as id')
+            ->whereHas('assetEmployee', function ($q) {
+                $q->where('employee_id', getEmployee()->id);
+            })
+            ->groupBy('asset_id');
+
+        return AssetEmployeeItem::query()
+            ->whereIn('id', $sub)
+            ->where('type', 'Assigned')->count();
+
     }
 
     protected static string $view = 'filament.admin.pages.my-asset';
