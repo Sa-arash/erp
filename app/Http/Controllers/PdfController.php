@@ -555,6 +555,18 @@ class PdfController extends Controller
         );
         return $pdf->stream('pdf.assets');
     }
+
+    public function asset($id)
+    {
+        $asset = Asset::query()->with(['product', 'employees'])->where('id',  $id)->firstOrFail();
+        // dd($asset);
+        $company = $asset->company;
+        $pdf = Pdf::loadView(
+            'pdf.asset',
+            compact('company', 'asset')
+        );
+        return $pdf->stream('pdf.asset');
+    }
     public function tasks($ids)
     {
         $tasks = Task::query()->with(['employees'])->whereIn('id', explode('-', $ids))->orderBy('id', 'desc')->get();

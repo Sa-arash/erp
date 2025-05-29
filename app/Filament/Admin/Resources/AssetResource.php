@@ -550,7 +550,9 @@ class AssetResource extends Resource
                     Tables\Actions\Action::make('qr')->color('danger')->label('QR Checkout')->tooltip('Checkout')->iconSize(IconSize::Medium)->icon('heroicon-c-qr-code')->url(fn($record) => route('pdf.qrcode', ['code' => $record->id])),
                     Tables\Actions\Action::make('qrView')->color('success')->label('QR View')->tooltip('View Asset')->iconSize(IconSize::Medium)->icon('heroicon-c-qr-code')->url(fn($record) => route('pdf.qrcode.view', ['code' => $record->id])),
                     Tables\Actions\Action::make('barcode')->color('warning')->label('Barcode')->tooltip('Barcode')->iconSize(IconSize::Medium)->icon('barcode')->url(fn($record) => route('pdf.barcode', ['code' => $record->id])),
-                ])->color('warning'),
+                    ])->color('warning'),
+                    Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')
+                        ->url(fn($record) => route('pdf.asset', ['id' => $record->id]))->openUrlInNewTab(),
                 Tables\Actions\EditAction::make()->form(
                     [
                         Section::make([
