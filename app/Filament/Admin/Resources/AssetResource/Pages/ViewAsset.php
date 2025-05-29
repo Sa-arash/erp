@@ -57,7 +57,7 @@ class ViewAsset extends ViewRecord
 
 
                 Group::make([
-                    TextEntry::make('sku')->label('SKU')->badge()->inlineLabel(),
+                    TextEntry::make('product.sku')->label('SKU')->badge()->inlineLabel(),
                     TextEntry::make('product.title')->inlineLabel(),
                     TextEntry::make('description')->inlineLabel(),
                     TextEntry::make('serial_number')->label("Serial Number")->badge()->inlineLabel(),
