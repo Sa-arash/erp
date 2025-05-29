@@ -47,6 +47,14 @@ class Asset extends Model implements HasMedia
     {
         return $this->belongsTo(Product::class);
     }
+    public function check_out_to(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Employee::class,'check_out_to');
+    }
+    public function party(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Parties::class,'party_id');
+    }
     public function warehouse(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Warehouse::class);

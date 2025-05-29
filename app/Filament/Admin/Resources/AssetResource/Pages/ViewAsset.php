@@ -59,7 +59,9 @@ class ViewAsset extends ViewRecord
                 Group::make([
                     TextEntry::make('sku')->label('SKU')->badge()->inlineLabel(),
                     TextEntry::make('product.title')->inlineLabel(),
+                    TextEntry::make('description')->inlineLabel(),
                     TextEntry::make('serial_number')->label("Serial Number")->badge()->inlineLabel(),
+                    TextEntry::make('po_number')->label("Po Number")->badge()->inlineLabel(),
                     TextEntry::make('status')->state(fn($record) => match ($record->status) {
                         'inuse' => "In Use",
                         'inStorageUsable' => "In Storage",
@@ -68,9 +70,21 @@ class ViewAsset extends ViewRecord
                         'StorageUnUsable' => " Scrap"
                     })->badge()->inlineLabel(),
                     TextEntry::make('price')->numeric()->inlineLabel(),
+                    TextEntry::make('scrap_value')->label("Scrap Value")->numeric()->inlineLabel(),
+                    //description
+                    // note
+                    // 
+                    // 
+                    // 
+                    // check_out_to
+                    // party_id
                     TextEntry::make('warehouse.title')->badge()->inlineLabel(),
                     TextEntry::make('structure.title')->badge()->label('Location')->inlineLabel(),
+                    TextEntry::make('check_out_to.fullname')->badge()->label('Check Out To')->inlineLabel(),
+                    TextEntry::make('party.name')->badge()->label('Vendor')->inlineLabel(),
                     TextEntry::make('buy_date')->inlineLabel()->label('Buy Date'),
+                    TextEntry::make('guarantee_date')->inlineLabel()->label('Due Date'),
+                    TextEntry::make('warranty_date')->inlineLabel()->label('Warranty End'),
                     TextEntry::make('type')->badge()->label('Asset Type')->inlineLabel(),
                     TextEntry::make('depreciation_years')->inlineLabel()->label('Depreciation Years'),
                     TextEntry::make('depreciation_amount')->inlineLabel()->label('Depreciation Amount'),
@@ -85,12 +99,13 @@ class ViewAsset extends ViewRecord
                         ->alignLeft()->label('Asset Picture')->width(200)->height(200)->extraAttributes(['style' => 'border-radius:50px!important']),
 
 
+                        TextEntry::make('note'),
                     RepeatableEntry::make('attributes')
                         ->schema([
                             TextEntry::make('title'),
                             TextEntry::make('value'),
                         ])
-                        ->columns(3)
+                        ->columns(3),
                 ]),
 
 
