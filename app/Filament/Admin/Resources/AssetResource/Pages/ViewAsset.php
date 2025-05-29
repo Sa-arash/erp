@@ -71,13 +71,6 @@ class ViewAsset extends ViewRecord
                     })->badge()->inlineLabel(),
                     TextEntry::make('price')->numeric()->inlineLabel(),
                     TextEntry::make('scrap_value')->label("Scrap Value")->numeric()->inlineLabel(),
-                    //description
-                    // note
-                    // 
-                    // 
-                    // 
-                    // check_out_to
-                    // party_id
                     TextEntry::make('warehouse.title')->badge()->inlineLabel(),
                     TextEntry::make('structure.title')->badge()->label('Location')->inlineLabel(),
                     TextEntry::make('check_out_to.fullName')->badge()->label('Check Out To')->inlineLabel(),
