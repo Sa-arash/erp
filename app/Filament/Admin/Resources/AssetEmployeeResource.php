@@ -195,10 +195,7 @@ class AssetEmployeeResource extends Resource
             //
         ];
     }
-    public static function getNavigationBadge(): ?string
-    {
-        return self::$model::query()->where('status', 'Pending')->where('company_id', getCompany()->id)->count();
-    }
+
     public static function infolist(Infolist $infolist): Infolist
     {
         return $infolist->schema(function ($record) {

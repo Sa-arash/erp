@@ -16,12 +16,9 @@ return new class extends Migration
             $table->foreignId('employee_id')->nullable()->constrained('employees')->cascadeOnUpdate()->cascadeOnDelete();
             $table->text('person')->nullable();
             $table->timestamp('date');
-            $table->timestamp('approve_date')->nullable();
             $table->text('description')->nullable();
             $table->text('note')->nullable();
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->enum('type', ['GatePass','Assigned', 'Returned','Transaction']);
-            $table->enum('status', ['Pending', 'Approve','Reject'])->default('Pending');
             $table->timestamps();
         });
     }

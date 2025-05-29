@@ -12,8 +12,6 @@ class AssetEmployee extends Model
         'employee_id',
         'date',
         'approve_date',
-        'type',
-        'status',
         'description',
         'note',
         'company_id',

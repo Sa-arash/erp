@@ -29,19 +29,15 @@ class EmployeesRelationManager extends RelationManager
 
     public function table(Table $table): Table
     {
-        return $table->defaultSort('asset_employee_id', 'desc')
+            return $table->defaultSort('id', 'desc')
             ->columns([
+                Tables\Columns\TextColumn::make('#')->rowIndex(),
                 Tables\Columns\TextColumn::make('assetEmployee.employee.fullName')->url(fn($record)=>EmployeeResource::getUrl('index',['view'=>$record->assetEmployee->employey_id]))->color('aColor')->badge(),
                 Tables\Columns\TextColumn::make('warehouse.title')->label('Location'),
                 Tables\Columns\TextColumn::make('structure.title')->label('Address'),
-                Tables\Columns\TextColumn::make('assetEmployee.date')->label(' Date')->date(),
-                Tables\Columns\TextColumn::make('return_date')->date(),
-                Tables\Columns\TextColumn::make('return_date')->date(),
-                Tables\Columns\TextColumn::make('return_approval_date')->date(),
-                Tables\Columns\TextColumn::make('assetEmployee.note')->label('Note')->wrap(),
-                Tables\Columns\TextColumn::make('assetEmployee.description')->label('Description')->wrap(),
-                Tables\Columns\TextColumn::make('assetEmployee.type')->label('Type')->badge(),
-                Tables\Columns\TextColumn::make('type')->label('Status')->state(fn($record)=>$record->return_date ===null ? "Check In":"Check Out")->badge()->color(fn($record)=>$record->return_date ===null ? "success":"danger"),
+                Tables\Columns\TextColumn::make('created_at')->label(' Date')->date(),
+                Tables\Columns\TextColumn::make('description')->label('Comment/Note')->wrap(),
+                Tables\Columns\TextColumn::make('type')->label('Status')->state(fn($record)=>$record->type ==='Returned' ? "Check In":"Check Out")->badge()->color(fn($record)=>$record->type ==='Returned' ? "success":"danger"),
             ])
             ->filters([
                 //

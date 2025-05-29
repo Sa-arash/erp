@@ -7,9 +7,15 @@ use App\Filament\Admin\Resources\AssetResource;
 use App\Models\Asset;
 use App\Models\AssetEmployee;
 use App\Models\AssetEmployeeItem;
+use App\Models\Structure;
+use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Actions\Action;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Get;
 use Filament\Infolists\Components\Group;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\RepeatableEntry;
@@ -28,25 +34,129 @@ class ViewAsset extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [
-            Action::make('Check OUT')->label('Check OUT')->color('success')->url(fn($record) => AssetEmployeeResource::getUrl('create', ['asset' => $record->id]))->disabled(fn($record) => $record->assetEmployee?->last()?->type !== "Assigned"),
-            Action::make('approve')->form([
-                Placeholder::make('')->content(function ($record) {
-                    return view('partials.asset-employee-info', ['record' => $record->assetEmployee?->last()]);
-                }),
-                Textarea::make('note')
-            ])->iconSize(IconSize::Medium)->color('success')->disabled(fn($record) => $record->assetEmployee?->last()?->type !== "Returned")->icon('heroicon-s-check')->label('Approve Check IN')->requiresConfirmation()->action(function ($record, $data) {
-                $record->update([
-                    'status' => "Approve",
-                    'note' => $data['note']
-                ]);
-                foreach ($record->assetEmployeeItem as $item) {
-                    AssetEmployeeItem::query()->where('asset_id', $item->asset_id)->update(['type' => 1,]);
-                    $item->update(['return_approval_date' => now()]);
-                    Asset::query()->where('id', $item->asset_id)->update(['status' => 'inStorageUsable', 'warehouse_id' => $item->warehouse_id, 'structure_id' => $item->structure_id,]);
+            Action::make('Check OUT')->label('Check OUT')->color('success')->form([
+                \Filament\Forms\Components\Section::make([
+                    Select::make('employee_id')->columnSpan(2)->label('Employee')->options(function () {
+                        $data = [];
+                        $employees = getCompany()->employees;
+                        foreach ($employees as $employee) {
+                            $data[$employee->id] = $employee->fullName . " (ID # " . $employee->ID_number . " )";
+                        }
+                        return $data;
+                    })->searchable()->requiredWithout('person')->prohibits('person'),
+                    Select::make('person')->label('Person')->options(getCompany()->asset_employees_persons)->createOptionForm([
+                        TextInput::make('title')->required()
+                    ])->createOptionUsing(function ($data) {
+                        $array = getCompany()->asset_employees_persons;
+                        if (isset($array)) {
+                            $array[$data['title']] = $data['title'];
+                        } else {
+                            $array = [$data['title'] => $data['title']];
+                        }
+                        getCompany()->update(['asset_employees_persons' => $array]);
+                        return $data['title'];
+                    })->searchable()->preload()->requiredWithout('employee_id')->prohibits('employee_id'),
+                    Textarea::make('description')->label('Comment')->columnSpanFull(),
+                    Select::make('warehouse_id')->live()->label('Warehouse/Building')->options(getCompany()->warehouses()->pluck('title', 'id'))->required()->searchable()->preload(),
+                    SelectTree::make('structure_id')->label('Location')->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id', modifyQueryUsing: function ($query, Get $get) {
+                        return $query->where('warehouse_id', $get('warehouse_id'));
+                    })->required(),
+                    DatePicker::make('due_date'),
+                ])->columns(3)
+            ])->action(function ($record,$data){
+                $company=getCompany();
+                if ($data['employee_id']){
+                    $assetEmployee=AssetEmployee::query()->firstWhere('employee_id',$data['employee_id']);
+                }else{
+                    $assetEmployee=AssetEmployee::query()->firstWhere('person',$data['person']);
                 }
-                Notification::make('success')->success()->title('Approved')->send();
-            })->modalIcon('heroicon-s-check')->modalWidth(MaxWidth::FiveExtraLarge),
-            Action::make('Check IN')->label('Check IN')->color('warning')->url(fn($record) => $record->assetEmployee?->last()?->type === "Returned" ? AssetEmployeeResource::getUrl('edit', ['record' => $record->assetEmployee?->last()->id]) : false),
+                if ($assetEmployee){
+                    $assetEmployee->assetEmployeeItem()->create([
+                        'company_id'=>$company->id,
+                        'asset_id'=>$record->id,
+                        'due_date'=>$data['due_date'],
+                        'warehouse_id'=>$data['warehouse_id'],
+                        'type'=>'Assigned',
+                        'structure_id'=>$data['structure_id'],
+                        'description'=>$data['description']
+                    ]);
+                    $record->update(['check_out_to'=>$assetEmployee->employee_id]);
+                }else{
+                    $assetEmployee=AssetEmployee::query()->create([
+                        'company_id'=>$company->id,
+                        'employee_id'=>$data['employee_id'],
+                        'date'=>now(),
+                        'person'=>$data['person']
+                    ]);
+                    $assetEmployee->assetEmployeeItem()->create([
+                        'company_id'=>$company->id,
+                        'asset_id'=>$record->id,
+                        'due_date'=>$data['due_date'],
+                        'warehouse_id'=>$data['warehouse_id'],
+                        'type'=>'Assigned',
+                        'structure_id'=>$data['structure_id'],
+                        'description'=>$data['description']
+                    ]);
+                    $record->update(['check_out_to'=>$assetEmployee->employee_id]);
+                }
+            })->disabled(fn($record) => $record->check_out_to )->modalWidth(MaxWidth::FiveExtraLarge),
+
+            Action::make('Check IN')->label('Check IN')->color('warning')->fillForm(function ($record){
+                return [
+                    'employee_id'=>$record->employees->last()?->assetEmployee?->employee_id,
+                    'person'=>$record->employees->last()?->assetEmployee?->person
+                ];
+            })->form([
+               \Filament\Forms\Components\Section::make([
+                   Select::make('employee_id')->label('Employee')->options(function () {
+                       $data = [];
+                       $employees = getCompany()->employees;
+                       foreach ($employees as $employee) {
+                           $data[$employee->id] = $employee->fullName . " (ID # " . $employee->ID_number . " )";
+                       }
+                       return $data;
+                   })->disabled()->searchable()->requiredWithout('person')->prohibits('person'),
+                   Select::make('person')->disabled()->label('Person')->options(getCompany()->asset_employees_persons)->createOptionForm([
+                       TextInput::make('title')->required()
+                   ])->createOptionUsing(function ($data) {
+                       $array = getCompany()->asset_employees_persons;
+                       if (isset($array)) {
+                           $array[$data['title']] = $data['title'];
+                       } else {
+                           $array = [$data['title'] => $data['title']];
+                       }
+                       getCompany()->update(['asset_employees_persons' => $array]);
+                       return $data['title'];
+                   })->searchable()->preload()->requiredWithout('employee_id')->prohibits('employee_id'),
+                   Textarea::make('description')->label('Comment')->columnSpanFull(),
+                   Select::make('warehouse_id')->live()->label('Warehouse/Building')->options(getCompany()->warehouses()->pluck('title', 'id'))->required()->searchable()->preload(),
+                   SelectTree::make('structure_id')->label('Location')->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id', modifyQueryUsing: function ($query, Get $get) {
+                       return $query->where('warehouse_id', $get('warehouse_id'));
+                   })->required(),
+               ])->columns()
+            ])->action(function ($data,$record){
+                $company=getCompany();
+                $employee=$record->employees->last()?->assetEmployee?->employee_id;
+                $person=$record->employees->last()?->assetEmployee?->person;
+                if ($employee){
+                    $assetEmployee=AssetEmployee::query()->firstWhere('employee_id',$employee);
+                }else{
+                    $assetEmployee=AssetEmployee::query()->firstWhere('person',$person);
+                }
+                if ($assetEmployee) {
+                    $assetEmployee->assetEmployeeItem()->create([
+                        'company_id' => $company->id,
+                        'asset_id' => $record->id,
+                        'due_date' => null,
+                        'warehouse_id' => $data['warehouse_id'],
+                        'type' => 'Returned',
+                        'structure_id' => $data['structure_id'],
+                        'description' => $data['description']
+                    ]);
+                    $record->update(['check_out_to' => null]);
+                    Notification::make('success')->success()->title('Successfully')->send();
+                }
+            }),
         ];
     }
 
@@ -81,7 +191,6 @@ class ViewAsset extends ViewRecord
                     TextEntry::make('type')->badge()->label('Asset Type')->inlineLabel(),
                     TextEntry::make('depreciation_years')->inlineLabel()->label('Depreciation Years'),
                     TextEntry::make('depreciation_amount')->inlineLabel()->label('Depreciation Amount'),
-                    TextEntry::make('employee')->color('aColor')->badge()->state(fn($record) => $record->employees->last()?->assetEmployee?->employee?->fullName)->inlineLabel(),
                 ]),
 
                 Group::make([

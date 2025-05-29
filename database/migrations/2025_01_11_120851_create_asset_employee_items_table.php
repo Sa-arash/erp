@@ -19,8 +19,9 @@ return new class extends Migration
             $table->foreignId('warehouse_id')->nullable()->constrained('warehouses')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('structure_id')->nullable()->constrained('structures')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->text('description')->nullable();
             $table->timestamp('return_date')->nullable();
-            $table->boolean('type')->default(0);
+            $table->enum('type',['Gate Pass','Assigned', 'Returned','Transaction']);
             $table->timestamp('return_approval_date')->nullable();
             $table->timestamps();
         });
