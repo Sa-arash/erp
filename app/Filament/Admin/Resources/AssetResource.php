@@ -25,6 +25,7 @@ use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -553,8 +554,8 @@ class AssetResource extends Resource
                     ])->color('warning'),
                     Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')
                         ->url(fn($record) => route('pdf.asset', ['id' => $record->id]))->openUrlInNewTab(),
-                Tables\Actions\EditAction::make()->form(
-                    [
+                Tables\Actions\EditAction::make()
+                ->form([
                         Section::make([
 
 
@@ -644,7 +645,7 @@ class AssetResource extends Resource
 
                         DatePicker::make('buy_date')->label('Purchase Date')->default(now()),
                         Forms\Components\TextInput::make('price')->prefix(defaultCurrency()?->symbol)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->required()->numeric()->label('Purchase Price'),
-                        Forms\Components\TextInput::make('scrap_value')->prefix(defaultCurrency()?->symbol)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->required()->numeric()->label('Scrap Value'),
+                        Forms\Components\TextInput::make('scrap_value')->prefix(defaultCurrency()?->symbol)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->numeric()->label('Scrap Value'),
 
                         Forms\Components\Select::make('party_id')->label("Vendor")->searchable()->required()
                             ->options(function (Forms\Get $get) {
@@ -718,6 +719,7 @@ class AssetResource extends Resource
                                             TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                                         ])->columns(3)
                                     ]),
+
                                     SelectTree::make('parent_vendor')->visible(function (Forms\Get $get) {
 
                                         if ($get('type') == "both") {
@@ -842,7 +844,7 @@ class AssetResource extends Resource
                             ])->columns(4),
                     ]
                     
-                ),
+                )->modalWidth(MaxWidth::Full),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('Transaction')->iconSize(IconSize::Medium)->form(function ($record) {
                     return [
