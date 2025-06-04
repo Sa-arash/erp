@@ -1,15 +1,46 @@
 
 @include('pdf.header',
-   ['titles'=>[''],'title'=>'Payroll Report/'.now()->format('F-Y'),'css'=>true])
+   ['titles'=>[],'title'=>'Payroll Report','css'=>true])
 <style>
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+        border: 1px solid #ddd;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        font-size: 12px;
+        /* کوچک‌تر کردن فونت جدول */
+    }
+    table {
+        page-break-inside: auto;
+    }
+    th,
+    td {
+        padding: 10px;
+        /* کاهش اندازه padding برای تراکم بیشتر محتوا */
+        text-align: left;
+        font-size: 12px;
+        /* کوچک‌تر کردن فونت سلول‌ها */
+    }
+
+
     table th ,table td{
         font-size: 12px!important;
+    }
+
+    th,
+    td {
+        border: 1px solid #000;
+        font-size: 10pt;
+    }
+    @page  {
+        margin: 10px;
     }
 </style>
 <div class="table-container" >
 
     <table>
-        <thead  >
+
         <tr >
             <th>#</th>
             <th>Employee</th>
@@ -21,8 +52,8 @@
             <th colspan="2">Net Pay</th>
             <th >Status</th>
         </tr>
-        
-        </thead>
+
+
         <tbody>
         @php
             $totalBase=0;

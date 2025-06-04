@@ -171,6 +171,7 @@
                 <td colspan="6" class="no-border" style="text-align: right;"> &nbsp;</td>
             </tr>
         </table>
+        <div style="text-align: right;color: #6b7280;font-size: 10px">S/N: {{$requestVisit->SN_code}}</div>
 
         <table>
             <tr class="section-title">
@@ -447,7 +448,6 @@ $tdsArend='';
                 </tr>
             </table>
             @endif --}}
-    <div style="text-align: center;color: #6b7280;font-size: 10px">S/N: {{$requestVisit->SN_code}}</div>
     </body>
 
     </html>

@@ -517,7 +517,7 @@ implements HasShieldPermissions
                                 Notification::make('error')->danger()->actions([
                                     Action::make('setting')->url(route('filament.admin.hr-settings.resources.holidays.index', ['tenant' => getCompany()->id])),
                                     Action::make('employee')->url(EmployeeResource::getUrl('edit', ['record' => $employee->id])),
-                                ])->title('Daily Salary  Or Company Daily Working Hours Is 0')->send();
+                                ])->title(' Company Daily Working Hours Is Zero')->send();
                                 return;
                             }
                             // افزودن اضافه‌کاری به مزایا و مرخصی به کسورات
@@ -569,11 +569,21 @@ implements HasShieldPermissions
 
                     Notification::make('success')->success()->title('Generate Payroll')->send()->sendToDatabase(auth()->user());
                 }),
-                Tables\Actions\Action::make('print')->label('Print')->action(function (Table $table) {
-                    if ($table->getRecords()->pluck('id')->toArray()) {
-                        return redirect(route('pdf.payrolls', ['ids' => implode('-', $table->getRecords()->pluck('id')->toArray())]));
-                    }
-                })
+                    Tables\Actions\Action::make('print')
+                        ->label('Print')
+                        ->action(function ($livewire) {
+                            $query = $livewire->getTableQueryForExport()->get(); // ✔️ این متد وجود داره
+
+                            $ids = $query->pluck('id')->toArray();
+
+                            if (!empty($ids)) {
+                                return redirect()->route('pdf.payrolls', [
+                                    'ids' => implode('-', $ids),
+                                ]);
+                            }
+                        })
+
+
             ])
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),

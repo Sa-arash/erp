@@ -149,7 +149,9 @@
         }
 
 
-
+        @page {
+            margin: 20px;
+        }
         @media print {
             body {
                 background-color: white;
@@ -180,9 +182,7 @@
                 background-color: #ffffff !important;
             }
         }
-        @page {
-            margin: 20px;
-        }
+
     </style>
     @endif
 </head>
