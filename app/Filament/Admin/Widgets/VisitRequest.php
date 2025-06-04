@@ -36,6 +36,7 @@ class VisitRequest extends BaseWidget
             )
             ->columns([
                 Tables\Columns\TextColumn::make('#')->rowIndex(),
+                Tables\Columns\TextColumn::make('SN_code')->label('SN_code'),
 
                 Tables\Columns\TextColumn::make('visitors_detail')
                     ->label('Visitors')
@@ -45,10 +46,10 @@ class VisitRequest extends BaseWidget
                 Tables\Columns\TextColumn::make('visit_date')->label(' Date of Visit ')
                     ->date()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('arrival_time')->time('H:m'),
-                Tables\Columns\TextColumn::make('departure_time')->time('H:m'),
-                Tables\Columns\TextColumn::make('InSide_date')->label('CheckIn ')->time('H:m'),
-                Tables\Columns\TextColumn::make('OutSide_date')->label('Checkout ')->time('H:m'),
+                Tables\Columns\TextColumn::make('arrival_time')->time('H:i A'),
+                Tables\Columns\TextColumn::make('departure_time')->time('H:i A'),
+                Tables\Columns\TextColumn::make('InSide_date')->label('CheckIn ')->time('H:i A'),
+                Tables\Columns\TextColumn::make('OutSide_date')->label('Checkout ')->time('H:i A'),
                 Tables\Columns\TextColumn::make('Track Time')->state(function ($record) {
                     $startTime = $record->InSide_date;
                     $endTime = $record->OutSide_date;
@@ -195,6 +196,15 @@ class VisitRequest extends BaseWidget
                         ])->columns(2)
                     ]
                 )->action(function ($data){
+                    $employee=getEmployee();
+                    $abr=$employee->department->abbreviation;
+                    $lastRecord=VisitorRequest::query()->whereIn('requested_by',$employee->department->employees()->pluck('id'))->latest()->first();
+
+                    if ($lastRecord){
+                        $code=getNextCodeVisit($lastRecord->SN_code,$abr);
+                    }else{
+                        $code=$abr."/00001";
+                    }
                     $visitorRequest = VisitorRequest::query()->create([
                         'visit_date'=>$data['visit_date'],
                         'arrival_time'=>$data['arrival_time'],
@@ -203,9 +213,10 @@ class VisitRequest extends BaseWidget
                         'ICON'=>$data['ICON'],
                         'visitors_detail'=>$data['visitors_detail'],
                         'driver_vehicle_detail'=>$data['driver_vehicle_detail'],
-                        'requested_by'=>getEmployee()->id,
+                        'requested_by'=>$employee->id,
                         'company_id'=>getCompany()->id,
-                        'armed' => $data['armed']
+                        'armed' => $data['armed'],
+                        'SN_code'=>$code
                     ]);
 
                     // sendAR(getEmployee(),,getCompany());
@@ -312,19 +323,27 @@ class VisitRequest extends BaseWidget
                         ])->columns(2)
                     ]
                 )->action(function (array $data): void {
-
-                   $visitorRequest = VisitorRequest::query()->create([
+                    $employee=getEmployee();
+                    $abr=$employee->department->abbreviation;
+                    $lastRecord=VisitorRequest::query()->whereIn('requested_by',$employee->department->employees()->pluck('id'))->latest()->first();
+                    if ($lastRecord){
+                        $code=getNextCodeVisit($lastRecord->SN_code,$abr);
+                    }else{
+                        $code=$abr."/00001";
+                    }
+                    $visitorRequest = VisitorRequest::query()->create([
                         'visit_date'=>$data['visit_date'],
                         'arrival_time'=>$data['arrival_time'],
                         'departure_time'=>$data['departure_time'],
                         'purpose'=>$data['purpose'],
                         'ICON'=>$data['ICON'],
                         'visitors_detail'=>$data['visitors_detail'],
-                       'driver_vehicle_detail' => $data['driver_vehicle_detail'],
-                       'requested_by' => getEmployee()->id,
-                       'company_id' => getCompany()->id,
-                       'armed' => $data['armed']
-                   ]);
+                        'driver_vehicle_detail'=>$data['driver_vehicle_detail'],
+                        'requested_by'=>$employee->id,
+                        'company_id'=>getCompany()->id,
+                        'armed' => $data['armed'],
+                        'SN_code'=>$code
+                    ]);
                     // sendAR(getEmployee(),,getCompany());
                     sendSecurity($visitorRequest, getCompany());
                     // sendSecurity(getEmployee(),$visitorRequest,getCompany());

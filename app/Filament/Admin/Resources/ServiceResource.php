@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources;
 use App\Filament\Admin\Resources\ServiceResource\Pages;
 use App\Filament\Admin\Resources\ServiceResource\RelationManagers;
 use App\Models\Asset;
+use App\Models\AssetEmployeeItem;
 use App\Models\Service;
 use Filament\Forms;
 use Filament\Forms\Components\Group;
@@ -49,13 +50,12 @@ class ServiceResource extends Resource
 
                                 $employeeID = $get('employee_id');
                                 $data = [];
-                                $assets = Asset::query()->with('product')->whereHas('employees', function ($query) use ($employeeID) {
-                                    return $query->where('return_date', null)->where('return_approval_date', null)->whereHas('assetEmployee', function ($query) use ($employeeID) {
-                                        return $query->where('employee_id', $employeeID);
-                                    });
-                                })->where('company_id', getCompany()->id)->get();
+
+
+
+                                $assets = Asset::query()->with('product')->where('check_out_to',$employeeID)->where('company_id', getCompany()->id)->get();
                                 foreach ($assets as $asset) {
-                                    $data[$asset->id] = $asset->product?->title . " ( SKU #" . $asset->product?->sku . " )";
+                                    $data[$asset->id] = $asset->product?->title . " ( SKU #" . $asset->product?->sku . " ) ".$asset->description;
                                 }
                                 return $data;
                             }

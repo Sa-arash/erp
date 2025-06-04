@@ -18,7 +18,7 @@
         ->whereBetween('end_leave', [now()->startOfMonth(), now()->endOfMonth()])
         ->where('employee_id', $payroll->employee_id)
         ->get();
-        $currency = $payroll->employee?->currency->name;
+        $currency = $payroll->employee?->currency?->name;
 @endphp
 
 
@@ -271,7 +271,7 @@
         .bold{
             font-weight: bold;
         }
-      
+
     </style>
 </head>
 
@@ -479,11 +479,12 @@
                         <td colspan="2" class="bold">Transaction number:</td>
                         <td
 
-                            colspan="2">{{$payroll->id ? str_pad($payroll->id, 5, '0', STR_PAD_LEFT):" ---------" }}</td>
+                            colspan="2">{{$payroll?->invoice?->number ? str_pad($payroll?->invoice?->number, 5, '0', STR_PAD_LEFT):" ---------" }}</td>
                     </tr>
                     <tr>
                         <td colspan="2"  class="bold">Pay Date:</td>
-                        <td colspan="3">{{\Carbon\Carbon::parse($payroll->pay_date)->format('d/m/Y')}}  </td>
+
+                        <td colspan="3"> {{ $payroll->pay_date ?  \Carbon\Carbon::parse($payroll->pay_date)->format('d/m/Y'):" ---------"}}  </td>
 
                     </tr>
                     <tr>

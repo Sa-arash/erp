@@ -21,7 +21,7 @@ use Illuminate\Support\Carbon;
 
 class MyPayroll extends BaseWidget
 {
-    
+
         protected int | string | array $columnSpan='full';
 
         public function table(Table $table): Table
@@ -29,7 +29,7 @@ class MyPayroll extends BaseWidget
             return $table
 
                 ->query(
-                    Payroll::query()->where('employee_id',auth()->user()->id)
+                    Payroll::query()->where('employee_id',getEmployee()->id)
                 )
                 ->columns([
                     Tables\Columns\TextColumn::make('')->rowIndex(),
@@ -46,9 +46,9 @@ class MyPayroll extends BaseWidget
 
                 ->actions([
 
-            
+
                     Tables\Actions\Action::make('print')->label('Print')->action(function(Table $table){
-                        return redirect(route('pdf.payrolls',['ids'=>implode('-',$table->getRecords()->pluck('id')->toArray())]));
+                        return redirect(route('pdf.payroll',['id'=>implode('-',$table->getRecords()->pluck('id')->toArray())]));
                     }),
                 ]);
 

@@ -236,11 +236,12 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
             ->columns([
 
                 Tables\Columns\TextColumn::make('')->rowIndex(),
+                Tables\Columns\TextColumn::make('SN_code')->label('SN_code'),
                 Tables\Columns\TextColumn::make('employee.fullName')->label('Requester')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('visitors_detail')->label('Visitors')->state(fn($record) => array_map(fn($item) => $item['name'], $record->visitors_detail))->numeric()->sortable()->badge()->limitList(1),
                 Tables\Columns\TextColumn::make('visit_date')->label('Date of Visit ')->date()->sortable(),
-                Tables\Columns\TextColumn::make('arrival_time')->time('H:m'),
-                Tables\Columns\TextColumn::make('departure_time')->time('H:m'),
+                Tables\Columns\TextColumn::make('arrival_time')->time('H:i A'),
+                Tables\Columns\TextColumn::make('departure_time')->time('H:i A'),
                 Tables\Columns\TextColumn::make('InSide_date')->label('Check IN ')->time(),
                 Tables\Columns\TextColumn::make('OutSide_date')->label('Check OUT ')->time(),
                 Tables\Columns\TextColumn::make('Track Time')->state(function ($record) {

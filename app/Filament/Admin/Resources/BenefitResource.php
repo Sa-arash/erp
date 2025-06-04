@@ -56,7 +56,7 @@ class BenefitResource extends Resource
                 Tables\Columns\TextColumn::make('title')->alignCenter()->sortable(),
                 Tables\Columns\TextColumn::make('amount')->alignCenter()->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('percent')->alignCenter()->prefix('%')->sortable(),
-                Tables\Columns\TextColumn::make('type')->alignCenter()->sortable(),
+                Tables\Columns\TextColumn::make('type')->state(fn($record)=>str($record->type)->title())->alignCenter()->sortable(),
                 Tables\Columns\TextColumn::make('on_change')->state(fn($record)=> $record->on_change === "base_salary" ? "Base Salary" : "Gross")->label('Effect on')->alignCenter()->sortable(),
             ])
             ->filters([

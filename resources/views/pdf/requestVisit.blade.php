@@ -18,8 +18,15 @@
                 text-align: center;
             }
 
-            td,
+            td {
+                border: 1px solid #000;
+                padding: 4px;
+                vertical-align: top;
+                text-align: center;
+            }
+
             th {
+                font-weight: bold;
                 border: 1px solid #000;
                 padding: 4px;
                 vertical-align: top;
@@ -167,16 +174,16 @@
 
         <table>
             <tr class="section-title">
-                <td colspan="6">Requestor’s Details</td>
+                <th colspan="6">Requestor’s Details</th>
             </tr>
 
             <tr>
-                <td>Requestor’s Name</td>
-                <td>Title</td>
-                <td>UN Agency</td>
-                <td>ICON</td>
-                <td>Cell Phone</td>
-                <td>Email</td>
+                <th>Requestor’s Name</th>
+                <th>Title</th>
+                <th>UN Agency</th>
+                <th>ICON</th>
+                <th>Cell Phone</th>
+                <th>Email</th>
             </tr>
 
             <tr>
@@ -184,7 +191,7 @@
 
                 <td> {{$requestVisit->ICON ? $requestVisit->employee->position?->title:'' }}</td>
                 <td> {{ $requestVisit->agency }}</td>
-                <td> {{ $requestVisit->ICON ? '■': '□' }}</td>
+                <td> {{ $requestVisit->ICON ? '✔': '' }}</td>
                 <td> {{ $requestVisit->employee->phone_number }}</td>
                 <td>{{ $requestVisit->employee->email }}</td>
             </tr>
@@ -198,9 +205,9 @@
                 <td colspan="3">Specific Visit Details</td>
             </tr>
             <tr>
-                <td style="width: 33%">Date of Visit</td>
-                <td style="width: 33%">Time of Arrival</td>
-                <td style="width: 33%">Time of Departure</td>
+                <td style="width: 33%;font-weight: bold">Date of Visit</td>
+                <td style="width: 33%;font-weight: bold">Time of Arrival</td>
+                <td style="width: 33%;font-weight: bold">Time of Departure</td>
             </tr>
             <tr>
                 <td style="width: 33%">{{ \Illuminate\Support\Carbon::create($requestVisit->visit_date)->format('d/F/Y') }}</td>
@@ -209,7 +216,7 @@
 
             </tr>
             <tr>
-                <td>Purpose of visit (Be specific)</td>
+                <td style="font-weight: bold">Purpose of visit (Be specific)</td>
                 <td colspan="2">{{ $requestVisit->purpose }}</td>
             </tr>
             <tr>
@@ -219,15 +226,15 @@
 
         <table>
             <tr class="section-title">
-                <td colspan="7">Visitor(s) Details</td>
+                <td colspan="6">Visitor(s) Details</td>
             </tr>
             <tr>
-                <td>#</td>
-                <td>Name</td>
-                <td>ID/Passport</td>
-                <td>Cell Phone</td>
-                <td>Organization</td>
-                <td>Remarks</td>
+                <th>#</th>
+                <th>Name</th>
+                <th>ID/Passport</th>
+                <th>Cell Phone</th>
+                <th>Organization</th>
+                <th>Remarks</th>
             </tr>
             @php
             $i=1;
@@ -260,10 +267,10 @@ $tdsArend='';
                         $tdsArend.="<td>{$total} </td>";
                     @endphp
                     @if($item['total'] !=0)
-                        <td>■ {{$item['type'] }}</td>
+                        <td style="font-weight: bold">✔ {{$item['type'] }}</td>
 
                     @else
-                        <td>□ {{$item['type'] }}</td>
+                        <td style="font-weight: bold"> {{$item['type'] }}</td>
                     @endif
                 @endforeach
             </tr>
@@ -278,22 +285,22 @@ $tdsArend='';
 
         <table>
             <tr class="section-title">
-                <td class="text-center" colspan="7">Driver(s)/Vehicle(s) Details</td>
+                <th  style="font-weight: bold" colspan="7">Driver(s)/Vehicle(s) Details</th>
             </tr>
             <tr>
-                <td class="text-center" colspan="3"><strong>Driver’s Details</strong></td>
-                <td class="text-center" colspan="4"><strong>Vehicle Details</strong></td>
+                <th   style="font-weight: bold" colspan="3"><strong>Driver’s Details</strong></th>
+                <td  style="font-weight: bold" colspan="4"><strong>Vehicle Details</strong></td>
             </tr>
 
 
             <tr>
-                <td>#</td>
-                <td>Full Name</td>
-                <td>ID Type & No.</td>
-                <td>Cell Phone</td>
-                <td>Type/Model</td>
-                <td>Color</td>
-                <td>Registration Plate</td>
+                <th>#</th>
+                <th>Full Name</th>
+                <th>ID Type & No.</th>
+                <th>Cell Phone</th>
+                <th>Type/Model</th>
+                <th>Color</th>
+                <th>Registration Plate</th>
             </tr>
             @php
             $j=1;
@@ -319,18 +326,19 @@ $tdsArend='';
 
         <table>
             <tr>
-                <td style="text-align: left;width:22%" class="no-border">Requestor’s Signature:
+                <td style="text-align: left;width:23%;padding: 15px 0 0;font-size: 15px" class="no-border">Requestor’s Signature:
                 </td>
 
                 <td class="no-border" style="">
                     @if(file_exists($requestVisit->employee->media->where('collection_name', 'signature')->first()?->getPath()))
                     <img src="{{ $requestVisit->employee->media->where('collection_name', 'signature')->first()->getPath() }}"
-                        style="width: 120px;height: 50px" alt="">
+                         style="width: 130px;height: 50px;margin-bottom: 5px;padding: 0" alt="">
                     @endif
+
                 </td>
 
-                <td class="no-border">Date:</td>
-                <td class="no-border" >
+                <td class="no-border" style="padding-top: 15px">Date:</td>
+                <td class="no-border" style="padding-top: 15px" >
                     {{ \Illuminate\Support\Carbon::create($requestVisit->visit_date)->format('d/F/Y ') }}</td>
             </tr>
 
@@ -341,29 +349,34 @@ $tdsArend='';
         @if (isset($requestVisit->approvals[0]))
             <table class="equal-table ">
                 <tr class="section-title bg-lightgreen">
-                    <td colspan="4" style="text-align: left" class="equal-cell bg-lightgreen">Endorsement and Approval</td>
+                    <td colspan="4" style="text-align: left;font-weight: bold" class="equal-cell bg-lightgreen">Endorsement and Approval
+                    </td>
                 </tr>
                 <tr>
-                    <td style="text-align: left" class="equal-cell">FSU UNHCR</td>
-                    <td  class="equal-cell"></td>
+                    <td style="text-align: left;font-weight: bold" class="equal-cell">FSU UNHCR</td>
+                    <td class="equal-cell"></td>
                     <td class="equal-cell"></td>
                     <td class="equal-cell">Date:</td>
                 </tr>
-                @foreach ($requestVisit->approvals as $approve)
-                <tr>
-                    <td style="text-align: left" class="equal-cell">FSA FAO</td>
-                    <td class="equal-cell"></td>
-                    <td class="equal-cell" rowspan="2">
-                        @if ($approve->employee->media->where('collection_name', 'signature')->first()?->original_url and $approve->status->name === 'Approve')
-                        <img src="{{ $approve->employee->media->where('collection_name','signature')->first()->getPath() }}" style="width: 120px;height: 70px" alt="">
-                    @endif</td>
-                    <td class="equal-cell">Date:
+                @foreach ($requestVisit->approvals->where('status','Approve') as $approve)
+
+                    <tr>
+                        <td style="text-align: left;font-weight: bold" class="equal-cell">FSA FAO</td>
+                        <td class="equal-cell"></td>
+                        <td class="equal-cell" rowspan="2">
+
+                            @if ($approve->employee->media->where('collection_name', 'signature')->first()?->original_url and $approve->status->name === 'Approve')
+                                <img
+                                    src="{{ $approve->employee->media->where('collection_name','signature')->first()->getPath() }}"
+                                    style="width: 120px;height: 70px" alt="">
+                            @endif</td>
+                        <td class="equal-cell">Date:
 
                     </td>
                 </tr>
                     <tr>
-                        <td style="text-align: left" class="equal-cell">ICON SFP</td>
-                        <td class="equal-cell"><span style="border-bottom: 1px solid black">Digitally Signed By:</span>
+                        <td style="text-align: left;font-weight: bold" class="equal-cell">ICON SFP</td>
+                        <td class="equal-cell"><span style="border-bottom: 1px solid black;">Digitally Signed By:</span>
                             <br> {{$approve->employee->fullName}}</td>
 
                         <td class="equal-cell">Date:
@@ -372,10 +385,10 @@ $tdsArend='';
                     </tr>
                 @endforeach
                 <tr>
-                    <td  style="text-align: left" class="equal-cell">Remarks to CSM</td>
+                    <td  style="text-align: left;" class="equal-cell"><b>Remarks to CSM</b></td>
                     <td class="equal-cell"></td>
-                    <td class="equal-cell">{{ $requestVisit->status == "approved" ? '■': '□' }}  Approved</td>
-                    <td class="equal-cell">{{ $requestVisit->status == "notApproved" ? '■': '□' }} Not Approved</td>
+                    <td class="equal-cell">{{ $requestVisit->status == "approved" ? '✔': '' }}  Approved</td>
+                    <td class="equal-cell">{{ $requestVisit->status == "notApproved" ? '✔': '' }} Not Approved</td>
 
                 </tr>
                 {{-- <tr>
@@ -434,11 +447,7 @@ $tdsArend='';
                 </tr>
             </table>
             @endif --}}
-
-
-
-
-
+    <div style="text-align: center;color: #6b7280;font-size: 10px">S/N: {{$requestVisit->SN_code}}</div>
     </body>
 
     </html>

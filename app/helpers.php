@@ -757,30 +757,6 @@ function sendSecurity( $record, $company)
 
     }
 
-    // $security = Employee::query()->firstWhere('id', getSecurity()?->id);
-    // if ($security) {
-    //     if ($security->id === $employee->id) {
-    //         $record->approvals()->create([
-    //             'employee_id' => $security->id,
-    //             'company_id' => $company->id,
-    //             'position' => 'Security',
-    //         ]);
-
-    //         if (substr($record->approvals[0]?->approvable_type, 11) === "TakeOut") {
-    //             $record->update(['mood' => 'Approved']);
-    //         } else {
-    //             $record->update(['status' => 'Approved']);
-
-    //         }
-    //     } else {
-    //         $record->approvals()->create([
-    //             'employee_id' => $security->id,
-    //             'company_id' => $company->id,
-    //             'position' => 'Security',
-    //         ]);
-    //     }
-    // }
-
 }
 
 function getSelectCurrency()
@@ -925,3 +901,13 @@ function exportLog($description){
             ->log($description);
     }
 }
+function getNextCodeVisit(string $lastCode, string $prefix , int $padLength = 5): string {
+    $numberPart = str_replace($prefix.'/', '', $lastCode);
+
+    $nextNumber = (int)$numberPart + 1;
+
+    $nextCode = $prefix .'/'. str_pad($nextNumber, $padLength, '0', STR_PAD_LEFT);
+
+    return $nextCode;
+}
+

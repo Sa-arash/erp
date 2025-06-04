@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('visitor_requests', function (Blueprint $table) {
             $table->id();
+            $table->string('SN_code')->nullable();
             $table->date('visit_date');
             $table->time('arrival_time');
             $table->time('departure_time');

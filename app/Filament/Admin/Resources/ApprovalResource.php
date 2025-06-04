@@ -10,6 +10,7 @@ use App\Models\Holiday;
 use App\Models\Leave as ModelLeave;
 use App\Models\Product;
 use App\Models\PurchaseRequestItem;
+use App\Models\User;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
@@ -35,7 +36,7 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\HtmlString;
 use OpenSpout\Common\Entity\Style\CellAlignment;
 
-class ApprovalResource extends Resource implements HasShieldPermissions
+class   ApprovalResource extends Resource implements HasShieldPermissions
 {
     protected static ?string $model = Approval::class;
 
@@ -268,11 +269,27 @@ class ApprovalResource extends Resource implements HasShieldPermissions
                                 sendApprove($record->approvable,'admin_take::out');
 
                             }elseif ($record->approvable->mood==="Approved Manager"){
+
                                 $record->approvable->update([
                                     'mood' => 'Approved Admin'
                                 ]);
-                                sendSecurity($record->approvable,company: getCompany());
+                                $record->approvable->approvals()->whereNot('id', $record->id)->where('position', 'admin_take::out')->delete();
+
+                                $employee = User::whereHas('roles.permissions', function ($query) {
+                                    $query->where('name', 'security_take::out');
+                                })->get() ->pluck('employee.id')->toArray();
+                                $securityIDs =$employee;
+                                if($securityIDs)
+                                    foreach ($securityIDs as $security){
+                                        $record->approvable->approvals()->create([
+                                            'employee_id' => $security,
+                                            'company_id' => getCompany()->id,
+                                            'position' => 'Security',
+                                        ]);
+                                    }
                             }else{
+                                $record->approvable->approvals()->whereNot('id', $record->id)->where('position', 'Security')->delete();
+
                                 $record->approvable->update([
                                     'mood' => 'Approved'
                                 ]);

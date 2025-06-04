@@ -14,19 +14,6 @@ class MyAsset extends Page
     protected static ?string $navigationIcon = 'heroicon-c-cube';
     protected static ?string $navigationLabel = "My Assets";
 
-    public static function getNavigationBadge(): ?string
-    {
-        $sub = AssetEmployeeItem::selectRaw('MAX(id) as id')
-            ->whereHas('assetEmployee', function ($q) {
-                $q->where('employee_id', getEmployee()->id);
-            })
-            ->groupBy('asset_id');
-
-        return AssetEmployeeItem::query()
-            ->whereIn('id', $sub)
-            ->where('type', 'Assigned')->count();
-
-    }
 
     protected static string $view = 'filament.admin.pages.my-asset';
 

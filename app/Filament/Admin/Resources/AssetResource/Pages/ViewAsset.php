@@ -2,16 +2,12 @@
 
 namespace App\Filament\Admin\Resources\AssetResource\Pages;
 
-use App\Filament\Admin\Resources\AssetEmployeeResource;
 use App\Filament\Admin\Resources\AssetResource;
-use App\Models\Asset;
 use App\Models\AssetEmployee;
-use App\Models\AssetEmployeeItem;
 use App\Models\Structure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -24,7 +20,6 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
-use Filament\Support\Enums\IconSize;
 use Filament\Support\Enums\MaxWidth;
 
 class ViewAsset extends ViewRecord
@@ -57,7 +52,14 @@ class ViewAsset extends ViewRecord
                         return $data['title'];
                     })->searchable()->preload()->requiredWithout('employee_id')->prohibits('employee_id'),
                     Textarea::make('description')->label('Comment')->columnSpanFull(),
-                    Select::make('warehouse_id')->live()->label('Warehouse/Building')->options(getCompany()->warehouses()->pluck('title', 'id'))->searchable()->preload(),
+                    Select::make('warehouse_id')->live()->label('Warehouse/Building')->options(function () {
+                        $data = [];
+                        foreach (getCompany()->warehouses as $warehouse) {
+                            $type=$warehouse->type ? "Warehouse" : "Building";
+                            $data[$warehouse->id] = $warehouse->title . " (" . $type . ")";
+                        }
+                        return $data;
+                    })->searchable()->preload(),
                     SelectTree::make('structure_id')->label('Location')->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id', modifyQueryUsing: function ($query, Get $get) {
                         return $query->where('warehouse_id', $get('warehouse_id'));
                     }),
@@ -130,7 +132,14 @@ class ViewAsset extends ViewRecord
                        return $data['title'];
                    })->searchable()->preload()->requiredWithout('employee_id')->prohibits('employee_id'),
                    Textarea::make('description')->label('Comment')->columnSpanFull(),
-                   Select::make('warehouse_id')->live()->label('Warehouse/Building')->options(getCompany()->warehouses()->pluck('title', 'id'))->searchable()->preload(),
+                   Select::make('warehouse_id')->live()->label('Warehouse/Building')->options(function () {
+                       $data = [];
+                       foreach (getCompany()->warehouses as $warehouse) {
+                           $type=$warehouse->type ? "Warehouse" : "Building";
+                           $data[$warehouse->id] = $warehouse->title . " (" . $type . ")";
+                       }
+                       return $data;
+                   })->searchable()->preload(),
                    SelectTree::make('structure_id')->label('Location')->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id', modifyQueryUsing: function ($query, Get $get) {
                        return $query->where('warehouse_id', $get('warehouse_id'));
                    }),

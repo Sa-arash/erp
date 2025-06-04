@@ -68,7 +68,7 @@
          td {
              color: #666;
          }
- 
+
          .badge {
              display: inline-block;
              padding: 2px 7px;
@@ -80,14 +80,14 @@
              margin-right: 3px;
              margin-bottom: 3px;
          }
- 
+
          /* Status Badges */
          .badge-inuse { background-color: #28a745; }
          .badge-instorageusable { background-color: #17a2b8; }
          .badge-loanedout { background-color: #ffc107; color: #333; }
          .badge-outforrepair { background-color: #dc3545; }
          .badge-storageunusable { background-color: #6c757d; }
- 
+
          .footer {
              text-align: center;
              margin-top: 25px;
@@ -102,13 +102,13 @@
      </style>
  </head>
  <body>
- 
-     <div class="container">
+
+     <div class="">
          <div class="header">
              <h1>Asset Details</h1>
              <p>Comprehensive Information for: **{{ $asset->product->title ?? 'N/A' }}**</p>
          </div>
- 
+
          <div class="section-title">General Information</div>
          <table>
              <tbody>
@@ -162,7 +162,7 @@
                  </tr>
              </tbody>
          </table>
- 
+
          <div class="section-title">Financial Details</div>
          <table>
              <tbody>
@@ -196,7 +196,7 @@
                  </tr>
              </tbody>
          </table>
- 
+
          <div class="section-title">Location & Assignment</div>
          <table>
              <tbody>
@@ -222,12 +222,12 @@
                  </tr>
              </tbody>
          </table>
- 
+
          <div class="footer">
              <p>Generated on: {{ \Carbon\Carbon::now()->format('M j, Y H:i') }}</p>
-             <p>&copy; Your Company Name. All rights reserved.</p>
+             <p>&copy; {{$asset->company->title}}. All rights reserved.</p>
          </div>
      </div>
- 
+
  </body>
  </html>

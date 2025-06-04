@@ -30,7 +30,9 @@ use Filament\Support\Enums\MaxWidth;
 use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\HtmlString;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
@@ -48,6 +50,12 @@ class AssetResource extends Resource
     protected static ?string $navigationLabel = 'Asset';
     protected static ?string $navigationIcon = 'heroicon-s-inbox-stack';
 
+//        protected static ?string $recordTitleAttribute = 'number';
+//    public static function getGlobalSearchResultTitle(Model $record): string | Htmlable
+//    {
+//
+//        return $record->product->title;
+//    }
     public static function form(Form $form): Form
     {
         return $form
@@ -87,7 +95,14 @@ class AssetResource extends Resource
                                     getCompany()->update(['asset_types' => $array]);
                                     return $data['title'];
                                 })->searchable()->preload()->required(),
-                            Forms\Components\Select::make('warehouse_id')->default(getCompany()->warehouse_id)->live()->label('Warehouse/Building')->options(getCompany()->warehouses()->pluck('title', 'id'))->required()->searchable()->preload(),
+                            Forms\Components\Select::make('warehouse_id')->default(getCompany()->warehouse_id)->live()->label('Warehouse/Building')->options(function () {
+                                $data = [];
+                                foreach (getCompany()->warehouses as $warehouse) {
+                                    $type=$warehouse->type ? "Warehouse" : "Building";
+                                    $data[$warehouse->id] = $warehouse->title . " (" . $type . ")";
+                                }
+                                return $data;
+                            })->required()->searchable()->preload(),
                             SelectTree::make('structure_id')->default(getCompany()->structure_asset_id)->searchable()->label('Location')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id', modifyQueryUsing: function ($query, Forms\Get $get) {
                                 return $query->where('warehouse_id', $get('warehouse_id'));
                             })->required(),
@@ -129,7 +144,7 @@ class AssetResource extends Resource
                                     getCompany()->update(['asset_qualities' => $array]);
                                     return $data['title'];
                                 })->searchable()->preload()->required(),
-                          
+
                             Forms\Components\Select::make('check_out_to')
                                 ->options(function () {
                                     $data = [];
@@ -558,7 +573,7 @@ class AssetResource extends Resource
                 Tables\Columns\TextColumn::make('manufacturer'),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('purchase_order_id')->searchable()->options(getCompany()->purchaseOrders->pluck('purchase_orders_number', 'id'))->label('Po No'),
+                Tables\Filters\SelectFilter::make('purchase_order_id')->searchable()->options(getCompany()->purchaseOrders->pluck('purchase_orders_number', 'id'))->label('PO No'),
                 Tables\Filters\SelectFilter::make('product_id')->searchable()->options(getCompany()->products->pluck('title', 'id'))->label('Product'),
                 Tables\Filters\SelectFilter::make('status')->searchable()->options(['inuse' => "In Use", 'inStorageUsable' => "In Storage",  'loanedOut' => "Loaned Out", 'outForRepair' => 'Out For Repair', 'StorageUnUsable' => " Scrap"]),
                 DateRangeFilter::make('buy_date')->label('Purchase Date'),
@@ -593,7 +608,14 @@ class AssetResource extends Resource
                     ->columnSpanFull(),
                 Tables\Filters\Filter::make('tree')
                     ->form([
-                        Forms\Components\Select::make('warehouse_id')->label('Warehouse')->options(getCompany()->warehouses()->pluck('title', 'id'))->searchable()->preload(),
+                        Forms\Components\Select::make('warehouse_id')->label('Warehouse')->options(function () {
+                            $data = [];
+                            foreach (getCompany()->warehouses as $warehouse) {
+                                $type=$warehouse->type ? "Warehouse" : "Building";
+                                $data[$warehouse->id] = $warehouse->title . " (" . $type . ")";
+                            }
+                            return $data;
+                        })->searchable()->preload(),
                         SelectTree::make('structure_id')->searchable()->label('Location')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id', modifyQueryUsing: function ($query, Forms\Get $get) {
                             return $query->where('warehouse_id', $get('warehouse_id'));
                         })->required()
@@ -608,7 +630,6 @@ class AssetResource extends Resource
             ], getModelFilter())
             ->actions([
                 Tables\Actions\ActionGroup::make([
-                    Tables\Actions\Action::make('qr')->color('danger')->label('QR Checkout')->tooltip('Checkout')->iconSize(IconSize::Medium)->icon('heroicon-c-qr-code')->url(fn($record) => route('pdf.qrcode', ['code' => $record->id])),
                     Tables\Actions\Action::make('qrView')->color('success')->label('QR View')->tooltip('View Asset')->iconSize(IconSize::Medium)->icon('heroicon-c-qr-code')->url(fn($record) => route('pdf.qrcode.view', ['code' => $record->id])),
                     Tables\Actions\Action::make('barcode')->color('warning')->label('Barcode')->tooltip('Barcode')->iconSize(IconSize::Medium)->icon('barcode')->url(fn($record) => route('pdf.barcode', ['code' => $record->id])),
                     ])->color('warning'),
@@ -705,7 +726,7 @@ class AssetResource extends Resource
                             DatePicker::make('warranty_date')->label('Warranty End'),
                             TextInput::make('po_number')->label("PO Number"),
                             Textarea::make('note')->columnSpanFull(),
-                       
+
 
 
                         DatePicker::make('buy_date')->label('Purchase Date')->default(now()),
@@ -909,7 +930,7 @@ class AssetResource extends Resource
                             ->schema([])->maxItems(1)->columnSpanFull(),
                             ])->columns(4),
                     ]
-                    
+
                 )->modalWidth(MaxWidth::Full),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('Transaction')->iconSize(IconSize::Medium)->form(function ($record) {
@@ -997,7 +1018,7 @@ class AssetResource extends Resource
                         Column::make('product.department.title')->heading('Product Department'),
                     ]),
                 ])->label('Export')->color('purple'),
-               
+
                 Tables\Actions\BulkAction::make('print')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->color('primary')->action(function ($records) {
                     return redirect(route('pdf.assets', ['ids' => implode('-', $records->pluck('id')->toArray())]));
                 }),

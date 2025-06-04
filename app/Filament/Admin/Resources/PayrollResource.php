@@ -210,11 +210,11 @@ implements HasShieldPermissions
                                 $options = Benefit::query()->where('type', 'allowance')->where('company_id', getCompany()->id)->get();
                                 $data = [];
                                 foreach ($options as $option) {
-                                    $data[$option->id] = $option->title . "(" . $option->type . ")";
+                                    $data[$option->id] = $option->title . "(Allowance)";
                                 }
                                 return $data;
-                            })->afterStateUpdated(function (Forms\Set $set, Forms\Get $get) {
-                                $benefit = Benefit::query()->firstWhere('id', $get('benefit_id'));
+                            })->afterStateUpdated(function (Forms\Set $set, $state) {
+                                $benefit = Benefit::query()->firstWhere('id', $state);
 
                                 if ($benefit) {
                                     if ($benefit->price_type) {
@@ -257,7 +257,7 @@ implements HasShieldPermissions
                                 $options = Benefit::query()->where('type', 'deduction')->where('company_id', getCompany()->id)->get();
                                 $data = [];
                                 foreach ($options as $option) {
-                                    $data[$option->id] = $option->title . "(" . $option->type . ")";
+                                    $data[$option->id] = $option->title . "(Deduction)";
                                 }
                                 return $data;
                             })->disableOptionsWhenSelectedInSiblingRepeaterItems(),
@@ -353,7 +353,7 @@ implements HasShieldPermissions
     public static function table(Table $table): Table
     {
         return $table
-            ->defaultSort('created_at', 'desc')
+            ->defaultSort('id', 'desc')
             ->headerActions([
                 ExportAction::make()
                     ->after(function () {

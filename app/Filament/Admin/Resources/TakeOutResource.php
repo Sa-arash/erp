@@ -45,7 +45,8 @@ class TakeOutResource extends Resource implements HasShieldPermissions
             'delete',
             'delete_any',
             'reception',
-            'Admin'
+            'Admin',
+            'security'
         ];
     }
 
