@@ -24,7 +24,7 @@ class ListPayrolls extends ListRecords
           'All'=>  Tab::make()->query(fn($query) => $query),
           'Pending'=>  Tab::make()->query(fn($query) => $query->where('status','pending')),
           'Approved'=>  Tab::make()->query(fn($query) => $query->where('status','accepted')),
-          'NotApproved'=>  Tab::make()->query(fn($query) => $query->where('status','NotApproved')),
+          'Not Approved'=>  Tab::make()->query(fn($query) => $query->where('status','NotApproved')),
         ];
     }
 }

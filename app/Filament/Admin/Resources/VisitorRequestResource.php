@@ -6,6 +6,7 @@ use App\Filament\Admin\Resources\VisitorRequestResource\Pages;
 use App\Filament\Admin\Resources\VisitorRequestResource\RelationManagers;
 use App\Models\VisitorRequest;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
+use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
@@ -21,6 +22,7 @@ use Filament\Support\Enums\IconSize;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
+use Malzariey\FilamentDaterangepickerFilter\Fields\DateRangePicker;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
@@ -77,24 +79,35 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                         })->searchable()->preload(),
                         ToggleButtons::make('ICON')->label('ICON')->grouped()->boolean()->inline()->default(0)->required(),
 
-
-                        Forms\Components\DatePicker::make('visit_date')->label('Visit Date')->default(now()->addDay())->required(),
-                        Forms\Components\TimePicker::make('arrival_time')->label('Arrival Time')
-                            ->seconds(false)
-                            ->before('departure_time')
-                            ->required(),
-                        Forms\Components\TimePicker::make('departure_time')->label('Departure Time')
-                            ->seconds(false)
-                            ->after('arrival_time')
-                            ->required(),
-                        Forms\Components\TextInput::make('purpose')->columnSpanFull()
-                            ->required(),
-
-
-                    ])->columns(6),
-
+                        Forms\Components\TimePicker::make('arrival_time')->label('Arrival Time')->seconds(false)->before('departure_time')->required(),
+                        Forms\Components\TimePicker::make('departure_time')->label('Departure Time')->seconds(false)->after('arrival_time')->required(),
+                        Forms\Components\DatePicker::make('visit_date')->live()->label('Visit Date')->default(now()->addDay())->hintActions([
+                            Forms\Components\Actions\Action::make('te')->label('Add To Scheduled')->action(function (Forms\Get $get,Forms\Set $set){
+                                $dates=$get('visiting_dates');
+                                if ($get('visit_date')){
+                                    $dates[]=$get('visit_date');
+                                    $set('visiting_dates',$dates);
+                                }
+                                $set('visit_date',null);
+                            }),Forms\Components\Actions\Action::make('Add')->label('Add Rage Date')->form([
+                                DateRangePicker::make('date')
+                            ])->action(function (Forms\Get $get,Forms\Set $set,$data){
+                                $dataDate=explode(' -',$data['date']);
+                                $start = Carbon::createFromFormat('d/m/Y', $dataDate[0]);
+                                $end = Carbon::createFromFormat('d/m/Y', trim($dataDate[1]));
+                                $dates = collect();
+                                while ($start->lte($end)) {
+                                    $dates->push($start->copy()->format('Y-m-d'));
+                                    $start->addDay();
+                                }
+                                $set('visiting_dates',$dates->toArray());
+                            })
+                        ]),
+                        Select::make('visiting_dates')->required()->columnSpan(4)->label('Scheduled Visit Dates')->multiple(),
+                        Forms\Components\TextInput::make('purpose')->columnSpanFull()->required(),
+                    ])->columns(5),
                     Forms\Components\Repeater::make('visitors_detail')
-                        ->addActionLabel('Add')
+                        ->addActionLabel('Add ')
                         ->label('Visitors Details')
                         ->schema([
                             Forms\Components\TextInput::make('name')->label(' Name')->required(),
@@ -160,9 +173,11 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                                 ->preload()
                                 ->label('Color'),
                             Forms\Components\TextInput::make('Registration_Plate')->required(),
-                            FileUpload::make('image')->imageEditor()->image()->columnSpanFull(),
+                            Forms\Components\TextInput::make('trip')->required(),
+                            FileUpload::make('driver')->label('Driver National Identification Card')->imageEditor()->image()->columnSpan(3),
+                            FileUpload::make('image')->label('Vehicle Number Plate Photo')->imageEditor()->image()->columnSpan(4),
 
-                        ])->columns(6)->columnSpanFull(),
+                        ])->columns(7)->columnSpanFull(),
                     Forms\Components\Hidden::make('company_id')
                         ->default(getCompany()->id)
                         ->required(),
@@ -236,10 +251,10 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
             ->columns([
 
                 Tables\Columns\TextColumn::make('')->rowIndex(),
-                Tables\Columns\TextColumn::make('SN_code')->label('SN_code'),
+                Tables\Columns\TextColumn::make('SN_code')->label('Department Code'),
                 Tables\Columns\TextColumn::make('employee.fullName')->label('Requester')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('visitors_detail')->label('Visitors')->state(fn($record) => array_map(fn($item) => $item['name'], $record->visitors_detail))->numeric()->sortable()->badge()->limitList(1),
-                Tables\Columns\TextColumn::make('visit_date')->label('Date of Visit ')->date()->sortable(),
+                Tables\Columns\TextColumn::make('visiting_dates')->bulleted()->label('Scheduled Visit Dates')->sortable(),
                 Tables\Columns\TextColumn::make('arrival_time')->time('H:i A'),
                 Tables\Columns\TextColumn::make('departure_time')->time('H:i A'),
                 Tables\Columns\TextColumn::make('InSide_date')->label('Check IN ')->time(),

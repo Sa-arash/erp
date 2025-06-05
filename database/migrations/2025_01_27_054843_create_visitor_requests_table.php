@@ -14,7 +14,9 @@ return new class extends Migration
         Schema::create('visitor_requests', function (Blueprint $table) {
             $table->id();
             $table->string('SN_code')->nullable();
-            $table->date('visit_date');
+            $table->date('visit_date')->nullable();
+            $table->text('visiting_dates')->nullable();
+            $table->integer('trip')->nullable();
             $table->time('arrival_time');
             $table->time('departure_time');
             $table->boolean('ICON')->default(0);

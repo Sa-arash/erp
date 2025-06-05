@@ -73,15 +73,15 @@
                     $year = \Carbon\Carbon::parse($payroll->start_date)->year;
             @endphp
         <tr style="margin:  0!important;text-align: center!important;" >
-            <td >{{$i++}}</td>
-            <td >{{$payroll->employee->fullName}}</td>
-            <td>{{$month->format('F')}}</td>
-            <td>{{$year}}</td>
-            <td>{{number_format($payroll->employee?->base_salary).' '.$payroll->employee?->currency?->name}}</td>
-            <td>{{number_format($payroll->total_allowance).' '.$payroll->employee?->currency?->name}}</td>
-            <td>{{number_format($payroll->total_deduction).' '.$payroll->employee?->currency?->name}}</td>
-            <td colspan="2">{{number_format($payroll->amount_pay).' '.$payroll->employee?->currency?->name}}</td>
-            <td >{{$payroll->status->name}}</td>
+            <td  style="padding: 5px">{{$i++}}</td>
+            <td  style="padding: 5px">{{$payroll->employee->fullName}}</td>
+            <td style="padding: 5px">{{$month->format('F')}}</td>
+            <td style="padding: 5px">{{$year}}</td>
+            <td style="padding: 5px">{{number_format($payroll->employee?->base_salary).' '.$payroll->employee?->currency?->name}}</td>
+            <td style="padding: 5px">{{number_format($payroll->total_allowance).' '.$payroll->employee?->currency?->name}}</td>
+            <td style="padding: 5px">{{number_format($payroll->total_deduction).' '.$payroll->employee?->currency?->name}}</td>
+            <td style="padding: 5px" colspan="2">{{number_format($payroll->amount_pay).' '.$payroll->employee?->currency?->name}}</td>
+            <td  style="padding: 5px">{{$payroll->status->name}}</td>
         </tr>
         @endforeach
         </tbody>

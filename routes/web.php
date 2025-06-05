@@ -152,11 +152,16 @@ Route::get('/', function () {
 
     return view('welcome');
 });
-Route::get('/test', function () {
-
-    $roll=\Spatie\Permission\Models\Role::query()->firstWhere('id',1);
-    dd($roll->permissions->pluck('id')->toArray());
-});
+//Route::get('/test', function () {
+//
+////    $roll=\Spatie\Permission\Models\Role::query()->firstWhere('id',1);
+////    dd($roll->permissions->pluck('id')->toArray());
+//    $vi=VisitorRequest::query()->get();
+//    foreach ( $vi as $item){
+//        $item->update(['visiting_dates'=>[0=>$item->visit_date]]);
+//    }
+//    dd($vi);
+//});
 
 
 Route::get('artisan',function (){

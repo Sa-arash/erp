@@ -210,12 +210,52 @@
                 <td style="width: 33%;font-weight: bold">Time of Arrival</td>
                 <td style="width: 33%;font-weight: bold">Time of Departure</td>
             </tr>
-            <tr>
-                <td style="width: 33%">{{ \Illuminate\Support\Carbon::create($requestVisit->visit_date)->format('d/F/Y') }}</td>
-                <td style="width: 33%">{{ \Carbon\Carbon::parse($requestVisit->arrival_time)->format('h:i A') }}</td>
-                <td style="width: 33%">{{ \Carbon\Carbon::parse($requestVisit->departure_time)->format('h:i A') }}</td>
+            @php
+                use Illuminate\Support\Carbon;
 
-            </tr>
+                $dates = collect($requestVisit->visiting_dates)
+                    ->map(fn($date) => Carbon::parse($date));
+
+                $grouped = $dates->groupBy(fn($date) => $date->format('Y,F')); // group by year and month
+            @endphp
+
+            @foreach ($grouped as $monthKey => $dates)
+                @php
+                    $days = $dates->pluck('day')->sort()->values(); // اطمینان از ترتیب روزها
+                    $last = $days->pop(); // آخرین روز
+                    $secondLast = $days->pop(); // دومین روز از آخر
+
+                    $dayString = '';
+
+                    if ($secondLast) {
+                        if ($days->count()) {
+                            $dayString .= $days->implode(',') . ','; // بقیه با ,
+                        }
+                        $dayString .= $secondLast . ' & ' . $last;
+                    } elseif ($last) {
+                        $dayString = $last;
+                    }
+
+                    $monthName = ucfirst(strtolower($dates->first()->format('M'))); // Jun
+                    $year = $dates->first()->year;
+                @endphp
+
+                <tr>
+                    <td style="width: 33%">
+                        {{ $dayString }}/{{ $monthName }}/{{ $year }}
+                    </td>
+
+                    <td style="width: 33%">
+                        {{ \Carbon\Carbon::parse($requestVisit->arrival_time)->format('h:i A') }}
+                    </td>
+
+                    <td style="width: 33%">
+                        {{ \Carbon\Carbon::parse($requestVisit->departure_time)->format('h:i A') }}
+                    </td>
+                </tr>
+            @endforeach
+
+
             <tr>
                 <td style="font-weight: bold">Purpose of visit (Be specific)</td>
                 <td colspan="2">{{ $requestVisit->purpose }}</td>
@@ -316,7 +356,10 @@ $tdsArend='';
                     <td>{{ $driver['phone'] ?? '---' }}</td>
                     <td>{{ $driver['model'] ?? '---' }}</td>
                     <td>{{ $driver['color'] ?? '---' }}</td>
-                    <td>{{ $driver['Registration_Plate'] ?? '---' }}</td>
+                    @php
+                        $trip=isset($driver['trip']) ? ' ('.$driver['trip'].')Trip' :' ';
+                    @endphp
+                    <td>{{ $driver['Registration_Plate'] . $trip ?? '---' }}</td>
                 </tr>
             @endforeach
 
@@ -332,25 +375,27 @@ $tdsArend='';
 
                 <td class="no-border" style="">
                     @if(file_exists($requestVisit->employee->media->where('collection_name', 'signature')->first()?->getPath()))
-                    <img src="{{ $requestVisit->employee->media->where('collection_name', 'signature')->first()->getPath() }}"
-                         style="width: 130px;height: 50px;margin-bottom: 5px;padding: 0" alt="">
+                        <img
+                            src="{{ $requestVisit->employee->media->where('collection_name', 'signature')->first()->getPath() }}"
+                            style="width: 70px;height: 50px;margin-bottom: 5px;padding: 0" alt="">
                     @endif
 
                 </td>
 
-                <td class="no-border" style="padding-top: 15px">Date:</td>
-                <td class="no-border" style="padding-top: 15px" >
-                    {{ \Illuminate\Support\Carbon::create($requestVisit->visit_date)->format('d/F/Y ') }}</td>
+                <td class="no-border" style="padding-top: 15px;">
+                    Date: {{ \Illuminate\Support\Carbon::create($requestVisit->visit_date)->format('d/F/Y ') }}</td>
+                <td class="no-border" style="padding-top: 15px">
+                </td>
             </tr>
 
         </table>
 
 
-
         @if (isset($requestVisit->approvals[0]))
             <table class="equal-table ">
                 <tr class="section-title bg-lightgreen">
-                    <td colspan="4" style="text-align: left;font-weight: bold" class="equal-cell bg-lightgreen">Endorsement and Approval
+                    <td colspan="4" style="text-align: left;font-weight: bold" class="equal-cell bg-lightgreen">
+                        Endorsement and Approval
                     </td>
                 </tr>
                 <tr>
@@ -359,6 +404,27 @@ $tdsArend='';
                     <td class="equal-cell"></td>
                     <td class="equal-cell">Date:</td>
                 </tr>
+                @if($requestVisit->approvals->where('status','Approve')->first()===null)
+                    <tr>
+                        <td style="text-align: left;font-weight: bold" class="equal-cell">FSA FAO</td>
+                        <td class="equal-cell"></td>
+                        <td class="equal-cell" rowspan="2">
+
+                           </td>
+                        <td class="equal-cell">Date:
+
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: left;font-weight: bold" class="equal-cell">ICON SFP</td>
+                        <td class="equal-cell"><span style="border-bottom: 1px solid black;font-size: 12px">Digitally Signed By:</span>
+                            <br> </td>
+
+                        <td class="equal-cell">Date:
+
+                            +04:30
+                        </td>
+                @endif
                 @foreach ($requestVisit->approvals->where('status','Approve') as $approve)
 
                     <tr>
@@ -373,23 +439,26 @@ $tdsArend='';
                             @endif</td>
                         <td class="equal-cell">Date:
 
-                    </td>
-                </tr>
+                        </td>
+                    </tr>
                     <tr>
                         <td style="text-align: left;font-weight: bold" class="equal-cell">ICON SFP</td>
-                        <td class="equal-cell"><span style="border-bottom: 1px solid black;">Digitally Signed By:</span>
+                        <td class="equal-cell"><span style="border-bottom: 1px solid black;font-size: 12px">Digitally Signed By:</span>
                             <br> {{$approve->employee->fullName}}</td>
 
                         <td class="equal-cell">Date:
-                            {{ $approve->approve_date ? \Carbon\Carbon::make($approve->approve_date)->format('d/F/Y H:i:s') : "" }} +04:30
+                            {{ $approve->approve_date ? \Carbon\Carbon::make($approve->approve_date)->format('d/F/Y H:i:s') : "" }}
+                            +04:30
                         </td>
                     </tr>
                 @endforeach
                 <tr>
-                    <td  style="text-align: left;" class="equal-cell"><b>Remarks to CSM</b></td>
+                    <td style="text-align: left;" class="equal-cell"><b>Remarks to CSM</b></td>
                     <td class="equal-cell"></td>
-                    <td class="equal-cell">{{ $requestVisit->status == "approved" ? '✔': '' }}  Approved</td>
-                    <td class="equal-cell">{{ $requestVisit->status == "notApproved" ? '✔': '' }} Not Approved</td>
+                    <td class="equal-cell">{{ $requestVisit->status == "approved" ? '✔': '' }} Approved</td>
+                    <td class="equal-cell">{!! $requestVisit->status == "notApproved" ? '&#x2718;': '' !!} Not
+                        Approved
+                    </td>
 
                 </tr>
                 {{-- <tr>

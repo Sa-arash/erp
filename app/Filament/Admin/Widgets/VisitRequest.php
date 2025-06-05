@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Widgets;
 use App\Filament\Admin\Resources\VisitorRequestResource;
 use App\Filament\Admin\Resources\VisitorRequestResource\Pages\EditVisitorRequest;
 use App\Models\VisitorRequest;
+use Carbon\Carbon;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
@@ -14,6 +15,8 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
 use Filament\Forms\Components\ToggleButtons;
+use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\IconSize;
 use Filament\Support\Enums\MaxWidth;
@@ -22,6 +25,7 @@ use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
+use Malzariey\FilamentDaterangepickerFilter\Fields\DateRangePicker;
 
 class VisitRequest extends BaseWidget
 {
@@ -36,16 +40,14 @@ class VisitRequest extends BaseWidget
             )
             ->columns([
                 Tables\Columns\TextColumn::make('#')->rowIndex(),
-                Tables\Columns\TextColumn::make('SN_code')->label('SN_code'),
+                Tables\Columns\TextColumn::make('SN_code')->label('Department Code '),
 
                 Tables\Columns\TextColumn::make('visitors_detail')
                     ->label('Visitors')
                     ->state(fn($record) => implode(', ', (array_map(fn($item) => $item['name'], $record->visitors_detail))))
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('visit_date')->label(' Date of Visit ')
-                    ->date()
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('visiting_dates')->bulleted()->label('Scheduled Visit Dates')->sortable(),
                 Tables\Columns\TextColumn::make('arrival_time')->time('H:i A'),
                 Tables\Columns\TextColumn::make('departure_time')->time('H:i A'),
                 Tables\Columns\TextColumn::make('InSide_date')->label('CheckIn ')->time('H:i A'),
@@ -119,11 +121,32 @@ class VisitRequest extends BaseWidget
                                 })->searchable()->preload(),
                                 ToggleButtons::make('ICON')->label('ICON')->grouped()->boolean()->inline()->default(0)->required(),
 
-                                DatePicker::make('visit_date')->label(' Date of Visit ')->default(now()->addDay())->required(),
                                 TimePicker::make('arrival_time')->label('Arrival Time')->seconds(false)->before('departure_time')->required(),
                                 TimePicker::make('departure_time')->label('Departure Time')->seconds(false)->after('arrival_time')->required(),
-                                TextInput::make('purpose')->columnSpanFull()->required(),
-                            ])->columns(5),
+                                DatePicker::make('visit_date')->live()->label('Visit Date')->default(now()->addDay())->hintActions([
+                                    \Filament\Forms\Components\Actions\Action::make('te')->label('Add To Scheduled')->action(function (Get $get,Set $set){
+                                        $dates=$get('visiting_dates');
+                                        if ($get('visit_date')){
+                                            $dates[]=$get('visit_date');
+                                            $set('visiting_dates',$dates);
+                                        }
+                                        $set('visit_date',null);
+                                    }),\Filament\Forms\Components\Actions\Action::make('Add')->label('Add Rage Date')->form([
+                                        DateRangePicker::make('date')
+                                    ])->action(function (Set $set,$data){
+                                        $dataDate=explode(' -',$data['date']);
+                                        $start = Carbon::createFromFormat('d/m/Y', $dataDate[0]);
+                                        $end = Carbon::createFromFormat('d/m/Y', trim($dataDate[1]));
+                                        $dates = collect();
+                                        while ($start->lte($end)) {
+                                            $dates->push($start->copy()->format('Y-m-d'));
+                                            $start->addDay();
+                                        }
+                                        $set('visiting_dates',$dates->toArray());
+                                    })
+                                ]),
+                                Select::make('visiting_dates')->required()->columnSpan(3)->label('Scheduled Visit Dates')->multiple(),                                TextInput::make('purpose')->columnSpanFull()->required(),
+                            ])->columns(4),
                             Repeater::make('visitors_detail')->addActionLabel('Add')->label('Visitors Detail')->schema([
                                 TextInput::make('name')->label('Name')->required(),
                                 TextInput::make('id')->label('ID/Passport')->required(),
@@ -190,9 +213,10 @@ class VisitRequest extends BaseWidget
                                         ->label('Color')
                                     ,
                                     TextInput::make('Registration_Plate')->required(),
-                                    FileUpload::make('image')->imageEditor()->image()->columnSpanFull(),
-
-                                ])->columns(3)->columnSpanFull(),
+                                    TextInput::make('trip')->required()->numeric(),
+                                    FileUpload::make('driver')->label('Driver National Identification Card')->imageEditor()->image()->columnSpan(3),
+                                    FileUpload::make('image')->label('Vehicle Number Plate Photo')->imageEditor()->image()->columnSpan(4),
+                                ])->columns(7)->columnSpanFull(),
                         ])->columns(2)
                     ]
                 )->action(function ($data){
@@ -216,7 +240,9 @@ class VisitRequest extends BaseWidget
                         'requested_by'=>$employee->id,
                         'company_id'=>getCompany()->id,
                         'armed' => $data['armed'],
-                        'SN_code'=>$code
+                        'SN_code'=>$code,
+                        'visiting_dates'=>$data['visiting_dates']
+
                     ]);
 
                     // sendAR(getEmployee(),,getCompany());
@@ -247,11 +273,32 @@ class VisitRequest extends BaseWidget
                                 })->searchable()->preload(),
                                 ToggleButtons::make('ICON')->label('ICON')->grouped()->boolean()->inline()->default(0)->required(),
 
-                                DatePicker::make('visit_date')->label('Visit Date')->default(now()->addDay())->required(),
                                 TimePicker::make('arrival_time')->label('Arrival Time')->seconds(false)->before('departure_time')->required(),
                                 TimePicker::make('departure_time')->label('Departure Time')->seconds(false)->after('arrival_time')->required(),
-                                TextInput::make('purpose')->columnSpanFull()->required(),
-                            ])->columns(5),
+                                DatePicker::make('visit_date')->live()->label('Visit Date')->default(now()->addDay())->hintActions([
+                                    \Filament\Forms\Components\Actions\Action::make('te')->label('Add To Scheduled')->action(function (Get $get,Set $set){
+                                        $dates=$get('visiting_dates');
+                                        if ($get('visit_date')){
+                                            $dates[]=$get('visit_date');
+                                            $set('visiting_dates',$dates);
+                                        }
+                                        $set('visit_date',null);
+                                    }),\Filament\Forms\Components\Actions\Action::make('Add')->label('Add Rage Date')->form([
+                                        DateRangePicker::make('date')
+                                    ])->action(function (Set $set,$data){
+                                        $dataDate=explode(' -',$data['date']);
+                                        $start = Carbon::createFromFormat('d/m/Y', $dataDate[0]);
+                                        $end = Carbon::createFromFormat('d/m/Y', trim($dataDate[1]));
+                                        $dates = collect();
+                                        while ($start->lte($end)) {
+                                            $dates->push($start->copy()->format('Y-m-d'));
+                                            $start->addDay();
+                                        }
+                                        $set('visiting_dates',$dates->toArray());
+                                    })
+                                ]),
+                                Select::make('visiting_dates')->required()->columnSpan(3)->label('Scheduled Visit Dates')->multiple(),                                  TextInput::make('purpose')->columnSpanFull()->required(),
+                            ])->columns(4),
                             Repeater::make('visitors_detail')->addActionLabel('Add')->label('Visitors Detail')->schema([
                                 TextInput::make('name')->label('Name')->required(),
                                 TextInput::make('id')->label('ID/Passport')->required(),
@@ -317,9 +364,10 @@ class VisitRequest extends BaseWidget
                                         ->label('Color')
                                     ,
                                     TextInput::make('Registration_Plate')->required(),
-                                    FileUpload::make('image')->imageEditor()->image()->columnSpanFull(),
-
-                                ])->columns(3)->columnSpanFull(),
+                                    TextInput::make('trip')->required()->numeric(),
+                                    FileUpload::make('driver')->label('Driver National Identification Card')->imageEditor()->image()->columnSpan(3),
+                                    FileUpload::make('image')->label('Vehicle Number Plate Photo')->imageEditor()->image()->columnSpan(4),
+                                ])->columns(7)->columnSpanFull(),
                         ])->columns(2)
                     ]
                 )->action(function (array $data): void {
@@ -342,7 +390,8 @@ class VisitRequest extends BaseWidget
                         'requested_by'=>$employee->id,
                         'company_id'=>getCompany()->id,
                         'armed' => $data['armed'],
-                        'SN_code'=>$code
+                        'SN_code'=>$code,
+                        'visiting_dates'=>$data['visiting_dates']
                     ]);
                     // sendAR(getEmployee(),,getCompany());
                     sendSecurity($visitorRequest, getCompany());

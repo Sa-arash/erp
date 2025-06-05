@@ -14,7 +14,8 @@ class VisitorRequest extends Model implements HasMedia
     protected $casts = [
         'visitors_detail' => 'array',
         'driver_vehicle_detail' => 'array',
-        'armed'=>'array'
+        'armed'=>'array',
+        'visiting_dates'=>'array'
     ];
     public function getLogAttribute(){
         return $this?->employee?->fullName."#-#".$this?->purpose."#-#".$this?->approval_date;
