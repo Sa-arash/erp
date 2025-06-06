@@ -10,15 +10,15 @@ class Asset extends Model implements HasMedia
 {
     use InteractsWithMedia;
 
-    
+
     protected $guarded = ['id'];
 
     protected $casts = [
         'attributes' => 'array',
     ];
 
-  
-    
+
+
     public function getLogAttribute()
     {
         return $this->product?->title . "#-#" . $this->product?->sku . "#-#" . $this?->serial_number ;
@@ -43,11 +43,15 @@ class Asset extends Model implements HasMedia
     {
         return $this->belongsTo(Company::class);
     }
+    public function person(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Person::class,'check_out_person');
+    }
     public function product(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Product::class);
     }
-    public function check_out_to(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function checkOutTo(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Employee::class,'check_out_to');
     }

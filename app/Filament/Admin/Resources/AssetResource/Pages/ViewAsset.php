@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\AssetResource\Pages;
 
 use App\Filament\Admin\Resources\AssetResource;
 use App\Models\AssetEmployee;
+use App\Models\Person;
 use App\Models\Structure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Actions\Action;
@@ -39,17 +40,50 @@ class ViewAsset extends ViewRecord
                         }
                         return $data;
                     })->searchable()->requiredWithout('person')->prohibits('person'),
-                    Select::make('person')->label('Person')->options(getCompany()->asset_employees_persons)->createOptionForm([
-                        TextInput::make('title')->required()
-                    ])->createOptionUsing(function ($data) {
-                        $array = getCompany()->asset_employees_persons;
-                        if (isset($array)) {
-                            $array[$data['title']] = $data['title'];
-                        } else {
-                            $array = [$data['title'] => $data['title']];
+                    Select::make('person')->label('Person')->options(function (){
+                        $data=[];
+                        $persons=getCompany()->people;
+                        foreach ($persons as $person){
+                            $data[$person->id]=$person->name.' ('.$person->number.')';
                         }
-                        getCompany()->update(['asset_employees_persons' => $array]);
-                        return $data['title'];
+                        return $data;
+                    })->createOptionForm([
+                           \Filament\Forms\Components\Section::make([
+                               TextInput::make('name')->required()->maxLength(255),
+                               TextInput::make('number')->default(function () {
+                                   $lastPerson = Person::query()->where('company_id', getCompany()->id)->latest()->first();
+                                   if ($lastPerson) {
+                                       return getNextCodePerson($lastPerson->number, 'PSN');
+                                   } else {
+                                       return 'PSN00001';
+                                   }
+                               })->readOnly()->required()->maxLength(255),
+                               Select::make('person_group')->options(getCompany()->person_group)
+                                   ->createOptionForm([
+                                       TextInput::make('title')->required()
+                                   ])->createOptionUsing(function ($data) {
+                                       $array = getCompany()->person_group;
+                                       if (isset($array)) {
+                                           $array[$data['title']] = $data['title'];
+                                       } else {
+                                           $array = [$data['title'] => $data['title']];
+                                       }
+                                       getCompany()->update(['person_group' => $array]);
+                                       return $data['title'];
+                                   })->searchable(),
+                               TextInput::make('job_title')->maxLength(255)->default(null),
+                               \Filament\Forms\Components\Section::make([
+                                   TextInput::make('work_phone')->maxLength(255)->default(null),
+                                   TextInput::make('home_phone')->maxLength(255)->default(null),
+                                   TextInput::make('mobile_phone')->tel()->maxLength(255)->default(null),
+                               ])->columns(3),
+                               TextInput::make('pager')->maxLength(255)->default(null),
+                               TextInput::make('email')->email()->maxLength(255)->default(null),
+                               Textarea::make('note')->columnSpanFull(),
+                           ])->columns(2)
+                    ])->createOptionUsing(function ($data) {
+                        $data['company_id']=getCompany()->id;
+                        return Person::query()->create($data);
                     })->searchable()->preload()->requiredWithout('employee_id')->prohibits('employee_id'),
                     Textarea::make('description')->label('Comment')->columnSpanFull(),
                     Select::make('warehouse_id')->live()->label('Warehouse/Building')->options(function () {
@@ -66,13 +100,14 @@ class ViewAsset extends ViewRecord
                     DatePicker::make('due_date'),
                 ])->columns(3)
             ])->action(function ($record,$data){
+
                 $company=getCompany();
                 if ($data['employee_id']){
                     $record->update(['warehouse_id'=>$data['warehouse_id'],'structure_id'=>$data['structure_id'],'check_out_to'=>$data['employee_id']]);
                     $assetEmployee=AssetEmployee::query()->firstWhere('employee_id',$data['employee_id']);
                 }else{
                     $record->update(['warehouse_id'=>$data['warehouse_id'],'structure_id'=>$data['structure_id'],'check_out_person'=>$data['person']]);
-                    $assetEmployee=AssetEmployee::query()->firstWhere('person',$data['person']);
+                    $assetEmployee=AssetEmployee::query()->firstWhere('person_id',$data['person']);
                 }
                 if ($assetEmployee){
                     $assetEmployee->assetEmployeeItem()->create([
@@ -90,7 +125,7 @@ class ViewAsset extends ViewRecord
                         'company_id'=>$company->id,
                         'employee_id'=>$data['employee_id'],
                         'date'=>now(),
-                        'person'=>$data['person']
+                        'person_id'=>$data['person']
                     ]);
                     $assetEmployee->assetEmployeeItem()->create([
                         'company_id'=>$company->id,
@@ -106,8 +141,8 @@ class ViewAsset extends ViewRecord
 
             Action::make('Check IN')->label('Check IN')->color('warning')->fillForm(function ($record){
                 return [
-                    'employee_id'=>$record->employees->last()?->assetEmployee?->employee_id,
-                    'person'=>$record->employees->last()?->assetEmployee?->person
+                    'employee_id'=>$record->check_out_to,
+                    'person'=>$record->check_out_person
                 ];
             })->form([
                \Filament\Forms\Components\Section::make([
@@ -119,17 +154,13 @@ class ViewAsset extends ViewRecord
                        }
                        return $data;
                    })->disabled()->searchable()->requiredWithout('person')->prohibits('person'),
-                   Select::make('person')->disabled()->label('Person')->options(getCompany()->asset_employees_persons)->createOptionForm([
-                       TextInput::make('title')->required()
-                   ])->createOptionUsing(function ($data) {
-                       $array = getCompany()->asset_employees_persons;
-                       if (isset($array)) {
-                           $array[$data['title']] = $data['title'];
-                       } else {
-                           $array = [$data['title'] => $data['title']];
+                   Select::make('person')->disabled()->label('Person')->options(function (){
+                       $data=[];
+                       $persons=getCompany()->people;
+                       foreach ($persons as $person){
+                           $data[$person->id]=$person->name.' ('.$person->number.')';
                        }
-                       getCompany()->update(['asset_employees_persons' => $array]);
-                       return $data['title'];
+                       return $data;
                    })->searchable()->preload()->requiredWithout('employee_id')->prohibits('employee_id'),
                    Textarea::make('description')->label('Comment')->columnSpanFull(),
                    Select::make('warehouse_id')->live()->label('Warehouse/Building')->options(function () {
@@ -145,13 +176,15 @@ class ViewAsset extends ViewRecord
                    }),
                ])->columns()
             ])->action(function ($data,$record){
+
                 $company=getCompany();
                 $employee=$record->employees->last()?->assetEmployee?->employee_id;
-                $person=$record->employees->last()?->assetEmployee?->person;
+                $person=$record->employees->last()?->assetEmployee?->person_id;
                 if ($employee){
+                    dd();
                     $assetEmployee=AssetEmployee::query()->firstWhere('employee_id',$employee);
                 }else{
-                    $assetEmployee=AssetEmployee::query()->firstWhere('person',$person);
+                    $assetEmployee=AssetEmployee::query()->firstWhere('person_id',$person);
                 }
                 if ($assetEmployee) {
                     $assetEmployee->assetEmployeeItem()->create([
@@ -193,7 +226,7 @@ class ViewAsset extends ViewRecord
                     TextEntry::make('scrap_value')->label("Scrap Value")->numeric()->inlineLabel(),
                     TextEntry::make('warehouse.title')->badge()->inlineLabel(),
                     TextEntry::make('structure.title')->badge()->label('Location')->inlineLabel(),
-                    TextEntry::make('check_out_to.fullName')->badge()->label('Check Out To')->inlineLabel(),
+                    TextEntry::make('check_out_to')->state(function ($record){return $record->check_out_to ? $record->checkOutTo->fullName:$record->person?->name;})->badge()->label('Check Out To')->inlineLabel(),
                     TextEntry::make('party.name')->badge()->label('Vendor')->inlineLabel(),
                     TextEntry::make('buy_date')->inlineLabel()->label('Buy Date'),
                     TextEntry::make('guarantee_date')->inlineLabel()->label('Due Date'),

@@ -2,13 +2,11 @@
 
 namespace App\Models;
 
-use Database\Factories\ProductCategoryFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Filament\Models\Contracts\HasAvatar;
 use Filament\Models\Contracts\HasName;
-use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Notifications\DatabaseNotification;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
@@ -28,7 +26,7 @@ class Company extends Model implements HasAvatar, HasName, HasMedia
     }
 
 
-    protected $fillable = ['asset_qualities','asset_employees_persons','asset_types','asset_depreciation_years','signature_finance','stamp_finance','supersedes_security','effective_date_security','description_security','SOP_number','visitrequest_model','visitrequest_color','agency', 'logo_security', 'title_security', 'product_service_accounts', 'security_id', 'warehouse_id', 'structure_asset_id', 'product_expence_accounts', 'account_cash', 'product_accounts', 'category_account', 'customer_account', 'vendor_account', 'account_bank', 'weekend_days', 'daily_working_hours', 'overtime_rate', 'title', 'logo', 'description', 'user_id', 'country', 'address', 'contact_information', 'company_registration_document'];
+    protected $fillable = ['asset_qualities','person_grope','asset_types','asset_depreciation_years','signature_finance','stamp_finance','supersedes_security','effective_date_security','description_security','SOP_number','visitrequest_model','visitrequest_color','agency', 'logo_security', 'title_security', 'product_service_accounts', 'security_id', 'warehouse_id', 'structure_asset_id', 'product_expence_accounts', 'account_cash', 'product_accounts', 'category_account', 'customer_account', 'vendor_account', 'account_bank', 'weekend_days', 'daily_working_hours', 'overtime_rate', 'title', 'logo', 'description', 'user_id', 'country', 'address', 'contact_information', 'company_registration_document'];
 
     public function getLogAttribute(){
         return $this?->title."#-#".$this?->user?->name;
@@ -42,9 +40,9 @@ class Company extends Model implements HasAvatar, HasName, HasMedia
         'visitrequest_model' => 'array',
         'visitrequest_color' => 'array',
         'asset_types' => 'array',
-        'asset_employees_persons' => 'array',
+        'person_grope' => 'array',
         'asset_depreciation_years' => 'array',
-   'asset_qualities' => 'array',
+        'asset_qualities' => 'array',
     ];
 
     public function getFilamentAvatarUrl(): ?string
@@ -367,12 +365,19 @@ class Company extends Model implements HasAvatar, HasName, HasMedia
     {
         return $this->hasMany(Folder::class);
     }
+
     public function medias(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Media::class);
     }
+
     public function packages(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Package::class);
+    }
+
+    public function people(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Person::class);
     }
 }

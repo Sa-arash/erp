@@ -216,7 +216,7 @@ class AssetResource extends Resource
                                 },
                             ]),
                         ])->columns(4),
-                        
+
                         Forms\Components\TextInput::make('scrap_value')->prefix(defaultCurrency()?->symbol)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->required()->numeric()->label('Scrap Value'),
 
                         Forms\Components\Select::make('party_id')->label("Vendor")->searchable()->required()
@@ -532,13 +532,7 @@ class AssetResource extends Resource
                 Tables\Columns\TextColumn::make('titlen')->label('Asset Description'),
                 Tables\Columns\TextColumn::make('brand.title'),
                 Tables\Columns\TextColumn::make('type'),
-                Tables\Columns\TextColumn::make('employee')->state(function ($record) {
-                    if ($record->employees?->last()) {
-                        $data = $record->employees?->last()?->assetEmployee;
-                        if ($data->type === 'Assigned')
-                            return  $data?->employee_id ?  $data?->employee?->fullName : $data->person;
-                    }
-                })->badge()->label('Custodian'),
+                Tables\Columns\TextColumn::make('employee')->state(function ($record){return $record->check_out_to ? $record?->checkOutTo?->fullName:$record?->person?->name;})->badge()->label('Custodian'),
                 Tables\Columns\TextColumn::make('updated_at')->dateTime()->label('Date Update'),
                 Tables\Columns\TextColumn::make('Due Date')->state(function ($record) {
                     if ($record->employees?->last()) {
@@ -731,7 +725,7 @@ class AssetResource extends Resource
 
                         DatePicker::make('buy_date')->label('Purchase Date')->default(now()),
                         Forms\Components\TextInput::make('price')->prefix(defaultCurrency()?->symbol)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->required()->numeric()->label('Purchase Price'),
-                        
+
                         Forms\Components\TextInput::make('scrap_value')->prefix(defaultCurrency()?->symbol)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->numeric()->label('Scrap Value'),
 
                         Forms\Components\Select::make('party_id')->label("Vendor")->searchable()->required()

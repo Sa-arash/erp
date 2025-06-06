@@ -15,6 +15,7 @@ use App\Models\Leave;
 use App\Models\Loan;
 use App\Models\Overtime;
 use App\Models\Payroll;
+use App\Models\Person;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseRequest;
 use App\Models\TakeOut;
@@ -663,5 +664,14 @@ class PdfController extends Controller
 
         $pdf = Pdf::loadView('pdf.urgentleave',compact( 'company','urgent'));
         return $pdf->stream('urgentleave.pdf');
+    }
+    public function personals($company)
+    {
+
+        $groups = Person::query()->where('company_id',$company)->get()->groupBy('person_group'); // دسته‌بندی بر اساس گروه
+
+        $company=Company::query()->firstWhere('id',$company);
+        $pdf = Pdf::loadView('pdf.persons', compact('groups','company'));
+        return $pdf->stream('personnel_details.pdf');
     }
 }

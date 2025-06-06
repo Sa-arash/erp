@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('asset_employees', function (Blueprint $table) {
             $table->id();
             $table->foreignId('employee_id')->nullable()->constrained('employees')->cascadeOnUpdate()->cascadeOnDelete();
-            $table->text('person')->nullable();
+            $table->foreignId('person_id')->nullable()->constrained('persons')->nullOnDelete();
             $table->timestamp('date');
             $table->text('description')->nullable();
             $table->text('note')->nullable();

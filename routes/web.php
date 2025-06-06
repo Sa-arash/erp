@@ -249,6 +249,7 @@ Route::get('/pdf/qrcode/{code}',[\App\Http\Controllers\PdfController::class,'qrc
 Route::get('/pdf/loan/{id}',[\App\Http\Controllers\PdfController::class,'loan'])->name('pdf.loan');
 Route::get('/pdf/cashAdvance/{id}',[\App\Http\Controllers\PdfController::class,'cashAdvance'])->name('pdf.cashAdvance');
 Route::get('/pdf/sales/{id}',[\App\Http\Controllers\PdfController::class,'sales'])->name('pdf.sales');
+Route::get('/pdf/personals/{id}',[\App\Http\Controllers\PdfController::class,'personals'])->name('pdf.personals');
 
 });
 Route::get('fix',function (){

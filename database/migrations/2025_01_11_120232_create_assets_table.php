@@ -38,7 +38,7 @@ return new class extends Migration
             $table->foreignId('department_id')->nullable()->constrained('departments')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('brand_id')->nullable()->constrained('brands')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('check_out_to')->nullable()->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->string('check_out_person')->nullable();
+            $table->foreignId('check_out_person')->nullable()->constrained('persons')->nullOnDelete();
             $table->foreignId('party_id')->nullable()->constrained('parties')->cascadeOnUpdate()->cascadeOnDelete();
             $table->foreignId('warehouse_id')->constrained('warehouses')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('structure_id')->constrained('structures')->cascadeOnDelete()->cascadeOnUpdate();

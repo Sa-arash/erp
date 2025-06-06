@@ -911,3 +911,12 @@ function getNextCodeVisit(string $lastCode, string $prefix , int $padLength = 5)
     return $nextCode;
 }
 
+function getNextCodePerson(string $lastCode, string $prefix , int $padLength = 5): string {
+    $numberPart = str_replace($prefix, '', $lastCode);
+
+    $nextNumber = (int)$numberPart + 1;
+
+    $nextCode = $prefix . str_pad($nextNumber, $padLength, '0', STR_PAD_LEFT);
+
+    return $nextCode;
+}

@@ -12,7 +12,7 @@ class AssetEmployee extends Model
         'employee_id',
         'date',
         'company_id',
-        'person',
+        'person_id',
     ];
 
     public function getLogAttribute(){
@@ -26,6 +26,10 @@ class AssetEmployee extends Model
     public function employee(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Employee::class);
+    }
+    public function person(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Person::class);
     }
     public function assetEmployeeItem(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
