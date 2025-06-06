@@ -214,35 +214,54 @@
                 use Illuminate\Support\Carbon;
 
                 $dates = collect($requestVisit->visiting_dates)
-                    ->map(fn($date) => Carbon::parse($date));
+                    ->map(fn($date) => Carbon::createFromFormat('d/m/Y', $date) );
 
                 $grouped = $dates->groupBy(fn($date) => $date->format('Y,F')); // group by year and month
             @endphp
 
             @foreach ($grouped as $monthKey => $dates)
                 @php
-                    $days = $dates->pluck('day')->sort()->values(); // اطمینان از ترتیب روزها
-                    $last = $days->pop(); // آخرین روز
-                    $secondLast = $days->pop(); // دومین روز از آخر
+                    $sortedDates = $dates->sortBy(fn($date) => $date->timestamp)->values();
 
-                    $dayString = '';
-
-                    if ($secondLast) {
-                        if ($days->count()) {
-                            $dayString .= $days->implode(',') . ','; // بقیه با ,
+                    // چک کن آیا تاریخ‌ها پشت سر هم هستند
+                    $isConsecutive = true;
+                    for ($i = 1; $i < $sortedDates->count(); $i++) {
+                        if (!$sortedDates[$i]->isSameDay($sortedDates[$i - 1]->copy()->addDay())) {
+                            $isConsecutive = false;
+                            break;
                         }
-                        $dayString .= $secondLast . ' & ' . $last;
-                    } elseif ($last) {
-                        $dayString = $last;
                     }
 
-                    $monthName = ucfirst(strtolower($dates->first()->format('M'))); // Jun
-                    $year = $dates->first()->year;
+                    $monthName = ucfirst(strtolower($sortedDates->first()->format('M'))); // Jun
+                    $year = $sortedDates->first()->year;
+
+                    if ($isConsecutive && $sortedDates->count() > 1) {
+                        $startDay = $sortedDates->first()->day;
+                        $endDay = $sortedDates->last()->day;
+                        $dayString = "{$startDay}/{$monthName}/{$year} - {$endDay}/{$monthName}/{$year}";
+                    } else {
+                        $days = $sortedDates->pluck('day')->sort()->values();
+                        $last = $days->pop();
+                        $secondLast = $days->pop();
+
+                        $dayString = '';
+
+                        if ($secondLast) {
+                            if ($days->count()) {
+                                $dayString .= $days->implode(',') . ',';
+                            }
+                            $dayString .= $secondLast . ' & ' . $last;
+                        } elseif ($last) {
+                            $dayString = $last;
+                        }
+
+                        $dayString .= "/{$monthName}/{$year}";
+                    }
                 @endphp
 
                 <tr>
                     <td style="width: 33%">
-                        {{ $dayString }}/{{ $monthName }}/{{ $year }}
+                        {{ $dayString }}
                     </td>
 
                     <td style="width: 33%">
@@ -254,6 +273,7 @@
                     </td>
                 </tr>
             @endforeach
+
 
 
             <tr>

@@ -65,6 +65,7 @@ use App\Models\UrgentLeave;
 use App\Models\User;
 use App\Models\VisitorRequest;
 use App\Models\Warehouse;
+use Carbon\Carbon;
 use Filament\Facades\Filament;
 use Filament\Http\Responses\Auth\LoginResponse;
 use Illuminate\Support\Facades\Route;
@@ -152,16 +153,21 @@ Route::get('/', function () {
 
     return view('welcome');
 });
-//Route::get('/test', function () {
-//
-////    $roll=\Spatie\Permission\Models\Role::query()->firstWhere('id',1);
-////    dd($roll->permissions->pluck('id')->toArray());
+Route::get('/test', function () {
+
+//    $roll=\Spatie\Permission\Models\Role::query()->firstWhere('id',1);
+//    dd($roll->permissions->pluck('id')->toArray());
 //    $vi=VisitorRequest::query()->get();
 //    foreach ( $vi as $item){
-//        $item->update(['visiting_dates'=>[0=>$item->visit_date]]);
+//        $datas=[];
+//        foreach ($item->visiting_dates as $date){
+//
+//            $datas[]=Carbon::createFromFormat('Y-m-d', $date)->format('d/m/Y');
+//        }
+//        $item->update(['visiting_dates'=>$datas]);
 //    }
 //    dd($vi);
-//});
+});
 
 
 Route::get('artisan',function (){

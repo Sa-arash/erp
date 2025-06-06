@@ -82,14 +82,14 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                         Forms\Components\TimePicker::make('arrival_time')->label('Arrival Time')->seconds(false)->before('departure_time')->required(),
                         Forms\Components\TimePicker::make('departure_time')->label('Departure Time')->seconds(false)->after('arrival_time')->required(),
                         Forms\Components\DatePicker::make('visit_date')->live()->label('Visit Date')->default(now()->addDay())->hintActions([
-                            Forms\Components\Actions\Action::make('te')->label('Add To Scheduled')->action(function (Forms\Get $get,Forms\Set $set){
+                            Forms\Components\Actions\Action::make('te')->label('Select Daily')->action(function (Forms\Get $get,Forms\Set $set){
                                 $dates=$get('visiting_dates');
                                 if ($get('visit_date')){
-                                    $dates[]=$get('visit_date');
+                                    $dates[]= Carbon::createFromFormat('Y-m-d', $get('visit_date'))->format('d/m/Y') ;
                                     $set('visiting_dates',$dates);
                                 }
                                 $set('visit_date',null);
-                            }),Forms\Components\Actions\Action::make('Add')->label('Add Rage Date')->form([
+                            }),Forms\Components\Actions\Action::make('Add')->label('Select Monthly')->form([
                                 DateRangePicker::make('date')
                             ])->action(function (Forms\Get $get,Forms\Set $set,$data){
                                 $dataDate=explode(' -',$data['date']);
@@ -97,7 +97,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                                 $end = Carbon::createFromFormat('d/m/Y', trim($dataDate[1]));
                                 $dates = collect();
                                 while ($start->lte($end)) {
-                                    $dates->push($start->copy()->format('Y-m-d'));
+                                    $dates->push($start->copy()->format('d/m/Y'));
                                     $start->addDay();
                                 }
                                 $set('visiting_dates',$dates->toArray());
@@ -254,7 +254,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('SN_code')->label('Department Code'),
                 Tables\Columns\TextColumn::make('employee.fullName')->label('Requester')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('visitors_detail')->label('Visitors')->state(fn($record) => array_map(fn($item) => $item['name'], $record->visitors_detail))->numeric()->sortable()->badge()->limitList(1),
-                Tables\Columns\TextColumn::make('visiting_dates')->bulleted()->label('Scheduled Visit Dates')->sortable(),
+                Tables\Columns\TextColumn::make('visiting_dates')->limitList(5)->bulleted()->label('Scheduled Visit Dates')->sortable(),
                 Tables\Columns\TextColumn::make('arrival_time')->time('H:i A'),
                 Tables\Columns\TextColumn::make('departure_time')->time('H:i A'),
                 Tables\Columns\TextColumn::make('InSide_date')->label('Check IN ')->time(),

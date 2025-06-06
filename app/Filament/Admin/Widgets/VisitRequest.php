@@ -47,7 +47,7 @@ class VisitRequest extends BaseWidget
                     ->state(fn($record) => implode(', ', (array_map(fn($item) => $item['name'], $record->visitors_detail))))
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('visiting_dates')->bulleted()->label('Scheduled Visit Dates')->sortable(),
+                Tables\Columns\TextColumn::make('visiting_dates')->limitList(5)->bulleted()->label('Scheduled Visit Dates')->sortable(),
                 Tables\Columns\TextColumn::make('arrival_time')->time('H:i A'),
                 Tables\Columns\TextColumn::make('departure_time')->time('H:i A'),
                 Tables\Columns\TextColumn::make('InSide_date')->label('CheckIn ')->time('H:i A'),
@@ -124,14 +124,14 @@ class VisitRequest extends BaseWidget
                                 TimePicker::make('arrival_time')->label('Arrival Time')->seconds(false)->before('departure_time')->required(),
                                 TimePicker::make('departure_time')->label('Departure Time')->seconds(false)->after('arrival_time')->required(),
                                 DatePicker::make('visit_date')->live()->label('Visit Date')->default(now()->addDay())->hintActions([
-                                    \Filament\Forms\Components\Actions\Action::make('te')->label('Add To Scheduled')->action(function (Get $get,Set $set){
+                                    \Filament\Forms\Components\Actions\Action::make('te')->label('Select Daily')->action(function (Get $get,Set $set){
                                         $dates=$get('visiting_dates');
                                         if ($get('visit_date')){
-                                            $dates[]=$get('visit_date');
+                                            $dates[]= Carbon::createFromFormat('Y-m-d', $get('visit_date'))->format('d/m/Y') ;
                                             $set('visiting_dates',$dates);
                                         }
                                         $set('visit_date',null);
-                                    }),\Filament\Forms\Components\Actions\Action::make('Add')->label('Add Rage Date')->form([
+                                    }),\Filament\Forms\Components\Actions\Action::make('Add')->label('Select Monthly')->form([
                                         DateRangePicker::make('date')
                                     ])->action(function (Set $set,$data){
                                         $dataDate=explode(' -',$data['date']);
@@ -139,7 +139,7 @@ class VisitRequest extends BaseWidget
                                         $end = Carbon::createFromFormat('d/m/Y', trim($dataDate[1]));
                                         $dates = collect();
                                         while ($start->lte($end)) {
-                                            $dates->push($start->copy()->format('Y-m-d'));
+                                            $dates->push($start->copy()->format('d/m/Y'));
                                             $start->addDay();
                                         }
                                         $set('visiting_dates',$dates->toArray());
@@ -276,14 +276,14 @@ class VisitRequest extends BaseWidget
                                 TimePicker::make('arrival_time')->label('Arrival Time')->seconds(false)->before('departure_time')->required(),
                                 TimePicker::make('departure_time')->label('Departure Time')->seconds(false)->after('arrival_time')->required(),
                                 DatePicker::make('visit_date')->live()->label('Visit Date')->default(now()->addDay())->hintActions([
-                                    \Filament\Forms\Components\Actions\Action::make('te')->label('Add To Scheduled')->action(function (Get $get,Set $set){
+                                    \Filament\Forms\Components\Actions\Action::make('te')->label('Select Daily')->action(function (Get $get,Set $set){
                                         $dates=$get('visiting_dates');
                                         if ($get('visit_date')){
-                                            $dates[]=$get('visit_date');
+                                            $dates[]= Carbon::createFromFormat('Y-m-d', $get('visit_date'))->format('d/m/Y') ;
                                             $set('visiting_dates',$dates);
                                         }
                                         $set('visit_date',null);
-                                    }),\Filament\Forms\Components\Actions\Action::make('Add')->label('Add Rage Date')->form([
+                                    }),\Filament\Forms\Components\Actions\Action::make('Add')->label('Select Monthly')->form([
                                         DateRangePicker::make('date')
                                     ])->action(function (Set $set,$data){
                                         $dataDate=explode(' -',$data['date']);
@@ -291,7 +291,7 @@ class VisitRequest extends BaseWidget
                                         $end = Carbon::createFromFormat('d/m/Y', trim($dataDate[1]));
                                         $dates = collect();
                                         while ($start->lte($end)) {
-                                            $dates->push($start->copy()->format('Y-m-d'));
+                                            $dates->push($start->copy()->format('d/m/Y'));
                                             $start->addDay();
                                         }
                                         $set('visiting_dates',$dates->toArray());
