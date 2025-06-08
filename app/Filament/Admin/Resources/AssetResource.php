@@ -13,6 +13,7 @@ use App\Models\Parties;
 use App\Models\PurchaseOrder;
 use App\Models\Structure;
 use App\Models\Transaction;
+use App\Models\Warehouse;
 use Closure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
@@ -50,12 +51,29 @@ class AssetResource extends Resource
     protected static ?string $navigationLabel = 'Asset';
     protected static ?string $navigationIcon = 'heroicon-s-inbox-stack';
 
-//        protected static ?string $recordTitleAttribute = 'number';
-//    public static function getGlobalSearchResultTitle(Model $record): string | Htmlable
-//    {
-//
-//        return $record->product->title;
-//    }
+        protected static ?string $recordTitleAttribute = 'number';
+    public static function getGlobalSearchResultTitle(Model $record): string | Htmlable
+    {
+
+        $title=$record->product->title;
+        $sku=$record->product->sku;
+        $description=$record->description;
+        $image=$record->media->where('collection_name', 'images')->first()?->original_url ??asset('img/defaultAsset.png');
+        return new HtmlString("
+       <div style='display: flex; align-items: center; gap: 10px;'>
+            <img src='$image' alt='product image' style='width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc;'>
+            <div>
+                <div style='font-weight: bold; font-size: 14px;'>
+                    $title
+                    <span style='font-weight: normal; font-size: 12px; color: #666;'>
+                        — $sku
+                    </span>
+                </div>
+                <div style='font-size: 12px; color: #555;'>Description: $description</div>
+            </div>
+        </div>
+    ");
+    }
     public static function form(Form $form): Form
     {
         return $form
@@ -68,7 +86,6 @@ class AssetResource extends Resource
 
                             Select::make('department_id')->label('Department')->required()->columnSpan(['default' => 8, 'md' => 2, 'xl' => 2, '2xl' => 1])->live()->options(getCompany()->departments->pluck('title', 'id'))->searchable()->preload(),
                             Forms\Components\Select::make('product_id')->label('Product')->options(function (Get $get) {
-
                                 if ($get('department_id')) {
                                     $data = [];
                                     $products = getCompany()->products->where('product_type', 'unConsumable')->where('department_id', $get('department_id'));
@@ -472,6 +489,33 @@ class AssetResource extends Resource
     {
         return $table
             ->defaultSort('id', 'desc')->headerActions([
+                Tables\Actions\Action::make('print')
+                    ->label('Print Report')->form([
+                        Select::make('warehouses')->multiple()->options(function () {
+                            $data = [];
+
+                            $warehouse = Warehouse::query()->where('type', 1)->firstWhere('employee_id', getEmployee()->id);
+                            if ($warehouse) {
+                                $warehouses = Warehouse::query()->where('type', 1)->where('company_id', getCompany()->id)->where('employee_id', getEmployee()->id)->get();
+                            } else {
+                                $warehouses = Warehouse::query()->where('company_id', getCompany()->id)->get();
+                            }
+                            foreach ($warehouses as $warehouse) {
+                                $type = $warehouse->type ? "Warehouse" : "Building";
+                                $data[$warehouse->id] = $warehouse->title . " (" . $type . ")";
+                            }
+                            return $data;
+                        })->required()
+                    ])->color('warning')
+                    ->action(function ($data) {
+
+                        if ($data['warehouses']) {
+                            return redirect()->route('pdf.assets-balance', [
+                                'ids' => implode('-', $data['warehouses']),
+                                'company' => getCompany()->id
+                            ]);
+                        }
+                    })->openUrlInNewTab(),
                 ExportAction::make()
                     ->after(function () {
                         if (Auth::check()) {
@@ -480,7 +524,7 @@ class AssetResource extends Resource
                                 ->withProperties([
                                     'action' => 'export',
                                 ])
-                                ->log('Export' . "Assets");
+                                ->log('Export' . " Assets");
                         }
                     })->exports([
                         ExcelExport::make()->askForFilename("Assets")->withColumns([
@@ -519,10 +563,10 @@ class AssetResource extends Resource
                 })->disk('public')
                     ->defaultImageUrl(fn($record) => asset('img/defaultAsset.png'))
                     ->alignLeft()->label('Asset Picture')->width(50)->height(50)->extraAttributes(['style' => 'border-radius:50px!important']),
-                Tables\Columns\TextColumn::make('product.sku')->state(fn() => '___________')->label('Barcode')->searchable()->description(function ($record) {
+                Tables\Columns\TextColumn::make('number')->state(fn() => '___________')->label('Barcode')->searchable()->description(function ($record) {
 
                     $barcode = '<img src="data:image/png;base64,' . \Milon\Barcode\Facades\DNS1DFacade::getBarcodePNG($record->number, 'C39', 1, 20) . '" alt="barcode"/>';
-                    $barcode .= "<p>{$record->product->sku}</p>";
+                    $barcode .= "<p style='text-align: center'>{$record->number}</p>";
                     return new HtmlString($barcode);
                 })->action(function ($record) {
                     return redirect(route('pdf.barcode', ['code' => $record->id]));
@@ -568,7 +612,7 @@ class AssetResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('purchase_order_id')->searchable()->options(getCompany()->purchaseOrders->pluck('purchase_orders_number', 'id'))->label('PO No'),
-                Tables\Filters\SelectFilter::make('product_id')->searchable()->options(getCompany()->products->pluck('title', 'id'))->label('Product'),
+                Tables\Filters\SelectFilter::make('product_id')->searchable()->options(getCompany()->products->where('product_type','unConsumable')->pluck('title', 'id'))->label('Product'),
                 Tables\Filters\SelectFilter::make('status')->searchable()->options(['inuse' => "In Use", 'inStorageUsable' => "In Storage",  'loanedOut' => "Loaned Out", 'outForRepair' => 'Out For Repair', 'StorageUnUsable' => " Scrap"]),
                 DateRangeFilter::make('buy_date')->label('Purchase Date'),
                 DateRangeFilter::make('guarantee_data')->label('Guarantee Data'),
@@ -609,13 +653,18 @@ class AssetResource extends Resource
                                 $data[$warehouse->id] = $warehouse->title . " (" . $type . ")";
                             }
                             return $data;
-                        })->searchable()->preload(),
+                        })->searchable()->preload()->afterStateUpdated(function (Forms\Set $set){
+                                $set('structure_id',null);
+                        }),
                         SelectTree::make('structure_id')->searchable()->label('Location')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id', modifyQueryUsing: function ($query, Forms\Get $get) {
                             return $query->where('warehouse_id', $get('warehouse_id'));
                         })->required()
                     ])
                     ->query(function (Builder $query, array $data) {
-                        return $query->when($data['structure_id'], function ($query, $data) {
+
+                        return $query->when($data['warehouse_id'], function ($query, $data) {
+                            return $query->where('warehouse_id', $data);
+                        })->when($data['structure_id'], function ($query, $data) {
                             return $query->where('structure_id', $data);
                         });
                     })->columns(2)->columnSpanFull(),
@@ -625,7 +674,7 @@ class AssetResource extends Resource
             ->actions([
                 Tables\Actions\ActionGroup::make([
                     Tables\Actions\Action::make('qrView')->color('success')->label('QR View')->tooltip('View Asset')->iconSize(IconSize::Medium)->icon('heroicon-c-qr-code')->url(fn($record) => route('pdf.qrcode.view', ['code' => $record->id])),
-                    Tables\Actions\Action::make('barcode')->color('warning')->label('Barcode')->tooltip('Barcode')->iconSize(IconSize::Medium)->icon('barcode')->url(fn($record) => route('pdf.barcode', ['code' => $record->id])),
+                    Tables\Actions\Action::make('barcode')->color('warning')->label('Barcode')->tooltip('Barcode')->iconSize(IconSize::Medium)->icon('barcode')->url(fn($record) => route('pdf.barcode', ['code' => $record->number])),
                     ])->color('warning'),
                     Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')
                         ->url(fn($record) => route('pdf.asset', ['id' => $record->id]))->openUrlInNewTab(),
@@ -985,7 +1034,8 @@ class AssetResource extends Resource
                     }
                 })->exports([
                     ExcelExport::make()->askForFilename("Assets")->withColumns([
-                        Column::make('product.sku')->heading("product sku"),
+                        Column::make('product.sku')->heading("Product sku"),
+                        Column::make('number')->heading("Asset Number"),
                         Column::make('purchase_order_id')->heading('PO No')->formatStateUsing(fn($record) => $record->purchase_order_id === null ? "---" : PurchaseOrder::find($record->purchase_order_id)->purchase_orders_number),
                         Column::make('description')->heading('Asset Description'),
                         Column::make('price')->heading('Purchase Price'),
@@ -1013,11 +1063,13 @@ class AssetResource extends Resource
                     ]),
                 ])->label('Export')->color('purple'),
 
-                Tables\Actions\BulkAction::make('print')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->color('primary')->action(function ($records) {
-                    return redirect(route('pdf.assets', ['ids' => implode('-', $records->pluck('id')->toArray())]));
-                }),
+                Tables\Actions\BulkAction::make('print')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->color('primary')->action(function ($records,$data) {
+                    return redirect(route('pdf.assets', ['ids' => implode('-', $records->pluck('id')->toArray()), 'company' => getCompany()->id,'type'=>$data['by']]));
+                })->form([
+                    Select::make('by')->required()->default('warehouse_id')->label('Asset By')->options(['warehouse_id'=>'Location','type'=>'Type','po_number'=>'PO','party_id'=>'Vendor'])->searchable()->preload()
+                ]),
                 Tables\Actions\BulkAction::make('printBarcode')->label('Print Barcode ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->color('primary')->action(function ($records) {
-                    return redirect(route('pdf.barcodes', ['codes' => implode('-', $records->pluck('id')->toArray())]));
+                    return redirect(route('pdf.barcodes', ['codes' => implode('-', $records->pluck('number')->toArray())]));
                 })->color('success'),
 
             ]);

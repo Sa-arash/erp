@@ -33,9 +33,7 @@
         border: 1px solid #000;
         font-size: 10pt;
     }
-    @page  {
-        margin: 10px;
-    }
+
 </style>
 <div class="table-container" >
 

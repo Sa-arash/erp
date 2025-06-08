@@ -17,6 +17,10 @@ class Asset extends Model implements HasMedia
         'attributes' => 'array',
     ];
 
+    public function getUsedAttribute()
+    {
+        return $this->checkOutTo()?->fullName ?$this->checkOutTo()?->fullName :$this->person()?->name ;
+    }
 
 
     public function getLogAttribute()

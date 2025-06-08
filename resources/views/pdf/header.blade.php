@@ -76,9 +76,6 @@
                 font-size: 12px;
             }
 
-            table {
-                page-break-inside: avoid;
-            }
 
             th,
             td {
@@ -149,9 +146,12 @@
         }
 
 
-        @page {
-            margin: 20px;
-        }
+            @page {
+                margin: 20px;
+                footer: MyFooter;
+                header: MyHeader;
+
+            }
         @media print {
             body {
                 background-color: white;
@@ -216,3 +216,8 @@
             </tr>
         </table>
     </div>
+{{--    <htmlpagefooter name="MyFooter">--}}
+{{--        <div style="text-align: center; font-size: 10px;margin-top: 5px">--}}
+{{--            Page {PAGENO} of {nbpg}--}}
+{{--        </div>--}}
+{{--    </htmlpagefooter>--}}

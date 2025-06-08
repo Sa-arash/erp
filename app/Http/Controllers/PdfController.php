@@ -24,6 +24,7 @@ use App\Models\Transaction;
 use App\Models\Typeleave;
 use App\Models\UrgentLeave;
 use App\Models\VisitorRequest;
+use App\Models\Warehouse;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use niklasravnsborg\LaravelPdf\Facades\Pdf;
@@ -546,13 +547,13 @@ class PdfController extends Controller
         return $pdf->stream('requestVisits.pdf');
     }
 
-    public function assets($ids)
+    public function assets($ids,$company,$type)
     {
-        $assets = Asset::query()->with(['product', 'employees'])->whereIn('id', explode('-', $ids))->get();
-        $company = $assets[0]->company;
+        $assets = Asset::query()->with(['product', 'employees','warehouse','checkOutTo','person'])->whereIn('id', explode('-', $ids))->get()->groupBy($type);
+        $company = Company::query()->firstWhere('id',$company);
         $pdf = Pdf::loadView(
             'pdf.assets',
-            compact('company', 'assets')
+            compact('company', 'assets','type')
         );
         return $pdf->stream('pdf.assets');
     }
@@ -595,9 +596,7 @@ class PdfController extends Controller
 
         $pdf = Pdf::loadView(
             'pdf.barcodes',
-            compact( 'codes'),[], [
-                'format' => [50, 35],
-            ]
+            compact( 'codes'),[],
         );
         return $pdf->stream();
     }
@@ -667,11 +666,23 @@ class PdfController extends Controller
     }
     public function personals($company)
     {
-
-        $groups = Person::query()->where('company_id',$company)->get()->groupBy('person_group'); // دسته‌بندی بر اساس گروه
-
+        $groups = Person::query()->where('company_id',$company)->get()->groupBy('person_group');
         $company=Company::query()->firstWhere('id',$company);
         $pdf = Pdf::loadView('pdf.persons', compact('groups','company'));
         return $pdf->stream('personnel_details.pdf');
+    }
+    public function assetsBalance($ids,$company)
+    {
+        $groups = Warehouse::query()->with('assets')->whereIn('id',explode('-',$ids))->get();
+        $company=Company::query()->firstWhere('id',$company);
+        $pdf = Pdf::loadView('pdf.assets-balance', compact('groups','company'));
+        return $pdf->stream('assets-balance.pdf');
+    }
+    public function audit($ids,$company)
+    {
+        $assets = Asset::query()->with('warehouse')->whereIn('id',explode('-',$ids))->get()->groupBy('warehouse');
+        $company=Company::query()->firstWhere('id',$company);
+        $pdf = Pdf::loadView('pdf.audit', compact('assets','company'));
+        return $pdf->stream();
     }
 }

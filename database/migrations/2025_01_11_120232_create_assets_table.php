@@ -20,9 +20,10 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->text('note')->nullable();
             $table->string('po_number')->nullable();
+            $table->string('market_value')->nullable();
             $table->string('scrap_value')->nullable();
             $table->string('model', 250)->nullable();
-            $table->enum('quality', ['new', 'used', 'refurbished'])->default('new');
+            $table->string('quality')->nullable();
             $table->decimal('price', 20, 2)->nullable();
             $table->date('buy_date')->nullable();
             $table->date('warranty_date')->nullable();
@@ -32,9 +33,7 @@ return new class extends Migration
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete()->cascadeOnUpdate();
             $table->enum('status', ['inuse', 'inStorageUsable', 'storageUnUsable', 'underRepair', 'outForRepair', 'loanedOut'])->default('inStorageUsable');
             $table->text('attributes')->nullable();
-
-            $table->bigInteger('purchase_order_id')->nullable();
-
+            $table->foreignId('purchase_order_id')->nullable()->constrained('purchase_orders')->nullOnDelete();
             $table->foreignId('department_id')->nullable()->constrained('departments')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('brand_id')->nullable()->constrained('brands')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('check_out_to')->nullable()->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();

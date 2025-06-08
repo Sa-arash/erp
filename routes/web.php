@@ -233,7 +233,7 @@ Route::get('/pdf/employee/{id}',[\App\Http\Controllers\PdfController::class,'emp
 Route::get('/pdf/payrolls/{ids}',[\App\Http\Controllers\PdfController::class,'payrolls'])->name('pdf.payrolls');
 Route::get('/pdf/purchase/{id}',[\App\Http\Controllers\PdfController::class,'purchase'])->name('pdf.purchase');
 Route::get('/pdf/po/{id}',[\App\Http\Controllers\PdfController::class,'purchaseOrder'])->name('pdf.po');
-Route::get('/pdf/assets/{ids}',[\App\Http\Controllers\PdfController::class,'assets'])->name('pdf.assets');
+Route::get('/pdf/assets/{ids}/{company}/{type}',[\App\Http\Controllers\PdfController::class,'assets'])->name('pdf.assets');
 Route::get('/pdf/tasks/{ids}',[\App\Http\Controllers\PdfController::class,'tasks'])->name('pdf.tasks');
 Route::get('/pdf/quotation/{id}',[\App\Http\Controllers\PdfController::class,'quotation'])->name('pdf.quotation');
 Route::get('/pdf/bid/{id}',[\App\Http\Controllers\PdfController::class,'bid'])->name('pdf.bid');
@@ -250,6 +250,8 @@ Route::get('/pdf/loan/{id}',[\App\Http\Controllers\PdfController::class,'loan'])
 Route::get('/pdf/cashAdvance/{id}',[\App\Http\Controllers\PdfController::class,'cashAdvance'])->name('pdf.cashAdvance');
 Route::get('/pdf/sales/{id}',[\App\Http\Controllers\PdfController::class,'sales'])->name('pdf.sales');
 Route::get('/pdf/personals/{id}',[\App\Http\Controllers\PdfController::class,'personals'])->name('pdf.personals');
+Route::get('/pdf/assets-balance/{ids}/{company}',[\App\Http\Controllers\PdfController::class,'assetsBalance'])->name('pdf.assets-balance');
+Route::get('/pdf/audit/{ids}/{company}',[\App\Http\Controllers\PdfController::class,'audit'])->name('pdf.audit');
 
 });
 Route::get('fix',function (){
