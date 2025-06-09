@@ -861,7 +861,7 @@ implements HasShieldPermissions
     public static function getRelations(): array
     {
         return [
-            //
+            RelationManagers\PurchaseOrderItemRelationManager::class
         ];
     }
     public static function getNavigationBadge(): ?string
@@ -875,6 +875,7 @@ implements HasShieldPermissions
             'index' => Pages\ListPurchaseOrders::route('/'),
             'create' => Pages\CreatePurchaseOrder::route('/create'),
             'edit' => Pages\EditPurchaseOrder::route('/{record}/edit'),
+            'view' => Pages\ViewPurchaseOrder::route('/{record}/view'),
             'InvoicePurchaseOrder' => Pages\InvoicePurchaseOrder ::route('/InvoicePurchaseOrder/{record}'),
         ];
     }

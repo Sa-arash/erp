@@ -9,6 +9,7 @@ use App\Models\AssetEmployee;
 use App\Models\AssetEmployeeItem;
 use App\Models\Person;
 use App\Models\Structure;
+use Carbon\Carbon;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
@@ -18,13 +19,10 @@ use Filament\Forms\Form;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
-use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
-use Filament\Support\Enums\IconSize;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
@@ -167,13 +165,29 @@ class AssetEmployeeResource extends Resource
             ->columns([
 
                 Tables\Columns\TextColumn::make('')->rowIndex(),
-                Tables\Columns\TextColumn::make('employee.fullName')
-                    ->state(fn($record) => $record->employee_id ? $record->employee->fullName : $record->person?->name.'('.$record->person?->number.')')
-                    ->label('Employee/Person')
-                    ->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('employee.fullName')->state(fn($record) => $record->employee_id ? $record->employee->fullName : $record->person?->name . '(' . $record->person?->number . ')')->label('Employee/Person')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('description')->sortable(),
-
+                Tables\Columns\TextColumn::make('assetEmployeeItem.asset.product.title')->state(function ($record){
+                    $sub = AssetEmployeeItem::selectRaw('MAX(id) as id')
+                        ->whereHas('assetEmployee', function ($q)use($record) {
+                            if ($record->employee_id){
+                                $q->where('employee_id', $record->employee_id);
+                            }else{
+                                $q->where('person_id', $record->person_id);
+                            }
+                        })
+                        ->groupBy('asset_id');
+                    return AssetEmployeeItem::query()
+                        ->whereIn('id', $sub)
+                        ->where('type', 'Assigned')->get()->map(function ($item){
+                            if ($item->asset->description){
+                                return $item->asset->product->title.'('.$item->asset->description.')';
+                            }else{
+                                return $item->asset->product->title;
+                            }
+                        });
+                })->label('Assets')->bulleted(),
             ])
             ->filters([
                 DateRangeFilter::make('date'),
@@ -181,30 +195,81 @@ class AssetEmployeeResource extends Resource
             ->actions([
                 //                Tables\Actions\EditAction::make(),
 //                Tables\Actions\ViewAction::make()->modalHeading(fn($record) => $record->type === "Returned" ? "Check In " : "Check Out"),
-                Tables\Actions\Action::make('approve')->form([
-                    Forms\Components\Textarea::make('note')
-                ])->iconSize(IconSize::Medium)->color('success')->icon('heroicon-m-cog-8-tooth')->label('Approve Returned')->requiresConfirmation()->action(function ($record, $data) {
-                    $record->update([
-                        'status' => "Approve",
-                        'note' => $data['note']
-                    ]);
-                    foreach ($record->assetEmployeeItem as $item) {
+                Tables\Actions\Action::make('viewHistory')->modalWidth(MaxWidth::FiveExtraLarge)
+                    ->label('View History')
+                    ->infolist([
+                        TextEntry::make('history')
+                            ->label('Asset History')
+                            ->state(function ($record) {
+                                $rows = $record->assetEmployeeItem;
 
-                        AssetEmployeeItem::query()->where('asset_id', $item->asset_id)->update([
-                            'type' => 1,
-                        ]);
-                        $item->update([
-                            'return_approval_date' => now()
-                        ]);
-                        Asset::query()->where('id', $item->asset_id)->update([
-                            'status' => 'inStorageUsable',
-                            'warehouse_id' => $item->warehouse_id,
-                            'structure_id' => $item->structure_id,
-
-                        ]);
+                                $html = <<<HTML
+                <style>
+                    table.history-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-top: 10px;
+                        font-size: 13px;
+                        color: black;
                     }
-                    Notification::make('success')->success()->title('Approved')->send();
-                })->visible(fn($record) => $record->status === "Pending")->hidden(fn($record) =>  $record->type != "Returned")
+
+                    .history-table th,
+                    .history-table td {
+                        border: 1px solid #ccc;
+                        padding: 6px 8px;
+                        text-align: center;
+                    }
+
+                    .history-table th {
+                        background-color: #f4f4f4;
+                        font-weight: bold;
+                    }
+
+                    .history-table tr:nth-child(even) {
+                        background-color: #fff;
+                    }
+
+                    .history-table tr:nth-child(odd) {
+                        background-color: #f9f9f9;
+                    }
+                </style>
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Asset</th>
+                            <th>Assigned/Returned Date</th>
+                            <th>Due Date</th>
+                            <th>Location</th>
+                            <th>Address</th>
+                            <th>Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                HTML;
+
+                                foreach ($rows as $row) {
+                                    $date=Carbon::make($row->created_at)->format('d/F/Y h:i A');
+                                    $dueDate=null;
+                                    if ($row->due_date)
+                                        $dueDate=Carbon::make($row->due_date)->format('d/F/Y');
+
+
+                                    $html .= "<tr>
+                        <td>{$row->asset->product->info} - {$row->asset->description}</td>
+                        <td>{$date}</td>
+                        <td>{$dueDate}</td>
+                        <td>{$row->warehouse?->title}</td>
+                        <td>{$row->structure?->title}</td>
+                        <td>{$row->type}</td>
+                    </tr>";
+                                }
+
+                                $html .= '</tbody></table>';
+
+                                return new \Illuminate\Support\HtmlString($html);
+                            }),
+                    ])
+
             ])
             ->bulkActions([
 

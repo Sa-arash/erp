@@ -51,7 +51,7 @@ class PurchaseOrder extends Model
     {
         return $this->belongsTo(Parties::class, 'vendor_id');
     }
-    public function invoice()
+    public function invoice(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Invoice::class, 'invoice_id');
     }
