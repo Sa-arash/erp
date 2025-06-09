@@ -680,9 +680,17 @@ class PdfController extends Controller
     }
     public function audit($ids,$company)
     {
-        $assets = Asset::query()->with('warehouse')->whereIn('id',explode('-',$ids))->get()->groupBy('warehouse');
+        $assets = Asset::query()->with('warehouse')->whereIn('id',explode('-',$ids))->get()->groupBy('warehouse_id');
         $company=Company::query()->firstWhere('id',$company);
         $pdf = Pdf::loadView('pdf.audit', compact('assets','company'));
+        return $pdf->stream();
+    }
+    public function auditChecklist($company,$type)
+    {
+        $groups = Asset::query()->with(['warehouse','brand','product'])->where('company_id',$company)->get()->groupBy('warehouse_id');
+
+        $company=Company::query()->firstWhere('id',$company);
+        $pdf = Pdf::loadView('pdf.audit-checklist', compact('groups','company','type'));
         return $pdf->stream();
     }
 }

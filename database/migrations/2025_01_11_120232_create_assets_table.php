@@ -42,6 +42,7 @@ return new class extends Migration
             $table->foreignId('warehouse_id')->constrained('warehouses')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('structure_id')->constrained('structures')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('company_id')->constrained('companies')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('manager_id')->nullable()->constrained('employees')->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
         });
     }

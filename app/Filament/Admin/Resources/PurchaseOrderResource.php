@@ -160,7 +160,13 @@ implements HasShieldPermissions
                                             }
                                         }
                                     })
-                                    ->options(getCompany()->purchaseRequests()->orderBy('id', 'desc')->pluck('purchase_number', 'id')),
+                                    ->options(function (){
+                                        $data=[];
+                                        foreach (getCompany()->purchaseRequests()->orderBy('id', 'desc')->get() as $item){
+                                            $data[$item->id]=  $item->purchase_number.'('.$item->employee?->fullName.')';
+                                        }
+                                        return $data;
+                                    }),
 
                                 Forms\Components\DateTimePicker::make('date_of_po')->default(now())
                                     ->label('Date of PO')->afterOrEqual(now()->startOfHour())
@@ -175,8 +181,8 @@ implements HasShieldPermissions
                                         $currency = Currency::find($state);
                                         if ($currency !== null) {
                                             // dd($currency,$currency->exchange_rate);
-
                                             $set('exchange_rate', $currency->exchange_rate);
+                                            $set('currency', $currency->symbol);
                                         }
                                     })
 
@@ -226,6 +232,7 @@ implements HasShieldPermissions
                                 Forms\Components\Hidden::make('company_id')
                                     ->default(getCompany()->id)
                                     ->required(),
+                                Forms\Components\Hidden::make('currency'),
                                 Repeater::make('RequestedItems')->defaultItems(1)->required()
                                     ->default(function (Request $request, Set $set) {
                                         $record = (PurchaseRequest::query()->with('bid')->firstWhere('id', $request->prno));
@@ -271,7 +278,7 @@ implements HasShieldPermissions
                                         Forms\Components\TextInput::make('description')->label('Description')->required(),
                                         Forms\Components\Select::make('unit_id')->required()->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id')),
                                         Forms\Components\TextInput::make('quantity')->numeric()->required()->live(true),
-                                        Forms\Components\TextInput::make('unit_price')->prefix(defaultCurrency()?->symbol)->afterStateUpdated(function ($state, Set $set, Get $get) {
+                                        Forms\Components\TextInput::make('unit_price')->prefix(fn(Get $get)=>$get->getData()['currency'])->afterStateUpdated(function ($state, Set $set, Get $get) {
                                             $freights = $get('taxes') === null ? 0 : (float) $get('taxes');
                                             $q = $get('quantity');
                                             $tax = $get('taxes') === null ? 0 : (float)$get('taxes');

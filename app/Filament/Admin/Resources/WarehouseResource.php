@@ -8,6 +8,7 @@ use App\Filament\Clusters\StackManagementSettings;
 use App\Models\Employee;
 use App\Models\Structure;
 use App\Models\Warehouse;
+use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Filament\Forms\Components\Actions\Action;
@@ -31,6 +32,8 @@ use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
 
 class WarehouseResource extends Resource
+    implements HasShieldPermissions
+
 {
     protected static ?string $model = Warehouse::class;
     protected static ?string $navigationGroup = 'Logistic Management';
@@ -40,6 +43,18 @@ class WarehouseResource extends Resource
     protected static ?string $pluralLabel="Warehouse";
 
 
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
+            'fullManager'
+        ];
+    }
     public static function form(Form $form): Form
     {
         return $form
@@ -80,14 +95,11 @@ class WarehouseResource extends Resource
                 ]),
             ])->label('Export Warehouse')->color('purple')
         ])
-        
-        
         ->query(function (){
-            $warehouse=Warehouse::query()->where('type',1)->firstWhere('employee_id',getEmployee()->id);
-            if ($warehouse){
-                return Warehouse::query()->where('type',1)->where('company_id',getCompany()->id)->where('employee_id',getEmployee()->id);
+            if (\auth()->user()->can('fullManager_warehouse')){
+                return  Warehouse::query()->where('type',1)->where('company_id',getCompany()->id);
             }else{
-              return  Warehouse::query()->where('type',1)->where('company_id',getCompany()->id);
+                return Warehouse::query()->where('type',1)->where('company_id',getCompany()->id)->where('employee_id',getEmployee()->id);
             }
         })
             ->columns([

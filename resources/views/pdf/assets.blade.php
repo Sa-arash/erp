@@ -78,8 +78,8 @@
             @case('type')
             {{$grupe[0]->type??'None Type'}}
             @break
-            @case('PO')
-            {{$grupe[0]->type??'None PO'}}
+            @case('brand_id')
+            {{$group[0]->brand?->title??'None Brand'}}
             @break
             @case('PO')
             {{$grupe[0]->po_number??'None PO'}}
@@ -114,7 +114,31 @@
                             <td><strong>Asset Type:</strong></td>
                             <td>{{$asset->type}}</td>
                             <td><strong>Status:</strong></td>
-                            <td>{{$asset->status}}</td>
+                            <td>@switch($asset->status)
+                                    @case('inuse')
+                                    In Use
+                                    @break
+
+                                    @case('inStorageUsable')
+                                    In Storage
+                                    @break
+
+                                    @case('loanedOut')
+                                    Loaned Out
+                                    @break
+
+                                    @case('outForRepair')
+                                    Out For Repair
+                                    @break
+
+                                    @case('StorageUnUsable')
+                                    Scrap
+                                    @break
+
+                                    @default
+                                    Unknown
+                                @endswitch
+                            </td>
                         </tr>
                         <tr>
                             <td><strong>Location:</strong></td>
