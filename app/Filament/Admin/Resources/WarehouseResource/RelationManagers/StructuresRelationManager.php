@@ -7,6 +7,7 @@ use App\Models\Structure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
@@ -30,7 +31,18 @@ class StructuresRelationManager extends RelationManager
                     SelectTree::make('parent_id')->label('Parent')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id',modifyQueryUsing: function($query,Get $get){
                         return $query->where('warehouse_id', $this->ownerRecord->id)->where('location',$get('location'));
                     }),
-                    Select::make('type')->label('Type')->live()->options(['aisle' => "Aisle", 'room' => 'Room', 'shelf' => "Shelf", 'row' => "Row"])->searchable()->preload()->required()
+                    Select::make('type')->label('Type')->options(getCompany()->warehouse_type)->searchable()->preload()->required()->createOptionForm([
+                        TextInput::make('title')->required()->maxLength(50)
+                    ])->createOptionUsing(function ($data){
+                        $array = getCompany()->warehouse_type;
+                        if (isset($array)) {
+                            $array[$data['title']] = $data['title'];
+                        } else {
+                            $array = [$data['title'] => $data['title']];
+                        }
+                        getCompany()->update(['warehouse_type' => $array]);
+                        return $data['title'];
+                    })
                 ])->columns(1)
             ]);
     }

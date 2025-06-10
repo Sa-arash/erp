@@ -2,8 +2,10 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Filament\Admin\Resources\PurchaseOrderResource;
 use App\Models\Asset;
 use App\Models\AssetEmployeeItem;
+use App\Models\PurchaseOrder;
 use App\Models\Service;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
@@ -15,10 +17,12 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
+use Filament\Support\Enums\IconSize;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
+use Illuminate\Support\HtmlString;
 
 class MyAsset extends BaseWidget
 {
@@ -47,17 +51,37 @@ class MyAsset extends BaseWidget
             )
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
-                Tables\Columns\ImageColumn::make('asset.product.image')->defaultImageUrl(asset('img/images.jpeg'))->state(function ($record) {
-                    return $record->asset->product->media->first()?->original_url;
-                })->label('Item Photo'),
-                Tables\Columns\TextColumn::make('asset.titlen')->label('Product'),
-                Tables\Columns\TextColumn::make('warehouse.title')->label('Warehouse/Building')->sortable(),
-                Tables\Columns\TextColumn::make('structure.title')->label('Location')->sortable(),
+                Tables\Columns\ImageColumn::make('asset.media.original_url')->state(function ($record) {
+                    return $record->asset->media?->where('collection_name', 'images')->first()?->original_url;
+                })->disk('public')
+                    ->defaultImageUrl(fn($record) => asset('img/defaultAsset.png'))
+                    ->alignLeft()->label('Asset Picture')->width(50)->height(50)->extraAttributes(['style' => 'border-radius:50px!important']),
+                Tables\Columns\TextColumn::make('asset.number')->state(fn() => '_______________')->label('Barcode')->searchable()->description(function ($record) {
+
+                    $barcode = '<img src="data:image/png;base64,' . \Milon\Barcode\Facades\DNS1DFacade::getBarcodePNG($record->asset->number, 'C39', 1, 20) . '" alt="barcode"/>';
+                    $barcode .= "<p style='text-align: center'>{$record->asset->number}</p>";
+                    return new HtmlString($barcode);
+                })->action(function ($record) {
+                    return redirect(route('pdf.barcode', ['code' => $record->id]));
+                }),
+                Tables\Columns\TextColumn::make('purchase_order_id')->label('PO NO')->state(fn($record) => $record->purchase_order_id === null ? "---" : PurchaseOrder::find($record->purchase_order_id)->purchase_orders_number)
+                    ->url(fn($record) => $record->purchase_order_id ? PurchaseOrderResource::getUrl() . "?tableFilters[id][value]=" . $record->purchase_order_id : false),
+                Tables\Columns\TextColumn::make('asset.titlen')->label('Asset Description'),
+                Tables\Columns\TextColumn::make('asset.brand.title'),
+                Tables\Columns\TextColumn::make('asset.type')->label('Type'),
                 Tables\Columns\TextColumn::make('asset.serial_number')->label('Serial Number'),
+                Tables\Columns\TextColumn::make('asset.warehouse.title')->label('Warehouse/Building')->sortable(),
+                Tables\Columns\TextColumn::make('asset.structure')->state(function ($record) {
+                    $str = getParents($record->structure);
+                    return substr($str, 1, strlen($str) - 1);
+                })->label('Location')->sortable(),
+                Tables\Columns\TextColumn::make('asset.manufacturer')->label('Manufacturer'),
                 Tables\Columns\TextColumn::make('created_at')->label('Distribution Date')->dateTime(),
                 Tables\Columns\TextColumn::make('return_date')->label('Return Date')->date(),
             ])
              ->actions([
+                 Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')
+                     ->url(fn($record) => route('pdf.asset', ['id' => $record->asset_id]))->openUrlInNewTab(),
 //                 Action::make('view')->infolist([
 //                     TextEntry::make('request_date')->date(),
 //                     TextEntry::make('purchase_number')->badge(),
@@ -98,6 +122,13 @@ class MyAsset extends BaseWidget
                  })
              ])
             ->bulkActions([
+                Tables\Actions\BulkAction::make('print')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->color('primary')->action(function ($records,$data) {
+
+                    return redirect(route('pdf.assets', ['ids' => implode('-', $records->pluck('asset_id')->toArray()), 'company' => getCompany()->id,'type'=>$data['by']]));
+                })->form([
+                    Select::make('by')->required()->default('warehouse_id')->label('Asset By')->options(['warehouse_id'=>'Location','brand_id'=>'Brand','type'=>'Type','po_number'=>'PO','party_id'=>'Vendor'])->searchable()->preload()
+                ]),
+
 //                Tables\Actions\BulkAction::make('return')->label('Return To Warehouse')
 //                    ->modalHeading('Return Asset')
 //                    ->form(function ($records) {

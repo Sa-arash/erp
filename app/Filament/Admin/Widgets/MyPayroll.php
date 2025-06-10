@@ -47,8 +47,8 @@ class MyPayroll extends BaseWidget
                 ->actions([
 
 
-                    Tables\Actions\Action::make('print')->label('Print')->action(function(Table $table){
-                        return redirect(route('pdf.payroll',['id'=>implode('-',$table->getRecords()->pluck('id')->toArray())]));
+                    Tables\Actions\Action::make('print')->label('Print')->action(function($record){
+                        return redirect(route('pdf.payroll',['id'=>$record->id,'title'=>'Payroll']));
                     }),
                 ]);
 

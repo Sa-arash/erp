@@ -15,7 +15,7 @@ class myEmployees extends Page
     protected static ?string $navigationLabel='My Employees';
    public static function canAccess(): bool
 {
-    
+
         return !(auth()->user()->employee->subordinates->isEmpty());
     }
 
@@ -25,4 +25,6 @@ class myEmployees extends Page
             \App\Filament\Admin\Widgets\myEmployees::class
         ];
     }
+
+
 }

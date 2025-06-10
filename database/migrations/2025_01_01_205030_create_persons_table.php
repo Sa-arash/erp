@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('number');
+            $table->boolean('status')->default(1);
             $table->string('person_group');
             $table->string('work_phone')->nullable();
             $table->string('home_phone')->nullable();

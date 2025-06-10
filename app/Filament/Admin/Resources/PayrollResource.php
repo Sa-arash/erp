@@ -780,7 +780,7 @@ implements HasShieldPermissions
                                 'status' => 'accepted',
                                 'user_id' => auth()->id()
                             ]);
-                            return Notification::make('approvePayroll')->title('Approve Payroll ' . $record->employee->fullName)->actions([\Filament\Notifications\Actions\Action::make('Payroll')->url(route('pdf.payroll', ['id' => $record->id]))->openUrlInNewTab()->color('aColor')])->success()->send()->sendToDatabase(auth()->user());
+                            return Notification::make('approvePayroll')->title('Approve Payroll ' . $record->employee->fullName)->success()->send();
                         })
                     ]
                 )->modalWidth(MaxWidth::FitContent)->visible(fn($record) => $record->status->value === "pending" and auth()->user()->can('approve_payroll')),
@@ -844,7 +844,7 @@ implements HasShieldPermissions
                         'invoice_id' => $invoice->id
 
                     ]);
-                    return Notification::make('Create Invoice Payroll')->success()->title('Pay Payroll')->actions([\Filament\Notifications\Actions\Action::make('Payroll')->url(route('pdf.payroll', ['id' => $record->id]))->openUrlInNewTab()])->send()->sendToDatabase(auth()->user());
+                    return Notification::make('Create Invoice Payroll')->success()->title('Pay Payroll')->send();
                 })->form(function ($record) {
                     return [
                         Forms\Components\Section::make([
@@ -978,7 +978,9 @@ implements HasShieldPermissions
                 })->modalSubmitActionLabel('Payment')->modalWidth(MaxWidth::ScreenTwoExtraLarge),
 
                 Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')
-                    ->url(fn($record) => route('pdf.payroll', ['id' => $record->id]))->openUrlInNewTab(),
+                    ->action(fn($record,$data) => redirect(route('pdf.payroll', ['id' => $record->id,'title'=>$data['title']])))->form([
+                        Select::make('title')->searchable()->default('Payroll')->options(['Payroll'=>'Payroll','PaySlip'=>'PaySlip'])->required()
+                    ]),
                     Tables\Actions\EditAction::make(),
                     ActionsDeleteAction::make()->hidden(fn($record)=>$record->invoice!==null || $record->status === "accepted"),
             ])

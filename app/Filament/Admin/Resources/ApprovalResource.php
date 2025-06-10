@@ -64,23 +64,23 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
     {
         return $table->query(Approval::query()->where('employee_id', getEmployee()->id)->orderBy('id', 'desc'))
             ->columns([
-                Tables\Columns\TextColumn::make('approvable.purchase_number')->prefix('')->label('No')->badge(),
+                Tables\Columns\TextColumn::make('')->rowIndex()->label('No'),
                 Tables\Columns\TextColumn::make('approvable.employee.info')->label('Employee')->badge(),
                 Tables\Columns\TextColumn::make('created_at')->label('Request Date')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('approve_date')->label('Approval Date')->date(),
                 Tables\Columns\TextColumn::make('comment')->sortable(),
                 Tables\Columns\TextColumn::make('status')->state(fn($record)=>match ($record->status->value){
                     'Approve'=>'Approved',
-                    'NotApprove'=>'Not Approve',
+                    'NotApprove'=>'Not Approved',
                     'Pending'=>'Pending',
                 })->color(fn($state)=>match ($state){
                     'Approved'=>'success',
-                    'Not Approve'=>'danger',
+                    'Not Approved'=>'danger',
                     'Pending'=>'info',
                 })->label('Status')->badge(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('status')->label('Status')->options(['Approve'=>'Approve','NotApprove'=>'NotApprove','Pending'=>'Pending'])->searchable(),
+                Tables\Filters\SelectFilter::make('status')->label('Status')->options(['Approve'=>'Approve','NotApprove'=>'NotApproved','Pending'=>'Pending'])->searchable(),
             ], getModelFilter())
             ->actions([
                 Tables\Actions\Action::make('viewLeave')->visible(fn($record) => substr($record->approvable_type, 11) === "Leave")->infolist(function ($record){
@@ -91,9 +91,9 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
                           TextEntry::make('start_leave')->date()->label('Start Leave'),
                           TextEntry::make('end_leave')->date()->label('End Leave'),
                           TextEntry::make('end_leave')->state(function ($record){
-                              $start = Carbon::parse($record->approvable->start_date);
+                              $start = Carbon::parse($record->start_leave);
 
-                              $end = Carbon::parse($record->approvable->end_date);
+                              $end = Carbon::parse($record->end_leave);
                               $period = CarbonPeriod::create($start, $end);
                               $daysBetween = $period->count(); // تعداد کل روزها
                               $CompanyHoliday = count(getDaysBetweenDates($start, $end, getCompany()->weekend_days));
@@ -122,9 +122,9 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
                     ];
                 }),
 
-                Tables\Actions\Action::make('viewTakeOut')->visible(fn($record) => substr($record->approvable_type, 11) === "TakeOut")->infolist(function ($record) {
+                Tables\Actions\Action::make('viewGatePass')->visible(fn($record) => substr($record->approvable_type, 11) === "TakeOut")->infolist(function ($record) {
                     return [
-                        Fieldset::make('Take Out')->schema([
+                        Fieldset::make('Gate Pass')->schema([
                             TextEntry::make('employee.info')->label('Employee'),
                             TextEntry::make('from')->label('From'),
                             TextEntry::make('to')->label('To'),
@@ -133,7 +133,7 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
                             TextEntry::make('status')->label('Status'),
                             TextEntry::make('type')->label('Type'),
                             RepeatableEntry::make('items')->getStateUsing(function () use ($record) {
-                                return $record->approvable->items;
+                                return $record->items;
                             })->schema([
                                 TextEntry::make('asset.title'),
                                 TextEntry::make('remarks'),

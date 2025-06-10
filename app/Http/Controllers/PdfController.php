@@ -32,13 +32,13 @@ use niklasravnsborg\LaravelPdf\Facades\Pdf;
 class PdfController extends Controller
 {
     protected $period;
-    public function payroll($id)
+    public function payroll($id,$title)
     {
 
         $payroll = Payroll::query()->with('employee', 'itemAllowances', 'itemDeductions', 'benefits')->findOrFail($id);
         $company = $payroll->company;
 
-        $pdf = Pdf::loadView('pdf.payroll', compact('payroll', 'company'));
+        $pdf = Pdf::loadView('pdf.payroll', compact('payroll', 'company','title'));
         return $pdf->stream('pdf.payroll');
     }
 

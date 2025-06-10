@@ -23,7 +23,7 @@
 
 
 @include('pdf.header', [
-    'title' => 'Payroll-' . $month->format('M') . ' ' . $year,
+    'title' => $title .' '. $month->format('M') . ' ' . $year,
     'titles' => [],
     'css' => false,
 ])

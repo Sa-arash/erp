@@ -21,7 +21,7 @@ class EditPayroll extends EditRecord
     }
     protected function getRedirectUrl(): ?string
     {
-        return route('pdf.payroll',['id'=>$this->record->id]);
+        return route('pdf.payroll',['id'=>$this->record->id,'title'=>'Payroll']);
     }
 
     protected function getSaveFormAction(): Action

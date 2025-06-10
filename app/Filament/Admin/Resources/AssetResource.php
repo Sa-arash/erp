@@ -162,13 +162,7 @@ class AssetResource extends Resource
                             Textarea::make('note')->columnSpanFull(),
                         ])->columns(4),
                         DatePicker::make('buy_date')->label('Purchase Date')->default(now()),
-                        Select::make('currency_id')->live()->label('Currency')->required()->searchable()->preload()->options(getCompany()->currencies->pluck('name','id'))->afterStateUpdated(function ($state, Forms\Set $set) {
-                            $currency = Currency::query()->firstWhere('id', $state);
-                            if ($currency) {
-                                $set('exchange_rate', $currency->exchange_rate);
-                            }
-                        }),
-                        TextInput::make('exchange_rate')->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+
                         Forms\Components\TextInput::make('price')->hintAction(Forms\Components\Actions\Action::make('Exange Rate')->fillForm(function ($state){
                             return [
                                 'currency_id'=>null,
@@ -501,7 +495,7 @@ class AssetResource extends Resource
                     })->exports([
                         ExcelExport::make()->askForFilename("Assets")->withColumns([
                             Column::make('product.sku')->heading("product sku"),
-                            Column::make('purchase_order_id')->heading('PO No')->formatStateUsing(fn($record) => $record->purchase_order_id === null ? "---" : PurchaseOrder::find($record->purchase_order_id)->purchase_orders_number),
+                            Column::make('purchase_order_id')->heading('PO NO')->formatStateUsing(fn($record) => $record->purchase_order_id === null ? "---" : PurchaseOrder::find($record->purchase_order_id)->purchase_orders_number),
                             Column::make('description')->heading('Asset Description'),
                             Column::make('price')->heading('Purchase Price'),
 
@@ -543,7 +537,7 @@ class AssetResource extends Resource
                 })->action(function ($record) {
                     return redirect(route('pdf.barcode', ['code' => $record->id]));
                 }),
-                Tables\Columns\TextColumn::make('purchase_order_id')->label('PO No')->state(fn($record) => $record->purchase_order_id === null ? "---" : PurchaseOrder::find($record->purchase_order_id)->purchase_orders_number)
+                Tables\Columns\TextColumn::make('purchase_order_id')->label('PO NO')->state(fn($record) => $record->purchase_order_id === null ? "---" : PurchaseOrder::find($record->purchase_order_id)->purchase_orders_number)
                     ->url(fn($record) => $record->purchase_order_id ? PurchaseOrderResource::getUrl() . "?tableFilters[id][value]=" . $record->purchase_order_id : false),
                 Tables\Columns\TextColumn::make('titlen')->label('Asset Description'),
                 Tables\Columns\TextColumn::make('brand.title'),
@@ -583,6 +577,7 @@ class AssetResource extends Resource
                 Tables\Columns\TextColumn::make('manufacturer'),
             ])
             ->filters([
+                Tables\Filters\SelectFilter::make('type')->searchable()->options(getCompany()->asset_types)->label('Type'),
                 Tables\Filters\SelectFilter::make('purchase_order_id')->searchable()->options(getCompany()->purchaseOrders->pluck('purchase_orders_number', 'id'))->label('PO No'),
                 Tables\Filters\SelectFilter::make('product_id')->searchable()->options(getCompany()->products->where('product_type','unConsumable')->pluck('title', 'id'))->label('Product'),
                 Tables\Filters\SelectFilter::make('status')->searchable()->options(['inuse' => "In Use", 'inStorageUsable' => "In Storage",  'loanedOut' => "Loaned Out", 'outForRepair' => 'Out For Repair', 'StorageUnUsable' => " Scrap"]),
@@ -727,16 +722,7 @@ class AssetResource extends Resource
                                     return $data['title'];
                                 })->searchable()->preload()->required(),
 
-                            Forms\Components\Select::make('check_out_to')
-                                ->options(function () {
-                                    $data = [];
-                                    $employees = getCompany()->employees;
-                                    foreach ($employees as $employee) {
-                                        $data[$employee->id] = $employee->fullName;
-                                    }
-                                    return $data;
-                                })->searchable()->preload()
-                                ->required(),
+
                             DatePicker::make('guarantee_date')->label('Due Date')->default(now()),
                             DatePicker::make('warranty_date')->label('Warranty End'),
                             TextInput::make('po_number')->label("PO Number"),

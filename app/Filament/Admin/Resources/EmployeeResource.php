@@ -286,7 +286,7 @@ class EmployeeResource extends Resource
     public static function getForm()
     {
         return [
-            
+
             Forms\Components\Wizard\Step::make('Information')
                 ->schema([
                     MediaManagerInput::make('images')->orderable(false)->folderTitleFieldName("fullName")->image(true)
@@ -616,6 +616,7 @@ class EmployeeResource extends Resource
             'create' => Pages\CreateEmployee::route('/create'),
             'edit' => Pages\EditEmployee::route('/{record}/edit'),
             'view' => Pages\ViewEmployee::route('/{record}'),
+            'view-manager' => Pages\viewEmployeeLineManager::route('/{record}/manager'),
             'chart'=> Pages\Manager::route('/manager/chart'),
         ];
     }

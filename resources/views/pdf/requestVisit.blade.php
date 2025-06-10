@@ -403,7 +403,7 @@ $tdsArend='';
                 </td>
 
                 <td class="no-border" style="padding-top: 15px;">
-                    Date: {{ \Illuminate\Support\Carbon::create($requestVisit->visit_date)->format('d/F/Y ') }}</td>
+                    Date: {{ \Illuminate\Support\Carbon::create($requestVisit->created_at)->format('d/M/Y ') }}</td>
                 <td class="no-border" style="padding-top: 15px">
                 </td>
             </tr>

@@ -165,7 +165,7 @@ class AssetEmployeeResource extends Resource
             ->columns([
 
                 Tables\Columns\TextColumn::make('')->rowIndex(),
-                Tables\Columns\TextColumn::make('employee.fullName')->state(fn($record) => $record->employee_id ? $record->employee->fullName : $record->person?->name . '(' . $record->person?->number . ')')->label('Employee/Person')->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('employee.fullName')->state(fn($record) => $record->employee_id ? $record->employee->fullName : $record->person?->name . '(' . $record->person?->number . ')')->label('Employee/Personnel')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('description')->sortable(),
                 Tables\Columns\TextColumn::make('assetEmployeeItem.asset.product.title')->state(function ($record){

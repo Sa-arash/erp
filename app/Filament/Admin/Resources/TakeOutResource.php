@@ -88,7 +88,7 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                 ])->label('Export Gate Pass')->color('purple')
             ])
             ->columns([
-                Tables\Columns\TextColumn::make('')->rowIndex(),
+                Tables\Columns\TextColumn::make('NO')->rowIndex(),
                 Tables\Columns\TextColumn::make('employee.fullName'),
                 Tables\Columns\TextColumn::make('assets.product.title')->state(fn($record) => $record->assets->pluck('title')->toArray())->badge()->label('Registered Asset'),
                 Tables\Columns\TextColumn::make('itemsOut')->label('Unregistered Asset')->state(function ($record) {

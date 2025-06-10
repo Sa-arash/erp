@@ -15,7 +15,8 @@ class PersonResource extends Resource
 {
     protected static ?string $model = Person::class;
     protected static ?string $navigationGroup = 'Logistic Management';
-    protected static ?int $navigationSort=8;
+    protected static ?string $label = 'Personnel';
+    protected static ?int $navigationSort = 8;
 
     protected static ?string $navigationIcon = 'heroicon-s-user-group';
 
@@ -35,7 +36,7 @@ class PersonResource extends Resource
                         return 'PSN00001';
                     }
                 })->readOnly()->required()->maxLength(255),
-                Forms\Components\Select::make('person_group')->options(getCompany()->person_group)
+                Forms\Components\Section::make()->schema([Forms\Components\Select::make('person_group')->label('Group')->options(getCompany()->person_group)
                     ->createOptionForm([
                         Forms\Components\TextInput::make('title')->required()
                     ])->createOptionUsing(function ($data) {
@@ -48,7 +49,9 @@ class PersonResource extends Resource
                         getCompany()->update(['person_group' => $array]);
                         return $data['title'];
                     })->searchable(),
-                Forms\Components\TextInput::make('job_title')->maxLength(255)->default(null),
+                    Forms\Components\TextInput::make('job_title')->maxLength(255)->default(null),
+                    Forms\Components\ToggleButtons::make('status')->default(1)->boolean('Active','Inactive')->grouped()
+                    ])->columns(3),
                 Forms\Components\Section::make([
                     Forms\Components\TextInput::make('work_phone')->maxLength(255)->default(null),
                     Forms\Components\TextInput::make('home_phone')->maxLength(255)->default(null),
@@ -57,6 +60,11 @@ class PersonResource extends Resource
                 Forms\Components\TextInput::make('pager')->maxLength(255)->default(null),
                 Forms\Components\TextInput::make('email')->email()->maxLength(255)->default(null),
                 Forms\Components\Textarea::make('note')->columnSpanFull(),
+                MediaManagerInput::make('attachment')->orderable(false)->folderTitleFieldName("name")->image(true)
+                    ->disk('public')->columns()
+                    ->schema([
+                        Forms\Components\Textarea::make('description')->required()
+                    ])->columnSpanFull()->addActionLabel('Add To Attachment'),
 
             ]);
     }

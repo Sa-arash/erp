@@ -27,8 +27,14 @@ class ListApprovals extends ListRecords
         Approval::query()->where('read_at',null)->where('employee_id',getEmployee()->id)->update(['read_at'=>now()]);
 
         foreach ($approvals as  $item) {
+
             $approveCount = Approval::query()->where('status','Pending')->where('employee_id',getEmployee()->id)->where('approvable_type',$item->approvable_type)->count();
-            $data[Str::headline(substr($item->approvable_type, 11)).'('.$approveCount.')'] = Tab::make()->query(fn($query) => $query->where('approvable_type', $item->approvable_type)) ;
+            if (substr($item->approvable_type, 11)==="TakeOut"){
+                $data[Str::headline("Gate Pass").' ('.$approveCount.')'] = Tab::make()->query(fn($query) => $query->where('approvable_type', $item->approvable_type)) ;
+            }else{
+                $data[Str::headline(substr($item->approvable_type, 11)).' ('.$approveCount.')'] = Tab::make()->query(fn($query) => $query->where('approvable_type', $item->approvable_type)) ;
+
+            }
         }
         return $data;
 

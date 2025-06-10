@@ -124,7 +124,18 @@ class WarehouseResource extends Resource
                         SelectTree::make('parent_id')->label('Parent')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id',modifyQueryUsing: function($query,Get $get)use($record){
                             return $query->where('warehouse_id', $record->id)->where('location',$get('location'));
                         }),
-                        Select::make('type')->label('Type')->live()->options(['aisle' => "Aisle", 'room' => 'Room', 'shelf' => "Shelf", 'row' => "Row"])->searchable()->preload()->required()
+                        Select::make('type')->label('Type')->live()->options(getCompany()->warehouse_type)->searchable()->preload()->required()->createOptionForm([
+                            TextInput::make('title')->required()->maxLength(50)
+                        ])->createOptionUsing(function ($data){
+                            $array = getCompany()->warehouse_type;
+                            if (isset($array)) {
+                                $array[$data['title']] = $data['title'];
+                            } else {
+                                $array = [$data['title'] => $data['title']];
+                            }
+                            getCompany()->update(['warehouse_type' => $array]);
+                            return $data['title'];
+                        })
                     ];
                 })->action(function ($data,$record) {
                     Structure::query()->create([

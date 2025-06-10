@@ -40,7 +40,7 @@ class ViewAsset extends ViewRecord
                         }
                         return $data;
                     })->searchable()->requiredWithout('person')->prohibits('person'),
-                    Select::make('person')->label('Person')->options(function (){
+                    Select::make('person')->label('Personnel')->options(function (){
                         $data=[];
                         $persons=getCompany()->people;
                         foreach ($persons as $person){
@@ -154,7 +154,7 @@ class ViewAsset extends ViewRecord
                        }
                        return $data;
                    })->disabled()->searchable()->requiredWithout('person')->prohibits('person'),
-                   Select::make('person')->disabled()->label('Person')->options(function (){
+                   Select::make('person')->disabled()->label('Personnel')->options(function (){
                        $data=[];
                        $persons=getCompany()->people;
                        foreach ($persons as $person){
