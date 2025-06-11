@@ -81,7 +81,7 @@ implements HasShieldPermissions
                                     ->afterStateHydrated(function (Set $set, Get $get, $state) {
                                         if ($state) {
                                             $record = PurchaseRequest::query()->with('bid')->firstWhere('id', $state);
-
+                                            $set('purchase_orders_number', $record->purchase_number);
                                             if ($record->bid) {
 
                                                 $data = [];
@@ -127,6 +127,8 @@ implements HasShieldPermissions
                                         if ($state) {
 
                                             $record = PurchaseRequest::query()->with('bid')->firstWhere('id', $state);
+                                            $set('purchase_orders_number', $record->purchase_number);
+
                                             if ($record->bid) {
                                                 $data = [];
                                                 foreach ($record->bid->quotation?->quotationItems->toArray() as $item) {
@@ -162,7 +164,9 @@ implements HasShieldPermissions
                                     })
                                     ->options(function (){
                                         $data=[];
-                                        foreach (getCompany()->purchaseRequests()->orderBy('id', 'desc')->get() as $item){
+
+
+                                        foreach (getCompany()->purchaseRequests()->where('status','Approval')->whereHas('purchaseOrder',function (){},'!=')->orderBy('id', 'desc')->get() as $item){
                                             $data[$item->id]=  $item->purchase_number.'('.$item->employee?->fullName.')';
                                         }
                                         return $data;
@@ -203,7 +207,7 @@ implements HasShieldPermissions
                                             TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                                         ])->columns(3)
                                     ]),
-                                Forms\Components\TextInput::make('exchange_rate')
+                                Forms\Components\TextInput::make('exchange_rate')->readOnly()
                                     ->required()->default(1)
                                     ->numeric(),
                                 Forms\Components\Select::make('prepared_by')->live()
@@ -213,14 +217,7 @@ implements HasShieldPermissions
                                     ->options(getCompany()->employees->pluck('fullName', 'id'))
                                     ->default(fn() => auth()->user()->employee->id),
 
-                                Forms\Components\TextInput::make('purchase_orders_number')->default(function () {
-                                    $puncher = PurchaseOrder::query()->where('company_id', getCompany()->id)->latest()->first();
-                                    if ($puncher) {
-                                        return  generateNextCodePO($puncher->purchase_orders_number);
-                                    } else {
-                                        return "00001";
-                                    }
-                                })->label('PO NO')->prefix('ATGT/UNC/')->readOnly()
+                                Forms\Components\TextInput::make('purchase_orders_number')->label('PO NO')->prefix('ATGT/UNC/')->readOnly()
                                     ->required()
                                     ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
                                         return $rule->where('company_id', getCompany()->id);

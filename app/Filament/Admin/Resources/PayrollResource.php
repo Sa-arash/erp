@@ -12,6 +12,7 @@ use App\Models\Benefit;
 use App\Models\BenefitPayroll;
 use App\Models\Contract;
 use App\Models\Currency;
+use App\Models\Department;
 use App\Models\Employee;
 use App\Models\Expense;
 use App\Models\FinancialPeriod;
@@ -587,7 +588,8 @@ implements HasShieldPermissions
             ])
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
-                Tables\Columns\TextColumn::make('employee.fullName')->alignLeft()->numeric()->sortable(),
+                Tables\Columns\TextColumn::make('employee.fullName')->alignLeft()->sortable(),
+                Tables\Columns\TextColumn::make('employee.department.title')->alignLeft()->sortable(),
                 Tables\Columns\TextColumn::make('month')->state(fn($record) => Carbon::parse($record->start_date)->format('F'))->alignLeft()->sortable(),
                 Tables\Columns\TextColumn::make('year')->state(fn($record) => Carbon::parse($record->start_date)->year)->alignLeft()->sortable(),
                 //   Tables\Columns\TextColumn::make('payment_date')->alignCenter()->state(fn($record) => $record->payment_date ? Carbon::make($record->payment_date)->format('Y/m/d') : "Not Paid")->sortable(),
@@ -598,7 +600,9 @@ implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('status')->badge()->alignLeft(),
             ])
             ->filters([
-
+                SelectFilter::make('department_id')->searchable()->preload()->options(Department::where('company_id', getCompany()->id)->get()->pluck('title', 'id'))->label('Department')->query(fn($query,$data)=> isset($data['value'])? $query->whereHas('employee',function ($query)use($data){
+                    $query->where('department_id',$data);
+                }):$query),
                 SelectFilter::make('employee_id')->multiple()->searchable()->preload()->options(Employee::where('company_id', getCompany()->id)->get()->pluck('fullName', 'id'))->label('Employee'),
                 Filter::make('filter')->form([
                     Forms\Components\Select::make('month')

@@ -1,6 +1,6 @@
 @include('pdf.header',
   ['titles'=>[''],
-  'css'=>true,'title'=>'Assets'
+  'css'=>false,'title'=>'Assets'
   ])
      <style>
          body {
@@ -50,14 +50,14 @@
              margin-bottom: 15px; /* Reduced margin */
          }
          table, th, td {
-             border: 1px solid #e0e0e0; /* Lighter border for details tables */
+             border: 0; /* Lighter border for details tables */
          }
          th, td {
              padding: 5px 10px; /* Reduced padding */
              vertical-align: top;
              font-size: 10px; /* Reduced font size */
              text-align: left; /* Align text to left in cells */
-         }
+         }  
          th {
              background-color: #f9f9f9; /* Light background for labels */
              width: 30%; /* Allocate width for label column */
@@ -99,135 +99,129 @@
          .footer p {
              margin: 3px 0;
          }
+         @page  {
+             margin: 10px;
+         }
      </style>
  </head>
  <body>
 
-     <div class="">
-         <div class="header">
-             <h1>Asset Details</h1>
-             <p>Comprehensive Information for: **{{ $asset->product->title ?? 'N/A' }}**</p>
-         </div>
+<table>
+    <tr>
+        <td style="background-color: #b3bbea" colspan="2"><strong>Description:</strong> {{$asset->description}}
+        </td>
+    </tr>
 
-         <div class="section-title">General Information</div>
-         <table>
-             <tbody>
-                 <tr>
-                     <th>SKU:</th>
-                     <td>{{ $asset->product->sku ?? 'N/A' }}</td>
-                 </tr>
-                 <tr>
-                     <th>Product Title:</th>
-                     <td>{{ $asset->product->title ?? 'N/A' }}</td>
-                 </tr>
-                 <tr>
-                     <th>Description:</th>
-                     <td>{{ $asset->description ?? 'N/A' }}</td>
-                 </tr>
-                 <tr>
-                     <th>Serial Number:</th>
-                     <td>{{ $asset->serial_number ?? 'N/A' }}</td>
-                 </tr>
-                 <tr>
-                     <th>PO Number:</th>
-                     <td>{{ $asset->po_number ?? 'N/A' }}</td>
-                 </tr>
-                 <tr>
-                     <th>Asset Type:</th>
-                     <td>{{ $asset->type ?? 'N/A' }}</td>
-                 </tr>
-                 <tr>
-                     <th>Current Status:</th>
-                     <td>
-                         @php
-                             $statusText = '';
-                             $statusClass = '';
-                             switch ($asset->status) {
-                                 case 'inuse': $statusText = "In Use"; $statusClass = 'badge-inuse'; break;
-                                 case 'inStorageUsable': $statusText = "In Storage"; $statusClass = 'badge-instorageusable'; break;
-                                 case 'loanedOut': $statusText = "Loaned Out";
-                                 $statusClass = 'badge-loanedout'; break;
-                                 case 'outForRepair': $statusText = "Out For Repair"; $statusClass = 'badge-outforrepair'; break;
-                                 case 'StorageUnUsable': $statusText = "Scrap"; $statusClass = 'badge-storageunusable'; break;
-                                 default: $statusText = "Unknown"; break;
-                             }
-                         @endphp
-                         <span class="badge {{ $statusClass }}">{{ $statusText }}</span>
-                     </td>
-                 </tr>
-                 {{-- Added Note Field Here --}}
-                 <tr>
-                     <th>Note:</th>
-                     <td>{{ $asset->note ?? 'N/A' }}</td>
-                 </tr>
-             </tbody>
-         </table>
+    <tr>
 
-         <div class="section-title">Financial Details</div>
-         <table>
-             <tbody>
-                 <tr>
-                     <th>Purchase Price:</th>
-                     <td>{{ number_format($asset->price, 2) }}</td>
-                 </tr>
-                 <tr>
-                     <th>Scrap Value:</th>
-                     <td>{{ number_format($asset->scrap_value, 2) }}</td>
-                 </tr>
-                 <tr>
-                     <th>Buy Date:</th>
-                     <td>{{ \Carbon\Carbon::parse($asset->buy_date)->format('M j, Y') ?? 'N/A' }}</td>
-                 </tr>
-                 <tr>
-                     <th>Guarantee Due Date:</th>
-                     <td>{{ \Carbon\Carbon::parse($asset->guarantee_date)->format('M j, Y') ?? 'N/A' }}</td>
-                 </tr>
-                 <tr>
-                     <th>Warranty End Date:</th>
-                     <td>{{ \Carbon\Carbon::parse($asset->warranty_date)->format('M j, Y') ?? 'N/A' }}</td>
-                 </tr>
-                 <tr>
-                     <th>Depreciation Years:</th>
-                     <td>{{ $asset->depreciation_years ?? 'N/A' }}</td>
-                 </tr>
-                 <tr>
-                     <th>Depreciation Amount:</th>
-                     <td>{{ number_format($asset->depreciation_amount, 2) ?? 'N/A' }}</td>
-                 </tr>
-             </tbody>
-         </table>
+        <td style="width: 80%;">
+            <table style="width: 100%;">
 
-         <div class="section-title">Location & Assignment</div>
-         <table>
-             <tbody>
-                 <tr>
-                     <th>Warehouse:</th>
-                     <td>{{ $asset->warehouse->title ?? 'N/A' }}</td>
-                 </tr>
-                 <tr>
-                     <th>Location:</th>
-                     <td>{{ $asset->structure->title ?? 'N/A' }}</td>
-                 </tr>
-                 <tr>
-                     <th>Checked Out To:</th>
-                     <td>{{ $asset->check_out_to->fullName ?? 'N/A' }}</td>
-                 </tr>
-                 <tr>
-                     <th>Vendor:</th>
-                     <td>{{ $asset->party->name ?? 'N/A' }}</td>
-                 </tr>
-                 <tr>
-                     <th>Assigned Employee:</th>
-                     <td>{{ $asset->employees->last()?->assetEmployee?->employee?->fullName ?? 'N/A' }}</td>
-                 </tr>
-             </tbody>
-         </table>
+                <tr>
+                    <td><strong>Asset Number:</strong></td>
+                    <td>{{$asset->number}}</td>
+                    <td><strong>Serial Number:</strong></td>
+                    <td>{{$asset->serial_number}}</td>
+                </tr>
+                <tr>
+                    <td><strong>Asset Type:</strong></td>
+                    <td>{{$asset->type}}</td>
+                    <td><strong>Status:</strong></td>
+                    <td>@switch($asset->status)
+                            @case('inuse')
+                            In Use
+                            @break
 
-         <div class="footer">
-             <p>Generated on: {{ \Carbon\Carbon::now()->format('M j, Y H:i') }}</p>
-             <p>&copy; {{$asset->company->title}}. All rights reserved.</p>
-         </div>
-     </div>
+                            @case('inStorageUsable')
+                            In Storage
+                            @break
+
+                            @case('loanedOut')
+                            Loaned Out
+                            @break
+
+                            @case('outForRepair')
+                            Out For Repair
+                            @break
+
+                            @case('StorageUnUsable')
+                            Scrap
+                            @break
+
+                            @default
+                            Unknown
+                        @endswitch
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Location:</strong></td>
+                    <td>{{$asset->warehouse?->title.' '.getParents($asset->structure)}}</td>
+                    <td><strong>Condition:</strong></td>
+                    <td>{{$asset->quality}}</td>
+                </tr>
+                <tr>
+                    <td><strong>Manufacturer:</strong></td>
+                    <td>{{$asset->manufacturer}}</td>
+                    <td><strong>Due Date:</strong></td>
+                    <td>{{$asset->employees?->last()?->due_date}}</td>
+                </tr>
+                <tr>
+                    <td><strong>Brand:</strong></td>
+                    <td>{{$asset->brand->title}}</td>
+                    <td><strong>Warranty Expires:</strong></td>
+                    <td>{{$asset->warranty_date}}</td>
+                </tr>
+                <tr>
+                    <td><strong>Model:</strong></td>
+                    <td>{{$asset->model}}</td>
+                    <td><strong>In Service:</strong></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td><strong>PO Number:</strong></td>
+                    <td>{{$asset->po_number}}</td>
+                    <td><strong>Purchase Price:</strong></td>
+                    <td>{{$asset->price}}</td>
+                </tr>
+                <tr>
+                    <td><strong>Vendor:</strong></td>
+                    <td>{{$asset->party?->name}}</td>
+                    <td><strong>Market Value:</strong></td>
+                    <td>{{number_format($asset->depreciation_amount)}}</td>
+                </tr>
+                <tr>
+                    <td><strong>Purchased:</strong></td>
+                    <td>{{$asset->buy_date}}</td>
+                    <td><strong>Recovery Period:</strong></td>
+                    <td>{{$asset->depreciation_years}}</td>
+                </tr>
+                <tr>
+                    <td><strong>Note</strong></td>
+
+                    <td colspan="3" class="notes">{{$asset->note}}</td>
+                </tr>
+            </table>
+        </td>
+        <td style="width: 10%;">
+            <table>
+                <tr>
+                    <td class="barcode" style="text-align: center">
+                        {!! '<img src="data:image/png;base64,' . \Milon\Barcode\Facades\DNS1DFacade::getBarcodePNG($asset->number, 'C39',1   ,20) .'" style="width:100px" alt="barcode"/>' !!}
+                        <br>
+
+                        {{$asset->number}}<br><br>
+                        @if($asset->media->where('collection_name','images')->first())
+                            <img class="asset-image" width="100"
+                                 src="{{$asset->media->where('collection_name','images')->first()?->getPath()}}"
+                                 alt="">
+                        @endif
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+
 
  </body>
  </html>

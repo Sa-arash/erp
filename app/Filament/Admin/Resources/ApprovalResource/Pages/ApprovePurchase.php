@@ -127,19 +127,6 @@ class ApprovePurchase extends ManageRelatedRecords
                 //
             ])
             ->headerActions([
-//                Tables\Actions\Action::make('Show Approve')->infolist([
-//
-//                        RepeatableEntry::make('approvals')->state(function (){
-//                            return $this->record->approvable->approvals;
-//                        })->schema([
-//                            TextEntry::make('employee.fullName')->label(fn($record)=>$record->employee?->position?->title),
-//                            TextEntry::make('created_at')->label('Request Date')->dateTime(),
-//                            TextEntry::make('status')->badge(),
-//                            TextEntry::make('comment')->tooltip(fn($record) => $record->comment)->limit(50),
-//                            TextEntry::make('approve_date')->dateTime(),
-//                        ])->columns(5)->columnSpanFull()
-//
-//                ])->record($this->record),
                 Tables\Actions\Action::make('Approve')->color('success')->form([
                     Forms\Components\Section::make([
                         Forms\Components\Section::make([
@@ -148,7 +135,15 @@ class ApprovePurchase extends ManageRelatedRecords
                             Forms\Components\ToggleButtons::make('is_quotation')->disabled($this->record->position==="PR Approval")->default($this->record?->approvable?->is_quotation)->required()->label('Need Quotation')->boolean(' With Quotation', 'With out Quotation')->grouped()->inline(),
                             Forms\Components\Textarea::make('comment')->nullable()->columnSpanFull(),
                         ])->columns(3),
-                        Forms\Components\Repeater::make('items')->formatStateUsing(fn($record) => $this->record?->approvable?->items?->toArray())->schema([
+                        Forms\Components\Repeater::make('items')->formatStateUsing(function(){
+                            $data=[];
+                            foreach ($this->record?->approvable?->items?->toArray() as $item){
+                                $item['decision']='approve';
+                                $data[]=$item;
+                            }
+
+                         return $data;
+                        })->schema([
                             Select::make('product_id')
                                 ->label('Product')->options(function () {
                                     $products = getCompany()->products;

@@ -46,6 +46,10 @@ class PurchaseRequest extends Model
     {
         return $this->belongsTo(Employee::class);
     }
+    public function purchaseOrder(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(PurchaseOrder::class);
+    }
 
 
     public function items(): \Illuminate\Database\Eloquent\Relations\HasMany

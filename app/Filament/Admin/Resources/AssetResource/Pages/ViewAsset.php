@@ -214,7 +214,7 @@ class ViewAsset extends ViewRecord
                     TextEntry::make('product.title')->inlineLabel(),
                     TextEntry::make('description')->inlineLabel(),
                     TextEntry::make('serial_number')->label("Serial Number")->badge()->inlineLabel(),
-                    TextEntry::make('po_number')->label("Po Number")->badge()->inlineLabel(),
+                    TextEntry::make('po_number')->label("PO Number")->badge()->inlineLabel(),
                     TextEntry::make('status')->state(fn($record) => match ($record->status) {
                         'inuse' => "In Use",
                         'inStorageUsable' => "In Storage",

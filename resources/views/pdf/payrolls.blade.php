@@ -42,6 +42,7 @@
         <tr >
             <th>#</th>
             <th>Employee</th>
+            <th>Department</th>
             <th>Month</th>
             <th>Year</th>
             <th>Base Salary (Amount)</th>
@@ -72,7 +73,8 @@
             @endphp
         <tr style="margin:  0!important;text-align: center!important;" >
             <td  style="padding: 5px">{{$i++}}</td>
-            <td  style="padding: 5px">{{$payroll->employee->fullName}}</td>
+            <td  style="padding: 5px">{{$payroll->employee?->fullName}}</td>
+            <td  style="padding: 5px">{{$payroll->employee?->department?->title}}</td>
             <td style="padding: 5px">{{$month->format('F')}}</td>
             <td style="padding: 5px">{{$year}}</td>
             <td style="padding: 5px">{{number_format($payroll->employee?->base_salary).' '.$payroll->employee?->currency?->name}}</td>

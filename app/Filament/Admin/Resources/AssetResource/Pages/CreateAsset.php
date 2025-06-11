@@ -26,6 +26,7 @@ class CreateAsset extends CreateRecord
             $data = $this->form->getState();
 
             $this->callHook('afterValidate');
+            $data['manager_id']=getEmployee()->id;
 
             $data = $this->mutateFormDataBeforeCreate($data);
 
