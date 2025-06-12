@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Account;
 use App\Models\Asset;
+use App\Models\AssetEmployee;
 use App\Models\Bid;
 use App\Models\Company;
 use App\Models\Employee;
@@ -28,6 +29,7 @@ use App\Models\Warehouse;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use niklasravnsborg\LaravelPdf\Facades\Pdf;
+use function PHPUnit\Framework\isNull;
 
 class PdfController extends Controller
 {
@@ -691,6 +693,24 @@ class PdfController extends Controller
 
         $company=Company::query()->firstWhere('id',$company);
         $pdf = Pdf::loadView('pdf.audit-checklist', compact('groups','company','type'));
+        return $pdf->stream();
+    }
+    public function employeeAssetHistory($id,$type,$company)
+    {
+        $histories=null;
+        if ($type=="ID"){
+            $histories = AssetEmployee::query()->with(['assetEmployeeItem'])->firstWhere('id',$id);
+        }elseif ($type==="Personnel"){
+
+            $histories = AssetEmployee::query()->with(['assetEmployeeItem'])->firstWhere('person_id',$id);
+
+        }
+        if ($histories===null){
+
+            abort(404);
+        }
+        $company=Company::query()->firstWhere('id',$company);
+        $pdf = Pdf::loadView('pdf.employeeAssetHistory', compact('histories','company'));
         return $pdf->stream();
     }
 }

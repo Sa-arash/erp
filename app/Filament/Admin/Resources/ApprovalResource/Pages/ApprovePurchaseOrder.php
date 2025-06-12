@@ -66,7 +66,7 @@ class ApprovePurchaseOrder extends ManageRelatedRecords
                             TextEntry::make('date_of_po')->state($record->date_of_po)->label('Date of PO'),
                             TextEntry::make('vendor')->state($record->vendor->name.'('.$record->vendor?->accountVendor?->code.')')->label('Vendor'),
                             TextEntry::make('status')->state($record->status)->label('Status')->badge(),
-                            TextEntry::make('invoice')->state($record->invoice->name.'('.$record->invoice?->number.')')->label('Invoice'),
+                            TextEntry::make('invoice')->state($record->invoice?->name.'('.$record->invoice?->number.')')->label('Invoice'),
                             TextEntry::make('total')->state(number_format($record->items->sum('total'),2))->label('Total')->badge(),
 
                         ])->columns(),

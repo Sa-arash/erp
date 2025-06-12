@@ -57,7 +57,7 @@
              vertical-align: top;
              font-size: 10px; /* Reduced font size */
              text-align: left; /* Align text to left in cells */
-         }  
+         }
          th {
              background-color: #f9f9f9; /* Light background for labels */
              width: 30%; /* Allocate width for label column */
@@ -102,6 +102,7 @@
          @page  {
              margin: 10px;
          }
+
      </style>
  </head>
  <body>

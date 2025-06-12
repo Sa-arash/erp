@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/x-icon" href="{{ public_path('img/my.png') }}">
     <link rel="icon" type="image/x-icon" href="{!! public_path('images/' . $company?->logo) !!}">
@@ -146,12 +148,8 @@
         }
 
 
-            @page {
-                margin: 20px;
-                footer: MyFooter;
-                header: MyHeader;
 
-            }
+
         @media print {
             body {
                 background-color: white;
@@ -174,30 +172,41 @@
                 font-size: 10pt;
             }
 
-            tr:nth-child(even) td {
-                background-color: #e8e8e8 !important;
-            }
 
-            tr:nth-child(odd) td {
-                background-color: #ffffff !important;
-            }
         }
 
     </style>
     @endif
+    <style>
+        @page {
+            margin: 10px;
+            margin-top: 30mm!important;
+            margin-bottom: 12mm;
+
+            footer: MyFooter;
+            header: MyHeader;
+
+        }
+    </style>
+
 </head>
 
+
 <body>
+<sethtmlpageheader name="MyHeader" value="on" show-this-page="1" />
+<sethtmlpagefooter name="MyFooter" value="on" show-this-page="1" />
+<htmlpageheader name="MyHeader">
+
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0;">
-        <table style="border: 1px solid black" >
-            <tr >
+        <table style="border: 1px solid black">
+            <tr>
                 <td style="border: none;width: 20%; text-align: left; padding-left: 10px;">
                     @if ($customImage??false)
 
                         <img src="{{$customImage}}" style="width: 70px;">
                     @endif
                 </td>
-                <td  style="border: none;text-align: center; vertical-align: middle; width: 40%;">
+                <td style="border: none;text-align: center; vertical-align: middle; width: 40%;">
                     <h4 style="margin: 0; padding: 0; font-size: 22px; white-space: nowrap; display: inline-block;">
                         {{strtoupper($title)}}
                     </h4>
@@ -210,14 +219,16 @@
 
                 <td style="border: none;width: 20%; text-align: right; padding-right: 10px;">
                     @if($company?->logo)
-                        <img src="{!! public_path('images/' . $company?->logo) !!}" style="padding: 0; border-radius: 50px ; width: 130px;">
+                        <img src="{!! public_path('images/' . $company?->logo) !!}"
+                             style="padding: 0; border-radius: 50px ; width: 100px;">
                     @endif
                 </td>
             </tr>
         </table>
     </div>
-{{--    <htmlpagefooter name="MyFooter">--}}
-{{--        <div style="text-align: center; font-size: 10px;margin-top: 5px">--}}
-{{--            Page {PAGENO} of {nbpg}--}}
-{{--        </div>--}}
-{{--    </htmlpagefooter>--}}
+</htmlpageheader>
+<htmlpagefooter name="MyFooter">
+    <div style="text-align: center; font-size: 10px;margin-top: 5px">
+        Page {PAGENO} of {nbpg}
+    </div>
+</htmlpagefooter>

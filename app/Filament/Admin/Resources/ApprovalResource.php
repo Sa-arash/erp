@@ -223,7 +223,7 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
                         ])->columns(3),
 
                     ];
-                })->visible(fn($record) => substr($record->approvable_type, 11) === "PurchaseOrder")->modalHeading('PO Approved by:'),
+                })->visible(fn($record) => substr($record->approvable_type, 11) === "PurchaseOrder" and isset($record->approvable))->modalHeading('PO Approved by:'),
                 Action::make('viewUrgent')->label('View Urgent Leave')->infolist([
                     Fieldset::make('Urgent')->relationship('approvable')->schema([
                             ImageEntry::make('employee.image')->circular()->label('')->state(fn($record)=>$record->employee->media->where('collection_name','images')->first()?->original_url),
@@ -394,12 +394,12 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
                     Notification::make('success')->title('Submitted Successfully')->success()->send();
                 })->requiresConfirmation()->visible(fn($record) => substr($record->approvable_type, 11) === "PurchaseRequest" and !$record->approvable?->need_change and $record->approvable?->status->value==='Requested'),
                 Action::make('url')->visible(function ($record) {
-                    if (substr($record->approvable_type, 11) === "PurchaseRequest") {
+                    if (substr($record->approvable_type, 11) === "PurchaseRequest" and isset($record->approvable)) {
                         return true;
                     }
                 })->label('Item Approval ')->icon( fn($record)=>$record->status->value=='Approve'? 'heroicon-o-check-badge':'heroicon-o-x-circle')->iconSize(IconSize::Large)->color(fn($record)=>$record->status->value=='Approve'? 'success':'danger' )->url(fn($record)=>ApprovalResource::getUrl('purchase',['record'=>$record->id])),
                 Action::make('urlOrder')->visible(function ($record) {
-                    if (substr($record->approvable_type, 11) === "PurchaseOrder") {
+                    if (substr($record->approvable_type, 11) === "PurchaseOrder" and isset($record->approvable)) {
                         return true;
                     }
                 })->label('Purchase Order Approve')->icon( fn($record)=>$record->status->value=='Approve'? 'heroicon-o-check-badge':'heroicon-o-x-circle')->iconSize(IconSize::Large)->color(fn($record)=>$record->status->value=='Approve'? 'success':'danger' )->url(fn($record)=>ApprovalResource::getUrl('purchase_order',['record'=>$record->id])),

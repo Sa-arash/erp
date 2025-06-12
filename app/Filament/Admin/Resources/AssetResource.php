@@ -143,7 +143,7 @@ class AssetResource extends Resource
                                 }),
                             Forms\Components\TextInput::make('model')->nullable()->label('Model'),
                             Forms\Components\TextInput::make('serial_number')->label('Serial Number')->maxLength(50),
-                            Select::make('status')->searchable()->preload()->default('inStorageUsable')->options(['inuse' => 'In Use', 'inStorageUsable' => 'In Storage Usable', 'storageUnUsable' => 'Storage Unusable', 'underRepair' => 'Under Repair', 'outForRepair' => 'Out For Repair', 'loanedOut' => 'Loaned Out',]),
+                            Select::make('status')->required()->searchable()->preload()->default('inStorageUsable')->options(['inuse' => 'In Use', 'inStorageUsable' => 'In Storage Usable', 'storageUnUsable' => 'Storage Unusable', 'underRepair' => 'Under Repair', 'outForRepair' => 'Out For Repair', 'loanedOut' => 'Loaned Out',]),
                             Select::make('quality')->label('Condition')->options(getCompany()->asset_qualities)->createOptionForm([
                                     Forms\Components\TextInput::make('title')->required()
                                 ])->createOptionUsing(function ($data) {
@@ -401,8 +401,10 @@ class AssetResource extends Resource
                                             $data['buy_date'] = $PO->date_of_po;
                                             $data['number'] = $number;
                                             $data['purchase_order_id'] = $PO->id;
-                                            $data['party_id']=$PO->party_id;
+                                            $data['party_id']=$PO->vendor_id;
                                             $data['price'] = number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100));
+                                            $data['scrap_value'] = number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100));
+                                            $data['depreciation_amount'] = number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100));
                                             $assets[] = $data;
                                             $number = generateNextCodeAsset($number);
                                         }
@@ -427,7 +429,7 @@ class AssetResource extends Resource
                                 ]
                             ];
                         }
-                    })->collapsed(false)->cloneable()->addActionLabel('New Asset')
+                    })->collapsed(fn()=>isset($_GET['po']))->cloneable()->addActionLabel('New Asset')
                 ]
             );
     }
@@ -701,7 +703,7 @@ class AssetResource extends Resource
 
 
                             Forms\Components\TextInput::make('serial_number')->label('Serial Number')->maxLength(50),
-                            Select::make('status')
+                            Select::make('status')->required()
                                 ->searchable()->preload()
                                 ->default('inStorageUsable')
                                 ->options(['inuse' => 'In Use', 'inStorageUsable' => 'In Storage Usable', 'storageUnUsable' => 'Storage Unusable', 'underRepair' => 'Under Repair', 'outForRepair' => 'Out For Repair', 'loanedOut' => 'Loaned Out',]),

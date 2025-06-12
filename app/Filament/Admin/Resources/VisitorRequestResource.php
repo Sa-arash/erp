@@ -445,36 +445,125 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
     {
         return [
             Section::make('Visitor Access Request')->schema([
-                Section::make('Visit’s Details')->schema([
-                    Forms\Components\DatePicker::make('visit_date')->default(now()->addDay())->required(),
-                    Forms\Components\TimePicker::make('arrival_time')->seconds(false)->before('departure_time')->required(),
-                    Forms\Components\TimePicker::make('departure_time')->seconds(false)->after('arrival_time')->required(),
-                    Forms\Components\TextInput::make('purpose')->columnSpanFull()
-                        ->required(),
+                Section::make('')->schema([
+                    Select::make('agency')->options(getCompany()->agency)->createOptionForm([
+                        Forms\Components\TextInput::make('title')->required()
+                    ])->createOptionUsing(function ($data) {
+                        $array = getCompany()->agency;
+                        if (isset($array)) {
+                            $array[$data['title']] = $data['title'];
+                        } else {
+                            $array = [$data['title'] => $data['title']];
+                        }
+                        getCompany()->update(['agency' => $array]);
+                        return $data['title'];
+                    })->searchable()->preload(),
+                    ToggleButtons::make('ICON')->label('ICON')->grouped()->boolean()->inline()->default(0)->required(),
+
+                    Forms\Components\TimePicker::make('arrival_time')->label('Arrival Time')->seconds(false)->before('departure_time')->required(),
+                    Forms\Components\TimePicker::make('departure_time')->label('Departure Time')->seconds(false)->after('arrival_time')->required(),
+                    Forms\Components\DatePicker::make('visit_date')->live()->label('Visit Date')->default(now()->addDay())->hintActions([
+                        Forms\Components\Actions\Action::make('te')->label('Select Daily')->action(function (Forms\Get $get,Forms\Set $set){
+                            $dates=$get('visiting_dates');
+                            if ($get('visit_date')){
+                                $dates[]= Carbon::createFromFormat('Y-m-d', $get('visit_date'))->format('d/m/Y') ;
+                                $set('visiting_dates',$dates);
+                            }
+                            $set('visit_date',null);
+                        }),Forms\Components\Actions\Action::make('Add')->label('Select Monthly')->form([
+                            DateRangePicker::make('date')
+                        ])->action(function (Forms\Get $get,Forms\Set $set,$data){
+                            $dataDate=explode(' -',$data['date']);
+                            $start = Carbon::createFromFormat('d/m/Y', $dataDate[0]);
+                            $end = Carbon::createFromFormat('d/m/Y', trim($dataDate[1]));
+                            $dates = collect();
+                            while ($start->lte($end)) {
+                                $dates->push($start->copy()->format('d/m/Y'));
+                                $start->addDay();
+                            }
+                            $set('visiting_dates',$dates->toArray());
+                        })
+                    ]),
+                    Select::make('visiting_dates')->required()->columnSpan(3)->label('Scheduled Visit Dates')->multiple(),
+                    Forms\Components\TextInput::make('purpose')->columnSpanFull()->required(),
                 ])->columns(4),
                 Forms\Components\Repeater::make('visitors_detail')
-                    ->addActionLabel('Add')
-                    ->label('Visitors Detail')
+                    ->addActionLabel('Add ')
+                    ->label('Visitors Details')
                     ->schema([
-                        Forms\Components\TextInput::make('name')->label('Full Name')->required(),
+                        Forms\Components\TextInput::make('name')->label(' Name')->required(),
                         Forms\Components\TextInput::make('id')->label('ID/Passport')->required(),
                         Forms\Components\TextInput::make('phone')->label('Phone'),
                         Forms\Components\TextInput::make('organization')->label('Organization'),
-                        Forms\Components\Select::make('type')->searchable()->label('Type')->options(['National' => 'National', 'International' => 'International', 'De-facto Security Forces' => 'De-facto Security Forces',]),
                         Forms\Components\TextInput::make('remarks')->label('Remarks'),
-                    ])->columns(6)->columnSpanFull(),
+                        FileUpload::make('attachment')->downloadable()
+                            ->disk('public')->columnSpanFull(),
+                    ])->columns(5)->columnSpanFull(),
+                Section::make([
+                    Forms\Components\Repeater::make('armed')->grid(3)->label('Armed Close Protection Officers (If Applicable)')->columnSpanFull()->schema([
+                        Forms\Components\Select::make('type')->searchable()->disableOptionsWhenSelectedInSiblingRepeaterItems()->required()->columns(2)->label(' ')->options(['National' => 'National', 'International' => 'International', 'De-facto Security Forces' => 'De-facto Security Forces',]),
+                        Forms\Components\TextInput::make('total')->numeric()->required()
+                    ])->maxItems(3)->columns(2)->default(function () {
+                        return [
+                            ['type' => 'National', 'total' => 0],
+                            ['type' => 'International', 'total' => 0],
+                            ['type' => 'De-facto Security Forces', 'total' => 0],
+                        ];
+                    })->minItems(3)
+                ]),
                 Forms\Components\Repeater::make('driver_vehicle_detail')
                     ->addActionLabel('Add')
                     ->label('Drivers/Vehicles Detail')->schema([
                         Forms\Components\TextInput::make('name')->label('Full Name')->required(),
                         Forms\Components\TextInput::make('id')->label('ID/Passport')->required(),
                         Forms\Components\TextInput::make('phone')->label('Phone'),
-                        Forms\Components\TextInput::make('model')->label('Vehicles Model')->required(),
-
-                        Forms\Components\TextInput::make('color')->label('Vehicles Color')->required(),
+                        Select::make('model')->options(getCompany()->visitrequest_model)->createOptionForm([
+                            Forms\Components\TextInput::make('title')->required()
+                        ])->createOptionUsing(function ($data) {
+                            $array = getCompany()->visitrequest_model;
+                            if (isset($array)) {
+                                $array[$data['title']] = $data['title'];
+                            } else {
+                                $array = [$data['title'] => $data['title']];
+                            }
+                            getCompany()->update(['visitrequest_model' => $array]);
+                            return $data['title'];
+                        })->searchable()->preload(),
+                        Select::make('color')
+                            ->options(
+                                collect(getCompany()->visitrequest_color)
+                                    ->mapWithKeys(fn($color, $title) => [
+                                        $title => "<div style='display:flex;align-items:center;gap:8px;'>
+                              <span style='display:inline-block;width:12px;height:12px;background-color:$color;border-radius:50%;'></span>
+                              $title
+                          </div>"
+                                    ])
+                                    ->toArray()
+                            )
+                            ->createOptionForm([
+                                Forms\Components\TextInput::make('title')->required(),
+                                Forms\Components\ColorPicker::make('color')->required()
+                            ])
+                            ->createOptionUsing(function ($data) {
+                                $array = getCompany()->visitrequest_color ?? [];
+                                $array[$data['title']] = $data['color'];
+                                getCompany()->update(['visitrequest_color' => $array]);
+                                return $data['title'];
+                            })->allowHtml()
+                            ->searchable()
+                            ->preload()
+                            ->label('Color'),
                         Forms\Components\TextInput::make('Registration_Plate')->required(),
-                    ])->columns(6)->columnSpanFull(),
-            ])->columns(2)
+                        Forms\Components\TextInput::make('trip')->required(),
+                        FileUpload::make('driver')->label('Driver National Identification Card')->imageEditor()->image()->columnSpan(3),
+                        FileUpload::make('image')->label('Vehicle Number Plate Photo')->imageEditor()->image()->columnSpan(4),
+
+                    ])->columns(7)->columnSpanFull(),
+                Forms\Components\Hidden::make('company_id')
+                    ->default(getCompany()->id)
+                    ->required(),
+
+            ])->columns(2),
         ];
     }
 

@@ -260,6 +260,7 @@ Route::get('/pdf/personals/{id}',[\App\Http\Controllers\PdfController::class,'pe
 Route::get('/pdf/assets-balance/{ids}/{company}',[\App\Http\Controllers\PdfController::class,'assetsBalance'])->name('pdf.assets-balance');
 Route::get('/pdf/audit/{ids}/{company}',[\App\Http\Controllers\PdfController::class,'audit'])->name('pdf.audit');
 Route::get('/pdf/audit-checklist/{company}/{type}',[\App\Http\Controllers\PdfController::class,'auditChecklist'])->name('pdf.audit-checklist');
+Route::get('/pdf/employeeAssetHistory/{id}/{type}/{company}',[\App\Http\Controllers\PdfController::class,'employeeAssetHistory'])->name('pdf.employeeAssetHistory');
 
 });
 Route::get('fix',function (){

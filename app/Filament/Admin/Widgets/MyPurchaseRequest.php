@@ -66,6 +66,7 @@ class MyPurchaseRequest extends BaseWidget
 
 ->actions([
     Tables\Actions\DeleteAction::make()->hidden(function ($record) {
+//        dd($record->approvals);
         return $record->approvals()->where('status', 'Approve')->count();
     })->action(function ($record) {
         $record->approvals()->delete();

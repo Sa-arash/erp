@@ -74,16 +74,15 @@ implements HasShieldPermissions
                         // ->schema([
                             Section::make('Order Info')->schema([
 
-                                Forms\Components\Select::make('purchase_request_id')
+                                Forms\Components\Select::make('purchase_request_id')->prefix('ATGT/UNC/')
                                     ->default(function (Request $request) {
                                         return $request?->prno;
                                     })
                                     ->afterStateHydrated(function (Set $set, Get $get, $state) {
                                         if ($state) {
-                                            $record = PurchaseRequest::query()->with('bid')->firstWhere('id', $state);
-                                            $set('purchase_orders_number', $record->purchase_number);
+                                            $record = PurchaseRequest::query()->with(['bid','bid.quotation','bid.quotation.quotationItems','items'])->firstWhere('id', $state);
+                                            $set('purchase_orders_number', $record->purchase_number.'1');
                                             if ($record->bid) {
-
                                                 $data = [];
                                                 foreach ($record->bid->quotation?->quotationItems->toArray() as $item) {
                                                     $prItem = PurchaseRequestItem::query()->firstWhere('id', $item['purchase_request_item_id']);
@@ -125,10 +124,8 @@ implements HasShieldPermissions
                                     ->preload()
                                     ->afterStateUpdated(function (Set $set, $state) {
                                         if ($state) {
-
-                                            $record = PurchaseRequest::query()->with('bid')->firstWhere('id', $state);
+                                            $record = PurchaseRequest::query()->with(['bid','bid.quotation','bid.quotation.quotationItems','items'])->firstWhere('id', $state);
                                             $set('purchase_orders_number', $record->purchase_number);
-
                                             if ($record->bid) {
                                                 $data = [];
                                                 foreach ($record->bid->quotation?->quotationItems->toArray() as $item) {
@@ -164,9 +161,8 @@ implements HasShieldPermissions
                                     })
                                     ->options(function (){
                                         $data=[];
-
-
-                                        foreach (getCompany()->purchaseRequests()->where('status','Approval')->whereHas('purchaseOrder',function (){},'!=')->orderBy('id', 'desc')->get() as $item){
+//                                        ->where('status','Approval')
+                                        foreach (getCompany()->purchaseRequests() ->whereHas('purchaseOrder',function (){},'!=')->orderBy('id', 'desc')->get() as $item){
                                             $data[$item->id]=  $item->purchase_number.'('.$item->employee?->fullName.')';
                                         }
                                         return $data;
@@ -213,19 +209,23 @@ implements HasShieldPermissions
                                 Forms\Components\Select::make('prepared_by')->live()
                                     ->searchable()
                                     ->preload()
-                                    ->required()->label('Processed By')
-                                    ->options(getCompany()->employees->pluck('fullName', 'id'))
-                                    ->default(fn() => auth()->user()->employee->id),
+                                    ->label('Processed By')
+                                    ->options(getCompany()->employees->where('id',getEmployee()->id)->pluck('fullName', 'id'))
+                                    ->default(fn() => getEmployee()->id)->required(),
 
                                 Forms\Components\TextInput::make('purchase_orders_number')->label('PO NO')->prefix('ATGT/UNC/')->readOnly()
-                                    ->required()
+                                    ->required()->default(function (Request $request){
+                                        $PR=PurchaseRequest::query()->firstWhere('id',$request?->prno);
+                                        if ($PR){
+                                            return $PR->purchase_number;
+                                        }
+                                    })
                                     ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
                                         return $rule->where('company_id', getCompany()->id);
                                     })->maxLength(50),
                                 Forms\Components\TextInput::make('location_of_delivery')->maxLength(255),
                                 Forms\Components\DatePicker::make('date_of_delivery')
-                                    ->default(now())
-                                    ->required(),
+                                    ->default(now()),
                                 Forms\Components\Hidden::make('company_id')
                                     ->default(getCompany()->id)
                                     ->required(),

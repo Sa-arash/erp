@@ -20,6 +20,7 @@ use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\IconSize;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -178,6 +179,7 @@ class AssetEmployeeResource extends Resource
                             }
                         })
                         ->groupBy('asset_id');
+
                     return AssetEmployeeItem::query()
                         ->whereIn('id', $sub)
                         ->where('type', 'Assigned')->get()->map(function ($item){
@@ -193,82 +195,7 @@ class AssetEmployeeResource extends Resource
                 DateRangeFilter::make('date'),
             ])
             ->actions([
-                //                Tables\Actions\EditAction::make(),
-//                Tables\Actions\ViewAction::make()->modalHeading(fn($record) => $record->type === "Returned" ? "Check In " : "Check Out"),
-                Tables\Actions\Action::make('viewHistory')->modalWidth(MaxWidth::FiveExtraLarge)
-                    ->label('View History')
-                    ->infolist([
-                        TextEntry::make('history')
-                            ->label('Asset History')
-                            ->state(function ($record) {
-                                $rows = $record->assetEmployeeItem;
-
-                                $html = <<<HTML
-                <style>
-                    table.history-table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        margin-top: 10px;
-                        font-size: 13px;
-                        color: black;
-                    }
-
-                    .history-table th,
-                    .history-table td {
-                        border: 1px solid #ccc;
-                        padding: 6px 8px;
-                        text-align: center;
-                    }
-
-                    .history-table th {
-                        background-color: #f4f4f4;
-                        font-weight: bold;
-                    }
-
-                    .history-table tr:nth-child(even) {
-                        background-color: #fff;
-                    }
-
-                    .history-table tr:nth-child(odd) {
-                        background-color: #f9f9f9;
-                    }
-                </style>
-                <table class="history-table">
-                    <thead>
-                        <tr>
-                            <th>Asset</th>
-                            <th>Assigned/Returned Date</th>
-                            <th>Due Date</th>
-                            <th>Location</th>
-                            <th>Address</th>
-                            <th>Type</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                HTML;
-
-                                foreach ($rows as $row) {
-                                    $date=Carbon::make($row->created_at)->format('d/F/Y h:i A');
-                                    $dueDate=null;
-                                    if ($row->due_date)
-                                        $dueDate=Carbon::make($row->due_date)->format('d/F/Y');
-
-
-                                    $html .= "<tr>
-                        <td>{$row->asset->product->info} - {$row->asset->description}</td>
-                        <td>{$date}</td>
-                        <td>{$dueDate}</td>
-                        <td>{$row->warehouse?->title}</td>
-                        <td>{$row->structure?->title}</td>
-                        <td>{$row->type}</td>
-                    </tr>";
-                                }
-
-                                $html .= '</tbody></table>';
-
-                                return new \Illuminate\Support\HtmlString($html);
-                            }),
-                    ])
+                Tables\Actions\Action::make('pdf')->tooltip('Print History')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('Print History')->url(fn($record) => route('pdf.employeeAssetHistory', ['id' => $record->id,'type'=>'ID','company'=>$record->company_id]))->openUrlInNewTab(),
 
             ])
             ->bulkActions([

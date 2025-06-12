@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('invoice_id')->nullable()->constrained('invoices')->cascadeOnDelete()->cascadeOnUpdate();
 
-            $table->date('date_of_delivery');
+            $table->date('date_of_delivery')->nullable();
             $table->string('location_of_delivery', 255)->nullable();
             $table->string('purchase_orders_number')->unique();
             $table->foreignId('currency_id')->constrained('currencies')->cascadeOnDelete()->cascadeOnUpdate();

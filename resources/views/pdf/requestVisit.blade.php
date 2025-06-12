@@ -212,11 +212,15 @@
             </tr>
             @php
                 use Illuminate\Support\Carbon;
-
-                $dates = collect($requestVisit->visiting_dates)
+$grouped=[];
+if (isset($requestVisit->visiting_dates[0])){
+     $dates = collect($requestVisit->visiting_dates)
                     ->map(fn($date) => Carbon::createFromFormat('d/m/Y', $date) );
 
                 $grouped = $dates->groupBy(fn($date) => $date->format('Y,F')); // group by year and month
+}
+
+
             @endphp
 
             @foreach ($grouped as $monthKey => $dates)

@@ -3,6 +3,7 @@
         body {
             font-family: Arial, sans-serif;
             margin: 30px;
+            width: 100%;
         }
 
         .container {
@@ -47,17 +48,18 @@
             border-collapse: collapse;
             margin-top: 10px;
         }
+        table{
+            width: 100%;
+        }
 
         .form-section td {
             height: 60px;
         }
-        @page  {
 
-        }
     </style>
 
 
-<body>
+
 
 <table class="container">
     <tr>
@@ -101,6 +103,5 @@
         </td>
     </tr>
 </table>
-</body>
 
 

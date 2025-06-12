@@ -87,7 +87,7 @@
         /* یا هر استایل دیگری که می‌خواهید */
     }
 
-      
+
     .phone-field {
         display: flex;
         justify-content: space-between;
@@ -250,7 +250,7 @@
                     <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
                 </td>
                 <td class="font-bold" style="border: none; padding: 0 10px;">
-                  
+
                     @php
                         $startLast = \Carbon\Carbon::make($lastleave->start_leave)->startOfDay();
                         $endLast = \Carbon\Carbon::make($lastleave->end_leave)->startOfDay();
