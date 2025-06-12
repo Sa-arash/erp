@@ -161,8 +161,7 @@ implements HasShieldPermissions
                                     })
                                     ->options(function (){
                                         $data=[];
-//                                        ->where('status','Approval')
-                                        foreach (getCompany()->purchaseRequests() ->whereHas('purchaseOrder',function (){},'!=')->orderBy('id', 'desc')->get() as $item){
+                                        foreach (getCompany()->purchaseRequests()->where('status','Approval')->whereHas('purchaseOrder',function (){},'!=')->orderBy('id', 'desc')->get() as $item){
                                             $data[$item->id]=  $item->purchase_number.'('.$item->employee?->fullName.')';
                                         }
                                         return $data;
@@ -263,17 +262,17 @@ implements HasShieldPermissions
                                     ->relationship('items')
                                     // ->formatStateUsing(fn(Get $get) => dd($get('purchase_request_id')):'')
                                     ->schema([
-                                        Forms\Components\Select::make('product_id')
+                                        Forms\Components\Select::make('product_id')->columnSpan(3)
                                             ->label('Product')->options(function ($state) {
-                                                $products = getCompany()->products;
+                                                $products = getCompany()->products->where('id',$state);
                                                 $data = [];
                                                 foreach ($products as $product) {
                                                     $data[$product->id] = $product->info;
                                                 }
                                                 return $data;
                                             })->required()->searchable()->preload(),
-                                        Forms\Components\TextInput::make('description')->label('Description')->required(),
-                                        Forms\Components\Select::make('unit_id')->required()->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id')),
+                                        Forms\Components\TextInput::make('description')->label('Description')->columnSpan(3)->required(),
+                                        Forms\Components\Select::make('unit_id')->columnSpan(2)->required()->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id')),
                                         Forms\Components\TextInput::make('quantity')->numeric()->required()->live(true),
                                         Forms\Components\TextInput::make('unit_price')->prefix(fn(Get $get)=>$get->getData()['currency'])->afterStateUpdated(function ($state, Set $set, Get $get) {
                                             $freights = $get('taxes') === null ? 0 : (float) $get('taxes');
@@ -335,7 +334,7 @@ implements HasShieldPermissions
                                         TextInput::make('total')->readOnly(),
 
                                     ])
-                                    ->columns(8)
+                                    ->columns(13)
                                     ->columnSpanFull(),
                             ])->columns(3),
                         // ]),

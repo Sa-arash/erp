@@ -1,5 +1,5 @@
 @include('pdf.header',
-   ['titles'=>[''],'title'=>'Purchase Request'])
+   ['titles'=>[''],'title'=>'Purchase Request','css'=>false])
 
 
     <style>
@@ -19,21 +19,21 @@
 
         th, td {
             border: 1px solid #000;
+
             padding: 8px;
             text-align: center;
         }
 
         th {
             background-color: #817c7c;
+            color: white;
         }
 
         .comments, .signature {
             margin-top: 20px;
         }
 
-        @page {
-            margin: 20px;
-        }
+
 
 
     </style>
