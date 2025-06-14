@@ -166,7 +166,7 @@ class AssetEmployeeResource extends Resource
             ->columns([
 
                 Tables\Columns\TextColumn::make('')->rowIndex(),
-                Tables\Columns\TextColumn::make('employee.fullName')->state(fn($record) => $record->employee_id ? $record->employee->fullName : $record->person?->name . '(' . $record->person?->number . ')')->label('Employee/Personnel')->sortable()->searchable(),
+                Tables\Columns\TextColumn::make('employee.fullName')->state(fn($record) => $record->employee_id ? $record->employee->fullName : $record->person?->name . '(' . $record->person?->number . ')')->label('Employee/Personnel')->sortable(),
                 Tables\Columns\TextColumn::make('date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('description')->sortable(),
                 Tables\Columns\TextColumn::make('assetEmployeeItem.asset.product.title')->state(function ($record){
@@ -192,10 +192,25 @@ class AssetEmployeeResource extends Resource
                 })->label('Assets')->bulleted(),
             ])
             ->filters([
+                Tables\Filters\SelectFilter::make('employee_id')->label('Employee')->searchable()->options(getCompany()->employees()->pluck('fullName','id'))->preload(),
+                Tables\Filters\SelectFilter::make('person_id')->label('Person')->searchable()->options(function (){
+                    $data=[];
+                    $persons=Person::query()->where('company_id',getCompany()->id)->get();
+                    foreach ($persons as $person){
+                        if ($person->number){
+                            $data[$person->id]=$person->name.'('.$person->number.')';
+                        }else{
+                            $data[$person->id]=$person->name;
+                        }
+                    }
+                    return $data;
+                })->preload(),
+
                 DateRangeFilter::make('date'),
-            ])
+            ],getModelFilter())
             ->actions([
-                Tables\Actions\Action::make('pdf')->tooltip('Print History')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('Print History')->url(fn($record) => route('pdf.employeeAssetHistory', ['id' => $record->id,'type'=>'ID','company'=>$record->company_id]))->openUrlInNewTab(),
+                Tables\Actions\Action::make('pdf')->color('warning')->tooltip('Print History')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('Print History')->url(fn($record) => route('pdf.employeeAssetHistory', ['id' => $record->id,'type'=>'ID','company'=>$record->company_id]))->openUrlInNewTab(),
+                Tables\Actions\Action::make('pdf')->color('success')->tooltip('Print Assets')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('Print Assets')->url(fn($record) => route('pdf.employeeAsset', ['id' => $record->id,'type'=>'ID','company'=>$record->company_id]))->openUrlInNewTab(),
 
             ])
             ->bulkActions([

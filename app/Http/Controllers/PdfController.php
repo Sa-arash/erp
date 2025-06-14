@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Account;
 use App\Models\Asset;
 use App\Models\AssetEmployee;
+use App\Models\AssetEmployeeItem;
 use App\Models\Bid;
 use App\Models\Company;
 use App\Models\Employee;
@@ -711,6 +712,38 @@ class PdfController extends Controller
         }
         $company=Company::query()->firstWhere('id',$company);
         $pdf = Pdf::loadView('pdf.employeeAssetHistory', compact('histories','company'));
+        return $pdf->stream();
+    }
+    public function employeeAsset($id,$type,$company)
+    {
+        $histories=null;
+        $record=AssetEmployee::query()->firstWhere('id',$id);
+        if ($type=="ID"){
+            $sub = AssetEmployeeItem::selectRaw('MAX(id) as id')
+                ->whereHas('assetEmployee', function ($q)use($record) {
+                    if ($record->employee_id){
+                        $q->where('employee_id', $record->employee_id);
+                    }else{
+                        $q->where('person_id', $record->person_id);
+                    }
+                })
+                ->groupBy('asset_id');
+
+           $histories=  AssetEmployeeItem::query()
+                ->whereIn('id', $sub)
+                ->where('type', 'Assigned')->get();
+
+        }elseif ($type==="Personnel"){
+
+            $histories = AssetEmployee::query()->with(['assetEmployeeItem'])->firstWhere('person_id',$id);
+
+        }
+        if ($histories===null){
+
+            abort(404);
+        }
+        $company=Company::query()->firstWhere('id',$company);
+        $pdf = Pdf::loadView('pdf.employeeAsset', compact('record','histories','company'));
         return $pdf->stream();
     }
 }

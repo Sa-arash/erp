@@ -1,7 +1,5 @@
 @include('pdf.header',
    ['titles'=>[''],'title'=>'Purchase Request','css'=>false])
-
-
     <style>
         body{
             font-family: Arial, sans-serif;
@@ -23,25 +21,16 @@
             padding: 8px;
             text-align: center;
         }
-
         th {
             background-color: #817c7c;
             color: white;
         }
-
         .comments, .signature {
             margin-top: 20px;
         }
-
-
-
-
     </style>
-
 <body>
 <table>
-
-
     <tr>
         <td style="text-align: left"> <span style="font-weight: bold">Date:</span>  {{\Illuminate\Support\Carbon::create($pr->request_date)->format('M j, Y / h:iA ')}}</td>
         <td style="text-align: left"><strong style="font-weight: bold" >Reg.No</strong>: ATGT/UNC {{$pr->purchase_number}}</td>

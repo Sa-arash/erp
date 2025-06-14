@@ -261,6 +261,7 @@ Route::get('/pdf/assets-balance/{ids}/{company}',[\App\Http\Controllers\PdfContr
 Route::get('/pdf/audit/{ids}/{company}',[\App\Http\Controllers\PdfController::class,'audit'])->name('pdf.audit');
 Route::get('/pdf/audit-checklist/{company}/{type}',[\App\Http\Controllers\PdfController::class,'auditChecklist'])->name('pdf.audit-checklist');
 Route::get('/pdf/employeeAssetHistory/{id}/{type}/{company}',[\App\Http\Controllers\PdfController::class,'employeeAssetHistory'])->name('pdf.employeeAssetHistory');
+Route::get('/pdf/employeeAsset/{id}/{type}/{company}',[\App\Http\Controllers\PdfController::class,'employeeAsset'])->name('pdf.employeeAsset');
 
 });
 Route::get('fix',function (){

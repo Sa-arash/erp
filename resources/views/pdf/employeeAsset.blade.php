@@ -1,11 +1,12 @@
 <!doctype html>
 <html lang="en">
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport"
           content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>{{strtoupper($histories->employee_id? 'Employee Assets' : 'Personnel Assets')}}</title>
+    <title>{{strtoupper($record->employee_id? 'Employee History' : 'Personnel History')}}</title>
     <style>
         .asset-table {
             width: 100%;
@@ -118,7 +119,7 @@
         }
 
 
-        @page  {
+        @page {
             margin-top: 40mm;  /* این خط خیلی مهمه: فضای کافی برای هدر */
             margin-left: 10px;
             margin-right: 10px;
@@ -130,23 +131,24 @@
     </style>
 </head>
 <body>
-<htmlpageheader  name="MyHeader" >
+<htmlpageheader name="MyHeader">
     <div>
-        <table style="border: 1px solid black;" >
-            <tr >
+        <table style="border: 1px solid black;">
+            <tr>
                 <td style="border: none;width: 20%; text-align: left; padding-left: 10px;">
 
                 </td>
-                <td  style="border: none;text-align: center; vertical-align: middle; width: 40%;">
+                <td style="border: none;text-align: center; vertical-align: middle; width: 40%;">
                     <h4 style="margin: 0; padding: 0; font-size: 22px; white-space: nowrap; display: inline-block;">
-                        {{strtoupper($histories->employee_id? 'Employee History' : 'Personnel History')}}
+                        {{strtoupper($record->employee_id? 'Employee History' : 'Personnel History')}}
                     </h4>
 
                 </td>
 
                 <td style="border: none;width: 20%; text-align: right; padding-right: 10px;">
                     @if($company?->logo)
-                        <img src="{!! public_path('images/' . $company?->logo) !!}" style="padding: 0; border-radius: 50px ; width: 100px;">
+                        <img src="{!! public_path('images/' . $company?->logo) !!}"
+                             style="padding: 0; border-radius: 50px ; width: 100px;">
                     @endif
                 </td>
             </tr>
@@ -157,27 +159,27 @@
 
 <table>
 
-    @if($histories->employee_id)
+    @if($record->employee_id)
         <tr>
-            <td><b>Employee: </b>{{$histories->employee->fullName}}</td>
-            <td><b>Badge Number: </b>{{$histories->employee->ID_number}}</td>
-            <td><b>Department :</b>{{$histories->employee?->department?->title}}</td>
-            <td><b>Badge Number: </b>{{$histories->employee?->position?->title}}</td>
-            <td><b>Badge Number: </b>{{$histories->employee?->position?->title}}</td>
+            <td><b>Employee: </b>{{$record->employee->fullName}}</td>
+            <td><b>Badge Number: </b>{{$record->employee->ID_number}}</td>
+            <td><b>Department :</b>{{$record->employee?->department?->title}}</td>
+            <td><b>Badge Number: </b>{{$record->employee?->position?->title}}</td>
+            <td><b>Badge Number: </b>{{$record->employee?->position?->title}}</td>
         </tr>
     @else
         <tr>
-            <td><b>Personnel: </b>{{$histories->person->name}}</td>
-            <td><b>Group: </b>{{$histories->person->person_group}}</td>
-            <td><b>Personnel Number: </b>{{$histories->person->number}}</td>
-            <td><b>Job Title: </b>{{$histories->person->job_title}}</td>
+            <td><b>Personnel: </b>{{$record->person->name}}</td>
+            <td><b>Group: </b>{{$record->person->person_group}}</td>
+            <td><b>Personnel Number: </b>{{$record->person->number}}</td>
+            <td><b>Job Title: </b>{{$record->person->job_title}}</td>
         </tr>
     @endif
 </table>
 
 <table>
 
-    @foreach($histories->assetEmployeeItem as $history)
+    @foreach($histories as $history)
 
         <tr>
 
@@ -186,7 +188,6 @@
                     <tr>
                         <td colspan="4" style="text-align: center;font-size: 16px"><b> Asset Info</b></td>
                     </tr>
-
                     <tr>
                         <td><strong>Asset Description</strong></td>
                         <td>{{$history->asset->description}}</td>
@@ -242,16 +243,13 @@
 
                             {{$history->asset->number}}<br><br>
                             @if($history->asset->media->where('collection_name','images')->first())
-                                <img class="asset-image" width="100"
+                                <img class="asset-image" width="100" height="100"
                                      src="{{$history->asset->media->where('collection_name','images')->first()?->getPath()}}"
                                      alt="">
                             @endif
                         </td>
-
                     </tr>
-                    <tr>
 
-                    </tr>
                 </table>
             </td>
         </tr>

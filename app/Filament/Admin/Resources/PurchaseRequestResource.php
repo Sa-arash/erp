@@ -19,7 +19,6 @@ use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Facades\Filament;
 use Filament\Forms;
 use Filament\Forms\Set;
-use Filament\Pages\Actions\ReplicateAction;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
@@ -237,7 +236,7 @@ class PurchaseRequestResource extends Resource
 
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('Order')
-                    ->disabled(fn() => getPeriod() === null)->tooltip(fn() => getPeriod() !== null ?: 'Financial Period Required')
+                    ->disabled(fn() => getPeriod() === null)->tooltip(fn() => getPeriod() !== null ?'': 'Financial Period Required')
                     ->visible(fn($record) => $record->status->value == 'Approval')
                     ->icon('heroicon-s-shopping-cart')
                     ->url(fn($record) => PurchaseOrderResource::getUrl('create') . "?prno=" . $record->id),
