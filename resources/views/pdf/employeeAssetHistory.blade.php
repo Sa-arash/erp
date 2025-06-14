@@ -162,8 +162,8 @@
             <td><b>Employee: </b>{{$histories->employee->fullName}}</td>
             <td><b>Badge Number: </b>{{$histories->employee->ID_number}}</td>
             <td><b>Department :</b>{{$histories->employee?->department?->title}}</td>
-            <td><b>Badge Number: </b>{{$histories->employee?->position?->title}}</td>
-            <td><b>Badge Number: </b>{{$histories->employee?->position?->title}}</td>
+            <td><b>Position:</b>{{$histories->employee?->position?->title}}</td>
+            <td><b>Location: </b>{{$histories->employee?->warehouse?->title.' '.getParents($histories->employee?->structure)}}</td>
         </tr>
     @else
         <tr>

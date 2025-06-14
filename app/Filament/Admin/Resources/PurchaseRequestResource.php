@@ -207,7 +207,9 @@ class PurchaseRequestResource extends Resource
             ])
 
             ->filters([
-
+                Tables\Filters\SelectFilter::make('department')->searchable()->preload()->label('Department')->options(getCompany()->departments()->pluck('title','id'))->query(fn($query,$data)=>isset($data['value'])? $query->whereHas('employee',function ($query)use($data){
+                    return $query->where('department_id',$data['value']);
+                }):$query),
                 SelectFilter::make('employee_id')->label('Requestor')->options(getCompany()->employees->pluck('fullName', 'id'))->searchable()->preload(),
                 SelectFilter::make('id')->searchable()->preload()->options(PurchaseRequest::where('company_id', getCompany()->id)->get()->pluck('purchase_number', 'id'))
                     ->label("PR NO"),

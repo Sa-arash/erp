@@ -22,6 +22,7 @@ use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\HtmlString;
 
 class MyAsset extends BaseWidget
@@ -38,19 +39,46 @@ class MyAsset extends BaseWidget
             ->emptyStateHeading('No Asset')
             ->query(
                 function () {
-                    $sub = AssetEmployeeItem::selectRaw('MAX(id) as id')
-                        ->whereHas('assetEmployee', function ($q) {
-                            $q->where('employee_id', getEmployee()->id);
-                        })
-                        ->groupBy('asset_id');
-
-                    return AssetEmployeeItem::query()
-                        ->whereIn('id', $sub)
-                        ->where('type', 'Assigned');
+                    return AssetEmployeeItem::query()->where('type', 'Assigned');
                 }
-            )
+            )->filters([
+                Tables\Filters\TernaryFilter::make('All')->label('Data Filter ')
+                    ->placeholder('Only Me')->searchable()
+                    ->trueLabel('All Subordinates')
+                    ->falseLabel('Only Me')
+                    ->queries(
+                         function (Builder $query) {
+                            $sub = AssetEmployeeItem::selectRaw('MAX(id) as id')
+                                ->whereHas('assetEmployee', function ($q) {
+                                    $q->whereIn('employee_id', getSubordinate());
+                                })
+                                ->groupBy('asset_id');
+                            return $query->whereIn('id', $sub);
+                        },
+                        function (Builder $query) {
+                            $sub = AssetEmployeeItem::selectRaw('MAX(id) as id')
+                                ->whereHas('assetEmployee', function ($q) {
+                                    $q->where('employee_id', getEmployee()->id);
+                                })
+                                ->groupBy('asset_id');
+
+                            return $query->whereIn('id', $sub);
+                        },
+                        function (Builder $query) {
+                            $sub = AssetEmployeeItem::selectRaw('MAX(id) as id')
+                                ->whereHas('assetEmployee', function ($q) {
+                                    $q->where('employee_id', getEmployee()->id);
+                                })
+                                ->groupBy('asset_id');
+
+                            return $query->whereIn('id', $sub);
+                        },
+                    )
+
+            ])
             ->columns([
-                Tables\Columns\TextColumn::make('')->rowIndex(),
+                Tables\Columns\TextColumn::make('')->label('NO')->rowIndex(),
+                Tables\Columns\TextColumn::make('assetEmployee.employee.fullName')->searchable(),
                 Tables\Columns\ImageColumn::make('asset.media.original_url')->state(function ($record) {
                     return $record->asset->media?->where('collection_name', 'images')->first()?->original_url;
                 })->disk('public')
@@ -91,7 +119,7 @@ class MyAsset extends BaseWidget
 //                     TextEntry::make('comment')->label('Location'),
 //                 ])
                  Tables\Actions\Action::make('Service')->label('Request Maintenance')
-                 ->hidden(fn($record)=>($record->asset->status === 'underRepair') or $record->asset?->service?->where('status','Pending')->count())
+                 ->hidden(fn($record)=>($record->asset->status === 'underRepair') or $record->asset?->service?->where('status','Pending')->count() or $record->assetEmployee->employee_id ===getEmployee()->id )
                  ->fillForm(function ($record){
                         return [
                             'asset_id'=>$record->asset_id,
@@ -241,9 +269,10 @@ class MyAsset extends BaseWidget
                                 TextInput::make('remarks')->nullable()
                             ])->columnSpanFull()->columns()->formatStateUsing(function () use ($records) {
                                 $data = [];
-
                                 foreach ($records as $record) {
-                                    $data[] = ['asset_id' => $record->asset_id];
+                                    if ($record->assetEmployee->employee_id ==getEmployee()->id){
+                                        $data[] = ['asset_id' => $record->asset_id];
+                                    }
                                 }
                                 return $data;
                             }),

@@ -7,7 +7,6 @@ use App\Models\FinancialPeriod;
 use App\Models\User;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Infolists\Components\Section;
 use Filament\Notifications\Notification;
 use Filament\Support\RawJs;
 use Illuminate\Support\Facades\Auth;
@@ -911,7 +910,8 @@ function getNextCodeVisit(string $lastCode, string $prefix , int $padLength = 5)
     return $nextCode;
 }
 
-function getNextCodePerson(string $lastCode, string $prefix , int $padLength = 5): string {
+function getNextCodePerson(string $lastCode, string $prefix, int $padLength = 5): string
+{
     $numberPart = str_replace($prefix, '', $lastCode);
 
     $nextNumber = (int)$numberPart + 1;
@@ -919,4 +919,26 @@ function getNextCodePerson(string $lastCode, string $prefix , int $padLength = 5
     $nextCode = $prefix . str_pad($nextNumber, $padLength, '0', STR_PAD_LEFT);
 
     return $nextCode;
+}
+
+function getFilterSubordinate(): \Filament\Tables\Filters\TernaryFilter
+{
+    return \Filament\Tables\Filters\TernaryFilter::make('All')->label('Data Filter ')
+        ->placeholder('Only Me')->searchable()
+        ->trueLabel('All Subordinates')
+        ->falseLabel('Only Me')
+        ->queries(
+            true: fn(\Illuminate\Database\Eloquent\Builder $query) => $query->whereIn('employee_id', getSubordinate()),
+            false: fn(\Illuminate\Database\Eloquent\Builder $query) => $query->where('employee_id', getEmployee()->id),
+            blank: fn(\Illuminate\Database\Eloquent\Builder $query) => $query->where('employee_id', getEmployee()->id),
+        );
+}
+function getSubordinate(){
+    return getEmployee()->subordinates()->pluck('id')->toArray();
+}
+
+function sendSuccessNotification(): Notification
+{
+    return Notification::make('success')->title('Submitted Successfully')->success()->send();
+
 }

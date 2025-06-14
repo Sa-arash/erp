@@ -26,6 +26,8 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\HtmlString;
+use Malzariey\FilamentDaterangepickerFilter\Fields\DateRangePicker;
+use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 
 class UrgentLeaveResource extends Resource  implements HasShieldPermissions
 {
@@ -98,7 +100,7 @@ class UrgentLeaveResource extends Resource  implements HasShieldPermissions
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('#')->rowIndex(),
+                Tables\Columns\TextColumn::make('NO')->label('NO')->rowIndex(),
                 Tables\Columns\TextColumn::make('employee.fullName')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('time_out')->time()->sortable(),
                 Tables\Columns\TextColumn::make('time_in')->time()->sortable(),
@@ -109,15 +111,19 @@ class UrgentLeaveResource extends Resource  implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('approval_date')->dateTime()->sortable(),
             ])
             ->filters([
-                //
-            ])
+                Tables\Filters\SelectFilter::make('department')->searchable()->preload()->label('Department')->options(getCompany()->departments()->pluck('title','id'))->query(fn($query,$data)=>isset($data['value'])? $query->whereHas('employee',function ($query)use($data){
+                    return $query->where('department_id',$data['value']);
+                }):$query),
+                Tables\Filters\SelectFilter::make('employee_id')->searchable()->preload()->label('Employee')->options(getCompany()->employees()->pluck('fullName','id')),
+                DateRangeFilter::make('date')
+            ],getModelFilter())
             ->actions([
 //                Tables\Actions\EditAction::make(),
                 Tables\Actions\Action::make('pdf')->label('PDF')->tooltip('Print')->icon('heroicon-s-printer')->size(ActionSize::Medium)
                     ->url(fn($record) => route('pdf.urgentleave',['id'=>$record->id]))->openUrlInNewTab(),
                 Tables\Actions\Action::make('approve')->iconSize(IconSize::Medium)->color('success')
                     ->icon(fn($record)=>($record->status->value) === 'accepted'?'heroicon-m-cog-8-tooth':'heroicon-o-check-badge')->label(fn($record)=>($record->status->value) === 'accepted'?'Change Status':'Approve')
-                    ->form(function ($record) {
+                    ->form(function () {
                         return [
                             Forms\Components\ToggleButtons::make('status')->colors(['accepted'=>'success','rejected'=>'danger'])->grouped()->options(['accepted'=>'Approve','rejected'=>'Reject'])->inline()->required(),
 
@@ -146,13 +152,17 @@ class UrgentLeaveResource extends Resource  implements HasShieldPermissions
             //
         ];
     }
+    public static function getNavigationBadge(): ?string
+    {
+        return UrgentLeave::query()->where('company_id',getCompany()->id)->where('admin_id',null)->count();
+    }
 
     public static function getPages(): array
     {
         return [
             'index' => Pages\ListUrgentLeaves::route('/'),
             'create' => Pages\CreateUrgentLeave::route('/create'),
-            'edit' => Pages\EditUrgentLeave::route('/{record}/edit'),
+//            'edit' => Pages\EditUrgentLeave::route('/{record}/edit'),
         ];
     }
 }

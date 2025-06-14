@@ -25,6 +25,7 @@ use Filament\Tables\Actions\Action;
 use Filament\Tables\Actions\EditAction;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
+use Illuminate\Database\Eloquent\Builder;
 use Malzariey\FilamentDaterangepickerFilter\Fields\DateRangePicker;
 
 class VisitRequest extends BaseWidget
@@ -35,11 +36,12 @@ class VisitRequest extends BaseWidget
     {
         return $table->emptyStateHeading('No Visitor  Request')->defaultSort('id', 'desc')
             ->query(
-                VisitorRequest::query()->where('company_id', getCompany()->id)->where('requested_by', getEmployee()->id)
-            // ->where('status', '!=', 'FinishedCeo')
+                VisitorRequest::query()->where('company_id', getCompany()->id)
+//                    ->orWhereIn('requested_by',dd(getEmployee()->subordinates()))
             )
             ->columns([
-                Tables\Columns\TextColumn::make('#')->rowIndex(),
+                Tables\Columns\TextColumn::make('')->label('NO')->rowIndex(),
+                Tables\Columns\TextColumn::make('employee.fullName')->label('Employee'),
                 Tables\Columns\TextColumn::make('SN_code')->label('Department Code '),
 
                 Tables\Columns\TextColumn::make('visitors_detail')
@@ -403,6 +405,16 @@ class VisitRequest extends BaseWidget
             ])
             ->bulkActions([
 
+            ])->filters([
+                Tables\Filters\TernaryFilter::make('All')->label('Data Filter ')
+                    ->placeholder('Only Me')->searchable()
+                    ->trueLabel('All Subordinates')
+                    ->falseLabel('Only Me')
+                    ->queries(
+                        true: fn (Builder $query) => $query->whereIn('requested_by',getSubordinate()),
+                        false: fn (Builder $query) => $query->where('requested_by', getEmployee()->id),
+                        blank: fn (Builder $query) => $query->where('requested_by', getEmployee()->id),
+                    )
             ])
         ;
     }

@@ -60,8 +60,12 @@ class MyUrgent extends BaseWidget
                     sendAR($employee,$urgent,getCompany());
                     Notification::make('new Urgent')->success()->title('New Urgent Leave Employee : '.$employee->fullName)->send()->sendToDatabase(auth()->user());
                 })
+            ])->filters([
+                getFilterSubordinate()
             ])
             ->columns([
+                Tables\Columns\TextColumn::make('NO')->label('NO')->rowIndex(),
+                Tables\Columns\TextColumn::make('employee.fullName')->alignCenter()->searchable(),
                 Tables\Columns\TextColumn::make('time_out')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('time_in')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('hours')->numeric()->sortable(),

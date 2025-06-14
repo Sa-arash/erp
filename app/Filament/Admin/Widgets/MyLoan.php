@@ -8,7 +8,9 @@ use App\Models\Loan;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
+use Filament\Support\Enums\IconSize;
 use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -22,7 +24,7 @@ class MyLoan extends BaseWidget
     {
         return $table
             ->query(
-                    Loan::query()->where('employee_id',getEmployee()?->id)->orderBy('id','desc')
+                    Loan::query()->where('company_id',getCompany()->id)->orderBy('id','desc')
             )
             ->headerActions([
                 Tables\Actions\Action::make('new')->disabled(function(){
@@ -51,9 +53,12 @@ class MyLoan extends BaseWidget
                         sendAR($employee,$loan,$company);
                     Notification::make('success')->success()->title('Successfully Submitted')->send();
                 })
+            ])->filters([
+                getFilterSubordinate()
             ])
             ->columns([
-                Tables\Columns\TextColumn::make('')->rowIndex(),
+                Tables\Columns\TextColumn::make('NO')->label('NO')->rowIndex(),
+                Tables\Columns\TextColumn::make('employee.fullName')->searchable()->alignCenter(),
                 Tables\Columns\TextColumn::make('loan_code')->label('Loan Code'),
                 Tables\Columns\TextColumn::make('request_amount')->numeric()->label('Requested Amount  '),
                 Tables\Columns\TextColumn::make('request_date')->label('Request Date'),
@@ -63,7 +68,8 @@ class MyLoan extends BaseWidget
                 Tables\Columns\TextColumn::make('number_of_payed_installments')->label('Number of Installments Pay'),
                 Tables\Columns\TextColumn::make('status')->label('Status')->badge(),
             ])->actions([
-                Tables\Actions\ViewAction::make()
+                Tables\Actions\Action::make('pdf')->label('PDF')->visible(fn($record)=>$record->admin_id)->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->url(fn($record)=>route('pdf.loan',['id'=>$record->id])),
+                Tables\Actions\Action::make('CashPdf')->color('success')->label('PDF')->visible(fn($record)=>$record->finance_id)->tooltip('Print Cash Advance')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->url(fn($record)=>route('pdf.cashAdvance',['id'=>$record->id]))
             ]);
     }
 }

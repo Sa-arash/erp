@@ -37,17 +37,17 @@ class PersonResource extends Resource
                         return 'PSN00001';
                     }
                 })->readOnly()->required()->maxLength(255),
-                Forms\Components\Section::make()->schema([Forms\Components\Select::make('person_group')->label('Group')->options(getCompany()->person_group)
+                Forms\Components\Section::make()->schema([Forms\Components\Select::make('person_group')->label('Group')->options(getCompany()->person_grope)
                     ->createOptionForm([
                         Forms\Components\TextInput::make('title')->required()
                     ])->createOptionUsing(function ($data) {
-                        $array = getCompany()->person_group;
+                        $array = getCompany()->person_grope;
                         if (isset($array)) {
                             $array[$data['title']] = $data['title'];
                         } else {
                             $array = [$data['title'] => $data['title']];
                         }
-                        getCompany()->update(['person_group' => $array]);
+                        getCompany()->update(['person_grope' => $array]);
                         return $data['title'];
                     })->searchable(),
                     Forms\Components\TextInput::make('job_title')->maxLength(255)->default(null),

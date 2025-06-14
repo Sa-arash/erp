@@ -29,7 +29,7 @@ class MyLeave extends BaseWidget
     public function table(Table $table): Table
     {
         return $table ->query(
-            Leave::query()->where('employee_id',getEmployee()->id)
+            Leave::query()->where('company_id',getCompany()->id)
         )->defaultSort('id','desc')
             ->headerActions([
                 Tables\Actions\Action::make('New Leave')->action(function ($data){
@@ -84,6 +84,7 @@ class MyLeave extends BaseWidget
 
             ->columns([
                 Tables\Columns\TextColumn::make('#')->alignCenter()->rowIndex(),
+                Tables\Columns\TextColumn::make('employee.fullName')->alignCenter()->searchable(),
                 Tables\Columns\TextColumn::make('typeLeave.title')->alignCenter()->sortable(),
                 Tables\Columns\TextColumn::make('created_at')->label('Request Date')->dateTime()->alignCenter()->sortable(),
                 Tables\Columns\TextColumn::make('approvals.employee.fullName')->label('Line Manager')->alignCenter()->sortable(),
@@ -99,7 +100,9 @@ class MyLeave extends BaseWidget
                     $record->approvals()->delete();
                     $record->delete();
                     Notification::make('success')->success()->title('Successfully')->send();
-                })->visible(fn($record)=>$record->status->value=='pending')
+                })->visible(fn($record)=>$record->status->value=='pending' and $record->employee_id ===getEmployee()->id)
+            ])->filters([
+                getFilterSubordinate()
             ]);
     }
 }

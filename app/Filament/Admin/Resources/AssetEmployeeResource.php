@@ -193,7 +193,7 @@ class AssetEmployeeResource extends Resource
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('employee_id')->label('Employee')->searchable()->options(getCompany()->employees()->pluck('fullName','id'))->preload(),
-                Tables\Filters\SelectFilter::make('person_id')->label('Person')->searchable()->options(function (){
+                Tables\Filters\SelectFilter::make('person_id')->label('Personnel')->searchable()->options(function (){
                     $data=[];
                     $persons=Person::query()->where('company_id',getCompany()->id)->get();
                     foreach ($persons as $person){
@@ -205,7 +205,6 @@ class AssetEmployeeResource extends Resource
                     }
                     return $data;
                 })->preload(),
-
                 DateRangeFilter::make('date'),
             ],getModelFilter())
             ->actions([

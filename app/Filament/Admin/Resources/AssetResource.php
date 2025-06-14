@@ -10,12 +10,12 @@ use App\Models\AssetEmployee;
 use App\Models\Brand;
 use App\Models\Currency;
 use App\Models\Parties;
+use App\Models\Person;
 use App\Models\PurchaseOrder;
 use App\Models\Structure;
 use App\Models\Transaction;
 use App\Models\Warehouse;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
-use Closure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Filament\Forms\Components\DatePicker;
@@ -544,7 +544,9 @@ class AssetResource extends Resource
                 Tables\Columns\TextColumn::make('titlen')->label('Asset Description'),
                 Tables\Columns\TextColumn::make('brand.title'),
                 Tables\Columns\TextColumn::make('type'),
-                Tables\Columns\TextColumn::make('employee')->state(function ($record){return $record->check_out_to ? $record?->checkOutTo?->fullName:$record?->person?->name;})->badge()->label('Custodian'),
+                Tables\Columns\TextColumn::make('employee')->state(function ($record) {
+                    return $record->check_out_to ? $record?->checkOutTo?->fullName : $record?->person?->name . ' (' . $record?->person?->number . ')';
+                })->badge()->label('Custodian'),
                 Tables\Columns\TextColumn::make('updated_at')->dateTime()->label('Date Update'),
                 Tables\Columns\TextColumn::make('Due Date')->state(function ($record) {
                     if ($record->employees?->last()) {
@@ -585,10 +587,26 @@ class AssetResource extends Resource
                 Tables\Filters\SelectFilter::make('status')->searchable()->options(['inuse' => "In Use", 'inStorageUsable' => "In Storage",  'loanedOut' => "Loaned Out", 'outForRepair' => 'Out For Repair', 'StorageUnUsable' => " Scrap"]),
                 DateRangeFilter::make('buy_date')->label('Purchase Date'),
                 DateRangeFilter::make('guarantee_data')->label('Guarantee Data'),
-                Tables\Filters\Filter::make('employee')
+                Tables\Filters\Filter::make('employee')->columnSpan(4)
                     ->form([
-                        Forms\Components\Select::make('employee_id')->label('Employee')->options(fn() => getCompany()->employees()->pluck('fullName', 'id'))->searchable()->preload(),
-                        Forms\Components\Select::make('department_id')->label('Employee Department')->options(fn() => getCompany()->departments()->pluck('title', 'id'))->searchable()->preload(),
+                        Section::make([
+                            Forms\Components\Select::make('employee_id')->label('Employee')->options(fn() => getCompany()->employees()->pluck('fullName', 'id'))->searchable()->preload(),
+                            Forms\Components\Select::make('department_id')->label('Employee Department')->options(fn() => getCompany()->departments()->pluck('title', 'id'))->searchable()->preload(),
+                            Forms\Components\Select::make('person_id')->label('Personnel')->searchable()->options(function () {
+                                $data = [];
+                                $persons = Person::query()->where('company_id', getCompany()->id)->get();
+                                foreach ($persons as $person) {
+                                    if ($person->number) {
+                                        $data[$person->id] = $person->name . '(' . $person->number . ')';
+                                    } else {
+                                        $data[$person->id] = $person->name;
+                                    }
+                                }
+                                return $data;
+                            })->preload(),
+
+                            Forms\Components\Select::make('group')->label('Personnel Group')->options(getCompany()->person_grope)->searchable()->preload(),
+                        ])->columns(4)
                     ])
                     ->query(function (Builder $query, array $data) {
                         return $query->when($data['employee_id'] ?? null, function ($query, $employeeId) {
@@ -598,7 +616,17 @@ class AssetResource extends Resource
                         })->when($data['department_id'], function ($query, $department) {
                             return $query->whereHas('assetEmployee', function ($subQuery) use ($department) {
                                 $subQuery->whereHas('employee', function ($query) use ($department) {
-                                    $query->where('department_id', $department);
+                                    return $query->where('department_id', $department);
+                                });
+                            });
+                        })->when($data['person_id'], function ($query, $person) {
+                            return $query->whereHas('assetEmployee', function ($query) use ($person) {
+                                $query->where('person_id', $person);
+                            });
+                        })->when($data['group'], function ($query, $group) {
+                            return $query->whereHas('assetEmployee', function ($subQuery) use ($group) {
+                                $subQuery->whereHas('person', function ($query) use ($group) {
+                                  return  $query->where('person_group', $group);
                                 });
                             });
                         });

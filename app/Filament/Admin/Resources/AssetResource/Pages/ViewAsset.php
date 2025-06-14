@@ -137,6 +137,7 @@ class ViewAsset extends ViewRecord
                         'description'=>$data['description']
                     ]);
                 }
+                sendSuccessNotification();
             })->disabled(fn($record) => $record->check_out_to or $record->check_out_person  )->modalWidth(MaxWidth::FiveExtraLarge),
 
             Action::make('Check IN')->label('Check IN')->color('warning')->fillForm(function ($record){
@@ -181,7 +182,6 @@ class ViewAsset extends ViewRecord
                 $employee=$record->employees->last()?->assetEmployee?->employee_id;
                 $person=$record->employees->last()?->assetEmployee?->person_id;
                 if ($employee){
-                    dd();
                     $assetEmployee=AssetEmployee::query()->firstWhere('employee_id',$employee);
                 }else{
                     $assetEmployee=AssetEmployee::query()->firstWhere('person_id',$person);
@@ -197,8 +197,9 @@ class ViewAsset extends ViewRecord
                         'description' => $data['description']
                     ]);
                     $record->update(['warehouse_id'=>$data['warehouse_id'],'structure_id'=>$data['structure_id'],'check_out_to' => null,'check_out_person'=>null]);
-                    Notification::make('success')->success()->title('Successfully')->send();
                 }
+                sendSuccessNotification();
+
             })->disabled(fn($record)=>$record->check_out_person ===null and $record->check_out_to===null),
         ];
     }

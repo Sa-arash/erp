@@ -247,7 +247,7 @@ Route::get('/pdf/bid/{id}',[\App\Http\Controllers\PdfController::class,'bid'])->
 Route::get('/pdf/separation/{id}',[\App\Http\Controllers\PdfController::class,'separation'])->name('pdf.separation');
 Route::get('/pdf/takeOut/{id}',[\App\Http\Controllers\PdfController::class,'takeOut'])->name('pdf.takeOut');
 Route::get('/pdf/requestVisit/{id}',[\App\Http\Controllers\PdfController::class,'requestVisit'])->name('pdf.requestVisit');
-Route::get('/pdf/requestVisit/{ids}/all',[\App\Http\Controllers\PdfController::class,'requestVisits'])->name('pdf.requestVisits');
+Route::get('/pdf/requestVisit/{ids}/all/{type}',[\App\Http\Controllers\PdfController::class,'requestVisits'])->name('pdf.requestVisits');
 Route::get('/pdf/accountCurrency/{period}/{account}',[\App\Http\Controllers\PdfController::class,'accountCurrency'])->name('pdf.accountCurrency');
 Route::get('/pdf/barcode/{code}',[\App\Http\Controllers\PdfController::class,'barcode'])->name('pdf.barcode');
 Route::get('/pdf/barcodes/{codes}',[\App\Http\Controllers\PdfController::class,'barcodes'])->name('pdf.barcodes');

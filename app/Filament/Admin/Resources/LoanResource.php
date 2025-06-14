@@ -119,7 +119,9 @@ class LoanResource extends Resource
 
             ])
             ->filters([
-
+                Tables\Filters\SelectFilter::make('department')->searchable()->preload()->label('Department')->options(getCompany()->departments()->pluck('title','id'))->query(fn($query,$data)=>isset($data['value'])? $query->whereHas('employee',function ($query)use($data){
+                    return $query->where('department_id',$data['value']);
+                }):$query),
                 SelectFilter::make('employee_id')->searchable()->preload()->options(Employee::where('company_id', getCompany()->id)->get()->pluck('fullName', 'id'))
                     ->label('employee'),
 

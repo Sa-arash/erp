@@ -291,6 +291,9 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
             ])
             ->filters([
                 DateRangeFilter::make('visit_date'),
+                Tables\Filters\SelectFilter::make('department')->searchable()->preload()->label('Department')->options(getCompany()->departments()->pluck('title','id'))->query(fn($query,$data)=>isset($data['value'])? $query->whereHas('employee',function ($query)use($data){
+                    return $query->where('department_id',$data['value']);
+                }):$query),
                 Tables\Filters\SelectFilter::make('requested_by')->options(getCompany()->employees->pluck('info', 'id'))->searchable()->preload()->label('Employee'),
                 DateRangeFilter::make('visit_date')->label('Visit Date'),
                 Tables\Filters\SelectFilter::make('status')->options(['approved' => 'approved', 'notApproved' => 'notApproved'])->searchable()
@@ -382,7 +385,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
             ])
             ->bulkActions([
                 Tables\Actions\BulkAction::make('print')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->color('primary')->action(function ($records) {
-                    return redirect(route('pdf.requestVisits', ['ids' => implode('-', $records->pluck('id')->toArray())]));
+                    return redirect(route('pdf.requestVisits', ['ids' => implode('-', $records->pluck('id')->toArray()),'type'=>'Recurse']));
 
                 }),
                 ExportBulkAction::make()->color('purple')->label('Export Visitor Requests')->exports([
