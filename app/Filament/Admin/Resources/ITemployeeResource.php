@@ -165,7 +165,8 @@ class ITemployeeResource extends Resource
                         $user = User::query()->create([
                             'name' => $record->fullName,
                             'email' => $data['email'],
-                            'password' => $data['password']
+                            'password' => $data['password'],
+                            'need_new_password'=>1
                         ]);
                         $user->roles()->attach($rolesWithCompanyId);
                         $record->update(['user_id'=>$user->id]);
@@ -188,7 +189,7 @@ class ITemployeeResource extends Resource
                     Tables\Actions\Action::make('setPassword')->visible(fn($record) => $record->user and auth()->user()->can('password_i::temployee') )->label('Reset Password')->form([
                         Forms\Components\TextInput::make('password')->required()->autocomplete(false)
                     ])->requiresConfirmation()->action(function ($record, $data) {
-                        $record->user->update(['password' => $data['password']]);
+                        $record->user->update(['password' => $data['password'],'need_new_password'=>1]);
                         Notification::make('success')->success()->title('Submitted Successfully')->send();
                     })->icon('heroicon-s-lock-closed')->color('warning'),
                     Tables\Actions\Action::make('setRole')->visible(fn($record) => $record->user and auth()->user()->can('role_i::temployee') )->fillForm(function ($record) {

@@ -1,6 +1,34 @@
+@php
+$title="";
+switch ($type){
+    case 'warehouse_id';
+      $title='Location';
+    break;
+    case 'brand_id';
+      $title='Brand';
+    break;
+    case 'type';
+      $title='Type';
+    break;
+    case 'po_number';
+      $title='PO';
+    break;
+    case 'party_id';
+      $title='Vendor';
+    break;
+    case 'check_out_to';
+      $title='Employee';
+    break;
+    case 'check_out_person';
+      $title='Personnel';
+    break;
+}
+
+@endphp
+
 @include('pdf.header',
   ['titles'=>[''],
-  'css'=>true,'title'=>'Asset Details by Location'
+  'css'=>true,'title'=>'Asset Details by '.$title
   ])
 
 
@@ -64,9 +92,7 @@
         display: inline-block;
     }
 
-    @page {
-        margin: 30px;
-    }
+
 </style>
 @foreach( $assets  as $grupe)
 
@@ -83,6 +109,12 @@
             @break
             @case('PO')
             {{$grupe[0]->po_number??'None PO'}}
+            @break
+            @case('check_out_person')
+            {{$grupe[0]?->person?->name?$grupe[0]?->person?->name.' ('.$grupe[0]?->person?->number.')':'None Person'}}
+            @break
+            @case('check_out_to')
+            {{$grupe[0]?->checkOutTo?->fullName??'None Employee'}}
             @break
             @case('party_id')
             {{$grupe[0]->party->name??'None Vendor'}}
@@ -183,9 +215,13 @@
                             <td>{{$asset->depreciation_years}}</td>
                         </tr>
                         <tr>
-                            <td><strong>Note</strong></td>
-
+                            <td><strong>Note : </strong></td>
                             <td colspan="3" class="notes">{{$asset->note}}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Check Out to :</strong></td>
+
+                            <td colspan="3" class="notes">{{$asset->check_out_to ? $asset?->checkOutTo?->fullName : $asset?->person?->name . ' (' . $asset?->person?->number . ')'}}</td>
                         </tr>
                     </table>
                 </td>

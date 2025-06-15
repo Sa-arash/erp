@@ -60,7 +60,7 @@ class WarehouseResource extends Resource
         return $form
             ->schema([
                 Forms\Components\TextInput::make('title')->label('Warehouse Name')->required()->maxLength(255),
-                Select::make('employee_id')->required()->label('Manage By')->searchable()->preload()->options(getCompany()->employees()->get()->pluck('fullName', 'id')),
+                Select::make('employee_id')->required()->label('Manage By')->searchable()->preload()->options(getCompany()->employees()->get()->pluck('fullName', 'id'))->disabled(fn()=>!\auth()->user()->can('fullManager_warehouse')),
                 Forms\Components\TextInput::make('phone')->tel()->maxLength(255),
                 Forms\Components\Select::make('country')->options(getCountry())->searchable()->preload(),
                 Forms\Components\TextInput::make('state')->label('State/Province')->maxLength(255),
@@ -147,8 +147,8 @@ class WarehouseResource extends Resource
                             'company_id'=>getCompany()->id,
                         ]);
                     Notification::make('save')->success()->title('Save ')->send();
-                }),
-                Tables\Actions\Action::make('inventory')->url(fn($record)=>WarehouseResource::getUrl('inventory',['record'=>$record->id])),
+                })->icon('heroicon-s-home-modern')->color('warning'),
+                Tables\Actions\Action::make('inventory')->icon('heroicon-s-inbox-arrow-down')->color('success')->url(fn($record)=>WarehouseResource::getUrl('inventory',['record'=>$record->id])),
                 Tables\Actions\DeleteAction::make()->hidden(fn($record)=>$record->employees->count() or $record->assets->count() or $record->inventories->count())
 
             ])

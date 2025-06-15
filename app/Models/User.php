@@ -47,7 +47,6 @@ class User extends Authenticatable implements HasTenants, FilamentUser, HasName,
         }else{
             return  false;
         }
-
     }
 
     public function allRoles(): BelongsToMany
@@ -96,6 +95,7 @@ class User extends Authenticatable implements HasTenants, FilamentUser, HasName,
         'email',
         'password',
         'is_super',
+        'need_new_password',
         'status'
 
     ];

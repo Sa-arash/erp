@@ -57,11 +57,7 @@
     }
 
 
-    @page  {
-        footer: MyFooter;
-        margin: 10px;
 
-    }
 </style>
 
 
@@ -82,6 +78,12 @@
             @break
             @case('PO')
             {{$group[0]->po_number??'None PO'}}
+            @break
+            @case('check_out_person')
+            {{$grupe[0]?->person?->name?$grupe[0]?->person?->name.' ('.$grupe[0]?->person?->number.')':'None Person'}}
+            @break
+            @case('check_out_to')
+            {{$grupe[0]?->checkOutTo?->fullName??'None Employee'}}
             @break
             @case('party_id')
             {{$group[0]->party->name??'None Vendor'}}
@@ -105,7 +107,7 @@
                     <div class="barcode">
                         {!! '<img src="data:image/png;base64,' . \Milon\Barcode\Facades\DNS1DFacade::getBarcodePNG($asset->number, 'C39',1   ,20) .'" style="width:200px" alt="barcode"/>' !!}
                     </div>
-                    <p class="" style="text-align: center !important;margin-top: 5px">{{$asset->number}}</p>
+                    <pre class="" style="text-align: center !important;margin-top: 5px">           {{$asset->number}}</pre>
                 </td>
                 <td>{{$asset->product->title}}<br>{{$asset->description??"N/A"}}<br>{{$asset->brand?->title??"N/A"}}<br>{{$asset->model??"N/A"}}</td>
                 <td>{{$asset->serial_number ??"N/A"}}<br>{{$asset->warehouse?->title}}</td>

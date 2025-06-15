@@ -183,7 +183,7 @@ class ProductResource extends Resource
                     }),
                     Column::make('id')->formatStateUsing(fn($record) => $record->assets->count())->heading('Quantity'),
                     Column::make('created_at')->formatStateUsing(fn($record) => $record->inventories()?->sum('quantity'))->heading('Available'),
-    
+
                     Column::make('updated_at')->formatStateUsing(fn($record) => $record->assets->sum('price'))->heading('Total Value')
                 ]),
             ])->label('Export Product')->color('purple')
@@ -234,6 +234,8 @@ class ProductResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
+                Tables\Actions\DeleteAction::make()->hidden(fn($record)=>$record->purchaseRequestItem()->count() or $record->assets()->count() or $record->inventories()->count())
+
             ])
             ->bulkActions([
                 ExportBulkAction::make()
@@ -261,7 +263,7 @@ class ProductResource extends Resource
                         }),
                         Column::make('id')->formatStateUsing(fn($record) => $record->assets->count())->heading('Quantity'),
                         Column::make('created_at')->formatStateUsing(fn($record) => $record->inventories()?->sum('quantity'))->heading('Available'),
-        
+
                         Column::make('updated_at')->formatStateUsing(fn($record) => $record->assets->sum('price'))->heading('Total Value')
                     ]),
                 ])->label('Export Product')->color('purple')

@@ -149,6 +149,7 @@ class ProductServiceResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make()->hidden(fn($record)=>$record->purchaseRequestItem()->count())
             ])
             ->bulkActions([
                 ExportBulkAction::make()

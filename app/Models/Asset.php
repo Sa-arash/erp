@@ -25,7 +25,7 @@ class Asset extends Model implements HasMedia
 
     public function getLogAttribute()
     {
-        return $this->product?->title . "#-#" . $this->product?->sku . "#-#" . $this?->serial_number ;
+        return $this->product?->title . " " . $this->product?->sku . " " . $this?->serial_number ;
     }
     public function getTitleAttribute()
     {

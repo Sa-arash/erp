@@ -10,6 +10,7 @@ use App\Filament\Admin\Resources\EmployeeResource\Pages\ViewEmployee;
 use App\Filament\Admin\Resources\InvoiceResource;
 use App\Filament\Admin\Resources\PartiesResource;
 use App\Filament\Pages\Auth\Login;
+use App\Filament\Pages\Auth\Profile;
 use App\Filament\Pages\Tenancy\EditTeamProfile;
 use App\Filament\Resources\EmployeeResource;
 use App\Models\Cheque;
@@ -168,10 +169,10 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Admin/Widgets'), for: 'App\\Filament\\Admin\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
-            ])
+            ])->profile(Profile::class)
             ->userMenuItems([
-                MenuItem::make()
-                    ->label('View Profile')->icon('heroicon-c-user-circle')->url(fn() => EmployeeProfile::getNavigationUrl()),
+                MenuItem::make()->label('View Profile')->icon('heroicon-c-user-circle')->url(fn() => route('filament.admin.pages.employee-profile',['tenant'=>auth()->user()->companies[0]->id])),
+                MenuItem::make()->label('Reset Password')->url(fn() => route('filament.admin.auth.profile',['tenant'=>auth()->user()->companies[0]->id]))->icon('heroicon-o-cog-6-tooth'),
 
             ])
             ->middleware([
@@ -187,11 +188,6 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ])->userMenuItems([
-                MenuItem::make()
-                    ->label('Settings')->visible(fn() => session('superAdminLogin') !== null)
-                    ->url(fn() => session('superAdminLogin') !== null ? route('super.admin.login') : '')
-                    ->icon('heroicon-o-cog-6-tooth'),
             ])
             ->tenantMiddleware([
                 SyncShieldTenant::class,

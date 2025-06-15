@@ -174,11 +174,11 @@
                         <td colspan="4" class="font-bold" style="width: 50%;border: none;padding:0 ">Last Name</td>
                     </tr>
                     <tr>
-                        <td colspan="6" style="border: none;padding:0 10px">
+                        <td colspan="6" style="border: none;padding:0 10px;text-align: right">
                             {{ $leave->employee?->warehouse?->title . ' - ' . $leave->employee?->structure?->title }}<br>
                             <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">
                         </td>
-                        <td colspan="6" style="border: none;padding:0 10px">
+                        <td colspan="6" style="border: none;padding:0 10px;text-align: start">
                             {{ $leave->employee?->manager?->fullName }}
                             <br>
                             <hr style="border: none; border-top: 2px solid black; margin: 5px 0;">

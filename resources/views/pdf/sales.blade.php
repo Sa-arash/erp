@@ -2,8 +2,8 @@
 <style>
     body {
         font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 0px;
+
+
         font-size: 12px;
         color: #000000;
         background-color: #ffffff;
@@ -89,6 +89,11 @@
     .empty-row td {
         height: 20px;
         border: none;
+    }
+    @page  {
+        margin: 10px;
+        margin-top: 50mm!important;
+        margin-bottom: 12mm;
     }
 </style>
 </head>
