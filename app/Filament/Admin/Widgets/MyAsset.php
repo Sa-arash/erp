@@ -77,7 +77,7 @@ class MyAsset extends BaseWidget
 
             ])
             ->columns([
-                Tables\Columns\TextColumn::make('')->label('NO')->rowIndex(),
+                Tables\Columns\TextColumn::make('')->label('No')->rowIndex(),
                 Tables\Columns\TextColumn::make('assetEmployee.employee.fullName')->searchable(),
                 Tables\Columns\ImageColumn::make('asset.media.original_url')->state(function ($record) {
                     return $record->asset->media?->where('collection_name', 'images')->first()?->original_url;
@@ -92,7 +92,7 @@ class MyAsset extends BaseWidget
                 })->action(function ($record) {
                     return redirect(route('pdf.barcode', ['code' => $record->id]));
                 }),
-                Tables\Columns\TextColumn::make('purchase_order_id')->label('PO NO')->state(fn($record) => $record->purchase_order_id === null ? "---" : PurchaseOrder::find($record->purchase_order_id)->purchase_orders_number)
+                Tables\Columns\TextColumn::make('purchase_order_id')->label('PO No')->state(fn($record) => $record->purchase_order_id === null ? "---" : PurchaseOrder::find($record->purchase_order_id)->purchase_orders_number)
                     ->url(fn($record) => $record->purchase_order_id ? PurchaseOrderResource::getUrl() . "?tableFilters[id][value]=" . $record->purchase_order_id : false),
                 Tables\Columns\TextColumn::make('asset.titlen')->label('Asset Description'),
                 Tables\Columns\TextColumn::make('asset.brand.title'),

@@ -3,13 +3,16 @@
 namespace App\Filament\Pages\Auth;
 
 use Filament\Facades\Filament;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\Component;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
+use Filament\Forms\Set;
 use Filament\Pages\Auth\EditProfile as BaseEditProfile;
 use Filament\Support\Exceptions\Halt;
 use Filament\Support\Facades\FilamentView;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
 use function Filament\Support\is_app_url;
 
@@ -80,13 +83,17 @@ class Profile extends BaseEditProfile
         return route('filament.admin.pages.dashboard',['tenant'=>auth()->user()->companies[0]->id]);
     }
 
-    protected ?string $heading = 'New Password';
+    protected ?string $heading = 'Enter a new password';
 
     protected function getPasswordFormComponent(): Component
     {
         return TextInput::make('password')->required()
             ->label(__('filament-panels::pages/auth/edit-profile.form.password.label'))
-            ->password()
+            ->password()->hintAction(Action::make('generate_password')->action(function (Set $set) {
+                $password = Str::password(8);
+                $set('password', $password);
+                $set('password_confirmation', $password);
+            }))->placeholder(__('filament-panels::pages/auth/edit-profile.form.password.label'))
             ->revealable(filament()->arePasswordsRevealable())
             ->rule(Password::default())
             ->autocomplete('new-password')
@@ -102,7 +109,7 @@ class Profile extends BaseEditProfile
             ->label(__('filament-panels::pages/auth/edit-profile.form.password_confirmation.label'))
             ->password()->required()
             ->revealable(filament()->arePasswordsRevealable())
-            ->required()
+            ->required()->placeholder(__('filament-panels::pages/auth/edit-profile.form.password_confirmation.label'))
             ->dehydrated(false);
     }
 }

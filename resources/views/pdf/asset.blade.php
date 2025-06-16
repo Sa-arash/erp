@@ -8,8 +8,6 @@
              margin: 0;
              padding: 0;
              box-sizing: border-box;
-             color: #333;
-             font-size: 10px; /* Base font size */
          }
          .container {
              width: 210mm; /* A4 width */
@@ -62,12 +60,8 @@
              background-color: #f9f9f9; /* Light background for labels */
              width: 30%; /* Allocate width for label column */
              font-weight: bold;
-             color: #444;
          }
-         /* Specific styling for the detail value cells (td) */
-         td {
-             color: #666;
-         }
+
 
          .badge {
              display: inline-block;
@@ -94,17 +88,14 @@
              padding-top: 10px;
              border-top: 1px solid #eee;
              font-size: 10px;
-             color: #777;
          }
          .footer p {
              margin: 3px 0;
          }
-         @page  {
-             margin: 10px;
-         }
+
 
      </style>
- </head>
+
  <body>
 
 <table>

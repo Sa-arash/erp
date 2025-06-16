@@ -127,7 +127,7 @@
             </td>
             <td style="background: white!important;">
                 <pre style="background: #c4e7e7">Invoice Date:<span style="background: #ffffff;" > {{ \Carbon\Carbon::parse($invoice->created_at)->format('l, F d, Y') }}</span></pre>
-                <pre style="background: #c4e7e7">Invoice No:<span style="background: #ffffff;">   2025-{{$invoice->invoice?->number}}</span></pre>
+                <pre style="background: #c4e7e7">Invoice No:<span style="background: #ffffff;">   2025-{{$invoice?->invoice?->number ? str_pad($invoice?->invoice?->number, 5, '0', STR_PAD_LEFT):" ---------"}}</span></pre>
             </td>
         </tr>
     </table>
@@ -186,29 +186,36 @@
         <tr>
             <td style="width: 50%;background: none !important">
 
-                @if($invoice->type)
-                    @php
-                        $str='';
-                                foreach ($invoice->invoice->transactions->where('debtor','!=','0') as $tra){
-                                   $str.= "<p>Account Name:    {$tra->account->name}  </p>
-                                   <p> Account Number: {$tra->account->code}  </p>
-                                   ";
-                                }
-                    @endphp
-                @else
-                    @php
-                        $str='';
-                            foreach ($invoice->invoice->transactions->where('creditor','!=','0') as $tra){
-                               $str.= "<p>Account Name:    {$tra->account->name}  </p>
-                               <p> Account Number: {$tra->account->code}  </p>
-                               ";
-                            }
+{{--                @if($invoice->type)--}}
+{{--                    @php--}}
+{{--                        $str='';--}}
 
-                    @endphp
-                @endif
-                <div >
-                    {!! $str !!}
-                </div>
+{{--                                foreach ($invoice->invoice->transactions->where('debtor','!=','0') as $tra){--}}
+{{--                                    if (str_starts_with($tra->account->code,'10')){--}}
+{{--                                       $str.= "<p>Account Name:    {$tra->account->name}  </p>--}}
+{{--                                   <p> Account Number: {$tra->account->code}  </p>--}}
+{{--                                   ";--}}
+{{--                                    }--}}
+{{--                                }--}}
+{{--                    @endphp--}}
+{{--                @else--}}
+{{--                    @php--}}
+{{--                        $str='';--}}
+{{--                            foreach ($invoice->invoice->transactions->where('creditor','!=','0') as $tra){--}}
+{{--                               $str.= "<p>Account Name:    {$tra->account->name}  </p>--}}
+{{--                               <p> Account Number: {$tra->account->code}  </p>--}}
+{{--                               ";--}}
+{{--                            }--}}
+
+{{--                    @endphp--}}
+{{--                @endif--}}
+{{--                <div >--}}
+{{--                    {!! $str !!}--}}
+{{--                </div>--}}
+                <P>Beneficiary Bank USD: EMIRATES NBD PJSC</P>
+                <P>Account Name:   AREA TARGET GENERAL TRADING LLC</P>
+                <P>Account Number: IBAN: AE380260001024332222002</P>
+                <P>Swift Code: EBILAEAD DUBAI- UAE</P>
 
 
             </td>

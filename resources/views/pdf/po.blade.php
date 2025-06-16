@@ -72,7 +72,7 @@
         <th>Unit Price</th>
         <th>Taxes</th>
         <th>Freights</th>
-        <th>Total Price</th>
+        <th>TEC</th>
 
     </tr>
     </thead>
@@ -94,6 +94,7 @@
 
             <td>   {{  $item->product->title."-".$item->product?->sku}}</td>
             <td>
+                
                 {{ $item->description }}
             </td>
             <td>{{$item->unit->title}}</td>

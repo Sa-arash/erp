@@ -257,7 +257,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('visiting_dates')->limitList(5)->bulleted()->label('Scheduled Visit Dates')->sortable(),
                 Tables\Columns\TextColumn::make('arrival_time')->time('H:i A'),
                 Tables\Columns\TextColumn::make('departure_time')->time('H:i A'),
-                Tables\Columns\TextColumn::make('InSide_date')->label('Check IN ')->time(),
+                Tables\Columns\TextColumn::make('InSide_date')->label('Check IN ')->time('h:i A'),
                 Tables\Columns\TextColumn::make('OutSide_date')->label('Check OUT ')->time(),
                 Tables\Columns\TextColumn::make('Track Time')->state(function ($record) {
                     $startTime = $record->InSide_date;

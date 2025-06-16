@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Company;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 
@@ -38,5 +39,6 @@ Artisan::command('app:update-currency', function () {
             }
         }
     }
+    Company::query()->where('id',10)->update(['address'=>5]);
     $this->info('Currency updated!');
 })->describe('Update the currency.');

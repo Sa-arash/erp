@@ -570,7 +570,7 @@ class AssetResource extends Resource
                     'StorageUnUsable' => " Scrap"
                 })->badge(),
 
-                Tables\Columns\TextColumn::make('price')->label('Purchase Price')->sortable()->numeric(),
+                Tables\Columns\TextColumn::make('price')->summarize(Tables\Columns\Summarizers\Sum::make())->label('Purchase Price')->sortable()->numeric(),
 
                 Tables\Columns\TextColumn::make('warehouse.title')->label('Warehouse/Building')->sortable(),
                 Tables\Columns\TextColumn::make('structure')->state(function ($record) {

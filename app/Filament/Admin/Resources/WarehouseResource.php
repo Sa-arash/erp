@@ -149,7 +149,7 @@ class WarehouseResource extends Resource
                     Notification::make('save')->success()->title('Save ')->send();
                 })->icon('heroicon-s-home-modern')->color('warning'),
                 Tables\Actions\Action::make('inventory')->icon('heroicon-s-inbox-arrow-down')->color('success')->url(fn($record)=>WarehouseResource::getUrl('inventory',['record'=>$record->id])),
-                Tables\Actions\DeleteAction::make()->hidden(fn($record)=>$record->employees->count() or $record->assets->count() or $record->inventories->count())
+                Tables\Actions\DeleteAction::make()->hidden(fn($record)=>$record->employees->count() or $record->assets->count() or $record->inventories->count())->visible(fn()=>\auth()->user()->can('fullManager_warehouse'))
 
             ])
             ->bulkActions([

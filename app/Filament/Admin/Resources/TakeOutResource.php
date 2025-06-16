@@ -88,7 +88,7 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                 ])->label('Export Gate Pass')->color('purple')
             ])
             ->columns([
-                Tables\Columns\TextColumn::make('NO')->rowIndex(),
+                Tables\Columns\TextColumn::make('NO')->label('No')->rowIndex(),
                 Tables\Columns\TextColumn::make('employee.fullName'),
                 Tables\Columns\TextColumn::make('assets.product.title')->state(fn($record) => $record->assets->pluck('title')->toArray())->badge()->label('Registered Asset'),
                 Tables\Columns\TextColumn::make('itemsOut')->label('Unregistered Asset')->state(function ($record) {
@@ -104,7 +104,7 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('to'),
                 Tables\Columns\TextColumn::make('date')->date(),
                 Tables\Columns\TextColumn::make('return_date')->date(),
-                Tables\Columns\TextColumn::make('mood')->color(function ($state) {
+                Tables\Columns\TextColumn::make('mood')->label('Status')->color(function ($state) {
                     switch ($state) {
                         case "Approved":
                             return 'success';
@@ -114,7 +114,7 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                             return 'danger';
                     }
                 })->badge(),
-                Tables\Columns\TextColumn::make('status')->badge(),
+                Tables\Columns\TextColumn::make('status')->label('Status Items')->badge(),
                 Tables\Columns\TextColumn::make('type')->badge(),
                 Tables\Columns\TextColumn::make('gate_status')->label('Gate Status')->badge(),
             ])

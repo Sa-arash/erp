@@ -19,7 +19,7 @@ class Kernel extends ConsoleKernel
         // دستور زمان‌بندی شما
         $schedule->call(function () {
             \Illuminate\Support\Facades\Artisan::call('app:update-currency');
-        })->everySecond(); // اجرای هر ۵ دقیقه
+        })->everyFiveMinutes(); // اجرای هر ۵ دقیقه
     }
 
     /**

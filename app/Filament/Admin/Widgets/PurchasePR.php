@@ -46,6 +46,6 @@ class PurchasePR extends BaseWidget
                     ->visible(fn($record) => $record->status->value == 'Approval')
                     ->icon('heroicon-s-shopping-cart')
                     ->url(fn($record) => PurchaseOrderResource::getUrl('create') . "?prno=" . $record->id),
-            ])->paginated([3]);
+            ]);
     }
 }

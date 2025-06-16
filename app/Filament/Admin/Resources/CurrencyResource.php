@@ -65,6 +65,9 @@ class CurrencyResource extends Resource
             ])
             ->actions([
                 Tables\Actions\Action::make('online')->label('Online Price')->form([
+                    Forms\Components\Placeholder::make('content')->content(function (){
+
+                    }),
                     Forms\Components\Select::make('online_currency')->label('Online Currency')->options(function (){
                         $response = \Illuminate\Support\Facades\Http::get('https://sarafi.af/en/exchange-rates/sarai-shahzada');
 

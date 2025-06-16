@@ -122,6 +122,7 @@ class CreateFactor extends CreateRecord
             foreach ($this->form->getLivewire()->data['items'] as $item) {
                 $total += str_replace(',', '', $item['total']);
             }
+            $totalPure=$total;
             $total=$total*$currency?->exchange_rate;
 
             // dd($this->data);
@@ -134,7 +135,7 @@ class CreateFactor extends CreateRecord
                 //     // ذخیره فاکتور (Invoice)
 
                 $this->record->invoice->update([
-                    'name' => $this->record->invoice->name . "(Total:" . number_format($total) . ' '.$currency?->name.' '. ")",
+                    'name' => $this->record->invoice->name . "(Total:" . number_format($totalPure) . ' '.$currency?->name.' '. ")",
                 ]);
 
 

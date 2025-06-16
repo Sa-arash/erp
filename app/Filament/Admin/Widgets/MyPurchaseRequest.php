@@ -197,44 +197,77 @@ class MyPurchaseRequest extends BaseWidget
             TextEntry::make('employee.fullName'),
             TextEntry::make('description')->columnSpanFull()->label('Description'),
         ])->columns(3),
-        RepeatableEntry::make('items')->schema([
-            TextEntry::make('product.info')->label('Product/Service')->badge(),
-            TextEntry::make('unit.title')->badge(),
-            TextEntry::make('quantity'),
-            TextEntry::make('estimated_unit_cost')->numeric(),
-            TextEntry::make('project.name')->badge(),
-            TextEntry::make('description')->columnSpanFull(),
-            TextEntry::make('clarification_decision')->state(fn($record) => match ($record->clarification_decision) {
-                'approve' => 'Approved',
-                'reject' => 'Rejected',
-                default => 'Pending',
-            })->color(fn(string $state): string => match ($state) {
-                'Approved' => 'success',
-                'Rejected' => 'danger',
-                default => 'primary',
-            })->badge()->label('Warehouse Decision'),
-            TextEntry::make('clarification_comment')->limit(50)->tooltip(fn($record) => $record->clarification_comment)->label('Warehouse Comment'),
-            TextEntry::make('verification_decision')->state(fn($record) => match ($record->verification_decision) {
-                'approve' => 'Approved',
-                'reject' => 'Rejected',
-                default => 'Pending',
-            })->color(fn(string $state): string => match ($state) {
-                'Approved' => 'success',
-                'Rejected' => 'danger',
-                default => 'primary',
-            })->badge()->label('Verification Decision'),
-            TextEntry::make('verification_comment')->tooltip(fn($record) => $record->verification_decision)->label('Verification Comment'),
-            TextEntry::make('approval_decision')->state(fn($record) => match ($record->approval_decision) {
-                'approve' => 'Approved',
-                'reject' => 'Rejected',
-                default => 'Pending',
-            })->color(fn(string $state): string => match ($state) {
-                'Approved' => 'success',
-                'Rejected' => 'danger',
-                default => 'primary',
-            })->badge()->label('Approval Decision'),
-            TextEntry::make('approval_comment')->tooltip(fn($record) => $record->approval_comment)->label('Approval Comment'),
-        ])->columns(5),
+
+        TextEntry::make('content')
+            ->state(function ($record) {
+                $items = $record->items ?? [];
+                $approves=$record->approvals->where('approve_date','!=',null)->all();
+                $headers = [
+                    'Product/Service', 'Unit', 'Quantity', 'Est. Unit Cost', 'Project',
+                    'Description', 'Warehouse Decision', 'Warehouse Comment','Warehouse Commenter ' ,
+                    'Verification Decision', 'Verification Comment', 'Verification Commenter ' ,
+                    'Approval Decision', 'Approval Comment','Approval Commenter ' ,
+                ];
+
+                $html = '<table style="width: 100%; border-collapse: collapse; font-size: 12px;">';
+
+                // Header Row
+                $html .= '<tr>';
+                foreach ($headers as $header) {
+                    $html .= '<th style="background-color: white; color: black; border: 1px solid #ccc; padding: 6px;">' . $header . '</th>';
+                }
+                $html .= '</tr>';
+
+                // Data Rows
+                foreach ($items as $item) {
+                    $html .= '<tr>';
+                    $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . ($item['product']['info'] ?? '') . '</td>';
+                    $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . ($item['unit']['title'] ?? '') . '</td>';
+                    $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . ($item['quantity'] ?? '') . '</td>';
+                    $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . ($item['estimated_unit_cost'] ?? '') . '</td>';
+                    $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . ($item['project']['name'] ?? '') . '</td>';
+                    $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . ($item['description'] ?? '') . '</td>';
+
+                    // Warehouse Decision
+                    $warehouseDecision = match ($item['clarification_decision'] ?? null) {
+                        'approve' => 'Approved',
+                        'reject' => 'Rejected',
+                        default => 'Pending',
+                    };
+
+                    $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . $warehouseDecision . '</td>';
+                    $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . ($item['clarification_comment'] ?? '') . '</td>';
+                    $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . ($approves[0]?->employee?->fullName ?? '') . '</td>';
+
+                    // Verification Decision
+                    $verificationDecision = match ($item['verification_decision'] ?? null) {
+                        'approve' => 'Approved',
+                        'reject' => 'Rejected',
+                        default => 'Pending',
+                    };
+                    $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . $verificationDecision . '</td>';
+                    $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . ($item['verification_comment'] ?? '') . '</td>';
+                    $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . ($approves[1]?->employee?->fullName ?? '') . '</td>';
+
+                    // Approval Decision
+                    $approvalDecision = match ($item['approval_decision'] ?? null) {
+                        'approve' => 'Approved',
+                        'reject' => 'Rejected',
+                        default => 'Pending',
+                    };
+                    $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . $approvalDecision . '</td>';
+                    $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . ($item['approval_comment'] ?? '') . '</td>';
+                    $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . ($approves[2]?->employee?->fullName ?? '') . '</td>';
+
+                    $html .= '</tr>';
+                }
+
+                $html .= '</table>';
+
+                return $html;
+            })
+            ->label('Items Overview')
+            ->html(),
 
         RepeatableEntry::make('approvals')->schema([
             ImageEntry::make('employee.image')->circular()->label('')->state(fn($record) => $record->employee->media->where('collection_name', 'images')->first()?->original_url),

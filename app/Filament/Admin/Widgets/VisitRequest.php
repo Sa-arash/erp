@@ -91,7 +91,7 @@ class VisitRequest extends BaseWidget
                             return 'danger';
                     }
                 })->alignCenter(),
-
+                Tables\Columns\TextColumn::make('approvals.comment')->label('Comments')
 
 
             ])

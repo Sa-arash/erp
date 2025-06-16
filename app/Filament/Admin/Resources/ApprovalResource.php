@@ -194,14 +194,22 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
                     ->modalWidth(MaxWidth::SevenExtraLarge),
                 Action::make('viewPurchaseRequest')->label('View')->modalWidth(MaxWidth::Full)->infolist(function () {
                     return [
-                        Fieldset::make('PR')->relationship('approvable')->schema([
-                            RepeatableEntry::make('approvals')->schema([
+                        Fieldset::make('Approvals')->relationship('approvable')->schema([
+                            RepeatableEntry::make('approvals')->label('')->schema([
                                 ImageEntry::make('employee.image')->circular()->label('')->state(fn($record)=>$record->employee->media->where('collection_name','images')->first()?->original_url),
                                 TextEntry::make('employee.fullName')->label(fn($record)=>$record->employee?->position?->title),
                                 TextEntry::make('created_at')->label('Request Date')->dateTime(),
-                                TextEntry::make('status')->badge(),
+                                TextEntry::make('status')->state(fn($record)=>match ($record->status->value){
+                                    'Approve'=>'Approved',
+                                    'Not Approve'=>'Not Approved',
+                                    'Pending'=>'Pending',
+                                })->badge()->color(fn($state)=> match ($state){
+                                    'Approved'=>'success',
+                                    'Not Approved'=>'danger',
+                                    'Pending'=>'primary',
+                                }),
                                 TextEntry::make('comment')->tooltip(fn($record) => $record->comment)->limit(50),
-                                TextEntry::make('approve_date')->dateTime(),
+                                TextEntry::make('approve_date')->label('Approved Date')->dateTime(),
                                 ImageEntry::make('employee.signature')->label('')->state(fn($record)=>$record->status->value==="Approve"? $record->employee->media->where('collection_name','signature')->first()?->original_url:''),
                             ])->columns(7)->columnSpanFull()
                         ])->columns(3),

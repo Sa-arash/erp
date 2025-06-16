@@ -160,9 +160,9 @@
     @if($histories->employee_id)
         <tr>
             <td><b>Employee: </b>{{$histories->employee->fullName}}</td>
-            <td><b>Badge Number: </b>{{$histories->employee->ID_number}}</td>
-            <td><b>Department :</b>{{$histories->employee?->department?->title}}</td>
-            <td><b>Position:</b>{{$histories->employee?->position?->title}}</td>
+            <td><b>Badge Number : </b>{{$histories->employee->ID_number}}</td>
+            <td><b>Department : </b>{{$histories->employee?->department?->title}}</td>
+            <td><b>Position: </b>{{$histories->employee?->position?->title}}</td>
             <td><b>Location: </b>{{$histories->employee?->warehouse?->title.' '.getParents($histories->employee?->structure)}}</td>
         </tr>
     @else
@@ -184,7 +184,7 @@
             <td style="width: 80%;border: 2px solid black">
                 <table style="width: 100%;">
                     <tr>
-                        <td colspan="4" style="text-align: center;font-size: 16px"><b> Asset Info</b></td>
+                        <td colspan="4" style="text-align: center;font-size: 16px;background-color: #ffffaa"><b> Asset Info</b></td>
                     </tr>
 
                     <tr>
@@ -212,7 +212,7 @@
                     </tr>
 
                     <tr>
-                        <td colspan="4" style="text-align: center;font-size: 16px"><b> History Info</b></td>
+                        <td colspan="4" style="text-align: center;font-size: 16px;background-color: #ffffaa"><b> History Info</b></td>
                     </tr>
                     <tr>
                         <td><strong>Location:</strong></td>

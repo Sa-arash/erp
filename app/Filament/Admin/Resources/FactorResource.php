@@ -772,14 +772,23 @@ class FactorResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\EditAction::make(),
+//                Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()->action(function ($record) {
                     $record->invoice()->delete();
                     $record->delete();
                     Notification::make('success')->success()->title('Deleted')->send();
                 }),
                 Tables\Actions\Action::make('print')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->color('primary')->url(fn($record) => route('pdf.sales', ['id' => $record->id]))
-
+//                    ->form([
+//                        Section::make([
+//                            TextInput::make('bank')->label('Beneficiary Bank')->required(),
+//                            TextInput::make('account')->label('Account Name')->required(),
+//                            TextInput::make('number')->label('Account Number')->numeric()->required(),
+//                            TextInput::make('swift')->label('Swift Code:')->numeric()->numeric(),
+//                        ])
+//                    ])->action(function($record,$data){
+//                        return redirect(route('pdf.sales', ['id' => $record->id,'data'=>json_encode($data,true)]));
+//                    })
             ])
             ->bulkActions([
                 ExportBulkAction::make()
@@ -1381,7 +1390,7 @@ class FactorResource extends Resource
         return [
             'index' => Pages\ListFactors::route('/'),
             'create' => Pages\CreateFactor::route('/create'),
-            'edit' => Pages\EditFactor::route('/{record}/edit'),
+//            'edit' => Pages\EditFactor::route('/{record}/edit'),
         ];
     }
 }
