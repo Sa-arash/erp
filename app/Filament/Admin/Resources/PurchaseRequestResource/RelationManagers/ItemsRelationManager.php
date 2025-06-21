@@ -89,6 +89,7 @@ class ItemsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('estimated_unit_cost')->state(fn($record)=>$record->estimated_unit_cost.$this->ownerRecord->currency?->symbol)->label('EUC')->numeric(),
                 Tables\Columns\TextColumn::make('total')->state(fn ($record) => $record->estimated_unit_cost * $record->quantity.$this->ownerRecord->currency?->symbol)->numeric(),
                 Tables\Columns\TextColumn::make('project.name'),
+                Tables\Columns\TextColumn::make('clarification_commenter')->state(isset($approves[0])? $approves[0]?->employee?->fullName:"")->label('Warehouse Commenter'),
                 Tables\Columns\TextColumn::make('clarification_decision')->state(fn($record)=>match ($record->clarification_decision){
                     'approve' => 'Approved',
                     'reject' => 'Rejected',
@@ -99,7 +100,7 @@ class ItemsRelationManager extends RelationManager
                     default => 'primary',
                 })->label('Warehouse Decision')->alignCenter()->badge(),
                 Tables\Columns\TextColumn::make('clarification_comment')->label('Warehouse  Comment'),
-                Tables\Columns\TextColumn::make('clarification_commenter')->state(isset($approves[0])? $approves[0]?->employee?->fullName:"")->label('Warehouse Commenter'),
+                Tables\Columns\TextColumn::make('verification_commenter')->state(isset($approves[1])? $approves[1]?->employee?->fullName:"")->label('Verification Commenter'),
                 Tables\Columns\TextColumn::make('verification_decision')->state(fn($record)=>match ($record->verification_decision){
                     'approve' => 'Approved',
                     'reject' => 'Rejected',
@@ -110,7 +111,7 @@ class ItemsRelationManager extends RelationManager
                     default => 'primary',
                 })->label('Verification Decision')->alignCenter()->badge(),
                 Tables\Columns\TextColumn::make('verification_comment')->label('Verification Comment'),
-                Tables\Columns\TextColumn::make('verification_commenter')->state(isset($approves[1])? $approves[1]?->employee?->fullName:"")->label('Verification Commenter'),
+                Tables\Columns\TextColumn::make('approval_commenter')->state(isset($approves[2])? $approves[2]?->employee?->fullName:"")->label('Approval Commenter'),
                 Tables\Columns\TextColumn::make('approval_decision')->state(fn($record)=>match ($record->approval_decision){
                     'approve' => 'Approved',
                     'reject' => 'Rejected',
@@ -121,8 +122,7 @@ class ItemsRelationManager extends RelationManager
                     default => 'primary',
                 })->label('Approval Decision')->alignCenter()->badge(),
                 Tables\Columns\TextColumn::make('approval_comment')->label('Approval Comment'),
-                Tables\Columns\TextColumn::make('approva_commenter')->state(isset($approves[2])? $approves[2]?->employee?->fullName:"")->label('Approval Commenter'),
-                Tables\Columns\TextColumn::make('status')->badge(),
+                Tables\Columns\TextColumn::make('status')->visible(count($approves) ===3),
 
             ])
 

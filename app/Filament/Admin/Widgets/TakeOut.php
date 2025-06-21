@@ -6,6 +6,7 @@ use App\Models\Asset;
 use App\Models\AssetEmployeeItem;
 use App\Models\Unit;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -87,6 +88,7 @@ protected static ?string $heading='Gate Pass';
                         TextInput::make('quantity')->required(),
                         Select::make('unit')->searchable()->options(Unit::query()->where('company_id', getCompany()->id)->pluck('title','title'))->required(),
                         TextInput::make('remarks')->nullable(),
+                        FileUpload::make('image')->columnSpanFull()->label('Image Upload')->image()->imageEditor(),
                     ])->columnSpanFull()->columns(4)
                 ])->columns(4)
 
@@ -98,6 +100,11 @@ protected static ?string $heading='Gate Pass';
                 $data['employee_id'] = $employee->id;
                 $items = $data['items'];
                 unset($data['items']);
+                foreach ($data['itemsOut'] as $key=> $datum){
+                    $value=$datum;
+                    $value['status']='Pending';
+                    $data['itemsOut'][$key]=$value;
+                }
                 $takeOut = \App\Models\TakeOut::query()->create($data);
                 foreach ($items as $item) {
                     $item['company_id'] = $id;
@@ -147,10 +154,11 @@ protected static ?string $heading='Gate Pass';
                         TextEntry::make('status')->badge(),
                         TextEntry::make('type')->badge(),
                         RepeatableEntry::make('items')->label('Assets')->schema([
-                            TextEntry::make('asset.title'),
+                            TextEntry::make('asset.description')->label('Asset Description'),
+                            TextEntry::make('asset.number')->label('Asset Number'),
                             TextEntry::make('remarks'),
                             TextEntry::make('returned_date'),
-                        ])->columnSpanFull()->columns(3),
+                        ])->columnSpanFull()->columns(4),
                         RepeatableEntry::make('itemsOut')->label('itemsOut')->schema([
                             TextEntry::make('name'),
                             TextEntry::make('remarks'),
@@ -168,6 +176,8 @@ protected static ?string $heading='Gate Pass';
                     ])->columns()
                 ]),
 
-            ]);
+            ])->filters([
+                getFilterSubordinate()
+            ],getModelFilter());
     }
 }

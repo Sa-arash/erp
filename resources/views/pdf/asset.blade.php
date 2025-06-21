@@ -192,6 +192,11 @@
 
                     <td colspan="3" class="notes">{{$asset->note}}</td>
                 </tr>
+                <tr>
+                    <td><strong>Check Out to :</strong></td>
+
+                    <td colspan="3" class="notes">{{$asset->check_out_to ? $asset?->checkOutTo?->fullName : $asset?->person?->name . ' (' . $asset?->person?->number . ')'}}</td>
+                </tr>
             </table>
         </td>
         <td style="width: 10%;">

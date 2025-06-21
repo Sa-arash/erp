@@ -4,14 +4,12 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\ProductResource\Pages;
 use App\Filament\Admin\Resources\ProductResource\RelationManagers;
-use App\Filament\Admin\Widgets\Accounting;
 use App\Filament\Clusters\StackManagementSettings;
 use App\Models\Account;
 use App\Models\Department;
 use App\Models\Product;
 use App\Models\Transaction;
 use App\Models\Unit;
-use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -23,8 +21,6 @@ use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Contracts\Support\Htmlable;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules\Unique;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
@@ -186,45 +182,45 @@ class ProductResource extends Resource
 
                     Column::make('updated_at')->formatStateUsing(fn($record) => $record->assets->sum('price'))->heading('Total Value')
                 ]),
-            ])->label('Export Product')->color('purple')
-        ])
-
-
-
-        ->query(Product::query()->whereIn('product_type',['unConsumable','consumable']))
+                ])->label('Export Product')->color('purple')
+        ])->paginated([5,10,50,100,200])
+            ->query(Product::query()->with(['media', 'account', 'subAccount', 'inventories', 'assets'])->withCount('assets')
+                ->withSum('inventories as inventories_quantity', 'quantity')
+                ->withSum('assets as total_price', 'price')->whereIn('product_type', ['unConsumable', 'consumable']))
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('sku')->label('SKU')->searchable(),
                 Tables\Columns\ImageColumn::make('image')->defaultImageUrl(asset('img/images.jpeg'))->state(function ($record){
                     return $record->media->first()?->original_url;
-                })->action(Tables\Actions\Action::make('image')->modalSubmitAction(false)->infolist(function ($record){
-                    if ($record->media->first()?->original_url){
-                        return  [
-                            \Filament\Infolists\Components\Section::make([
-                                ImageEntry::make('image')->label('')->width(650)->height(650)->columnSpanFull()->state($record->media->first()?->original_url)
-                            ])
-                        ];
-                    }
-                })),
+                })
+    //                    ->action(Tables\Actions\Action::make('image')->modalSubmitAction(false)->infolist(function ($record){
+    //                    if ($record->media->first()?->original_url){
+    //                        return  [
+    //                            \Filament\Infolists\Components\Section::make([
+    //                                ImageEntry::make('image') ->extraAttributes(['loading' => 'lazy'])->label('')->width(650)->height(650)->columnSpanFull()->state($record->media->first()?->original_url)
+    //                            ])
+    //                        ];
+    //                    }
+    //                }))
+                    ->extraAttributes(['loading' => 'lazy']),
                 Tables\Columns\TextColumn::make('title')->label('Product Name')->searchable(),
                 Tables\Columns\TextColumn::make('account.title')->label('Category ')->sortable(),
                 Tables\Columns\TextColumn::make('subAccount.title')->label('Sub Category ')->sortable(),
-                Tables\Columns\TextColumn::make('product_type')->state(function($record){
-                    if ($record->product_type==='consumable'){
+                Tables\Columns\TextColumn::make('product_type')->state(function ($record) {
+                    if ($record->product_type === 'consumable') {
                         return 'Consumable';
-                    }elseif($record->product_type==='unConsumable'){
+                    } elseif ($record->product_type === 'unConsumable') {
                         return 'Non-Consumable';
                     }
                 }),
-                Tables\Columns\TextColumn::make('count')->numeric()->state(fn($record) => $record->assets->count())->label('Quantity')->badge()
-                ->color(fn($record)=>$record->assets->count()>$record->stock_alert_threshold ? 'success' : 'danger')->tooltip(fn($record)=>'Stock Alert:'.$record->stock_alert_threshold),
-                Tables\Columns\TextColumn::make('countInventory')->numeric()->state(fn($record) => $record->inventories()?->sum('quantity'))->label('Available')->badge(),
+                Tables\Columns\TextColumn::make('assets_count')->toggleable(true,true)->numeric()->label('Quantity')->badge()
+                    ->color(fn($record) => $record->assets->count() > $record->stock_alert_threshold ? 'success' : 'danger')->tooltip(fn($record) => 'Stock Alert:' . $record->stock_alert_threshold),
+                Tables\Columns\TextColumn::make('inventories_quantity')->toggleable(true,true)->numeric()->label('Available')->badge(),
 
-                Tables\Columns\TextColumn::make('price')->numeric()->state(fn($record) => $record->assets->sum('price'))->label('Total Value')->badge()->color('success')
+                Tables\Columns\TextColumn::make('total_price')->toggleable(true,true)->numeric()->label('Total Value')->badge()->color('success')
 
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('department_id')->label('Department')->options(getCompany()->departments->pluck('title','id'))->searchable()->preload(),
                 Tables\Filters\SelectFilter::make('product_type')->options(['consumable'=>'Consumable','unConsumable'=>'Non-Consumable'])->searchable()->preload()
 
 //                SelectFilter::make('unit_id')->searchable()->preload()->options(Unit::where('company_id', getCompany()->id)->get()->pluck('title', 'id'))

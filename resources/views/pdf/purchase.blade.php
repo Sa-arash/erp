@@ -8,7 +8,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         table tr {
@@ -17,8 +17,8 @@
 
         th, td {
             border: 1px solid #000;
-
-            padding: 8px;
+            font-size: 12px;
+            padding: 4px !important;
             text-align: center;
         }
         th {
@@ -28,6 +28,7 @@
         .comments, .signature {
             margin-top: 20px;
         }
+
     </style>
 <body>
 <table>
@@ -56,7 +57,7 @@
 <table>
     <thead>
     <tr>
-        <th colspan="8"  style="font-size: 18px"> Details</th>
+        <th colspan="8"  style="font-size: 15px"> Details</th>
     </tr>
     <tr>
         <th>NO</th>
@@ -110,26 +111,8 @@
 
 <table>
 
-    @if($pr->ceo_comment !== null or $pr->general_comment !== null)
-        <tr>
-            <th colspan="5"><strong>Comments</strong></th>
-        </tr>
-    @endif
-
-    @if($pr->ceo_comment !== null)
-        <tr>
-            <td colspan="5" style="text-align: start">{{$pr->ceo_comment}}</td>
-        </tr>
-    @endif
-    @if($pr->general_comment !== null)
-        <tr>
-            <td colspan="5" style="text-align: start">{{$pr->general_comment}}</td>
-        </tr>
-    @endif
-
-
     <tr>
-        <th colspan="5"><p>Requested by</p></th>
+        <th colspan="5" style="font-size: 15px"><p>Requested by</p></th>
     <tr>
         <th>Name</th>
         <th>Position</th>
@@ -143,7 +126,7 @@
         <td style="text-align: center" colspan="2">
             @if($pr->employee->media->where('collection_name','signature')->first()?->getPath() !== null)
                 <img src="{!!   $pr->employee->media->where('collection_name','signature')->first()->getPath()!!}"
-                     style="border-radius: 50px ; width: 80px;" alt="">
+                     style="    border-radius: 50px ; width: 80px;height: 50px" alt="">
             @endif
         </td>
     </tr>

@@ -97,7 +97,7 @@ class MyPurchaseRequest extends BaseWidget
 
         return [
             'purchase_number' => $record->purchase_number,
-            'request_date' => now(),
+            'request_date' => $record->request_date,
             'currency_id' => $record->currency_id,
             'description' => $record->description,
             'Requested Items' => $data
@@ -204,9 +204,9 @@ class MyPurchaseRequest extends BaseWidget
                 $approves=$record->approvals->where('approve_date','!=',null)->all();
                 $headers = [
                     'Product/Service', 'Unit', 'Quantity', 'Est. Unit Cost', 'Project',
-                    'Description', 'Warehouse Decision', 'Warehouse Comment','Warehouse Commenter ' ,
-                    'Verification Decision', 'Verification Comment', 'Verification Commenter ' ,
-                    'Approval Decision', 'Approval Comment','Approval Commenter ' ,
+                    'Description','Warehouse Commenter ', 'Warehouse Decision', 'Warehouse Comment' ,'Verification Commenter ' ,
+                    'Verification Decision', 'Verification Comment', 'Approval Commenter ' ,
+                    'Approval Decision', 'Approval Comment'
                 ];
 
                 $html = '<table style="width: 100%; border-collapse: collapse; font-size: 12px;">';
@@ -234,10 +234,9 @@ class MyPurchaseRequest extends BaseWidget
                         'reject' => 'Rejected',
                         default => 'Pending',
                     };
-
+                    $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . ($approves[0]?->employee?->fullName ?? '') . '</td>';
                     $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . $warehouseDecision . '</td>';
                     $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . ($item['clarification_comment'] ?? '') . '</td>';
-                    $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . ($approves[0]?->employee?->fullName ?? '') . '</td>';
 
                     // Verification Decision
                     $verificationDecision = match ($item['verification_decision'] ?? null) {
@@ -245,9 +244,9 @@ class MyPurchaseRequest extends BaseWidget
                         'reject' => 'Rejected',
                         default => 'Pending',
                     };
+                    $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . ($approves[1]?->employee?->fullName ?? '') . '</td>';
                     $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . $verificationDecision . '</td>';
                     $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . ($item['verification_comment'] ?? '') . '</td>';
-                    $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . ($approves[1]?->employee?->fullName ?? '') . '</td>';
 
                     // Approval Decision
                     $approvalDecision = match ($item['approval_decision'] ?? null) {
@@ -255,9 +254,9 @@ class MyPurchaseRequest extends BaseWidget
                         'reject' => 'Rejected',
                         default => 'Pending',
                     };
+                    $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . ($approves[2]?->employee?->fullName ?? '') . '</td>';
                     $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . $approvalDecision . '</td>';
                     $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . ($item['approval_comment'] ?? '') . '</td>';
-                    $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . ($approves[2]?->employee?->fullName ?? '') . '</td>';
 
                     $html .= '</tr>';
                 }
@@ -273,8 +272,15 @@ class MyPurchaseRequest extends BaseWidget
             ImageEntry::make('employee.image')->circular()->label('')->state(fn($record) => $record->employee->media->where('collection_name', 'images')->first()?->original_url),
             TextEntry::make('employee.fullName')->label(fn($record) => $record->employee?->position?->title),
             TextEntry::make('created_at')->label('Request Date')->dateTime(),
-            TextEntry::make('status')->badge(),
-            TextEntry::make('comment')->tooltip(fn($record) => $record->comment)->limit(50),
+            TextEntry::make('status')->state(fn($record)=>match ($record->status->value){
+                'Approve'=>"Approved",
+                'NotApprove'=>"Not Approved",
+                'Pending'=>"Pending",
+            })->badge()->color(fn($state)=>match ($state){
+                'Approved'=>"success",
+                'Not Approved'=>"danger",
+                'Pending'=>"primary",
+            }),            TextEntry::make('comment')->tooltip(fn($record) => $record->comment)->limit(50),
             TextEntry::make('approve_date')->dateTime(),
             ImageEntry::make('employee.signature')->label('')->state(fn($record) => $record->status->value === "Approve" ? $record->employee->media->where('collection_name', 'signature')->first()?->original_url : ''),
         ])->columns(7)->columnSpanFull()
@@ -310,7 +316,7 @@ class MyPurchaseRequest extends BaseWidget
                             ->schema([
                                 Select::make('type')->required()->options(['Service', 'Product'])->default(1)->searchable(),
                                 Select::make('department_id')->columnSpan(['default' => 8, 'md' => 2, 'xl' => 2, '2xl' => 1])->label('Section')->live()->options(getCompany()->departments->pluck('title', 'id'))->searchable()->preload(),
-                                Select::make('product_id')->columnSpan(['default' => 8, 'md' => 2])->disableOptionsWhenSelectedInSiblingRepeaterItems()->label('Product/Service')->options(function (Get $get) {
+                                Select::make('product_id')->columnSpan(['default' => 8, 'md' => 2])->label('Product/Service')->options(function (Get $get) {
                                     if ($get('department_id')) {
                                         $data = [];
                                         $products = getCompany()->products()->where('product_type', $get('type') === "0" ? '=' : '!=', 'service')->where('department_id', $get('department_id'))->pluck('title', 'id');

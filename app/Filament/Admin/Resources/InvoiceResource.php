@@ -255,7 +255,7 @@ class InvoiceResource extends Resource
                                 Forms\Components\Textarea::make('description')->columnSpanFull(),
                                 Forms\Components\ToggleButtons::make('type')->options([0 => 'Receivable', 1 => 'Payable'])->inline()->grouped()->required(),
                                 Forms\Components\Hidden::make('company_id')->default(getCompany()->id)
-                            ]),
+                            ])->columns(4),
                         ])->collapsible()->persistCollapsed()->visible(fn(Forms\Get $get) => $get('Cheque')),
                         Forms\Components\Hidden::make('financial_period_id')->required()->label('Financial Period')->default(getPeriod()?->id)
                     ])->minItems(2)->columns(4)->defaultItems(2)

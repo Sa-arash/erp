@@ -13,8 +13,8 @@ use Filament\Resources\Resource;
 use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\HtmlString;
 use Illuminate\Validation\Rules\Unique;
 
 class CurrencyResource extends Resource
@@ -64,11 +64,64 @@ class CurrencyResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\Action::make('online')->label('Online Price')->form([
-                    Forms\Components\Placeholder::make('content')->content(function (){
+                Tables\Actions\Action::make('online')->label('Online Price')->fillForm(function ($record){
+                    return [
+                        'online_currency'=>$record->online_currency,
+                        'exchange_rate'=>$record->exchange_rate
+                    ];
+                })->form([
+                    Forms\Components\Placeholder::make('content')
+                        ->content(function () {
+                            $response = Http::get('https://sarafi.af/en/exchange-rates/sarai-shahzada');
+                            $html = $response->body();
 
-                    }),
-                    Forms\Components\Select::make('online_currency')->label('Online Currency')->options(function (){
+                            libxml_use_internal_errors(true);
+                            $doc = new \DOMDocument();
+                            $doc->loadHTML($html);
+                            $xpath = new \DOMXPath($doc);
+
+                            $rows = $xpath->query('//table//tr');
+
+                            $usdRate = [];
+
+                            foreach ($rows as $row) {
+                                if (str_contains($row->textContent, 'USD - US Dollar') ||
+                                    str_contains($row->textContent, 'GBP - British Pound') ||
+                                    str_contains($row->textContent, 'EUR - Euro') ||
+                                    str_contains($row->textContent, 'PKR - Pakistani Rupee 1K') ||
+                                    str_contains($row->textContent, 'JPY - Japanese Yen 1K') ||
+                                    str_contains($row->textContent, 'INR - Indian Rupee 1K') ||
+                                    str_contains($row->textContent, 'IRR - Iranian Rial 1K')) {
+
+                                    $cols = $row->getElementsByTagName('td');
+                                    if ($cols->length >= 3) {
+                                        $usdRate[] = [
+                                            'currency' => trim($cols[0]->textContent),
+                                            'buy' => trim($cols[1]->textContent),
+                                            'sell' => trim($cols[2]->textContent),
+                                        ];
+                                    }
+                                }
+                            }
+
+                            // ساخت HTML جدول
+                            $table = '<table style="width:100%; border-collapse: collapse;border: 1px solid black" >';
+                            $table .= '<thead><tr><th  style="text-align: center;border: 1px solid black">Currency</th><th style="text-align: center;border: 1px solid black">Buy</th><th style="text-align: center;border: 1px solid black">Sell</th></tr></thead><tbody>';
+
+                            foreach ($usdRate as $rate) {
+                                $table .= "<tr>
+                <td style='text-align: center;border: 1px solid black'>{$rate['currency']}</td>
+                <td style='text-align: center;border: 1px solid black'>{$rate['buy']}</td>
+                <td style='text-align: center;border: 1px solid black'>{$rate['sell']}</td>
+            </tr>";
+                            }
+
+                            $table .= '</tbody></table>';
+
+                            return New HtmlString($table);
+                        })
+                        ->columnSpanFull(),
+                    Forms\Components\Select::make('online_currency')->label('Online Currency')->options(function () {
                         $response = \Illuminate\Support\Facades\Http::get('https://sarafi.af/en/exchange-rates/sarai-shahzada');
 
                         $html = $response->body();
@@ -94,8 +147,11 @@ class CurrencyResource extends Resource
                         }
                         return $usdRate;
                     })->searchable(),
+                    Forms\Components\TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+
                 ])->action(function ($record,$data){
-                    $record->update(['online_currency'=>$data['online_currency']]);
+                    $record->update(['online_currency'=>$data['online_currency'],'exchange_rate'=>$data['exchange_rate']]);
+                    sendSuccessNotification();
                 }),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()->visible(fn($record)=>(

@@ -11,6 +11,7 @@ use Filament\Actions;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Wizard;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
 use Filament\Support\Exceptions\Halt;
 use Filament\Support\Facades\FilamentView;
@@ -52,36 +53,150 @@ class CreateFactor extends CreateRecord
                     return null;
                 }
             }, $state['items']);
+
             if (collect($produtTotal)->sum() >0){
                 $state['setPrice']=1;
             }
 
             $currency = Currency::query()->firstWhere('id',$state['currency_id']);
+            $party=Parties::query()->firstWhere('id',$state['party_id']);
+            $total=number_format(round(collect($produtTotal)->sum()*$currency?->exchange_rate,2),2);
+            $productCurrency=collect($produtTotal)->sum();
+            $defaultCurrency=defaultCurrency();
+            $account=Account::query()->firstWhere('id',$state['account_id']);
             if ($state['type'] == '1') {
-                $state['invoice']['transactions'] = [
-                    [
-                        'account_id' => null,
-                        'description' => null,
-                        'creditor' => 0,
+                if ($party?->accountCustomer?->has_cheque){
+                    $state['invoice']['transactions'] = [
+                        [
+                            'account_id' => $party?->account_customer,
+                            'description' => null,
+                            'creditor' => 0,
                             'company_id' => getCompany()->id,
-                        'debtor' => number_format(round(collect($produtTotal)->sum()*$currency?->exchange_rate,2),2),
-                        'exchange_rate' => $currency?->exchange_rate,
-                        'debtor_foreign'=>0,
-                        'creditor_foreign'=>0
+                            'debtor' => $total,
+                            'exchange_rate' => $currency?->exchange_rate,
+                            'financial_period_id'=>getPeriod()->id,
+                            'isCurrency'=>$party?->currency_id!==defaultCurrency()->id? true :false,
+                            'debtor_foreign'=>$party?->currency_id===defaultCurrency()->id ? $productCurrency:0,
+                            'creditor_foreign'=>0,
+                            'Cheque'=> $party?->accountCustomer?->has_cheque? true:false,
+                            'cheque'=>[
+                                'amount'=>number_format(round(collect($produtTotal)->sum()*$currency?->exchange_rate,2),2),
+                                'issue_date'=>now(),
+                                'payer_name'=>$party->name,
+                                'type'=>0
+                            ]
 
-                    ]];
+                        ],
+                        [
+                            'account_id' => $state['account_id'],
+                            'description' => null,
+                            'creditor' => $total,
+                            'company_id' => getCompany()->id,
+                            'debtor' => 0,
+                            'exchange_rate' => $currency?->exchange_rate,
+                            'debtor_foreign'=>0,
+                            'creditor_foreign'=>$account?->currency_id !=$defaultCurrency->id ? $productCurrency :0,
+                            'financial_period_id'=>$state['party_id']
+                        ]
+                    ];
+                }else{
+                    $state['invoice']['transactions'] = [
+                        [
+                            'account_id' => $party?->account_customer,
+                            'description' => null,
+                            'creditor' => 0,
+                            'company_id' => getCompany()->id,
+                            'debtor' => number_format(round(collect($produtTotal)->sum()*$currency?->exchange_rate,2),2),
+                            'exchange_rate' => $currency?->exchange_rate,
+                            'isCurrency'=>$party?->currency_id!==$defaultCurrency->id? true :false,
+                            'debtor_foreign'=>$party?->currency_id===$defaultCurrency->id ? $productCurrency :0,
+                            'creditor_foreign'=>0,
+                            'financial_period_id'=>getPeriod()->id,
+                            'Cheque'=> false,
+                        ],
+                        [
+                            'account_id' => $state['account_id'],
+                            'description' => null,
+                            'creditor' => number_format(round(collect($produtTotal)->sum()*$currency?->exchange_rate,2),2),
+                            'company_id' => getCompany()->id,
+                            'debtor' => 0,
+                            'exchange_rate' => $currency?->exchange_rate,
+                            'debtor_foreign'=>0,
+                            'creditor_foreign'=>$account?->currency_id !=$defaultCurrency->id ? $productCurrency :0,
+                            'financial_period_id'=>$state['party_id']
+                        ]
+                    ];
+                }
+
+
             } else {
-                $state['invoice']['transactions'] = [
-                    [
-                        'account_id' => null,
-                        'description' => null,
-                        'creditor' => number_format(round(collect($produtTotal)->sum()*$currency?->exchange_rate,2),2),
-                        'company_id' => getCompany()->id,
-                        'debtor' => 0,
-                        'exchange_rate' => $currency?->exchange_rate,
-                        'debtor_foreign'=>0,
-                        'creditor_foreign'=>0
-                    ]];
+
+                if ($party?->accountVendor?->has_cheque){
+
+                    $state['invoice']['transactions'] = [
+                        [
+                            'account_id' => $party?->account_vendor,
+                            'description' => null,
+                            'creditor' => $total,
+                            'company_id' => getCompany()->id,
+                            'debtor' => 0,
+                            'exchange_rate' => $currency?->exchange_rate,
+                            'financial_period_id'=>getPeriod()->id,
+                            'isCurrency'=>$party?->currency_id!==$defaultCurrency->id? true :false,
+                            'debtor_foreign'=>0,
+                            'creditor_foreign'=> $party?->currency_id!==$defaultCurrency->id? $productCurrency :0,
+                            'Cheque'=> $party?->accountVendor?->has_cheque? true:false,
+                            'cheque'=>[
+                                'amount'=>number_format(round(collect($produtTotal)->sum()*$currency?->exchange_rate,2),2),
+                                'issue_date'=>now(),
+                                'payee_name'=>$party->name,
+                                'type'=>1
+                            ]
+                        ],
+                        [
+                            'account_id' => $state['account_id'],
+                            'description' => null,
+                            'creditor' => 0,
+                            'company_id' => getCompany()->id,
+                            'debtor' => $total,
+                            'exchange_rate' => $currency?->exchange_rate,
+                            'debtor_foreign'=>$account?->currency_id !=$defaultCurrency->id ? $productCurrency :0,
+                            'creditor_foreign'=>0,
+                            'Cheque'=>false,
+                            'financial_period_id'=>$state['party_id']
+                        ]
+                    ];
+                }else{
+                    $state['invoice']['transactions'] = [
+                        [
+                            'account_id' => $party?->account_vendor,
+                            'description' => null,
+                            'creditor' => $total,
+                            'company_id' => getCompany()->id,
+                            'debtor' => 0,
+                            'exchange_rate' => $currency?->exchange_rate,
+                            'debtor_foreign'=>0,
+                            'creditor_foreign'=>$party?->currency_id!==$defaultCurrency->id? $productCurrency :0,
+                            'isCurrency'=>$party?->currency_id!==$defaultCurrency->id? true :false,
+                            'financial_period_id'=>getPeriod()->id,
+                            'Cheque'=> false,
+                        ],
+                        [
+                            'account_id' => $state['account_id'],
+                            'description' => null,
+                            'creditor' => 0,
+                            'company_id' => getCompany()->id,
+                            'debtor' => $total,
+                            'exchange_rate' => $currency?->exchange_rate,
+                            'debtor_foreign'=>$account?->currency_id !=$defaultCurrency->id ? $productCurrency :0,
+                            'creditor_foreign'=>0,
+                            'Cheque'=>false,
+                            'financial_period_id'=>$state['party_id']
+                        ]
+                    ];
+                }
+
+
             }
 
             $this->form->fill($state);
@@ -103,19 +218,25 @@ class CreateFactor extends CreateRecord
 
             $data = $this->form->getState();
 
+
             $this->callHook('afterValidate');
 
             $data = $this->mutateFormDataBeforeCreate($data);
 
             $this->callHook('beforeCreate');
-
-
-
-            $this->record = $this->handleRecordCreation($data);
-
-            $this->form->model($this->getRecord())->saveRelationships();
-
-            $this->callHook('afterCreate');
+            $debtor=0;
+            $creditor=0;
+            foreach ($this->data['invoice']['transactions'] as $transaction){
+                if ($transaction['creditor'] >0){
+                    $creditor+=str_replace(',','',$transaction['creditor']);
+                }else{
+                    $debtor+=str_replace(',','',$transaction['debtor']);
+                }
+            }
+            if (round($debtor,2) !== round($creditor,2)){
+                Notification::make('warning')->title('Creditor and Debtor not Equal')->warning()->send();
+                return;
+            }
             $currency = Currency::query()->firstWhere('id',$data['currency_id']);
 
             $total = 0;
@@ -124,19 +245,29 @@ class CreateFactor extends CreateRecord
             }
             $totalPure=$total;
             $total=$total*$currency?->exchange_rate;
+            if (round($debtor,2) !== round($total,2)){
+                Notification::make('warning')->title('Invoice Total and Journal Entry Total not Equal')->warning()->send();
+                return;
+            }
 
-            // dd($this->data);
+            $this->record = $this->handleRecordCreation($data);
 
+            $this->form->model($this->getRecord())->saveRelationships();
 
-            DB::beginTransaction(); // شروع تراکنش
+            $this->callHook('afterCreate');
 
+            DB::beginTransaction();
             try {
+                if ($currency->id!= defaultCurrency()->id){
+                    $this->record->invoice->update([
+                        'name' => $this->record->invoice->name . "(Total:" . number_format($totalPure) . ' Equal: '.number_format($total,2).' '.$currency?->name.' '. ")",
+                    ]);
+                }else{
+                    $this->record->invoice->update([
+                        'name' => $this->record->invoice->name . "(Total:" . number_format($totalPure) .' '.$currency?->name.' '. ")",
+                    ]);
+                }
 
-                //     // ذخیره فاکتور (Invoice)
-
-                $this->record->invoice->update([
-                    'name' => $this->record->invoice->name . "(Total:" . number_format($totalPure) . ' '.$currency?->name.' '. ")",
-                ]);
 
 
                 //     // ذخیره تراکنش‌های فاکتور (Transactions)
@@ -175,7 +306,7 @@ class CreateFactor extends CreateRecord
                             'payer_name' => $transaction['cheque']['payer_name'] ?? null,
                             'payee_name' => $transaction['cheque']['payee_name'] ?? null,
                             'description' => $transaction['cheque']['description'] ?? null,
-                            'company_id' => $transaction['cheque']['company_id'] ?? null,
+                            'company_id' =>$transaction['cheque']['due_date']? getCompany()->id:null,
                             'status' => 'pending',
                             'cheque_number' => $transaction['cheque']['cheque_number'] ?? null,
                             'transaction_id' => $savedTransaction->id, // اتصال چک به تراکنش
@@ -197,143 +328,143 @@ class CreateFactor extends CreateRecord
             }
 
             // dd($total, $this->form->getLivewire()->data,$this->form->getLivewire()->data['type']);
-            $party = Parties::find($data['party_id']);
-            $account = Account::find($data['account_id']);
-            if ($this->form->getLivewire()->data['type'] == 0) {
-                //Expense Buy
-
-                // account debtor
-
-                $savedTransaction = $this->record->invoice->transactions()->create([
-
-                    'account_id' => $this->form->getLivewire()->data['account_id'],
-                    'user_id' => auth()->user()->id,
-                    "currency_id" => $account->currency_id,
-                    "exchange_rate" => $account->currency->exchange_rate,
-                    "debtor_foreign" => $total  != 0 ? $total / $account->currency->exchange_rate : 0,
-                    // "creditor_foreign" => str_replace(',', '', $transaction['creditor_foreign'])!= 0 ? $total/defaultCurrency()->exchange_rate: 0,
-                    'creditor' => 0,
-                    'debtor' => $total,
-                    'description' => 'Increase Expense',
-                    'company_id' => getCompany()->id,
-                    'financial_period_id' => getPeriod()->id,
-                    //  'invoice_id' => $invoice->id,
-
-
-                ]);
-
-
-
-                // vendor creditro
-                $savedTransaction = $this->record->invoice->transactions()->create([
-
-                    'account_id' => $party->accountVendor->id,
-                    'user_id' => auth()->user()->id,
-                    "currency_id" => $party->accountVendor->currency_id,
-                    "exchange_rate" => $party->accountVendor->currency->exchange_rate,
-                    'creditor' => $total,
-                    // "debtor_foreign" => str_replace(',', '', $transaction['debtor_foreign']) != 0 ? $total/defaultCurrency()->exchange_rate: 0,
-                    "creditor_foreign" => $total != 0 ? ($total / $party->accountVendor->currency->exchange_rate) : 0,
-                    'debtor' => 0,
-                    'description' => 'Make '  . $party->name . ' Creditor',
-                    'company_id' => getCompany()->id,
-                    'financial_period_id' => getPeriod()->id,
-                    //  'invoice_id' => $invoice->id,
-
-
-                ]);
-
-                // vendor debtor
-                // dd(str_replace(',', '', $transaction['debtor_foreign']) != 0 ? $total / defaultCurrency()->exchange_rate : 0, str_replace(',', '', $transaction['debtor_foreign']), str_replace(',', '', $transaction['debtor_foreign']) != 0, $total, defaultCurrency()->exchange_rate);
-
-                $savedTransaction = $this->record->invoice->transactions()->create([
-
-                    'account_id' => $party->accountVendor->id,
-                    'user_id' => auth()->user()->id,
-                    "currency_id" => $party->accountVendor->currency_id,
-                    "exchange_rate" => $party->accountVendor->currency->exchange_rate,
-                    'creditor' => 0,
-                    "debtor_foreign" => $total != 0 ? $total / $party->accountVendor->currency->exchange_rate : 0,
-                    // "creditor_foreign" => str_replace(',', '', $transaction['creditor_foreign'])!= 0 ? $total/defaultCurrency()->exchange_rate: 0,
-                    'debtor' => $total,
-                    'description' => 'Give Money To  '  . $party->name,
-                    'company_id' => getCompany()->id,
-                    'financial_period_id' => getPeriod()->id,
-                    //  'invoice_id' => $invoice->id,
-
-
-                ]);
-
-                // bank done befor
-
-                // dd('ex');
-
-            } else {
-                //Income Sell
-                // customer Creditro
-                $savedTransaction = $this->record->invoice->transactions()->create([
-
-
-                    'account_id' => $party->accountCustomer->id,
-                    'user_id' => auth()->user()->id,
-                    "currency_id" => $party->accountCustomer->currency_id,
-                    "exchange_rate" => $party->accountCustomer->currency->exchange_rate,
-                    // "debtor_foreign" => str_replace(',', '', $transaction['debtor_foreign']) != 0 ? $total/defaultCurrency()->exchange_rate: 0,
-                    "creditor_foreign" => $total != 0 ? $total /  $party->accountCustomer->currency->exchange_rate : 0,
-                    'creditor' => $total,
-                    'debtor' => 0,
-                    'description' => 'Make'  . $party->name . ' Creditor',
-                    'company_id' => getCompany()->id,
-                    'financial_period_id' => getPeriod()->id,
-                    //  'invoice_id' => $invoice->id,
-
-                ]);
-
-                // Customer debtor
-                $savedTransaction = $this->record->invoice->transactions()->create([
-
-                    'account_id' => $party->accountCustomer->id,
-                    'user_id' => auth()->user()->id,
-                    "currency_id" => $party->accountCustomer->currency_id,
-                    "exchange_rate" => $party->accountCustomer->currency->exchange_rate,
-                    "debtor_foreign" => $total != 0 ? $total /  $party->accountCustomer->currency->exchange_rate : 0,
-                    // "creditor_foreign" => str_replace(',', '', $transaction['creditor_foreign'])!= 0 ? $total/defaultCurrency()->exchange_rate: 0,
-                    'creditor' => 0,
-                    'debtor' => $total,
-                    'description' => 'Give Money From  '  . $party->name,
-                    'company_id' => getCompany()->id,
-                    'financial_period_id' => getPeriod()->id,
-                    //  'invoice_id' => $invoice->id,
-
-
-                ]);
-
-                // Income Creditor
-                $savedTransaction = $this->record->invoice->transactions()->create([
-
-                    'account_id' => $this->form->getLivewire()->data['account_id'],
-                    'user_id' => auth()->user()->id,
-                    "currency_id" => $account->currency_id ,
-                    "exchange_rate" => $account->currency->exchange_rate,
-                    // "debtor_foreign" => str_replace(',', '', $transaction['debtor_foreign']) != 0 ? $total/defaultCurrency()->exchange_rate: 0,
-                    "creditor_foreign" => str_replace(',', '', $transaction['creditor_foreign']) != 0 ? $total / defaultCurrency()->exchange_rate : 0,
-                    'creditor' => $total,
-                    'debtor' => 0,
-                    'description' => 'Increase Income',
-                    'company_id' => getCompany()->id,
-                    'financial_period_id' => getPeriod()->id,
-                    //  'invoice_id' => $invoice->id,
-
-
-                ]);
-
-
-
-                // bank Done Befor
-
-
-                // dd('inc');
-            }
+//            $party = Parties::find($data['party_id']);
+//            $account = Account::find($data['account_id']);
+//            if ($this->form->getLivewire()->data['type'] == 0) {
+//                //Expense Buy
+//
+//                // account debtor
+//
+//                $savedTransaction = $this->record->invoice->transactions()->create([
+//
+//                    'account_id' => $this->form->getLivewire()->data['account_id'],
+//                    'user_id' => auth()->user()->id,
+//                    "currency_id" => $account->currency_id,
+//                    "exchange_rate" => $account->currency->exchange_rate,
+//                    "debtor_foreign" => $total  != 0 ? $total / $account->currency->exchange_rate : 0,
+//                    // "creditor_foreign" => str_replace(',', '', $transaction['creditor_foreign'])!= 0 ? $total/defaultCurrency()->exchange_rate: 0,
+//                    'creditor' => 0,
+//                    'debtor' => $total,
+//                    'description' => 'Increase Expense',
+//                    'company_id' => getCompany()->id,
+//                    'financial_period_id' => getPeriod()->id,
+//                    //  'invoice_id' => $invoice->id,
+//
+//
+//                ]);
+//
+//
+//
+//                // vendor creditro
+//                $savedTransaction = $this->record->invoice->transactions()->create([
+//
+//                    'account_id' => $party->accountVendor->id,
+//                    'user_id' => auth()->user()->id,
+//                    "currency_id" => $party->accountVendor->currency_id,
+//                    "exchange_rate" => $party->accountVendor->currency->exchange_rate,
+//                    'creditor' => $total,
+//                    // "debtor_foreign" => str_replace(',', '', $transaction['debtor_foreign']) != 0 ? $total/defaultCurrency()->exchange_rate: 0,
+//                    "creditor_foreign" => $total != 0 ? ($total / $party->accountVendor->currency->exchange_rate) : 0,
+//                    'debtor' => 0,
+//                    'description' => 'Make '  . $party->name . ' Creditor',
+//                    'company_id' => getCompany()->id,
+//                    'financial_period_id' => getPeriod()->id,
+//                    //  'invoice_id' => $invoice->id,
+//
+//
+//                ]);
+//
+//                // vendor debtor
+//                // dd(str_replace(',', '', $transaction['debtor_foreign']) != 0 ? $total / defaultCurrency()->exchange_rate : 0, str_replace(',', '', $transaction['debtor_foreign']), str_replace(',', '', $transaction['debtor_foreign']) != 0, $total, defaultCurrency()->exchange_rate);
+//
+//                $savedTransaction = $this->record->invoice->transactions()->create([
+//
+//                    'account_id' => $party->accountVendor->id,
+//                    'user_id' => auth()->user()->id,
+//                    "currency_id" => $party->accountVendor->currency_id,
+//                    "exchange_rate" => $party->accountVendor->currency->exchange_rate,
+//                    'creditor' => 0,
+//                    "debtor_foreign" => $total != 0 ? $total / $party->accountVendor->currency->exchange_rate : 0,
+//                    // "creditor_foreign" => str_replace(',', '', $transaction['creditor_foreign'])!= 0 ? $total/defaultCurrency()->exchange_rate: 0,
+//                    'debtor' => $total,
+//                    'description' => 'Give Money To  '  . $party->name,
+//                    'company_id' => getCompany()->id,
+//                    'financial_period_id' => getPeriod()->id,
+//                    //  'invoice_id' => $invoice->id,
+//
+//
+//                ]);
+//
+//                // bank done befor
+//
+//                // dd('ex');
+//
+//            } else {
+//                //Income Sell
+//                // customer Creditro
+//                $savedTransaction = $this->record->invoice->transactions()->create([
+//
+//
+//                    'account_id' => $party->accountCustomer->id,
+//                    'user_id' => auth()->user()->id,
+//                    "currency_id" => $party->accountCustomer->currency_id,
+//                    "exchange_rate" => $party->accountCustomer->currency->exchange_rate,
+//                    // "debtor_foreign" => str_replace(',', '', $transaction['debtor_foreign']) != 0 ? $total/defaultCurrency()->exchange_rate: 0,
+//                    "creditor_foreign" => $total != 0 ? $total /  $party->accountCustomer->currency->exchange_rate : 0,
+//                    'creditor' => $total,
+//                    'debtor' => 0,
+//                    'description' => 'Make'  . $party->name . ' Creditor',
+//                    'company_id' => getCompany()->id,
+//                    'financial_period_id' => getPeriod()->id,
+//                    //  'invoice_id' => $invoice->id,
+//
+//                ]);
+//
+//                // Customer debtor
+//                $savedTransaction = $this->record->invoice->transactions()->create([
+//
+//                    'account_id' => $party->accountCustomer->id,
+//                    'user_id' => auth()->user()->id,
+//                    "currency_id" => $party->accountCustomer->currency_id,
+//                    "exchange_rate" => $party->accountCustomer->currency->exchange_rate,
+//                    "debtor_foreign" => $total != 0 ? $total /  $party->accountCustomer->currency->exchange_rate : 0,
+//                    // "creditor_foreign" => str_replace(',', '', $transaction['creditor_foreign'])!= 0 ? $total/defaultCurrency()->exchange_rate: 0,
+//                    'creditor' => 0,
+//                    'debtor' => $total,
+//                    'description' => 'Give Money From  '  . $party->name,
+//                    'company_id' => getCompany()->id,
+//                    'financial_period_id' => getPeriod()->id,
+//                    //  'invoice_id' => $invoice->id,
+//
+//
+//                ]);
+//
+//                // Income Creditor
+//                $savedTransaction = $this->record->invoice->transactions()->create([
+//
+//                    'account_id' => $this->form->getLivewire()->data['account_id'],
+//                    'user_id' => auth()->user()->id,
+//                    "currency_id" => $account->currency_id ,
+//                    "exchange_rate" => $account->currency->exchange_rate,
+//                    // "debtor_foreign" => str_replace(',', '', $transaction['debtor_foreign']) != 0 ? $total/defaultCurrency()->exchange_rate: 0,
+//                    "creditor_foreign" => str_replace(',', '', $transaction['creditor_foreign']) != 0 ? $total / defaultCurrency()->exchange_rate : 0,
+//                    'creditor' => $total,
+//                    'debtor' => 0,
+//                    'description' => 'Increase Income',
+//                    'company_id' => getCompany()->id,
+//                    'financial_period_id' => getPeriod()->id,
+//                    //  'invoice_id' => $invoice->id,
+//
+//
+//                ]);
+//
+//
+//
+//                // bank Done Befor
+//
+//
+//                // dd('inc');
+//            }
             $this->commitDatabaseTransaction();
         } catch (Halt $exception) {
             $exception->shouldRollbackDatabaseTransaction() ?

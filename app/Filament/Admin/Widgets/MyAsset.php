@@ -44,7 +44,7 @@ class MyAsset extends BaseWidget
             )->filters([
                 Tables\Filters\TernaryFilter::make('All')->label('Data Filter ')
                     ->placeholder('Only Me')->searchable()
-                    ->trueLabel('All Subordinates')
+                    ->trueLabel(' Subordinates')
                     ->falseLabel('Only Me')
                     ->queries(
                          function (Builder $query) {

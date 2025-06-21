@@ -257,15 +257,6 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('visiting_dates')->limitList(5)->bulleted()->label('Scheduled Visit Dates')->sortable(),
                 Tables\Columns\TextColumn::make('arrival_time')->time('H:i A'),
                 Tables\Columns\TextColumn::make('departure_time')->time('H:i A'),
-                Tables\Columns\TextColumn::make('InSide_date')->label('Check IN ')->time('h:i A'),
-                Tables\Columns\TextColumn::make('OutSide_date')->label('Check OUT ')->time(),
-                Tables\Columns\TextColumn::make('Track Time')->state(function ($record) {
-                    $startTime = $record->InSide_date;
-                    $endTime = $record->OutSide_date;
-                    if ($startTime and $endTime) {
-                        return  diffVisit($startTime, $endTime);
-                    }
-                })->label('Track Time'),
                 Tables\Columns\TextColumn::make('status')->label('Head of Security ')->tooltip(fn($record)=>isset($record->approvals[0])? $record->approvals[0]->approve_date : false )->alignCenter()->state(fn($record)=>match ($record->status){
                     'approved'=>'Approved',
                     'Pending'=>'Pending',
@@ -299,40 +290,260 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                 Tables\Filters\SelectFilter::make('status')->options(['approved' => 'approved', 'notApproved' => 'notApproved'])->searchable()
             ], getModelFilter())
             ->actions([
-                Tables\Actions\Action::make('ActionInSide')->label('Check IN ')->form([
-                    Forms\Components\DateTimePicker::make('InSide_date')->withoutSeconds()->label(' Date And Time')->required()->default(now()),
-                    Forms\Components\Textarea::make('inSide_comment')->label(' Comment')
-                ])->requiresConfirmation()->action(function ($data, $record) {
-                    $record->update(['InSide_date' => $data['InSide_date'], 'inSide_comment' => $data['inSide_comment'], 'gate_status' => 'CheckedIn']);
-                    Notification::make('success')->success()->title('Submitted Successfully')->send();
-                })->visible(function ($record) {
-                    if (auth()->user()->can('reception_visitor::request')) {
-                        if ($record->status === "approved") {
-                            if ($record->InSide_date === null) {
+                Tables\Actions\Action::make('check_in')->visible(function ($record) {
+
+                    if (!auth()->user()->can('reception_visitor::request') or  $record->status!=="approved") {
+                        return false;
+                    }
+                    if (isset($record->visiting_dates)){
+                        foreach ($record->visiting_dates as $date) {
+                            try {
+                                $day = Carbon::createFromFormat('d/m/Y', $date)->format('Y/m/d');
+                                if ($day == now()->endOfDay()->format('Y/m/d')) {
+                                    return true;
+                                }
+                            }catch (\Exception $exception){
+
+                            }
+                        }
+                    }
+                    return false;
+                })->label('Check IN')->form(function ($record) {
+                    return [
+                        Section::make([
+                            Select::make('date')->required()->options(function (Forms\Set $set) use ($record) {
+                                $validDate = [];
+                                foreach ($record->visiting_dates as $date) {
+                                    $day = Carbon::createFromFormat('d/m/Y', $date)->format('Y/m/d');
+                                    if ($day == now()->endOfDay()->format('Y/m/d')) {
+                                        $set('date', $day);
+                                        $validDate[$day] = $day;
+                                    }
+                                }
+                                return $validDate;
+                            })->searchable()->preload()->afterStateUpdated(function (Forms\Set $set) {
+                                $set('visitors', []);
+                            }),
+                            Forms\Components\TimePicker::make('time')->withoutSeconds()->label(' Time')->required()->default(now()),
+                            Select::make('visitors')->options(function (Forms\Get $get) use ($record) {
+                                $validVisitor = [];
+                                $array = $record->entry_and_exit;
+                                foreach ($record->visitors_detail as $visitor) {
+                                    $name = $visitor['name'] . '(' . $visitor['id'] . ')';
+                                    $img = asset('images/' . $visitor['attachment']);
+                                    if (isset($array) and key_exists($get('date'), $array)) {
+                                        $dateArray = $array[$get('date')];
+                                        if (!key_exists($name, $dateArray['visitors'])) {
+                                            $validVisitor[$name] = "
+                                    <div style='display: flex; align-items: center; padding: 5px; border-bottom: 1px solid #ddd;'>
+                                        <img src='{$img}' style='width: 50px; height: 50px; border-radius: 50%; margin-right: 10px;' alt=''>
+                                        <span style='font-size: 16px;'>{$name}</span>
+                                    </div>";
+                                        }
+                                    } else {
+                                        $validVisitor[$name] = "
+                                    <div style='display: flex; align-items: center; padding: 5px; border-bottom: 1px solid #ddd;'>
+                                        <img src='{$img}' style='width: 50px; height: 50px; border-radius: 50%; margin-right: 10px;' alt=''>
+                                        <span style='font-size: 16px;'>{$name}</span>
+                                    </div>";
+                                    }
+                                }
+                                return $validVisitor;
+                            })->searchable()->preload()->multiple()->allowHtml()->columnSpanFull(),
+                            Select::make('drivers')->options(function (Forms\Get $get) use ($record) {
+                                $validVisitor = [];
+                                $array = $record->entry_and_exit;
+                                foreach ($record->driver_vehicle_detail as $visitor) {
+                                    $name = $visitor['name'] . '(' . $visitor['id'] . ')';
+                                    $img = asset('images/' . $visitor['driver']);
+                                    if (isset($array) and key_exists($get('date'), $array)) {
+                                        $dateArray = $array[$get('date')];
+                                        if (!key_exists($name, $dateArray['drivers'])) {
+                                            $validVisitor[$name] = "
+                                            <div style='display: flex; align-items: center; padding: 5px; border-bottom: 1px solid #ddd;'>
+                                                <img src='{$img}' style='width: 50px; height: 50px; border-radius: 50%; margin-right: 10px;' alt=''>
+                                                <span style='font-size: 16px;'>{$name}</span>
+                                            </div>";
+                                        }
+                                    } else {
+                                        $validVisitor[$name] = "
+                                            <div style='display: flex; align-items: center; padding: 5px; border-bottom: 1px solid #ddd;'>
+                                                <img src='{$img}' style='width: 50px; height: 50px; border-radius: 50%; margin-right: 10px;' alt=''>
+                                                <span style='font-size: 16px;'>{$name}</span>
+                                            </div>";
+                                    }
+                                }
+                                return $validVisitor;
+                            })->searchable()->preload()->multiple()->allowHtml()->columnSpanFull(),
+                            Forms\Components\Textarea::make('comment')->label(' Comment')->columnSpanFull()
+                        ])->columns()
+                    ];
+                })->action(function ($data, $record) {
+                    $array = $record->entry_and_exit;
+                    $date = $data['date'];
+                    $time = $data['time'];
+                    $comment = $data['comment'];
+                    if ($array === null) {
+                        $array = [];
+                    }
+                    if (key_exists($date, $array)) {
+                        $visitors = $array[$date]['visitors'];
+                        foreach ($data['visitors'] as $visitor) {
+                            $visitors[$visitor] = [
+                                'Check IN' => $time,
+                                'Check OUT' => null,
+                                'Track Time ' => null,
+                                'Comment IN' => $comment,
+                                'Comment OUT' => null,
+                            ];
+                        }
+                        $array[$date]['visitors'] = $visitors;
+                        $drivers = $array[$date]['drivers'];
+                        foreach ($data['drivers'] as $driver) {
+                            $drivers[$driver] = [
+                                'Check IN' => $time,
+                                'Check OUT' => null,
+                                'Track Time' => null,
+                                'Comment IN' => $comment,
+                                'Comment OUT' => null,
+                            ];
+                        }
+                        $array[$date]['drivers'] = $drivers;
+                    } else {
+                        $visitors = [];
+                        foreach ($data['visitors'] as $visitor) {
+                            $visitors[$visitor] = [
+                                'Check IN' => $time,
+                                'Check OUT' => null,
+                                'Track Time' => null,
+                                'Comment IN' => $comment,
+                                'Comment OUT' => null,
+                            ];
+                        }
+                        $array[$date]['visitors'] = $visitors;
+                        $drivers = [];
+                        foreach ($data['drivers'] as $driver) {
+                            $drivers[$driver] = [
+                                'Check IN' => $time,
+                                'Check OUT' => null,
+                                'Track Time' => null,
+                                'Comment IN' => $comment,
+                                'Comment OUT' => null,
+                            ];
+                        }
+                        $array[$date]['drivers'] = $drivers;
+
+                    }
+
+                    $record->update(['entry_and_exit' => $array]);
+                }),
+                Tables\Actions\Action::make('check_out')->visible(function ($record) {
+                    if (!auth()->user()->can('reception_visitor::request') or  $record->status!=="approved") {
+                        return false;
+                    }
+                    if (isset($record->visiting_dates)){
+                        foreach ($record->visiting_dates as $date) {
+                            $day = Carbon::createFromFormat('d/m/Y', $date)->format('Y/m/d');
+                            if ($day == now()->endOfDay()->format('Y/m/d')) {
                                 return true;
                             }
                         }
                     }
                     return false;
-                }),
-                Tables\Actions\Action::make('ActionOutSide')->label('Check OUT')->form([
-                    Forms\Components\DateTimePicker::make('OutSide_date')->withoutSeconds()->label(' Date And Time')->required()->default(now()),
-                    Forms\Components\Textarea::make('OutSide_comment')->label(' Comment')
-                ])->requiresConfirmation()->action(function ($data, $record) {
-                    $record->update(['OutSide_date' => $data['OutSide_date'], 'OutSide_comment' => $data['OutSide_comment'], 'gate_status' => 'CheckedOut']);
-                    Notification::make('success')->success()->title('Submitted Successfully')->send();
-                })->visible(function ($record) {
-                    if (auth()->user()->can('reception_visitor::request')) {
-                        if ($record->OutSide_date !== null) {
-                            return false;
+                })->label('Check OUT')->form(function ($record) {
+                    return [
+                        Section::make([
+                            Select::make('date')->required()->options(function (Forms\Set $set) use ($record) {
+                                $validDate = [];
+                                foreach ($record->visiting_dates as $date) {
+                                    $day = Carbon::createFromFormat('d/m/Y', $date)->format('Y/m/d');
+                                    if ($day == now()->endOfDay()->format('Y/m/d')) {
+                                        $set('date', $day);
+                                        $validDate[$day] = $day;
+                                    }
+                                }
+                                return $validDate;
+                            })->searchable()->preload()->afterStateUpdated(function (Forms\Set $set) {
+                                $set('visitors', []);
+                            }),
+                            Forms\Components\TimePicker::make('time')->withoutSeconds()->label(' Time')->required()->default(now()),
+                            Select::make('visitors')->options(function (Forms\Get $get) use ($record) {
+                                $validVisitor = [];
+                                $array = $record->entry_and_exit;
+                                foreach ($record->visitors_detail as $visitor) {
+                                    $name = $visitor['name'] . '(' . $visitor['id'] . ')';
+                                    $img = asset('images/' . $visitor['attachment']);
+                                    if (isset($array) and key_exists($get('date'), $array)) {
+                                        $dateArray = $array[$get('date')];
+                                        if (key_exists($name, $dateArray['visitors']) and $dateArray['visitors'][$name]['Check OUT'] == null) {
+                                            $validVisitor[$name] = "
+                                    <div style='display: flex; align-items: center; padding: 5px; border-bottom: 1px solid #ddd;'>
+                                        <img src='{$img}' style='width: 50px; height: 50px; border-radius: 50%; margin-right: 10px;' alt=''>
+                                        <span style='font-size: 16px;'>{$name}</span>
+                                    </div>";
+                                        }
+                                    }
+                                }
+                                return $validVisitor;
+                            })->searchable()->preload()->multiple()->allowHtml()->columnSpanFull(),
+                            Select::make('drivers')->options(function (Forms\Get $get) use ($record) {
+                                $validVisitor = [];
+                                $array = $record->entry_and_exit;
+                                foreach ($record->driver_vehicle_detail as $visitor) {
+                                    $name = $visitor['name'] . '(' . $visitor['id'] . ')';
+                                    $img = asset('images/' . $visitor['driver']);
+                                    if (isset($array) and key_exists($get('date'), $array)) {
+                                        $dateArray = $array[$get('date')];
+                                        if (key_exists($name, $dateArray['drivers']) and $dateArray['drivers'][$name]['Check OUT'] == null) {
+                                            $validVisitor[$name] = "
+                                            <div style='display: flex; align-items: center; padding: 5px; border-bottom: 1px solid #ddd;'>
+                                                <img src='{$img}' style='width: 50px; height: 50px; border-radius: 50%; margin-right: 10px;' alt=''>
+                                                <span style='font-size: 16px;'>{$name}</span>
+                                            </div>";
+                                        }
+                                    }
+                                }
+                                return $validVisitor;
+                            })->searchable()->preload()->multiple()->allowHtml()->columnSpanFull(),
+                            Forms\Components\Textarea::make('comment')->label(' Comment')->columnSpanFull()
+                        ])->columns()
+                    ];
+                })->action(function ($data, $record) {
+                    $array = $record->entry_and_exit;
+                    $date = $data['date'];
+                    $time = $data['time'];
+                    $comment = $data['comment'];
+                    if ($array === null) {
+                        $array = [];
+                    }
+                    if (key_exists($date, $array)) {
+                        foreach ($data['visitors'] as $visitor) {
+                            $value = [...$array[$date]['visitors'][$visitor]];
+                            $value['Check OUT'] = $time;
+                            $startTime = $value['Check IN'];
+                            $endTime = $time;
+                            if ($startTime and $endTime) {
+                                $value['Track Time'] = diffVisit($startTime, $endTime);
+                            }
+                            $value['Comment OUT'] = $comment;
+                            $array[$date]['visitors'][$visitor] = $value;
                         }
-                        if ($record->InSide_date !== null) {
-                            return true;
+                        foreach ($data['drivers'] as $driver) {
+                            $value = [...$array[$date]['drivers'][$driver]];
+                            $value['Check OUT'] = $time;
+                            $startTime = $value['Check IN'];
+                            $endTime = $time;
+                            if ($startTime and $endTime) {
+                                $value['Track Time'] = diffVisit($startTime, $endTime);
+                            }
+                            $value['Comment OUT'] = $comment;
+                            $array[$date]['drivers'][$driver] = $value;
                         }
                     }
-                    return false;
-                }),
 
+
+                    $record->update(['entry_and_exit' => $array]);
+                }),
 
                 Tables\Actions\ViewAction::make()->infolist([
                     \Filament\Infolists\Components\Section::make([
@@ -379,8 +590,8 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                         TextEntry::make('OutSide_comment'),
                     ])->columns(),
                 ]),
-                Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')
-                    ->url(fn($record) => route('pdf.requestVisit', ['id' => $record->id]))->openUrlInNewTab(),
+                Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('Print Preview')->url(fn($record) => route('pdf.requestVisit', ['id' => $record->id]))->openUrlInNewTab(),
+                Tables\Actions\Action::make('pdfCheck')->color('warning')->tooltip('Print Check IN and Check OUT')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')->url(fn($record) => route('pdf.entryAndExit', ['id' => $record->id]))->openUrlInNewTab(),
 
             ])
             ->bulkActions([
@@ -465,18 +676,22 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
 
                     Forms\Components\TimePicker::make('arrival_time')->label('Arrival Time')->seconds(false)->before('departure_time')->required(),
                     Forms\Components\TimePicker::make('departure_time')->label('Departure Time')->seconds(false)->after('arrival_time')->required(),
-                    Forms\Components\DatePicker::make('visit_date')->live()->label('Visit Date')->default(now()->addDay())->hintActions([
-                        Forms\Components\Actions\Action::make('te')->label('Select Daily')->action(function (Forms\Get $get,Forms\Set $set){
-                            $dates=$get('visiting_dates');
-                            if ($get('visit_date')){
-                                $dates[]= Carbon::createFromFormat('Y-m-d', $get('visit_date'))->format('d/m/Y') ;
-                                $set('visiting_dates',$dates);
+                    Forms\Components\DatePicker::make('visit_date')->label('Visit Date')->default(now()->addDay())->hintActions([
+                        Forms\Components\Actions\Action::make('te')->label('Select Daily')->action(function (Forms\Get $get, Forms\Set $set) {
+                            $dates = $get('visiting_dates');
+                            if ($get('visit_date')) {
+                                try {
+                                    $dates[] = Carbon::createFromFormat('Y-m-d', $get('visit_date'))->format('d/m/Y');
+                                    $set('visiting_dates', $dates);
+                                } catch (\Exception $e) {
+
+                                }
                             }
-                            $set('visit_date',null);
-                        }),Forms\Components\Actions\Action::make('Add')->label('Select Monthly')->form([
+                            $set('visit_date', null);
+                        }), Forms\Components\Actions\Action::make('Add')->label('Select Monthly')->form([
                             DateRangePicker::make('date')
-                        ])->action(function (Forms\Get $get,Forms\Set $set,$data){
-                            $dataDate=explode(' -',$data['date']);
+                        ])->action(function (Forms\Get $get, Forms\Set $set, $data) {
+                            $dataDate = explode(' -', $data['date']);
                             $start = Carbon::createFromFormat('d/m/Y', $dataDate[0]);
                             $end = Carbon::createFromFormat('d/m/Y', trim($dataDate[1]));
                             $dates = collect();
@@ -484,7 +699,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                                 $dates->push($start->copy()->format('d/m/Y'));
                                 $start->addDay();
                             }
-                            $set('visiting_dates',$dates->toArray());
+                            $set('visiting_dates', $dates->toArray());
                         })
                     ]),
                     Select::make('visiting_dates')->required()->columnSpan(3)->label('Scheduled Visit Dates')->multiple(),

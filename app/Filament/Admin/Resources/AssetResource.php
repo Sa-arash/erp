@@ -37,6 +37,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
@@ -174,7 +175,7 @@ class AssetResource extends Resource
                         })->form([
                             Section::make([
                                 TextInput::make('price')->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-                                Select::make('currency_id')->live()->label('Currency')->required()->searchable()->preload()->options(getCompany()->currencies->pluck('name','id'))->afterStateUpdated(function ($state, Forms\Set $set) {
+                                Select::make('currency_id')->live()->label('Currency')->required()->searchable()->preload()->options(getCompany()->currencies->pluck('name', 'id'))->afterStateUpdated(function ($state, Forms\Set $set) {
                                     $currency = Currency::query()->firstWhere('id', $state);
                                     if ($currency) {
                                         $set('exchange_rate', $currency->exchange_rate);
@@ -182,13 +183,13 @@ class AssetResource extends Resource
                                 }),
                                 TextInput::make('exchange_rate')->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                             ])->columns(3)
-                        ])->action(function ($state,Forms\Set $set,$data){
-                            $finalPrice=$data['price']*$data['exchange_rate'];
-                            $set('price',number_format($finalPrice,2));
+                        ])->action(function ($state, Forms\Set $set, $data) {
+                            $finalPrice = $data['price'] * $data['exchange_rate'];
+                            $set('price', number_format($finalPrice, 2));
 
                         }))->prefix(defaultCurrency()?->symbol)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->required()->numeric()->label('Purchase Price'),
-                        Forms\Components\TextInput::make('scrap_value')->prefix(defaultCurrency()?->symbol)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->required()->numeric()->label('Scrap Value'),
-                        Forms\Components\Select::make('party_id')->label("Vendor")->searchable()->required()
+                        Forms\Components\TextInput::make('scrap_value')->prefix(defaultCurrency()?->symbol)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->numeric()->label('Scrap Value'),
+                        Forms\Components\Select::make('party_id')->label("Vendor")->searchable()
                             ->options(function (Forms\Get $get) {
                                 return getCompany()->parties->whereIn('type', ["vendor", 'both'])->pluck('info', 'id');
                             })->createOptionUsing(function ($data) {
@@ -541,7 +542,7 @@ class AssetResource extends Resource
                     $barcode .= "<p style='text-align: center'>{$record->number}</p>";
                     return new HtmlString($barcode);
                 })->action(function ($record) {
-                    return redirect(route('pdf.barcode', ['code' => $record->id]));
+                    return redirect(route('pdf.barcode', ['code' => $record->number]));
                 }),
                 Tables\Columns\TextColumn::make('purchase_order_id')->label('PO NO')->state(fn($record) => $record->purchase_order_id === null ? "---" : PurchaseOrder::find($record->purchase_order_id)->purchase_orders_number)
                     ->url(fn($record) => $record->purchase_order_id ? PurchaseOrderResource::getUrl() . "?tableFilters[id][value]=" . $record->purchase_order_id : false),
@@ -559,7 +560,7 @@ class AssetResource extends Resource
                         if ($data)
                             return $data?->due_date;
                     }
-                })->dateTime()->label('Due Date'),
+                })->date()->label('Due Date'),
 
                 Tables\Columns\TextColumn::make('serial_number'),
                 Tables\Columns\TextColumn::make('status')->state(fn($record) => match ($record->status) {
@@ -939,27 +940,37 @@ class AssetResource extends Resource
                             }
                         })->required()->numeric()->label('Asset Number')->readOnly()->maxLength(50),
 
-                        // Forms\Components\Hidden::make('status')->default('inStorageUsable')->required(),
-                        Forms\Components\Repeater::make('attributes')->grid(3)->defaultItems(0)->addActionLabel('Add To  Attribute')->schema([
-                            Forms\Components\TextInput::make('title')->required(),
-                            Forms\Components\TextInput::make('value')->required(),
-                        ])->columnSpanFull()->columns(),
-                        MediaManagerInput::make('images')->orderable(false)->folderTitleFieldName("product_id")->image(true)
-                            ->disk('public')
-                            ->schema([])->maxItems(1)->columnSpanFull(),
-                            ])->columns(4),
+                            // Forms\Components\Hidden::make('status')->default('inStorageUsable')->required(),
+                            Forms\Components\Repeater::make('attributes')->grid(3)->defaultItems(0)->addActionLabel('Add To  Attribute')->schema([
+                                Forms\Components\TextInput::make('title')->required(),
+                                Forms\Components\TextInput::make('value')->required(),
+                            ])->columnSpanFull()->columns(),
+                            MediaManagerInput::make('images')->orderable(false)->folderTitleFieldName("product_id")->image(true)
+                                ->disk('public')
+                                ->schema([])->maxItems(1)->columnSpanFull(),
+                        ])->columns(4),
                     ]
 
                 )->modalWidth(MaxWidth::Full),
-                Tables\Actions\ReplicateAction::make()->label('Duplicate')->fillForm(function ($record){
-                    $number="";
-                    $asset = Asset::query()->where('company_id', getCompany()->id)->orderBy('number','desc')->first();
+                Tables\Actions\ReplicateAction::make()->label('Duplicate')->modalHeading('Duplicate')->modalSubmitActionLabel('Duplicate')->fillForm(function ($record) {
+                    $number = "";
+                    $asset = Asset::query()->where('company_id', getCompany()->id)->orderBy('number', 'desc')->first();
                     if ($asset) {
-                        $number= generateNextCodeAsset($asset->number);
+                        $number = generateNextCodeAsset($asset->number);
                     }
-                    $asset=$record->toArray();
-                    $asset['number']=$number;
-                    $asset['department_id']=$record->product->department_id;
+                    $asset = $record->toArray();
+                    $image = $record->getFirstMedia('images');
+
+                    if ($image) {
+                        $path = Str::after($image->original_url, 'images/');
+
+                        $asset['images'] = [
+                            'name' => $path
+                        ];
+
+                    }
+                    $asset['number'] = $number;
+                    $asset['department_id'] = $record->product->department_id;
                     return $asset;
                 })->modalWidth(MaxWidth::Full)->form([
                     Section::make([
@@ -1048,7 +1059,7 @@ class AssetResource extends Resource
 
                         Forms\Components\TextInput::make('scrap_value')->prefix(defaultCurrency()?->symbol)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->minValue(0)->numeric()->label('Scrap Value'),
 
-                        Forms\Components\Select::make('party_id')->label("Vendor")->searchable()->required()
+                        Forms\Components\Select::make('party_id')->label("Vendor")->searchable()
                             ->options(function (Forms\Get $get) {
                                 return getCompany()->parties->whereIn('type', ["vendor", 'both'])->pluck('info', 'id');
                             })->createOptionUsing(function ($data) {
@@ -1206,6 +1217,7 @@ class AssetResource extends Resource
                             } else {
                                 $array = [$data['title'] => $data['title']];
                             }
+
                             getCompany()->update(['asset_depreciation_years' => $array]);
                             return $data['title'];
                         })->searchable()->preload(),
@@ -1224,11 +1236,31 @@ class AssetResource extends Resource
                             Forms\Components\TextInput::make('title')->required(),
                             Forms\Components\TextInput::make('value')->required(),
                         ])->columnSpanFull()->columns(),
-                        MediaManagerInput::make('images')->orderable(false)->folderTitleFieldName("product_id")->image(true)
-                            ->disk('public')
-                            ->schema([])->maxItems(1)->columnSpanFull(),
+                        Forms\Components\FileUpload::make('images')->columnSpanFull()->imageEditor(),
+
                     ])->columns(4),
-                ]),
+                ])->action(function ($data, $record) {
+                    $data['company_id'] = getCompany()->id;
+                    $asset = Asset::query()->create($data);
+                    $media = $data['images'] ?? null;
+                    $pattern = '/^\d+\//';
+                    if (isset($media)) {
+                        if (!preg_match($pattern, $media)) {
+                            $asset->addMedia(public_path('images/' . $media))->toMediaCollection('images');
+                        } else {
+                            $mediaItems = $record->getMedia('images');
+                            foreach ($mediaItems as $mediaItem) {
+                                $newFilePath = public_path('images/' . $mediaItem->file_name);
+                                copy($mediaItem->getPath(), $newFilePath);
+                                $asset->addMedia($newFilePath)
+                                    ->usingFileName($mediaItem->file_name)
+                                    ->toMediaCollection('images');
+                            }
+                        }
+                    }
+                    sendSuccessNotification();
+                })
+                ,
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('Transaction')->iconSize(IconSize::Medium)->form(function ($record) {
                     return [
@@ -1267,17 +1299,18 @@ class AssetResource extends Resource
                             'person_id'=>null
                         ]);
                         $assetEmployee->assetEmployeeItem()->create([
-                            'company_id'=>$company->id,
-                            'asset_id'=>$record->id,
-                            'due_date'=>null,
-                            'warehouse_id'=>$data['warehouse_id'],
-                            'type'=>'Transaction',
-                            'structure_id'=>$data['structure_id'],
-                            'description'=>$data['description']
+                            'company_id' => $company->id,
+                            'asset_id' => $record->id,
+                            'due_date' => null,
+                            'warehouse_id' => $data['warehouse_id'],
+                            'type' => 'Transaction',
+                            'structure_id' => $data['structure_id'],
+                            'description' => $data['description']
                         ]);
                     }
                     sendSuccessNotification();
-                })
+                }),
+                Tables\Actions\DeleteAction::make()->hidden(fn($record) => $record->assetEmployee()->count())
             ])
             ->bulkActions([
                 ExportBulkAction::make()

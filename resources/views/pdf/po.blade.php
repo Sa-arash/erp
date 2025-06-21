@@ -1,5 +1,5 @@
 @include('pdf.header',
-   ['titles'=>[''],'title'=>'Purchase Order'])
+   ['titles'=>[''],'title'=>'Purchase Order','css'=>false])
 
 
 <style>
@@ -10,7 +10,7 @@
     table {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 20px;
+        margin-bottom: 10px;
     }
 
     table tr {
@@ -19,12 +19,14 @@
 
     th, td {
         border: 1px solid #000;
-        padding: 8px;
+        font-size: 12px;
+        padding: 4px !important;
         text-align: center;
     }
 
     th {
         background-color: #817c7c;
+        color: white;
     }
 
     .comments, .signature {
@@ -94,7 +96,7 @@
 
             <td>   {{  $item->product->title."-".$item->product?->sku}}</td>
             <td>
-                
+
                 {{ $item->description }}
             </td>
             <td>{{$item->unit->title}}</td>

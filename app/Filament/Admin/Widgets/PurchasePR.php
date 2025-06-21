@@ -20,10 +20,10 @@ class PurchasePR extends BaseWidget
                PurchaseRequest::query()->where('company_id',getCompany()->id)->where('status','Approval')->whereHas('purchaseOrder',function (){},'!=')
             )
             ->columns([
-                Tables\Columns\TextColumn::make('')->rowIndex()->label('NO'),
+                Tables\Columns\TextColumn::make('')->rowIndex()->label('No'),
                 Tables\Columns\TextColumn::make('employee.fullName')->tooltip(fn($record)=>$record->employee->position->title)
-                    ->label('Requestor Name')->searchable(),
-                Tables\Columns\TextColumn::make('purchase_number')->prefix('ATGT/UNC/')->label('PR NO')->searchable(),
+                    ->label('Requested By')->searchable(),
+                Tables\Columns\TextColumn::make('purchase_number')->prefix('ATGT/UNC/')->label('PR No')->searchable(),
                 Tables\Columns\TextColumn::make('description')->tooltip(fn($record) => $record->description)->limit(30),
                 Tables\Columns\TextColumn::make('department')->state(fn($record) => $record->employee->department->title),
                 Tables\Columns\TextColumn::make('request_date')->label('Request Date')->dateTime()->sortable(),

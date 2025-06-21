@@ -37,41 +37,16 @@ class VisitRequest extends BaseWidget
         return $table->emptyStateHeading('No Visitor  Request')->defaultSort('id', 'desc')
             ->query(
                 VisitorRequest::query()->where('company_id', getCompany()->id)
-//                    ->orWhereIn('requested_by',dd(getEmployee()->subordinates()))
             )
             ->columns([
-                Tables\Columns\TextColumn::make('')->label('NO')->rowIndex(),
+                Tables\Columns\TextColumn::make('')->label('No')->rowIndex(),
                 Tables\Columns\TextColumn::make('employee.fullName')->label('Employee'),
                 Tables\Columns\TextColumn::make('SN_code')->label('Department Code '),
-
-                Tables\Columns\TextColumn::make('visitors_detail')
-                    ->label('Visitors')
-                    ->state(fn($record) => implode(', ', (array_map(fn($item) => $item['name'], $record->visitors_detail))))
-                    ->numeric()
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('visitors_detail')->label('Visitors')->state(fn($record) => implode(', ', (array_map(fn($item) => $item['name'], $record->visitors_detail))))->sortable(),
                 Tables\Columns\TextColumn::make('visiting_dates')->limitList(5)->bulleted()->label('Scheduled Visit Dates')->sortable(),
                 Tables\Columns\TextColumn::make('arrival_time')->time('H:i A'),
                 Tables\Columns\TextColumn::make('departure_time')->time('H:i A'),
-                Tables\Columns\TextColumn::make('InSide_date')->label('CheckIn ')->time('H:i A'),
-                Tables\Columns\TextColumn::make('OutSide_date')->label('Checkout ')->time('H:i A'),
-                Tables\Columns\TextColumn::make('Track Time')->state(function ($record) {
-                    $startTime = $record->InSide_date;
-                    $endTime = $record->OutSide_date;
-                    if ($startTime and $endTime) {
-                        return  diffVisit($startTime, $endTime);
-                    }
-                })->label('Track Time'),
-
-                Tables\Columns\TextColumn::make('Time Leave')->state(function ($record) {
-                    $endTime = $record->departure_time;
-                    if ( $record->InSide_date and $record->OutSide_date==null  and $endTime ) {
-                        return diffLeave( $endTime);
-                    }else{
-                       return '---';
-                    }
-                })->label('Time Leave'),
-
-                Tables\Columns\TextColumn::make('approvals.approve_date')->label('Approval Status'),
+                Tables\Columns\TextColumn::make('approvals.approve_date')->label('Approval Date'),
                 Tables\Columns\TextColumn::make('status')->badge()->state((function ($record) {
                     switch ($record->status) {
                         case "approved":
@@ -92,8 +67,6 @@ class VisitRequest extends BaseWidget
                     }
                 })->alignCenter(),
                 Tables\Columns\TextColumn::make('approvals.comment')->label('Comments')
-
-
             ])
 
             ->actions([
@@ -104,7 +77,7 @@ class VisitRequest extends BaseWidget
                     $record->delete();
                     Notification::make('success')->success()->title('Deleted')->send();
                 }),
-                Tables\Actions\ReplicateAction::make()->label('Duplicate')->modalHeading('Duplicate')->form(
+                Tables\Actions\ReplicateAction::make()->label('Duplicate')->modalSubmitActionLabel('Duplicate')->modalHeading('Duplicate')->form(
                     [
                         Section::make('Visitor Access Details')->schema([
                             Section::make('')->schema([
@@ -125,12 +98,16 @@ class VisitRequest extends BaseWidget
 
                                 TimePicker::make('arrival_time')->label('Arrival Time')->seconds(false)->before('departure_time')->required(),
                                 TimePicker::make('departure_time')->label('Departure Time')->seconds(false)->after('arrival_time')->required(),
-                                DatePicker::make('visit_date')->live()->label('Visit Date')->default(now()->addDay())->hintActions([
+                                DatePicker::make('visit_date')->label('Visit Date')->default(now()->addDay())->hintActions([
                                     \Filament\Forms\Components\Actions\Action::make('te')->label('Select Daily')->action(function (Get $get,Set $set){
                                         $dates=$get('visiting_dates');
                                         if ($get('visit_date')){
-                                            $dates[]= Carbon::createFromFormat('Y-m-d', $get('visit_date'))->format('d/m/Y') ;
-                                            $set('visiting_dates',$dates);
+                                            try {
+                                                $dates[]= Carbon::createFromFormat('Y-m-d', $get('visit_date'))->format('d/m/Y') ;
+                                                $set('visiting_dates',$dates);
+                                            } catch (\Exception $e ){
+
+                                            }
                                         }
                                         $set('visit_date',null);
                                     }),\Filament\Forms\Components\Actions\Action::make('Add')->label('Select Monthly')->form([
@@ -277,12 +254,16 @@ class VisitRequest extends BaseWidget
 
                                 TimePicker::make('arrival_time')->label('Arrival Time')->seconds(false)->before('departure_time')->required(),
                                 TimePicker::make('departure_time')->label('Departure Time')->seconds(false)->after('arrival_time')->required(),
-                                DatePicker::make('visit_date')->live()->label('Visit Date')->default(now()->addDay())->hintActions([
+                                DatePicker::make('visit_date')->label('Visit Date')->default(now()->addDay())->hintActions([
                                     \Filament\Forms\Components\Actions\Action::make('te')->label('Select Daily')->action(function (Get $get,Set $set){
                                         $dates=$get('visiting_dates');
                                         if ($get('visit_date')){
-                                            $dates[]= Carbon::createFromFormat('Y-m-d', $get('visit_date'))->format('d/m/Y') ;
-                                            $set('visiting_dates',$dates);
+                                            try {
+                                                $dates[]= Carbon::createFromFormat('Y-m-d', $get('visit_date'))->format('d/m/Y') ;
+                                                $set('visiting_dates',$dates);
+                                            } catch (\Exception $e ){
+
+                                            }
                                         }
                                         $set('visit_date',null);
                                     }),\Filament\Forms\Components\Actions\Action::make('Add')->label('Select Monthly')->form([

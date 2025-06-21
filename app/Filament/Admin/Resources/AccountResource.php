@@ -188,81 +188,7 @@ class AccountResource extends Resource
                 Tables\Actions\DeleteAction::make()->action(function ($record) {
                     $record->forceDelete();
                 })->hidden(fn($record) => $record->built_in === 1 or $record->transactions->count() > 0),
-                Tables\Actions\ViewAction::make()->infolist(function () {
-                    return [
-                        Section::make([
-                            TextEntry::make('name'),
-                            TextEntry::make('parent.name'),
-                            TextEntry::make('code'),
-                            TextEntry::make('level'),
-                            TextEntry::make('type')->color('info')->badge(),
-                        ])->columns(2),
-                        Section::make([
-                            TextEntry::make('debtor')->label('Total Debtor')->state(function ($record) {
-                                $id = $record->id;
-                                $accounts = Account::query()
-                                    ->where('id', $id)
-                                    ->orWhere('parent_id', $id)
-                                    ->orWhereHas('account', function ($query) use ($id) {
-                                        $query->where('parent_id', $id)
-                                            ->orWhereHas('account', function ($query) use ($id) {
-                                                $query->where('parent_id', $id);
-                                            });
-                                    })
-                                    ->pluck('id');
-
-                                $totalDebtor = Transaction::query()
-                                    ->whereIn('account_id', $accounts)
-                                    ->where('financial_period_id', getPeriod()?->id)
-                                    ->sum('debtor');
-
-                                return $totalDebtor;
-                            })->numeric(),
-                            TextEntry::make('creditor')->state(function ($record) {
-                                $id = $record->id;
-                                $accounts = Account::query()
-                                    ->where('id', $id)
-                                    ->orWhere('parent_id', $id)
-                                    ->orWhereHas('account', function ($query) use ($id) {
-                                        $query->where('parent_id', $id)
-                                            ->orWhereHas('account', function ($query) use ($id) {
-                                                $query->where('parent_id', $id);
-                                            });
-                                    })
-                                    ->pluck('id');
-
-                                $totalDebtor = Transaction::query()
-                                    ->whereIn('account_id', $accounts)
-                                    ->where('financial_period_id', getPeriod()?->id)
-                                    ->sum('creditor');
-
-                                return $totalDebtor;
-                            })->numeric(),
-                            TextEntry::make('balance')->state(function ($record) {
-                                $id = $record->id;
-                                $accounts = Account::query()
-                                    ->where('id', $id)
-                                    ->orWhere('parent_id', $id)
-                                    ->orWhereHas('account', function ($query) use ($id) {
-                                        $query->where('parent_id', $id)
-                                            ->orWhereHas('account', function ($query) use ($id) {
-                                                $query->where('parent_id', $id);
-                                            });
-                                    })->get();
-
-                                if ($record->type == 'debtor') {
-                                    return $accounts->map(fn($item) => $item->transactions->where('financial_period_id', getPeriod()?->id)
-                                        ->sum('debtor')-
-                                        $item->transactions->where('financial_period_id', getPeriod()?->id)->sum('creditor'))->sum();
-                                } elseif ($record->type == 'creditor') {
-                                    return $accounts->map(fn($item) => $item->transactions->where('financial_period_id', getPeriod()?->id)
-                                        ->sum('creditor')-
-                                        $item->transactions->where('financial_period_id', getPeriod()?->id)->sum('debtor'))->sum();
-                                }
-                            })->numeric(),
-                        ])->columns(3)
-                    ];
-                }),
+                Tables\Actions\ViewAction::make(),
                 ActionGroup::make([
                     Action::make('Report')
                         ->url(function ($record) {
@@ -325,6 +251,7 @@ class AccountResource extends Resource
             'index' => Pages\ListAccounts::route('/'),
             'create' => Pages\CreateAccount::route('/create'),
             'edit' => Pages\EditAccount::route('/{record}/edit'),
+            'view'=>Pages\ViewAccount::route('/{record}/view')
         ];
     }
 }

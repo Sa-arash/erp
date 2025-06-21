@@ -779,11 +779,12 @@ implements HasShieldPermissions
                     ];
                 })->extraModalFooterActions(
                     [
-                        Tables\Actions\Action::make('Accept')->color('success')->action(function ($record) {
+                        Tables\Actions\Action::make('Accept')->color('success')->action(function ($record,Tables\Actions\Action $action) {
                             $record->update([
                                 'status' => 'accepted',
                                 'user_id' => auth()->id()
                             ]);
+                            $action->cancelParentActions();
                             return Notification::make('approvePayroll')->title('Approve Payroll ' . $record->employee->fullName)->success()->send();
                         })
                     ]
@@ -859,7 +860,7 @@ implements HasShieldPermissions
                                 Forms\Components\TextInput::make('reference')->maxLength(255),
                                 MediaManagerInput::make('document')->orderable(false)->folderTitleFieldName("title")
                                     ->disk('public')
-                                    ->schema([])->maxItems(1)->columnSpanFull(),
+                                    ->schema([])->maxItems(1)->defaultItems(0)->columnSpanFull(),
                                 Forms\Components\Textarea::make('description')->nullable()->columnSpanFull(),
                             ]),
                             Forms\Components\Section::make([

@@ -184,17 +184,16 @@ class PurchaseRequestResource extends Resource
         return $table->defaultSort('id', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex()->label('No'),
-                Tables\Columns\TextColumn::make('employee.fullName')->tooltip(fn($record)=>$record->employee->position->title)
+                Tables\Columns\TextColumn::make('employee.fullName')->sortable()->tooltip(fn($record)=>$record->employee->position->title)
                     ->label('Requested By')->searchable(),
-                Tables\Columns\TextColumn::make('purchase_number')->prefix('ATGT/UNC/')->label('PR No')->searchable(),
-                Tables\Columns\TextColumn::make('description')->label('PR description')->tooltip(fn($record) => $record->description)->limit(30),
+                Tables\Columns\TextColumn::make('purchase_number')->sortable()->prefix('ATGT/UNC/')->label('PR No')->searchable(),
+                Tables\Columns\TextColumn::make('description')->label('PR Description')->tooltip(fn($record) => $record->description)->limit(30),
                 Tables\Columns\TextColumn::make('department')->state(fn($record) => $record->employee->department->title),
                 Tables\Columns\TextColumn::make('request_date')->label('Request Date')->dateTime()->sortable(),
                 // Tables\Columns\TextColumn::make('location')->state(fn($record) => $record->employee?->structure?->title)->numeric()->sortable(),
-                Tables\Columns\TextColumn::make('status')->badge(),
-                Tables\Columns\TextColumn::make('bid.quotation.party.name')->label('Vendor'),
+                Tables\Columns\TextColumn::make('status')->sortable()->badge(),
+                Tables\Columns\TextColumn::make('bid.quotation.party.name')->sortable()->label('Vendor'),
                 Tables\Columns\TextColumn::make('total')->alignCenter()->label('Total EST Price ' )
-
                     ->state(function ($record) {
                         $total = 0;
                         foreach ($record->items as $item) {
@@ -202,6 +201,8 @@ class PurchaseRequestResource extends Resource
                         }
                         return number_format($total,2) ." " .$record->currency?->symbol;
                     })->numeric(),
+
+                Tables\Columns\TextColumn::make('is_quotation')->sortable()->alignCenter()->label(' Quotation Status' )->badge()->state(fn($record)=>$record->is_quotation ? "Yes":"No")->color(fn($record)=>$record->is_quotation ? "danger":"secondary"),
                 Tables\Columns\TextColumn::make('bid.total_cost')->alignCenter()->label('Total Final Price' )->numeric(),
 
             ])
@@ -235,6 +236,7 @@ class PurchaseRequestResource extends Resource
 
             ], getModelFilter())
             ->actions([
+                Tables\Actions\Action::make('prPDF')->label('Print  Preview')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.purchase', ['id' => $record->id]))->openUrlInNewTab(),
 
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('Order')
@@ -474,7 +476,6 @@ class PurchaseRequestResource extends Resource
                         Bid::query()->create($data);
                         Notification::make('make bid')->success()->title('Submitted Successfully')->send()->sendToDatabase(auth()->user());
                     })->modalWidth(MaxWidth::Full)->visible(fn($record) => $record->quotations->count() > 0 and empty($record->bid)),
-                    Tables\Actions\Action::make('prPDF')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.purchase', ['id' => $record->id]))->openUrlInNewTab(),
                 ]),
 
                 Tables\Actions\DeleteAction::make()->visible(fn($record) => $record->status->name === "Requested")->action(function ($record){

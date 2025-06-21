@@ -511,6 +511,18 @@ class PdfController extends Controller
         );
         return $pdf->stream('requestVisit.pdf');
     }
+    public function entryAndExit($id)
+    {
+        $requestVisit = VisitorRequest::query()->firstWhere('id', $id);
+        $company = $requestVisit->company;
+
+
+        $pdf = Pdf::loadView(
+            'pdf.entry_and_exit',
+            compact('company', 'requestVisit')
+        );
+        return $pdf->stream('requestVisit.pdf');
+    }
     public function cashPayment($id)
     {
 

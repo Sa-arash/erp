@@ -925,7 +925,7 @@ function getFilterSubordinate(): \Filament\Tables\Filters\TernaryFilter
 {
     return \Filament\Tables\Filters\TernaryFilter::make('All')->label('Data Filter ')
         ->placeholder('Only Me')->searchable()
-        ->trueLabel('All Subordinates')
+        ->trueLabel('Subordinates')
         ->falseLabel('Only Me')
         ->queries(
             true: fn(\Illuminate\Database\Eloquent\Builder $query) => $query->whereIn('employee_id', getSubordinate()),

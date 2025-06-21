@@ -7,7 +7,6 @@ use App\Models\Asset;
 use App\Models\AssetEmployee;
 use App\Models\AssetEmployeeItem;
 use App\Models\Bank;
-use App\Models\Bank_category;
 use App\Models\Benefit;
 use App\Models\BenefitEmployee;
 use App\Models\BenefitPayroll;
@@ -21,14 +20,11 @@ use App\Models\Currency;
 use App\Models\Customer;
 use App\Models\Department;
 use App\Models\Documentation;
-use App\Models\Duty;
 use App\Models\Employee;
-use App\Models\Expense;
 use App\Models\Factor;
 use App\Models\FactorItem;
 use App\Models\FinancialPeriod;
 use App\Models\Holiday;
-use App\Models\Income;
 use App\Models\Inventory;
 use App\Models\Invoice;
 use App\Models\Leave;
@@ -40,8 +36,6 @@ use App\Models\Parties;
 use App\Models\Payroll;
 use App\Models\Position;
 use App\Models\Product;
-use App\Models\ProductCategory;
-use App\Models\ProductSubCategory;
 use App\Models\Project;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
@@ -65,7 +59,6 @@ use App\Models\UrgentLeave;
 use App\Models\User;
 use App\Models\VisitorRequest;
 use App\Models\Warehouse;
-use Carbon\Carbon;
 use Filament\Facades\Filament;
 use Filament\Http\Responses\Auth\LoginResponse;
 use Illuminate\Support\Facades\Route;
@@ -174,6 +167,22 @@ Route::get('/test', function () {
 //        }
 //    }
 //    dd(1);
+
+//    $accounts = Account::query()->get();
+//    foreach ($accounts as $account) {
+//        if ($account->group === "Asset") {
+//            $account->update(['type' => 'debtor']);
+//        } elseif ($account->group === "Liabilitie") {
+//            $account->update(['type' => 'creditor']);
+//        } elseif ($account->group === 'Equity') {
+//            $account->update(['type' => 'creditor']);
+//        } elseif ($account->group === 'Income') {
+//            $account->update(['type' => 'creditor']);
+//        } elseif ($account->group === 'Expense') {
+//            $account->update(['type' => 'creditor']);
+//        }
+//    }
+//    dd(1);
 });
 
 
@@ -247,6 +256,7 @@ Route::get('/pdf/bid/{id}',[\App\Http\Controllers\PdfController::class,'bid'])->
 Route::get('/pdf/separation/{id}',[\App\Http\Controllers\PdfController::class,'separation'])->name('pdf.separation');
 Route::get('/pdf/takeOut/{id}',[\App\Http\Controllers\PdfController::class,'takeOut'])->name('pdf.takeOut');
 Route::get('/pdf/requestVisit/{id}',[\App\Http\Controllers\PdfController::class,'requestVisit'])->name('pdf.requestVisit');
+Route::get('/pdf/entry_and_exit/{id}',[\App\Http\Controllers\PdfController::class,'entryAndExit'])->name('pdf.entryAndExit');
 Route::get('/pdf/requestVisit/{ids}/all/{type}',[\App\Http\Controllers\PdfController::class,'requestVisits'])->name('pdf.requestVisits');
 Route::get('/pdf/accountCurrency/{period}/{account}',[\App\Http\Controllers\PdfController::class,'accountCurrency'])->name('pdf.accountCurrency');
 Route::get('/pdf/barcode/{code}',[\App\Http\Controllers\PdfController::class,'barcode'])->name('pdf.barcode');

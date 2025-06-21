@@ -106,14 +106,14 @@ class ChequeResource extends Resource
                 Tables\Columns\TextColumn::make('payee_name')->searchable(),
                 Tables\Columns\TextColumn::make('Due Days')->label('Due Days')->state(function ($record) {
                     $daysUntilDue = Carbon::make($record->due_date)->diffInDays(now(), false);
-                    return abs($daysUntilDue) . ($daysUntilDue < 0 ? ' Days Due' : ' Days Passed');
+                    return abs(floor($daysUntilDue)) . ($daysUntilDue < 0 ? ' Days Due' : ' Days Passed');
                 })
                     ->color(function ($record) {
                         $daysUntilDue = Carbon::make($record->due_date)->diffInDays(now(), false);
 
                         return match (true) {
-                            $daysUntilDue < 0 => 'success',
-                            $daysUntilDue === 0 => 'warning',
+                            floor($daysUntilDue) < 0 => 'success',
+                            floor($daysUntilDue) === 0.0 => 'warning',
                             default => 'danger'
                         };
                     })
@@ -151,7 +151,8 @@ class ChequeResource extends Resource
                                 ])->columns()
                             ];
                         }
-                    })->action(function ($data, $record) {
+                    })->action(function ($data, $record,Tables\Actions\Action $action) {
+//dd($action->shouldCancelAllParentActions(),$action->cancelParentActions());
                         if (isset($record->transaction)) {
 
                             $invoice = Invoice::query()->create([
@@ -207,6 +208,7 @@ class ChequeResource extends Resource
                         }
                         $record->update(['status' => 'paid']);
                         Notification::make('paid-cheque')->success()->title('Check Paid')->send()->sendToDatabase(auth()->user());
+                        $action->cancelParentActions();
                     })->color('success'),
                     Tables\Actions\Action::make('returned')->label('Returned')->requiresConfirmation()->action(function ($record) {
                         $record->update(['status' => "returned"]);
@@ -223,7 +225,7 @@ class ChequeResource extends Resource
                 ])->modalWidth(MaxWidth::ThreeExtraLarge)->modalSubmitAction(false)->hidden(fn($record) => $record->status->name === "Paid")
             ])
             ->bulkActions([
-              
+
                 ExportBulkAction::make()
                 ->after(function () {
                     if (Auth::check()) {

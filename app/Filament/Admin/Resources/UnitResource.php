@@ -25,8 +25,8 @@ class UnitResource extends Resource
     protected static ?string $model = Unit::class;
     protected static ?string $navigationIcon = 'heroicon-c-server-stack';
     protected static ?string $navigationGroup = 'Logistic Management';
-    protected static ?string $label="Asset Unit";
-    protected static ?string $pluralLabel="Asset Unit";
+    protected static ?string $label="Units";
+    protected static ?string $pluralLabel="Units";
     protected static ?string $cluster = StackManagementSettings::class;
 
 

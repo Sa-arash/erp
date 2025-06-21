@@ -5,35 +5,28 @@ namespace App\Filament\Admin\Resources;
 use App\Filament\Admin\Resources\ApprovalResource\Pages;
 use App\Filament\Admin\Resources\ApprovalResource\RelationManagers;
 use App\Models\Approval;
-use App\Models\Employee;
 use App\Models\Holiday;
 use App\Models\Leave as ModelLeave;
-use App\Models\Product;
-use App\Models\PurchaseRequestItem;
 use App\Models\User;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Filament\Forms;
-use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
 use Filament\Infolists\Components\Fieldset;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\RepeatableEntry;
-use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
 use Filament\Support\Enums\MaxWidth;
-use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
 use OpenSpout\Common\Entity\Style\CellAlignment;
 
 class   ApprovalResource extends Resource implements HasShieldPermissions
@@ -65,17 +58,21 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
         return $table->query(Approval::query()->where('employee_id', getEmployee()->id)->orderBy('id', 'desc'))
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex()->label('No'),
-                Tables\Columns\TextColumn::make('approvable.employee.info')->label('Employee')->badge(),
+                Tables\Columns\TextColumn::make('approvable.employee.info')->label('Employee')->badge()->description(function ($record) {
+                    if (substr($record->approvable_type, 11) === "PurchaseRequest") {
+                        return Str::limit($record->approvable->description, 100);
+                    }
+                }),
                 Tables\Columns\TextColumn::make('created_at')->label('Request Date')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('approve_date')->label('Approval Date')->date(),
                 Tables\Columns\TextColumn::make('comment')->sortable(),
-                Tables\Columns\TextColumn::make('status')->state(fn($record)=>match ($record->status->value){
-                    'Approve'=>'Approved',
-                    'NotApprove'=>'Not Approved',
-                    'Pending'=>'Pending',
-                })->color(fn($state)=>match ($state){
-                    'Approved'=>'success',
-                    'Not Approved'=>'danger',
+                Tables\Columns\TextColumn::make('status')->state(fn($record) => match ($record->status->value) {
+                    'Approve' => 'Approved',
+                    'NotApprove' => 'Not Approved',
+                    'Pending' => 'Pending',
+                })->color(fn($state) => match ($state) {
+                    'Approved' => 'success',
+                    'Not Approved' => 'danger',
                     'Pending'=>'info',
                 })->label('Status')->badge(),
             ])
@@ -274,20 +271,11 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
                                 $record->approvable->update([
                                     'mood' => 'Approved Manager'
                                 ]);
-                                sendApprove($record->approvable,'admin_take::out');
-
-                            }elseif ($record->approvable->mood==="Approved Manager"){
-
-                                $record->approvable->update([
-                                    'mood' => 'Approved Admin'
-                                ]);
-                                $record->approvable->approvals()->whereNot('id', $record->id)->where('position', 'admin_take::out')->delete();
-
                                 $employee = User::whereHas('roles.permissions', function ($query) {
                                     $query->where('name', 'security_take::out');
                                 })->get() ->pluck('employee.id')->toArray();
                                 $securityIDs =$employee;
-                                if($securityIDs)
+                                if($securityIDs){
                                     foreach ($securityIDs as $security){
                                         $record->approvable->approvals()->create([
                                             'employee_id' => $security,
@@ -295,13 +283,14 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
                                             'position' => 'Security',
                                         ]);
                                     }
+                                }
+
                             }else{
                                 $record->approvable->approvals()->whereNot('id', $record->id)->where('position', 'Security')->delete();
-
-                                $record->approvable->update([
-                                    'mood' => 'Approved'
-                                ]);
-                            }
+                                    $record->approvable->update([
+                                        'mood' => 'Approved'
+                                    ]);
+                                }
 
                         }else{
                             $record->approvable->update([

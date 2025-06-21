@@ -45,6 +45,10 @@ return new class extends Migration
             $table->string('supersedes_security')->nullable();
             $table->string('stamp_finance')->nullable();
             $table->string('signature_finance')->nullable();
+            $table->string('email_finance')->nullable();
+            $table->string('phone_finance')->nullable();
+            $table->string('title_sales_finance')->nullable();
+            $table->string('payment_to_finance')->nullable();
             $table->text('asset_types')->nullable();
             $table->text('asset_depreciation_years')->nullable();
             $table->text('person_grope')->nullable();

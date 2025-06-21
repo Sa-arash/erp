@@ -28,6 +28,7 @@ return new class extends Migration
             $table->date('approval_date')->nullable();
             $table->enum('status', ['approved','Pending', 'notApproved'])->default('Pending');
             $table->enum('gate_status',['Pending','CheckedIn','CheckedOut','Canceled'])->default('Pending');
+            $table->longText('entry_and_exit')->nullable();
             $table->timestamp('InSide_date')->nullable();
             $table->timestamp('OutSide_date')->nullable();
             $table->text('inSide_comment')->nullable();

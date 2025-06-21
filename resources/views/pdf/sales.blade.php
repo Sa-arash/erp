@@ -1,4 +1,4 @@
-@include('pdf.header',['title'=>'Invoice-'.$invoice->from,'titles'=>[''],'css'=>true])
+@include('pdf.header',['title'=>$company->title_sales_finance,'titles'=>[''],'css'=>true])
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -105,24 +105,24 @@
 
     <table class="info-table">
         <tr>
-            <td class="title">From:</td>
-            <td colspan="3">
+            <td class="title" style="width: 10% !important;">From:</td>
+            <td colspan="5">
                 {{$invoice->from}}
                 <br>
-                Email: finance@uncompound.com<br>
-                P.: +971 56 152 7710
+                Email: {{$company->email_finance}}
+                P: {{$company->phone_finance}}
             </td>
         </tr>
         <tr>
             <td colspan="6" style="background: white!important;">
-                <pre>_____________________________________________________________________________________________</pre>
+                <pre>________________________________________________________________________________________________</pre>
             </td>
         </tr>
         <tr>
 
             <td style="background: white!important;" class="title">To:</td>
             <td style="background: white!important;" colspan="4">
-                Name of Customer<br>
+
                 {{$invoice->to}}
             </td>
             <td style="background: white!important;">
@@ -163,15 +163,18 @@
                 <td style="border: none;border-bottom: 2px solid black!important">{{number_format($item->unit_price*$item->quantity,2)}} </td>
             </tr>
             @php
-            $total+=$item->unit_price*$item->quantity;
+                $total+=$item->unit_price*$item->quantity;
             @endphp$item->unit_price*$item->quantity
         @endforeach
         </tbody>
         <tfooter>
             <tr>
-                <td colspan="3" style="text-align: right;border: none;border-bottom: 2px solid black;">Grand Total Amount </td>
-                <td colspan="3" style="text-align: right;border: none;border-bottom: 2px solid black;"> {{numberToWords($total,' '.$currency?->name)}}</td>
-                <td style="border: none;border-bottom: 2px solid black;" >{{number_format($total,2)}}</td>
+                <td colspan="3" style="text-align: right;border: none;border-bottom: 2px solid black;">Grand Total
+                    Amount
+                </td>
+                <td colspan="3"
+                    style="text-align: right;border: none;border-bottom: 2px solid black;"> {{strtoupper(numberToWords($total,' '.$currency?->name))}}</td>
+                <td style="border: none;border-bottom: 2px solid black;">{{number_format($total,2)}}</td>
             </tr>
         </tfooter>
     </table>
@@ -202,22 +205,22 @@
 {{--                    @php--}}
 {{--                        $str='';--}}
 {{--                            foreach ($invoice->invoice->transactions->where('creditor','!=','0') as $tra){--}}
-{{--                               $str.= "<p>Account Name:    {$tra->account->name}  </p>--}}
-{{--                               <p> Account Number: {$tra->account->code}  </p>--}}
-{{--                               ";--}}
-{{--                            }--}}
+                {{--                               $str.= "<p>Account Name:    {$tra->account->name}  </p>--}}
+                {{--                               <p> Account Number: {$tra->account->code}  </p>--}}
+                {{--                               ";--}}
+                {{--                            }--}}
 
-{{--                    @endphp--}}
-{{--                @endif--}}
-{{--                <div >--}}
-{{--                    {!! $str !!}--}}
-{{--                </div>--}}
-                <P>Beneficiary Bank USD: EMIRATES NBD PJSC</P>
-                <P>Account Name:   AREA TARGET GENERAL TRADING LLC</P>
-                <P>Account Number: IBAN: AE380260001024332222002</P>
-                <P>Swift Code: EBILAEAD DUBAI- UAE</P>
+                {{--                    @endphp--}}
+                {{--                @endif--}}
+                {{--                <div >--}}
+                {{--                    {!! $str !!}--}}
+                {{--                </div>--}}
+                @if($company->payment_to_finance)
 
-
+                    @foreach($company->payment_to_finance as $value)
+                        <P><b>{{$value['title']}}</b>: {{$value['value']}}</P>
+                    @endforeach
+                @endif
             </td>
             <td style="border: none;font-size: 13px;background: none !important">
 

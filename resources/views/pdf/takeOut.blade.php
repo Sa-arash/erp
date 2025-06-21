@@ -391,6 +391,9 @@ table {
     width: 100%;
     border-collapse: collapse;
 }
+td{
+    padding: 10px;
+}
 
 /* Header Section */
 .header-section-table {
@@ -441,19 +444,9 @@ table {
     height: 20px; /* Ensure consistent height for rows */
 }
 
-.main-info-table td:nth-child(1), /* From, Name, Designation labels */
-.main-info-table td:nth-child(3)  /* To, Badge Number, Department labels */
-{
-    width: 18%; /* Adjusted width for labels */
-    font-weight: normal;
-}
 
-.main-info-table td:nth-child(2), /* From, Name, Designation values */
-.main-info-table td:nth-child(4)  /* To, Badge Number, Department values */
-{
-    width: 32%; /* Adjusted width for values */
-    font-weight: normal;
-}
+
+
 
 .main-info-table u {
     text-decoration: underline;
@@ -472,42 +465,12 @@ table {
 .item-list-table th,
 .item-list-table td {
     border: 1px solid black;
-    padding: 6px 8px; /* Consistent padding for cells */
+    padding: 4px; /* Consistent padding for cells */
     text-align: left;
     vertical-align: middle;
     height: 20px; /* Consistent height for data rows */
 }
 
-.item-list-table th {
-    background-color: #f0f0f0; /* Light gray background for headers */
-    font-weight: bold;
-}
-
-.item-list-table th:nth-child(1), /* SN */
-.item-list-table td:nth-child(1) {
-    width: 5%;
-    text-align: center;
-}
-
-.item-list-table th:nth-child(2), /* Item Description */
-.item-list-table td:nth-child(2) {
-    width: 45%;
-}
-
-.item-list-table th:nth-child(3), /* Quantity */
-.item-list-table td:nth-child(3) {
-    width: 15%;
-}
-
-.item-list-table th:nth-child(4), /* Unit */
-.item-list-table td:nth-child(4) {
-    width: 15%;
-}
-
-.item-list-table th:nth-child(5), /* Remarks */
-.item-list-table td:nth-child(5) {
-    width: 20%;
-}
 
 /* Reason for Taking out */
 .reason-field {
@@ -530,7 +493,7 @@ table {
 
 .status-check-table td {
     border: 1px solid black;
-    padding: 6px 8px;
+    padding: 4px !important;
     vertical-align: middle;
     height: 20px; /* Consistent height for all rows */
 }
@@ -595,8 +558,13 @@ table {
 .security-signature-text u {
     text-decoration: underline;
 }
+@page  {
+
+}
+
 </style>
-</head>
+
+
 <body>
 
 <table class="header-section-table">
@@ -736,13 +704,13 @@ table {
 
 
                 <div class="security-signature-text">Security Department - <u>UNC</u></div>
-                @if(isset($takeOut->approvals[2]) and $takeOut->approvals[1]->status->value==="Approve")
+                @if(isset($takeOut->approvals[2]) and $takeOut->approvals[2]->status->value==="Approve")
                     @if (file_exists($takeOut->approvals[2]->employee->media->where('collection_name','signature')->first()?->getPath())  )
                         <img
                             src="{!! $takeOut->approvals[2]->employee->media->where('collection_name','signature')->first()->getPath() !!}"
                             style="margin-left: 50px ; width: 80px;" alt="">
                     @endif
-                    Date: {{\Illuminate\Support\Carbon::make($takeOut->approvals[2]->approve_date)->format('d/F/Y')}}
+                    Date: {{isset($takeOut->approvals[2]->approve_date)? \Illuminate\Support\Carbon::make($takeOut->approvals[2]->approve_date)->format('d/M/Y'):''}}
                 @endif
             </td>
         </tr>

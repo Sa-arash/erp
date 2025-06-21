@@ -4,11 +4,13 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\TakeOutResource\Pages;
 use App\Filament\Admin\Resources\TakeOutResource\RelationManagers;
+use App\Models\AssetEmployeeItem;
 use App\Models\Employee;
 use App\Models\TakeOut;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
@@ -128,15 +130,14 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                     Forms\Components\Textarea::make('OutSide_comment')->label(' Comment')
                 ])->requiresConfirmation()->action(function ($data, $record) {
                     foreach($record->items as $item){
-
-                        $latestAssetEmployee = $item->asset->assetEmployee->sortByDesc('date')->first();
-
+                        $latestAssetEmployee = AssetEmployeeItem::query()->orderBy('id','desc')->firstWhere('asset_id',$item->asset_id);
                         if ($latestAssetEmployee) {
-
                             $newAssetEmployee = $latestAssetEmployee->replicate();
-
-                            $newAssetEmployee->type = 'GatePass';
-
+                            $newAssetEmployee->type = 'Gate Pass';
+                            $newAssetEmployee->due_date = $record->return_date;
+                            $newAssetEmployee->warehouse_id = null;
+                            $newAssetEmployee->structure_id = null;
+                            $newAssetEmployee->description = $item->remarks;
                             $newAssetEmployee->save();
                         }
                     }
@@ -159,16 +160,16 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                 ])->requiresConfirmation()->action(function ($data, $record) {
                     foreach($record->items as $item){
 
-                        $latestAssetEmployee = $item->asset->assetEmployee->sortByDesc('date')->first();
-
-                        if ($latestAssetEmployee) {
-
-                            $newAssetEmployee = $latestAssetEmployee->replicate();
-
-                            $newAssetEmployee->type = 'Assigned';
-
-                            $newAssetEmployee->save();
-                        }
+//                        $latestAssetEmployee = $item->asset->assetEmployee->sortByDesc('date')->first();
+//
+//                        if ($latestAssetEmployee) {
+//
+//                            $newAssetEmployee = $latestAssetEmployee->replicate();
+//
+//                            $newAssetEmployee->type = 'Assigned';
+//
+//                            $newAssetEmployee->save();
+//                        }
                     }
                     $record->update(['InSide_date' => $data['InSide_date'], 'inSide_comment' => $data['inSide_comment'], 'gate_status' => 'CheckedIn']);
                     Notification::make('success')->success()->title('Submitted Successfully')->send();
@@ -193,15 +194,21 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                         TextEntry::make('date')->date(),
                         TextEntry::make('status')->badge(),
                         TextEntry::make('type')->badge(),
-                        RepeatableEntry::make('items')->label('Registered Asset')->schema([
-                            TextEntry::make('asset.title'),
+                        RepeatableEntry::make('items')->label('Assets')->schema([
+                            TextEntry::make('asset.description')->label('Asset Description'),
+                            TextEntry::make('asset.number')->label('Asset Number'),
                             TextEntry::make('remarks'),
                             TextEntry::make('returned_date'),
-                        ])->columnSpanFull()->columns(3),
+                        ])->columnSpanFull()->columns(4),
                         RepeatableEntry::make('itemsOut')->label('Unregistered Asset')->schema([
                             TextEntry::make('name'),
+                            TextEntry::make('quantity'),
+                            TextEntry::make('unit'),
                             TextEntry::make('remarks'),
-                        ])->columnSpanFull()->columns(),
+                            ImageEntry::make('image')->width(100)->height(100)
+                                ->url(fn($state)=>asset('images/'.$state))
+                            ,
+                        ])->columnSpanFull()->columns(5),
                         \Filament\Infolists\Components\Section::make([
                             TextEntry::make('OutSide_date')->dateTime(),
                             TextEntry::make('OutSide_comment'),

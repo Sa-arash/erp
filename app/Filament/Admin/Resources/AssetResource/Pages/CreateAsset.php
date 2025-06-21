@@ -26,7 +26,6 @@ class CreateAsset extends CreateRecord
             $data = $this->form->getState();
 
             $this->callHook('afterValidate');
-            $data['manager_id']=getEmployee()->id;
 
             $data = $this->mutateFormDataBeforeCreate($data);
 
@@ -48,6 +47,7 @@ class CreateAsset extends CreateRecord
             }
 
             foreach ($data['assets'] as $asset) {
+                $asset['manager_id']=getEmployee()->id;
 
                 $this->record = $this->handleRecordCreation($asset);
 

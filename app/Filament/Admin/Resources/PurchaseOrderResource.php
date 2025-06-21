@@ -598,7 +598,7 @@ implements HasShieldPermissions
             ->columns([
                 Tables\Columns\TextColumn::make('NO')->label('No')->rowIndex(),
                 Tables\Columns\TextColumn::make('purchase_orders_number')
-                    ->label('PO NO')
+                    ->label('PO No')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('date_of_po')
                     ->label('Date Of PO')
@@ -622,11 +622,8 @@ implements HasShieldPermissions
                 // ->sortable(),
 
 
-                Tables\Columns\TextColumn::make('purchaseRequest.purchase_number')
-                    ->label("PR NO")
-                    ->badge()
-                    ->url(fn($record) => PurchaseRequestResource::getUrl('index') . "?tableFilters[purchase_number][value]=" . $record->purchaseRequest?->id)
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('purchaseRequest.purchase_number')->badge()->url(fn($record) => PurchaseRequestResource::getUrl('index') . "?tableFilters[purchase_number][value]=" . $record->purchaseRequest?->id)
+                    ->sortable()->label("PR No"),
 
                 Tables\Columns\TextColumn::make('date_of_delivery')
                     ->date()
