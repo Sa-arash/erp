@@ -25,6 +25,7 @@ class StockConsumable extends BaseWidget
                 ->selectRaw('(SELECT SUM(quantity) FROM inventories WHERE inventories.product_id = products.id) as inventories_quantity')
                 ->where('product_type', 'consumable')
                 ->groupBy('products.id', 'unit_id', 'created_at', 'updated_at', 'products.stock_alert_threshold', 'products.product_type', 'products.title', 'products.second_title', 'products.image', 'products.department_id', 'products.account_id', 'products.sku', 'products.sub_account_id', 'products.description', 'products.company_id')
+                ->havingRaw('(inventories_quantity IS NULL OR inventories_quantity < stock_alert_threshold)')
                 )
             ->columns([
                 Tables\Columns\TextColumn::make('')->label('#')->rowIndex(),
@@ -54,21 +55,7 @@ class StockConsumable extends BaseWidget
                 Tables\Columns\TextColumn::make('countInventory')->numeric()->state(fn($record) => $record->inventories()?->sum('quantity'))->label('Available')->badge(),
             ])->filters([
                 Tables\Filters\SelectFilter::make('department_id')->label('Department')->options(getCompany()->departments->pluck('title','id'))->searchable()->preload(),
-                Tables\Filters\TernaryFilter::make('All')->label('Data Filter ')
-                    ->placeholder('All')->searchable()
-                    ->trueLabel('All Stock Alerted')
-                    ->falseLabel('All')
-                    ->queries(
-                        function (Builder $query) {
-                            return $query->havingRaw('(inventories_quantity IS NULL OR inventories_quantity < stock_alert_threshold)');
-                        },
-                        function (Builder $query) {
-                            return $query;
-                        },
-                        function (Builder $query) {
-                            return $query;
-                        },
-                    )
+
             ],getModelFilter());
     }
 }

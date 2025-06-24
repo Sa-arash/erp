@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Widgets;
 use App\Models\Asset;
 use App\Models\AssetEmployeeItem;
 use App\Models\Unit;
+use App\Models\User;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
@@ -110,7 +111,19 @@ protected static ?string $heading='Gate Pass';
                     $item['company_id'] = $id;
                     $takeOut->items()->create($item);
                 }
-                sendAR($employee,$takeOut,getCompany());
+                $employee = User::whereHas('roles.permissions', function ($query) {
+                    $query->where('name', 'security_take::out');
+                })->get() ->pluck('employee.id')->toArray();
+                $securityIDs =$employee;
+                if($securityIDs){
+                    foreach ($securityIDs as $security){
+                        $takeOut->approvals()->create([
+                            'employee_id' => $security,
+                            'company_id' => getCompany()->id,
+                            'position' => 'Security',
+                        ]);
+                    }
+                }
                 Notification::make('success')->color('success')->success()->title('Request Sent')->send()->sendToDatabase(auth()->user());
             })->color('warning')
         ])
@@ -143,6 +156,9 @@ protected static ?string $heading='Gate Pass';
                 })->label('Request Status')->badge(),
                 Tables\Columns\TextColumn::make('status')->badge(),
                 Tables\Columns\TextColumn::make('type')->badge(),
+                Tables\Columns\TextColumn::make('approvals.approve_date')->label('Approval Date'),
+                Tables\Columns\TextColumn::make('approvals.comment')->label('Comments')
+
             ])->actions([
                 Tables\Actions\Action::make('pdf')->url(fn($record) => route('pdf.takeOut', ['id' => $record->id]))->icon('heroicon-s-printer')->iconSize(IconSize::Large)->label('PDF'),
                 Tables\Actions\ViewAction::make('view')->infolist([
@@ -156,22 +172,28 @@ protected static ?string $heading='Gate Pass';
                         RepeatableEntry::make('items')->label('Assets')->schema([
                             TextEntry::make('asset.description')->label('Asset Description'),
                             TextEntry::make('asset.number')->label('Asset Number'),
+                            TextEntry::make('status')->color(fn ($state)=>match ($state){
+                                'Approved'=>'success','Not Approved'=>'danger','Pending'=>'primary'
+                            })->badge(),
                             TextEntry::make('remarks'),
                             TextEntry::make('returned_date'),
                         ])->columnSpanFull()->columns(4),
                         RepeatableEntry::make('itemsOut')->label('itemsOut')->schema([
                             TextEntry::make('name'),
-                            TextEntry::make('remarks'),
-                               TextEntry::make('quantity'),
+                            TextEntry::make('quantity'),
+                            TextEntry::make('status')->color(fn ($state)=>match ($state){
+                                'Approved'=>'success','Not Approved'=>'danger','Pending'=>'primary'
+                            })->badge(),
                             TextEntry::make('unit'),
+                            TextEntry::make('remarks'),
                         ])->columnSpanFull()->columns(),
                         \Filament\Infolists\Components\Section::make([
-                            TextEntry::make('OutSide_date')->dateTime(),
-                            TextEntry::make('OutSide_comment'),
+                            TextEntry::make('OutSide_date')->label('Outside Date')->dateTime(),
+                            TextEntry::make('OutSide_comment')->label('Outside Comment '),
                         ])->columns(),
                         \Filament\Infolists\Components\Section::make([
-                            TextEntry::make('InSide_date')->dateTime(),
-                            TextEntry::make('inSide_comment'),
+                            TextEntry::make('InSide_date')->label('Inside Date')->dateTime(),
+                            TextEntry::make('inSide_comment')->label('Inside Comment'),
                         ])->columns(),
                     ])->columns()
                 ]),

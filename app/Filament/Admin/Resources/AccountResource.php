@@ -185,9 +185,7 @@ class AccountResource extends Resource
             ->actions([
 
                 Tables\Actions\EditAction::make()->hidden(fn($record) => (bool)$record->built_in),
-                Tables\Actions\DeleteAction::make()->action(function ($record) {
-                    $record->forceDelete();
-                })->hidden(fn($record) => $record->built_in === 1 or $record->transactions->count() > 0),
+                Tables\Actions\Action::make('delete')->url(fn($record)=>AccountResource::getUrl('view',['record'=>$record->id]))->color('danger')->hidden(fn($record) => $record->built_in === 1 or $record->transactions->count() > 0 or $record->childerns->count() or $record->products->count() or $record->productsSub->count()),
                 Tables\Actions\ViewAction::make(),
                 ActionGroup::make([
                     Action::make('Report')

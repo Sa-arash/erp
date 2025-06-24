@@ -152,7 +152,7 @@ class TransActionResource extends Resource
                 ->searchable(),
                 Tables\Columns\TextColumn::make('invoice.date')
                 ->label('Date')
-                ->state(fn($record)=>Carbon::parse($record->invoice->date)->format("Y-m-d"))
+                ->state(fn($record)=>$record->invoice?->date? Carbon::parse($record->invoice?->date)->format("Y-m-d"):"")
                 ->sortable(),
                 Tables\Columns\TextColumn::make('Account.name')
                     ->label('Account Name')

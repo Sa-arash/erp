@@ -1,6 +1,6 @@
 
 @include('pdf.header',
-   ['titles'=>[],'title'=>'Payroll Report','css'=>true])
+   ['titles'=>[],'title'=>'Payroll Report','css'=>true,'dateShow'=>true])
 <style>
     table {
         width: 100%;
@@ -32,6 +32,10 @@
     td {
         border: 1px solid #000;
         font-size: 10pt;
+    }
+    @page  {
+        margin-left: 15px;
+        margin-right:15px ;
     }
 
 </style>
@@ -108,7 +112,6 @@
     </table>
 
 
-        <span style="font-size: 12px;color: gray; margin-left:40% !important; margin-top: auto ">Print Date: {{now()->format('Y/F/d H:iA')}}</span>
 
 </div>
 

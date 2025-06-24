@@ -17,7 +17,10 @@ class EditAccount extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make()->hidden(fn($record) => (bool)$record->built_in),
+            Actions\DeleteAction::make('delete')->action(function ($record) {
+                $record->forceDelete();
+                return $this->redirect(AccountResource::getUrl('index'));
+            })->hidden(fn($record) => $record->built_in === 1 or $record->transactions->count() > 0 or $record->childerns->count() or $record->products->count() or $record->productsSub->count()),
         ];
     }
 

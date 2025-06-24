@@ -11,6 +11,7 @@ enum ItemStatus:string implements HasColor,HasLabel
     case Reject = 'rejected';
     case pending = 'pending';
     case Approve = 'approve';
+    case Revise = 'Revise';
 
     public function getLabel(): ?string
     {
@@ -18,6 +19,7 @@ enum ItemStatus:string implements HasColor,HasLabel
             self::Reject => 'Rejected',
             self::pending => 'Pending',
             self::Approve => 'Approved',
+            self::Revise => 'Revise',
         };
     }
     public function getColor(): string|array|null
@@ -26,6 +28,7 @@ enum ItemStatus:string implements HasColor,HasLabel
             self::pending => 'info',
             self::Reject => 'danger',
             self::Approve => 'success',
+            self::Revise => 'warning',
 
         };
     }

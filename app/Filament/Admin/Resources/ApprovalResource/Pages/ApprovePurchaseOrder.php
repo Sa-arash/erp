@@ -59,13 +59,24 @@ class ApprovePurchaseOrder extends ManageRelatedRecords
 
                     return [
                         Section::make([
-                            TextEntry::make('purchase_orders_number')->prefix('ATGT/UNC/')->state($record->purchase_orders_number)->label('PO NO'),
-                            TextEntry::make('purchase_orders_number')->prefix('ATGT/UNC/')->state($record->purchaseRequest?->purchase_number)->label('PR NO'),
+                            TextEntry::make('purchase_orders_number')->prefix('ATGT/UNC/')->state($record->purchase_orders_number)->label('PO No'),
+                            TextEntry::make('purchase_orders_number')->prefix('ATGT/UNC/')->state($record->purchaseRequest?->purchase_number)->label('PR No'),
                             TextEntry::make('Currency')->state($record->currency->name)->label('Currency'),
                             TextEntry::make('Exchange Rate')->numeric(3)->state($record->exchange_rate)->label('Exchange Rate'),
                             TextEntry::make('date_of_po')->state($record->date_of_po)->label('Date of PO'),
                             TextEntry::make('vendor')->state($record->vendor->name.'('.$record->vendor?->accountVendor?->code.')')->label('Vendor'),
-                            TextEntry::make('status')->state($record->status)->label('Status')->badge(),
+                            TextEntry::make('status')->state(function ()use($record){
+                                return match ($record->status){
+                                    'pending'=>'Pending',
+                                    'Approve Verification'=>'Verified',
+                                    'Approve Logistic Head'=>'Approve Review',
+                                    'rejected'=>'Rejected',
+                                    'Approved'=>"Approved CEO",
+                                    'Inventory'=>'Inventory',
+                                    'GRN And inventory'=>'GRN And inventory',
+                                    'GRN'=>'GRN'
+                                };
+                            })->label('Status')->badge(),
                             TextEntry::make('invoice')->state($record->invoice?->name.'('.$record->invoice?->number.')')->label('Invoice'),
                             TextEntry::make('total')->state(number_format($record->items->sum('total'),2))->label('Total')->badge(),
 

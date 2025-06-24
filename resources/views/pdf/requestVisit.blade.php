@@ -16,11 +16,13 @@
                 width: 100%;
                 border-collapse: collapse;
                 text-align: center;
+                margin-top: 0 !important;
+                margin-bottom: 0 !important;
             }
 
             td {
                 border: 1px solid #000;
-                padding: 4px;
+                padding: 2px;
                 vertical-align: top;
                 text-align: center;
             }
@@ -28,7 +30,7 @@
             th {
                 font-weight: bold;
                 border: 1px solid #000;
-                padding: 4px;
+                padding: 2px;
                 vertical-align: top;
                 text-align: center;
             }
@@ -101,9 +103,9 @@
                 background-color: rgb(197, 224, 179, 255) !important;
             }
             @page  {
-                margin-top: 10px;
-                margin-right: 50px;
-                margin-left: 50px;
+                margin-top: 5px;
+                margin-right: 20px;
+                margin-left: 20px;
                 padding: 0;
             }
 
@@ -130,14 +132,14 @@
 
     <body>
 
-        <table>
+        <table style="margin: 0">
             <tr>
                 <td colspan="2">
                     @if ($company?->logo_security)
                         <img src="{!! public_path('images/' . $company?->logo_security) !!}" style="padding: 0; border-radius: 50px ; width: 200px;">
                     @endif
                 </td>
-                <td colspan="4" style="padding: 0px 0px;margin :0px 0px;font-size: 12px!important;">
+                <td colspan="4" style="padding: 0 0;margin :0 0;font-size: 12px!important;">
                         <table>
                             <tr>
                                 <td  class="text-center"><b>{{$company->title_security}}</b></td>
@@ -163,7 +165,7 @@
             </tr>
         </table>
 
-        <table>
+        <table >
             <tr>
                 <td colspan="6" class="header">ICON COMPOUND - VISITOR ACCESS REQUEST FORM</td>
             </tr>
@@ -171,7 +173,7 @@
                 <td colspan="6" class="no-border" style="text-align: right;"> &nbsp;</td>
             </tr>
         </table>
-        <div style="text-align: right;color: #6b7280;font-size: 10px">S/N: {{$requestVisit->SN_code}}</div>
+        <div style="text-align: right;color: #6b7280;font-size: 10px;padding: 0">S/N: {{$requestVisit->SN_code}}</div>
 
         <table>
             <tr class="section-title">
@@ -201,7 +203,7 @@
             </tr>
         </table>
 
-        <table>
+        <table style="margin: 0 !important;">
             <tr class="section-title">
                 <td colspan="3">Specific Visit Details</td>
             </tr>

@@ -1,19 +1,23 @@
 @include('pdf.header',
   ['titles'=>[''],
-  'css'=>true,'title'=>'Check IN and Check OUT'
+  'css'=>true,'title'=>'Check IN & Check OUT'
   ])
 
 <style>
     table{
         margin: 0;
     }
+    @page  {
+        margin-right: 35px;
+        margin-left: 35px;
+    }
 </style>
 @php
     $entryData = $requestVisit->entry_and_exit;
     $i=1;
 @endphp
-
-@foreach($entryData as $date => $groups)
+@if(isset($entryData))
+    @foreach($entryData as $date => $groups)
     <p>Date: {{ \Carbon\Carbon::parse($date)->format('Y/m/d') }}  (Visitors and Drivers) </p>
     @foreach(['visitors' => 'Visitors', 'drivers' => 'Drivers'] as $type => $label)
         @if(isset($groups[$type]))
@@ -45,4 +49,10 @@
             </table>
         @endif
     @endforeach
-@endforeach
+    @endforeach
+@else
+
+   <div style="text-align: center">
+       No Data
+   </div>
+@endif

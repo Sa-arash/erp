@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\PurchaseRequest;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -27,6 +28,7 @@ use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Unique;
 
@@ -42,9 +44,9 @@ class MyPurchaseRequest extends BaseWidget
                 PurchaseRequest::query()->where('employee_id', getEmployee()->id)
             )->defaultSort('id', 'desc')
             ->columns([
-                Tables\Columns\TextColumn::make('')->rowIndex(),
-                Tables\Columns\TextColumn::make('purchase_number')->label('PR NO')->searchable(),
-                Tables\Columns\TextColumn::make('description')->label('Description')->searchable(),
+                Tables\Columns\TextColumn::make('No')->rowIndex(),
+                Tables\Columns\TextColumn::make('purchase_number')->label('PR No')->searchable(),
+                Tables\Columns\TextColumn::make('description')->wrap()->label('Description')->searchable(),
                 Tables\Columns\TextColumn::make('request_date')->dateTime()->sortable(),
 
                 Tables\Columns\TextColumn::make('status')->badge()->tooltip(function ($record) {
@@ -54,7 +56,7 @@ class MyPurchaseRequest extends BaseWidget
                 Tables\Columns\TextColumn::make('total')->state(function ($record) {
                     $total = 0;
                     foreach ($record->items as $item) {
-                        $total += $item->quantity * $item->estimated_unit_cost ;
+                        $total += $item->quantity * $item->estimated_unit_cost;
                     }
                     return number_format($total,2).' '.$record->currency?->symbol;
                 })->numeric(),
@@ -142,13 +144,28 @@ class MyPurchaseRequest extends BaseWidget
 
                     }),
                     Select::make('unit_id')->columnSpan(['default' => 8, 'md' => 2, '2xl' => 1])->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id'))->required(),
-                    TextInput::make('quantity')->columnSpan(['default' => 8, 'md' => 2, '2xl' => 1])->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-                    TextInput::make('estimated_unit_cost')->columnSpan(['default' => 8, 'md' => 2, '2xl' => 1])->label('Estimated Unit Cost')->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required(),
+                    TextInput::make('quantity')->columnSpan(['default' => 8, 'md' => 1, '2xl' => 1])->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                    TextInput::make('estimated_unit_cost')->columnSpan(['default' => 8, 'md' => 1, '2xl' => 1])->label('Estimated Unit Cost')->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required(),
                     Select::make('project_id')->columnSpan(['default' => 8, 'md' => 2, '2xl' => 1])->searchable()->preload()->label('Project')->options(getCompany()->projects->pluck('name', 'id')),
                     Textarea::make('description')->columnSpan(7)->label('Product Description ')->required(),
+                    Placeholder::make('status')->columnSpan(1)->label('Item Status')->content(function ($state){
+                        $status= match ($state){
+                            'approve' => 'Approved',
+                            'reject' => 'Rejected',
+                            'Revise' => 'Revise',
+                            default => 'Pending',
+                        };
+                         $color=match ($status) {
+                            'Approved' => 'green',
+                            'Rejected' => 'red',
+                            'Revise' => 'orange',
+                            default => '#196fe0',
+                        };
+                        return new HtmlString("<span style='color: {$color}'>{$status}</span>");
+                    }),
                     FileUpload::make('images')->downloadable()->label('Document')->columnSpanFull()->nullable()
                 ])
-                ->columns(7)
+                ->columns(8)
                 ->columnSpanFull(),
         ])->columns(3)
     ])->action(function ($data, $record) {
@@ -189,7 +206,7 @@ class MyPurchaseRequest extends BaseWidget
         }
         $record->items()->whereNotIn('id', $ids)->delete();
         Notification::make('success')->success()->title('Edited Successfully')->send();
-    })->modalWidth(MaxWidth::Full)->visible(fn($record)=>$record->status->value==="Requested"),
+    })->modalWidth(MaxWidth::Full)->visible(fn($record)=>$record->status->value==="Requested" or $record->need_change),
     Action::make('view')->modalWidth(MaxWidth::Full)->infolist([
         ComponentsSection::make('Purchase Request')->schema([
             TextEntry::make('request_date')->dateTime(),
@@ -217,7 +234,15 @@ class MyPurchaseRequest extends BaseWidget
                     $html .= '<th style="background-color: white; color: black; border: 1px solid #ccc; padding: 6px;">' . $header . '</th>';
                 }
                 $html .= '</tr>';
-
+                function getColor($status)
+                {
+                    return match ($status) {
+                        'Approved' => 'green',
+                        'Rejected' => 'red',
+                        'Revise' => 'orange',
+                        default => '#196fe0',
+                    };
+                }
                 // Data Rows
                 foreach ($items as $item) {
                     $html .= '<tr>';
@@ -232,30 +257,37 @@ class MyPurchaseRequest extends BaseWidget
                     $warehouseDecision = match ($item['clarification_decision'] ?? null) {
                         'approve' => 'Approved',
                         'reject' => 'Rejected',
+                        'Revise' => 'Revise',
                         default => 'Pending',
                     };
+                    $color=getColor($warehouseDecision);
                     $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . ($approves[0]?->employee?->fullName ?? '') . '</td>';
-                    $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . $warehouseDecision . '</td>';
+                    $html .= "<td style='border: 1px solid #ccc; padding: 6px;color:{$color}'>" . $warehouseDecision . "</td>";
                     $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . ($item['clarification_comment'] ?? '') . '</td>';
 
                     // Verification Decision
                     $verificationDecision = match ($item['verification_decision'] ?? null) {
                         'approve' => 'Approved',
                         'reject' => 'Rejected',
+                        'Revise' => 'Revise',
                         default => 'Pending',
                     };
+                    $color=getColor($verificationDecision);
                     $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . ($approves[1]?->employee?->fullName ?? '') . '</td>';
-                    $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . $verificationDecision . '</td>';
+                    $html .= "<td style='border: 1px solid #ccc; padding: 6px;color:{$color}'>" . $verificationDecision . "</td>";
                     $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . ($item['verification_comment'] ?? '') . '</td>';
 
                     // Approval Decision
                     $approvalDecision = match ($item['approval_decision'] ?? null) {
                         'approve' => 'Approved',
                         'reject' => 'Rejected',
+                        'Revise' => 'Revise',
                         default => 'Pending',
                     };
+                    $color=getColor($approvalDecision);
+
                     $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . ($approves[2]?->employee?->fullName ?? '') . '</td>';
-                    $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . $approvalDecision . '</td>';
+                    $html .= "<td style='border: 1px solid #ccc; padding: 6px;color:{$color}'>" . $approvalDecision . "</td>";
                     $html .= '<td style="border: 1px solid #ccc; padding: 6px;">' . ($item['approval_comment'] ?? '') . '</td>';
 
                     $html .= '</tr>';
@@ -271,7 +303,7 @@ class MyPurchaseRequest extends BaseWidget
         RepeatableEntry::make('approvals')->schema([
             ImageEntry::make('employee.image')->circular()->label('')->state(fn($record) => $record->employee->media->where('collection_name', 'images')->first()?->original_url),
             TextEntry::make('employee.fullName')->label(fn($record) => $record->employee?->position?->title),
-            TextEntry::make('created_at')->label('Request Date')->dateTime(),
+            TextEntry::make('read_at')->label('Checked at Date')->dateTime(),
             TextEntry::make('status')->state(fn($record)=>match ($record->status->value){
                 'Approve'=>"Approved",
                 'NotApprove'=>"Not Approved",
@@ -359,6 +391,7 @@ class MyPurchaseRequest extends BaseWidget
                     $company=getCompany();
                     $data['company_id']=$company->id;
                     $data['employee_id']=$employee->id;
+                    $data['request_date']=now();
                     $data['status']='Requested';
                     $request= PurchaseRequest::query()->create($data);
                     foreach ($data['Requested Items'] as $requestedItem) {

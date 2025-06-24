@@ -221,10 +221,10 @@ class Replicate extends CreateRecord
             ])->columns(4)
         ]);
     }
-    
+
     public function afterCreate(){
         $request=$this->record;
-        sendApprove($request,'PR Warehouse (1)_approval');
+        sendApprove($request,'PR Warehouse_approval');
     }
 
     protected function getRedirectUrl(): string

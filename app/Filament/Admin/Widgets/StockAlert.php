@@ -27,7 +27,7 @@ class StockAlert extends BaseWidget
                     ->selectRaw('(SELECT COUNT(*) FROM assets WHERE assets.product_id = products.id) as assets_count')
                     ->where('product_type', 'unConsumable')
                     ->groupBy('products.id', 'unit_id', 'created_at', 'updated_at', 'products.stock_alert_threshold', 'products.product_type', 'products.title', 'products.second_title', 'products.image', 'products.department_id', 'products.account_id', 'products.sku', 'products.sub_account_id', 'products.description', 'products.company_id')
-
+                    ->havingRaw('assets_count < stock_alert_threshold')
             )
             ->columns([
                 Tables\Columns\TextColumn::make('')->label('#')->rowIndex(),
@@ -59,21 +59,6 @@ class StockAlert extends BaseWidget
                 Tables\Columns\TextColumn::make('count')->numeric()->state(fn($record) => $record->assets->count())->label('Quantity')->badge()->color(fn($record)=>$record->assets->count()>$record->stock_alert_threshold ? 'success' : 'danger')->tooltip(fn($record)=>'Stock Alert:'.$record->stock_alert_threshold),
             ])->filters([
                 Tables\Filters\SelectFilter::make('department_id')->label('Department')->options(getCompany()->departments->pluck('title','id'))->searchable()->preload(),
-                Tables\Filters\TernaryFilter::make('All')->label('Data Filter ')
-                    ->placeholder('All')->searchable()
-                    ->trueLabel('All Stock Alerted')
-                    ->falseLabel('All')
-                    ->queries(
-                        function (Builder $query) {
-                            return $query->havingRaw('assets_count < stock_alert_threshold');
-                        },
-                        function (Builder $query) {
-                            return $query;
-                        },
-                        function (Builder $query) {
-                            return $query;
-                        },
-                    )
             ],getModelFilter());
     }
 }

@@ -103,10 +103,10 @@ class ViewAsset extends ViewRecord
 
                 $company=getCompany();
                 if ($data['employee_id']){
-                    $record->update(['warehouse_id'=>$data['warehouse_id'],'structure_id'=>$data['structure_id'],'check_out_to'=>$data['employee_id']]);
+                    $record->update(['status'=>'inuse','warehouse_id'=>$data['warehouse_id'],'structure_id'=>$data['structure_id'],'check_out_to'=>$data['employee_id']]);
                     $assetEmployee=AssetEmployee::query()->firstWhere('employee_id',$data['employee_id']);
                 }else{
-                    $record->update(['warehouse_id'=>$data['warehouse_id'],'structure_id'=>$data['structure_id'],'check_out_person'=>$data['person']]);
+                    $record->update(['status'=>'inuse','warehouse_id'=>$data['warehouse_id'],'structure_id'=>$data['structure_id'],'check_out_person'=>$data['person']]);
                     $assetEmployee=AssetEmployee::query()->firstWhere('person_id',$data['person']);
                 }
                 if ($assetEmployee){
@@ -119,7 +119,7 @@ class ViewAsset extends ViewRecord
                         'structure_id'=>$data['structure_id'],
                         'description'=>$data['description']
                     ]);
-                    $record->update(['check_out_to'=>$assetEmployee->employee_id]);
+                    $record->update(['check_out_to'=>$assetEmployee->employee_id,'status'=>'inuse']);
                 }else{
                     $assetEmployee=AssetEmployee::query()->create([
                         'company_id'=>$company->id,
@@ -196,7 +196,7 @@ class ViewAsset extends ViewRecord
                         'structure_id' => $data['structure_id'],
                         'description' => $data['description']
                     ]);
-                    $record->update(['warehouse_id'=>$data['warehouse_id'],'structure_id'=>$data['structure_id'],'check_out_to' => null,'check_out_person'=>null]);
+                    $record->update(['status'=>'inStorageUsable','warehouse_id'=>$data['warehouse_id'],'structure_id'=>$data['structure_id'],'check_out_to' => null,'check_out_person'=>null]);
                 }
                 sendSuccessNotification();
 

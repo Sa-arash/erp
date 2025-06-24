@@ -22,8 +22,8 @@
             text-align: center;
         }
         th {
-            background-color: #817c7c;
-            color: white;
+            background-color: #c9c1c1;
+            color: #000000;
         }
         .comments, .signature {
             margin-top: 20px;
@@ -61,13 +61,13 @@
     </tr>
     <tr>
         <th>NO</th>
-        <th>SKU</th>
+        <th style="width: 20%">SKU</th>
         <th>Description</th>
         <th>Unit</th>
         <th>Qty</th>
         <th>EST Cost</th>
         <th>TEC</th>
-        <th>Stock Balance</th>
+        <th style="width: 10%">Stock Balance</th>
     </tr>
     </thead>
     <tbody>
@@ -86,7 +86,7 @@
         <tr>
             <td rowspan="1">{{$i++}}</td>
 
-            <td>   {{ $item->product?->sku.' - '. $item->product->title}}</td>
+            <td style="text-align: left">{{ $item->product?->sku.' - '. $item->product->title}}</td>
             <td>
            {{ $item->description }}
             </td>

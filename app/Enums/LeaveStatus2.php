@@ -18,7 +18,7 @@ enum LeaveStatus2:string implements HasColor,HasLabel
             self::Pending => 'Pending',
             self::Rejected => 'Rejected',
             self::Accepted => 'Approved',
-            self::ApproveHead => 'ApproveHead',
+            self::ApproveHead => 'Approve Head',
         };
     }
     public function getColor(): string|array|null

@@ -125,7 +125,7 @@ class LeaveResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('employee.fullName')->alignLeft()->sortable(),
                 Tables\Columns\TextColumn::make('typeLeave.title')->alignLeft()->sortable(),
                 Tables\Columns\TextColumn::make('created_at')->label('Request Date')->date()->alignLeft()->sortable(),
-                Tables\Columns\TextColumn::make('approvals.employee.fullName')->label('Line Manager')->alignCenter()->sortable(),
+                Tables\Columns\TextColumn::make('approvals.employee.fullName')->label('Line Manager')->sortable(),
                 Tables\Columns\TextColumn::make('approval_date')->label('Approval Date')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('start_leave')->label('Start Leave')->date()->sortable(),
                 Tables\Columns\TextColumn::make('end_leave')->label('End Leave')->date()->sortable(),

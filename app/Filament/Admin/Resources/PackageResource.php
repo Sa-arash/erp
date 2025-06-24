@@ -20,6 +20,7 @@ class PackageResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-s-square-3-stack-3d';
     protected static ?string $navigationGroup = 'Logistic Management';
+    protected static ?string $pluralLabel='Package(Inventory)';
 
     protected static ?string $cluster = StackManagementSettings::class;
     public static function form(Form $form): Form

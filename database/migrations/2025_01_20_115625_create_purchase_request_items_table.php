@@ -24,14 +24,17 @@ return new class extends Migration
             $table->enum('clarification_decision', [
                 'approve',
                 'reject',
+                'Revise',
             ])->nullable();
             $table->enum('verification_decision', [
                 'approve',
                 'reject',
+                'Revise',
             ])->nullable();
             $table->enum('approval_decision', [
                 'approve',
                 'reject',
+                'Revise',
             ])->nullable();
 
             $table->enum('status', [

@@ -155,6 +155,7 @@ class AdminPanelProvider extends PanelProvider
             )
             ->colors([
                 'primary' => Color::Sky,
+                'grayBack' => Color::Gray,
                 'aColor' => Color::Cyan,
                 'view' => Color::Yellow,
                 'edit' => Color::Green,

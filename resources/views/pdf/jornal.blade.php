@@ -3,10 +3,10 @@
 
 @php
     $minDate = $transactions->min(function ($transaction) {
-        return $transaction->invoice->date; // فرض می‌کنیم که 'date' تاریخ مربوط به invoice است
+        return $transaction?->invoice?->date; // فرض می‌کنیم که 'date' تاریخ مربوط به invoice است
     });
     $maxDate = $transactions->max(function ($transaction) {
-        return $transaction->invoice->date; // فرض می‌کنیم که 'date' تاریخ مربوط به invoice است
+        return $transaction?->invoice?->date; // فرض می‌کنیم که 'date' تاریخ مربوط به invoice است
     });
 @endphp
 <div style="text-align: left; padding: 0; margin: 0;">
@@ -34,8 +34,8 @@
         @foreach ($transactions as $id => $transaction)
             <tr>
                 {{-- <td>{{ $id + 1 }}</td> --}}
-                <td>{{ $transaction->invoice->number }}</td>
-                <td>{{ \Carbon\Carbon::parse($transaction->invoice->date)->format('Y-m-d') }}</td>
+                <td>{{ $transaction->invoice?->number }}</td>
+                <td>{{ $transaction->invoice?->date ? \Carbon\Carbon::parse($transaction->invoice->date)->format('Y-m-d'):"" }}</td>
                 <td>{{ $transaction->account->name }}</td>
                 <td>{{ $transaction->account->code }}</td>
                 <td>{{ $transaction->description }}</td>

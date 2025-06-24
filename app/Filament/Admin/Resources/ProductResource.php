@@ -230,7 +230,7 @@ class ProductResource extends Resource
             ->actions([
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
-                Tables\Actions\DeleteAction::make()->hidden(fn($record)=>$record->purchaseRequestItem()->count() or $record->assets()->count() or $record->inventories()->count())
+                Tables\Actions\DeleteAction::make()->hidden(fn($record)=>$record->purchaseRequestItem()->count() or $record->purchaseOrderItem()->count() or $record->assets()->count() or $record->inventories()->count())
 
             ])
             ->bulkActions([

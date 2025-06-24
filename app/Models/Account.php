@@ -68,6 +68,14 @@ class Account extends Model
     {
         return $this->hasOne(Bank::class);
     }
+    public function products(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->HasMany(Product::class);
+    }
+    public function productsSub(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->HasMany(Product::class,'sub_account_id','id');
+    }
 //    public function accountType(): \Illuminate\Database\Eloquent\Relations\belongsTo
 //    {
 //        return $this->belongsTo(AccountType::class);

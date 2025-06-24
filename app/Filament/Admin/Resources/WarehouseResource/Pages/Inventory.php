@@ -54,6 +54,7 @@ class Inventory extends ManageRelatedRecords
                 SelectTree::make('structure_id')->label('Location')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id', modifyQueryUsing: function ($query) {
                     return $query->where('warehouse_id', $this->record->id);
                 })->required(),
+//                Forms\Components\Select::make('department')->options(getCompany()->departments()->pluck('title','id'))->searchable()->multiple()
 
             ]);
     }

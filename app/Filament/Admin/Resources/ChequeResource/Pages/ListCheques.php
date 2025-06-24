@@ -35,9 +35,9 @@ class ListCheques extends ListRecords
     {
         return [
             'All'=>  Tab::make()->query(fn($query) => $query),
-            'issued'=>  Tab::make()->query(fn($query) => $query->where('status','issued')),
-            'paid'=>  Tab::make()->query(fn($query) => $query->where('status','paid')),
-            'returned'=>  Tab::make()->query(fn($query) => $query->where('status','returned')),
+            'Issued'=>  Tab::make()->query(fn($query) => $query->where('status','issued')),
+            'Paid'=>  Tab::make()->query(fn($query) => $query->where('status','paid')),
+            'Returned'=>  Tab::make()->query(fn($query) => $query->where('status','returned')),
         ];
     }
 }

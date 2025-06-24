@@ -382,8 +382,7 @@
 <style>
 body {
 font-family: Arial, sans-serif;
-font-size: 10pt;
-margin: 20mm; /* Adjust margins as needed for print, typically for A4 */
+font-size: 8pt;
 box-sizing: border-box;
 }
 
@@ -392,7 +391,7 @@ table {
     border-collapse: collapse;
 }
 td{
-    padding: 10px;
+    padding: 5px;
 }
 
 /* Header Section */
@@ -459,7 +458,7 @@ td{
 }
 
 .item-list-table {
-    margin-bottom: 20px;
+    margin-bottom: 5px;
 }
 
 .item-list-table th,
@@ -527,7 +526,7 @@ td{
 .security-signature-container {
     width: 100%;
     text-align: right; /* Aligns the table to the right */
-    margin-top: 30px; /* Space from above content */
+    margin-top: 5px; /* Space from above content */
 }
 
 .security-signature-table {
@@ -546,7 +545,7 @@ td{
     border-bottom: 1px solid black;
     height: 1px; /* Ensure the line is visible */
     width: 100%;
-    margin-bottom: 5px; /* Space between line and text */
+    margin-bottom: 2px; /* Space between line and text */
     display: block; /* Ensures border-bottom works correctly */
 }
 
@@ -558,8 +557,18 @@ td{
 .security-signature-text u {
     text-decoration: underline;
 }
-@page  {
 
+@page {
+    margin-left: 20px;
+    margin-right: 20px;
+}
+.item-list-table td,th{
+    padding: 2px !important;
+
+
+}
+table{
+    margin: 0;
 }
 
 </style>
@@ -567,15 +576,7 @@ td{
 
 <body>
 
-<table class="header-section-table">
-    <tr>
-        <td class="logo-cell">
-        </td>
-        <td class="date-cell">
-            DATE: {{ \Illuminate\Support\Carbon::create($takeOut->date)->format('d F Y') }}
-        </td>
-    </tr>
-</table>
+<p style="text-align: right;margin-bottom: 0;margin-top: 2px">  DATE: {{ \Illuminate\Support\Carbon::create($takeOut->date)->format('d F Y') }}</p>
 <table class="main-info-table">
     <tr>
         <td><b>From:</b> {{$takeOut->from}}</td>
@@ -633,65 +634,63 @@ td{
     </tbody>
 </table>
 
-<div style="margin-bottom: 10px"><b>Reason for Taking out:</b> {{$takeOut->reason}}</div>
+<div style="margin-bottom: 0;margin-top: 0"><b>Reason for Taking out:</b> {{$takeOut->reason}}</div>
 
 <table class="status-check-table">
     <tr>
         <td><b>Status</b></td>
         <td><b>Check one</b></td>
-        <td style="border: 1px solid #7a7272 ;"><b>Checked by: Department Head/Line Manager</b></td>
+        <td style="border: 1px solid #7a7272 ;"><b>Prepare By:</b></td>
     </tr>
     <tr>
         <td>Returnable</td>
+
         <td>{{$takeOut->status == "Returnable" ? '✓':''}}</td>
-        <td style="border: 1px solid #7a7272 ;"  class="name-label-normal">
-            Name: @if(isset($takeOut->approvals[0]) and $takeOut->approvals[0]->status->value==="Approve") {{$takeOut->approvals[0]?->employee->fullName}}  @endif</td>
+        <td style="border: 1px solid #7a7272 ;" >
+            {{$takeOut->employee->fullName}}
+        </td>
+
     </tr>
     <tr>
         <td>Non-Returnable</td>
         <td>{{$takeOut->status == "Non-Returnable" ? '✓':''}}</td>
+        <td>{{$takeOut->employee->position->title}}</td>
 
-        <td style="border: 1px solid #7a7272 ;" class="signature-label-normal">
-            <div style="border-bottom: 1px solid black">
 
-            Signature:@if(isset($takeOut->approvals[0]) and $takeOut->approvals[0]->status->value==="Approve")
-                @if (file_exists($takeOut->approvals[0]->employee->media->where('collection_name','signature')->first()?->getPath())  )
-                    <img
-                        src="{!! $takeOut->approvals[0]->employee->media->where('collection_name','signature')->first()->getPath() !!}"
-                        style="margin-left: 50px;border-radius: 50px ; width: 80px;" alt="">
-                @endif
-            @endif</td>
-        </div>
     </tr>
     <tr>
         <td>Modification</td>
         <td>{{$takeOut->type == "Modification" ? '✓':''}}</td>
-        <td style="border: 1px solid #7a7272 ;" class="">Verified by: Admin/HR Department</td>
+        <td rowspan="4" style="border: 1px solid #7a7272 ;" class="signature-label-normal">
+            <div style="border-bottom: 1px solid black">
+
+                Signature:
+                @if (file_exists($takeOut->employee->media->where('collection_name','signature')->first()?->getPath())  )
+                    <img
+                        src="{!! $takeOut->employee->media->where('collection_name','signature')->first()->getPath() !!}"
+                        style="margin-left: 50px;border-radius: 50px ; width: 80px;" alt="">
+                    <br>
+                    <p style="border: 0">
+                        DATE: {{ \Illuminate\Support\Carbon::create($takeOut->created_at)->format('d F Y') }}
+                    </p>
+
+                @endif
+            </div>
+        </td>
     </tr>
     <tr>
         <td>Personal Belonging</td>
         <td>{{$takeOut->type == "Personal Belonging" ? '✓':''}}</td>
-        <td style="border: 1px solid #7a7272 ;">
-            Name: @if(isset($takeOut->approvals[1]) and $takeOut->approvals[0]->status->value==="Approve") {{$takeOut->approvals[1]?->employee->fullName}}  @endif</td>
+
     </tr>
     <tr>
         <td>Domestic Waste</td>
         <td>{{$takeOut->type == "Domestic Waste" ? '✓':''}}</td>
-        <td style="border: 1px solid #7a7272 ;" class="name-label-normal">
-            <div style="border-bottom: 1px solid black">
-            Signature: @if(isset($takeOut->approvals[1]) and $takeOut->approvals[1]->status->value==="Approve")
-                @if (file_exists($takeOut->approvals[1]->employee->media->where('collection_name','signature')->first()?->getPath())  )
-                    <img
-                        src="{!! $takeOut->approvals[1]->employee->media->where('collection_name','signature')->first()->getPath() !!}"
-                        style="margin-left: 50px;border-radius: 50px ; width: 80px;" alt="">
-                @endif
-            @endif</td>
-        </div>
+
     </tr>
     <tr>
         <td>Construction Waste</td>
         <td>{{$takeOut->type == "Construction Waste" ? '✓':''}}</td>
-        <td style="border: 1px solid #7a7272 ;" class="signature-label-normal"></td>
     </tr>
 
 </table>
@@ -701,23 +700,28 @@ td{
         <tr>
             <td>
                 <span class="security-signature-line"></span>
+                <p style="border-bottom: 2px solid black">Security Clearance</p>
+                <br>
+                @if(isset($takeOut->approvals[0]) and $takeOut->approvals[0]->status->value==="Approve")
 
-
-                <div class="security-signature-text">Security Department - <u>UNC</u></div>
-                @if(isset($takeOut->approvals[2]) and $takeOut->approvals[2]->status->value==="Approve")
-                    @if (file_exists($takeOut->approvals[2]->employee->media->where('collection_name','signature')->first()?->getPath())  )
+                    @if (file_exists($takeOut->approvals[0]->employee->media->where('collection_name','signature')->first()?->getPath())  )
                         <img
-                            src="{!! $takeOut->approvals[2]->employee->media->where('collection_name','signature')->first()->getPath() !!}"
-                            style="margin-left: 50px ; width: 80px;" alt="">
+                            src="{!! $takeOut->approvals[0]->employee->media->where('collection_name','signature')->first()->getPath() !!}"
+                            style="  width: 80px;" alt="">
                     @endif
-                    Date: {{isset($takeOut->approvals[2]->approve_date)? \Illuminate\Support\Carbon::make($takeOut->approvals[2]->approve_date)->format('d/M/Y'):''}}
+                    <br>
+                    Digitally Signed By: {{$takeOut->approvals[0]->employee->fullName}}
+                    <br>
+                    Date: {{isset($takeOut->approvals[0]->approve_date)? \Illuminate\Support\Carbon::make($takeOut->approvals[0]->approve_date)->format('d/F/Y H:i:s'):''}} +04:30
                 @endif
+
+                <div class="security-signature-text">Head of Security - <u>UNC</u></div>
+
             </td>
         </tr>
     </table>
 </div>
 </body>
-</html>
 
 
-منابع
+

@@ -13,7 +13,7 @@ class EditPurchaseOrder extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+//            Actions\DeleteAction::make(),
         ];
     }
     public function mount(int | string $record): void
@@ -23,13 +23,9 @@ class EditPurchaseOrder extends EditRecord
         $this->authorizeAccess();
 
         $this->fillForm();
-        
-        // foreach ($this->data['invoice']['transactions']  as $key=> $datum){
 
-        //     if ($datum['cheque']['due_date']){
-        //         $this->data['invoice']['transactions'][$key]['Cheque']=true;
-        //     }
-        // }
+        $this->data['purchase_orders_number']=$this->record->purchase_orders_number;
+//         $this->data['']=$this->record->purchaseRequest?->purchase_number;
 
         $this->previousUrl = url()->previous();
     }

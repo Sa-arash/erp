@@ -18,6 +18,7 @@ return new class extends Migration
             $table->text('address')->nullable();
             $table->string('phone')->nullable();
             $table->string('email')->nullable();
+            $table->enum('status',['Green','Red','Gray'])->default('Green');
             $table->string('account_number')->nullable();
             $table->string('account_code_vendor')->nullable();
             $table->string('account_code_customer')->nullable();

@@ -5,13 +5,20 @@ namespace App\Filament\Admin\Resources;
 use App\Filament\Admin\Resources\ApprovalResource\Pages;
 use App\Filament\Admin\Resources\ApprovalResource\RelationManagers;
 use App\Models\Approval;
+use App\Models\Asset;
+use App\Models\AssetEmployeeItem;
 use App\Models\Holiday;
 use App\Models\Leave as ModelLeave;
-use App\Models\User;
+use App\Models\TakeOutItem;
+use App\Models\Unit;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Carbon\Carbon;
 use Carbon\CarbonPeriod;
 use Filament\Forms;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Get;
 use Filament\Infolists\Components\Fieldset;
 use Filament\Infolists\Components\ImageEntry;
@@ -58,11 +65,15 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
         return $table->query(Approval::query()->where('employee_id', getEmployee()->id)->orderBy('id', 'desc'))
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex()->label('No'),
-                Tables\Columns\TextColumn::make('approvable.employee.info')->label('Employee')->badge()->description(function ($record) {
+                Tables\Columns\TextColumn::make('approvable.employee.fullName')->label('Employee')->description(function ($record) {
                     if (substr($record->approvable_type, 11) === "PurchaseRequest") {
-                        return Str::limit($record->approvable->description, 100);
+                        return  new HtmlString('PR-ATGT/UNC/'.$record->approvable->purchase_number.' <br>'. Str::limit($record->approvable->description, 70));
                     }
-                }),
+                })->tooltip(function ($record){
+                    if (substr($record->approvable_type, 11) === "PurchaseRequest") {
+                        return  $record->approvable->description;
+                    }
+                })->width(300),
                 Tables\Columns\TextColumn::make('created_at')->label('Request Date')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('approve_date')->label('Approval Date')->date(),
                 Tables\Columns\TextColumn::make('comment')->sortable(),
@@ -129,65 +140,27 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
                             TextEntry::make('date')->label('Date'),
                             TextEntry::make('status')->label('Status'),
                             TextEntry::make('type')->label('Type'),
-                            RepeatableEntry::make('items')->getStateUsing(function () use ($record) {
-                                return $record->items;
-                            })->schema([
-                                TextEntry::make('asset.title'),
+                            RepeatableEntry::make('items')->schema([
+                                TextEntry::make('asset.description'),
+                                TextEntry::make('asset.number')->label('Asset Number'),
+                                TextEntry::make('status')->color(fn ($state)=>match ($state){
+                                    'Approved'=>'success','Not Approved'=>'danger','Pending'=>'primary'
+                                })->badge(),
                                 TextEntry::make('remarks'),
-                            ])->columnSpanFull()->columns(2),
+                            ])->columnSpanFull()->columns(4),
                             RepeatableEntry::make('itemsOut')->label('Unregistered Asset')->schema([
                                 TextEntry::make('name'),
                                 TextEntry::make('quantity'),
                                 TextEntry::make('unit'),
+                                TextEntry::make('status')->color(fn ($state)=>match ($state){
+                                    'Approved'=>'success','Not Approved'=>'danger','Pending'=>'primary'
+                                })->badge(),
                                 TextEntry::make('remarks'),
                             ])->columnSpanFull()->columns(4),
                         ])->relationship('approvable')->columns()
                     ];
                 })->modalWidth(MaxWidth::SevenExtraLarge),
                 Tables\Actions\Action::make('viewVisitorRequest')->url(fn($record)=>VisitorRequestResource::getUrl('view',['record'=>$record->approvable_id]))->label('View')->visible(fn($record) => substr($record->approvable_type, 11) === "VisitorRequest")
-//                    ->infolist(function () {
-//                    return [
-//                        Fieldset::make('Visitor Access')->schema([
-//                            Section::make('Visitor Access Request')->schema([
-//                                Section::make('Visit’s Details')->schema([
-//                                    TextEntry::make('employee.info')->label('Requested By'),
-//                                    TextEntry::make('visit_date')->date()->label('Visit Date'),
-//                                    TextEntry::make('arrival_time')->time()->label('Arrival Time'),
-//                                    TextEntry::make('departure_time')->time()->label('Departure Time'),
-//                                    TextEntry::make('purpose')->label('Purpose')->columnSpanFull(),
-//                                ])->columns(4),
-//
-//                                RepeatableEntry::make('visitors_detail')
-//                                    ->label('Visitors Detail')
-//                                    ->schema([
-//                                        TextEntry::make('name')->label('Full Name'),
-//                                        TextEntry::make('id')->label('ID/Passport'),
-//                                        TextEntry::make('phone')->label('Phone'),
-//                                        TextEntry::make('organization')->label('Organization'),
-//                                        TextEntry::make('type')->label('Type'),
-//                                        TextEntry::make('remarks')->label('Remarks'),
-//                                    ])->columns(6)->columnSpanFull(),
-//
-//                                RepeatableEntry::make('driver_vehicle_detail')
-//                                    ->label('Drivers/Vehicles Detail')
-//                                    ->schema([
-//                                        TextEntry::make('name')->label('Full Name'),
-//                                        TextEntry::make('id')->label('ID/Passport'),
-//                                        TextEntry::make('phone')->label('Phone'),
-//                                        TextEntry::make('model')->label('Model'),
-//                                        TextEntry::make('color')->label('Color'),
-//                                        TextEntry::make('Registration_Plate')->label('Registration Plate'),
-//                                    ])->columns(6)->columnSpanFull(),
-//                                ImageEntry::make('file')->label('File Upload')->state(function ($record){
-//                                    if ($record?->media){
-//                                        return $record?->media?->where('collection_name','attachment')->first()?->original_url;
-//                                    }
-//                                })
-//
-//                            ])->columns(2)
-//                        ])->relationship('approvable')->columns()
-//                    ];
-//                })
                     ->modalWidth(MaxWidth::SevenExtraLarge),
                 Action::make('viewPurchaseRequest')->label('View')->modalWidth(MaxWidth::Full)->infolist(function () {
                     return [
@@ -245,9 +218,95 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
                     }
                     return  false;
                 }),
+                Action::make('approveGatePass')->visible(function ($record){
+                    if (substr($record->approvable_type, 11) === "TakeOut" and $record->status->value==='Pending'){
+                        return true;
+                    }
+                })->fillForm(function ($record){
+
+                    return [
+                        'items'=>$record->approvable?->items?->toArray(),
+                      'itemsOut'=>$record->approvable->itemsOut
+                    ];
+                })->form([
+                    Forms\Components\ToggleButtons::make('status')->afterStateUpdated(function (Forms\Set $set,$state,Get $get){
+                        $items = $get('itemsOut') ?? [];
+                        $assetItems = $get('items') ?? [];
+                        if ($state=="NotApprove"){
+                            $state="Not Approved";
+                        }else{
+                            $state="Approved";
+                        }
+                        foreach ($items as   &$item) {
+                            $item['status'] = $state;
+                        }
+                        foreach ($assetItems as   &$item) {
+                            $item['status'] = $state;
+                        }
+
+                        $set('itemsOut', $items);
+                        $set('items', $assetItems);
+                    })->required()->default('Approve')->live()->colors(['Approve' => 'success', 'NotApprove' => 'danger'])->options(['Approve' => 'Approve','NotApprove' => 'Not Approve'])->grouped(),
+                    Forms\Components\Textarea::make('comment')->nullable(),
+                    Repeater::make('items')->deletable(false)->addable(false)->label('Registered Asset')->addActionLabel('Add to Register Asset')->orderable(false)->schema([
+                        Select::make('asset_id')->disabled()
+                            ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                            ->live()->label('Asset')->options(function () {
+                                $data = [];
+                                $assets=Asset::query()->with('product')->where('company_id',getCompany()->id)->get();
+                                foreach ($assets as $asset) {
+                                    $data[$asset->id] = $asset->product?->title." ".$asset->description . " ( SKU #" . $asset->product?->sku . " )";
+                                }
+                                return $data;
+                            })->required()->searchable()->preload(),
+                        TextInput::make('remarks')->nullable(),
+                        Forms\Components\ToggleButtons::make('status')->grouped()->options(['Approved'=>'Approve','Not Approved'=>'Not Approve'])->default('Approve')->colors(['Approved'=>'success','Not Approved'=>'danger'])->required(),
+
+                    ])->columnSpanFull()->columns(3),
+
+                    Repeater::make('itemsOut')->label('Unregistered Asset')->addActionLabel('Add to UnRegister Asset')->orderable(false)->schema([
+                        TextInput::make('name')->required()->readOnly(),
+                        TextInput::make('quantity')->required()->readOnly(),
+                        Select::make('unit')->disabled()->searchable()->options(Unit::query()->where('company_id', getCompany()->id)->pluck('title','title'))->required(),
+                        TextInput::make('remarks')->nullable()->readOnly(),
+                        Forms\Components\ToggleButtons::make('status')->grouped()->options(['Approved'=>'Approve','Not Approved'=>'Not Approve'])->default('Approve')->colors(['Approved'=>'success','Not Approved'=>'danger'])->required(),
+                        FileUpload::make('image')->disabled()->columnSpanFull()->label('Image Upload')->image()->imageEditor(),
+                    ])->columnSpanFull()->columns(5)->deletable(false)->addable(false)
+                ])->modalWidth(MaxWidth::SevenExtraLarge)->action(function ($record ,$data){
+
+                        if ($data['status'] === "Approve") {
+                            if ($record->approvable->mood==="Pending"){
+                                $record->approvable->approvals()->whereNot('id', $record->id)->where('position', 'Security')->delete();
+                                $arrayData=[];
+                                foreach ($record->approvable->itemsOut as $key=> $item){
+                                    $data['itemsOut'][$key]['unit']=$item['unit'];
+                                    $data['itemsOut'][$key]['image']=$item['image'];
+                                    $item=$data['itemsOut'][$key];
+                                    $arrayData[]=$item;
+                                }
+
+                                foreach ($data['items'] as  $asset){
+                                    $item=TakeOutItem::query()->firstWhere('id',$asset['id']);
+                                    $item->update(['status'=>$asset['status']]);
+                                }
+
+                                $record->approvable->update([
+                                    'mood' => 'Approved',
+                                    'itemsOut'=>$arrayData
+                                ]);
+                            }
+                        }else{
+                            $record->approvable->update([
+                                'mood' => 'NotApproved'
+                            ]);
+                        }
+                    $record->update(['comment' => $data['comment'], 'status' => $data['status'], 'approve_date' => now()]);
+
+
+                })->icon('heroicon-o-check-badge')->iconSize(IconSize::Large)->color('success'),
 
                 Tables\Actions\Action::make('approve')->hidden(function ($record) {
-                    if (substr($record->approvable_type, 11) === "PurchaseRequest" or substr($record->approvable_type, 11) === "PurchaseOrder" or substr($record->approvable_type, 11) === "Loan"or substr($record->approvable_type, 11) === "Leave") {
+                    if (substr($record->approvable_type, 11) === "PurchaseRequest" or substr($record->approvable_type, 11) === "PurchaseOrder" or substr($record->approvable_type, 11) === "Loan"or substr($record->approvable_type, 11) === "Leave" or substr($record->approvable_type, 11) === "TakeOut") {
                         return true;
                     }
                 })->icon('heroicon-o-check-badge')->iconSize(IconSize::Large)->color('success')->form([
@@ -263,38 +322,6 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
                         }else{
                             $record->approvable->update([
                                 'status' => 'notApproved'
-                            ]);
-                        }
-                    }elseif (substr($record->approvable_type, 11) === "TakeOut"){
-                        if ($data['status'] === "Approve") {
-                            if ($record->approvable->mood==="Pending"){
-                                $record->approvable->update([
-                                    'mood' => 'Approved Manager'
-                                ]);
-                                $employee = User::whereHas('roles.permissions', function ($query) {
-                                    $query->where('name', 'security_take::out');
-                                })->get() ->pluck('employee.id')->toArray();
-                                $securityIDs =$employee;
-                                if($securityIDs){
-                                    foreach ($securityIDs as $security){
-                                        $record->approvable->approvals()->create([
-                                            'employee_id' => $security,
-                                            'company_id' => getCompany()->id,
-                                            'position' => 'Security',
-                                        ]);
-                                    }
-                                }
-
-                            }else{
-                                $record->approvable->approvals()->whereNot('id', $record->id)->where('position', 'Security')->delete();
-                                    $record->approvable->update([
-                                        'mood' => 'Approved'
-                                    ]);
-                                }
-
-                        }else{
-                            $record->approvable->update([
-                                'mood' => 'NotApproved'
                             ]);
                         }
                     }elseif (substr($record->approvable_type, 11) === "Leave"){

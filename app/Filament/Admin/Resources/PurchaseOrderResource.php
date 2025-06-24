@@ -48,6 +48,9 @@ implements HasShieldPermissions
             'create',
             'update',
             'delete',
+            'Head Logistic',
+//            'Stock',
+//            'Finance',
             'invoice',
         ];
     }
@@ -105,11 +108,15 @@ implements HasShieldPermissions
                                                 $set('vendor_id', $record->bid->quotation->party_id);
                                                 $set('currency_id', $record->bid->quotation->currency_id);
                                             } else {
-                                                $data = [];
-                                                foreach ($record->items->where('status', 'approve')->toArray() as $item) {
+                                                $data = $record->items->where('status', 'approve')->toArray();
+                                                if ($data===null){
+                                                    $data=[];
+                                                }
+                                                foreach($data as &$item) {
                                                     $item['taxes'] = 0;
                                                     $item['freights'] = 0;
-                                                    $data[] = $item;
+                                                    $item['unit_price'] = number_format($item['estimated_unit_cost']);
+
                                                 }
 
                                                 // dd($data);
@@ -151,20 +158,32 @@ implements HasShieldPermissions
                                             } else {
                                                 $data = [];
                                                 foreach ($record->items->where('status', 'approve')->toArray() as $item) {
+
                                                     $item['taxes'] = 0;
                                                     $item['freights'] = 0;
+                                                    $item['unit_price'] = number_format($item['estimated_unit_cost']);
+                                                    $item['total'] = number_format($item['estimated_unit_cost']*$item['quantity']);
                                                     $data[] = $item;
                                                 }
                                                 $set('RequestedItems', $data);
                                             }
                                         }
                                     })
-                                    ->options(function (){
-                                        $data=[];
-                                        foreach (getCompany()->purchaseRequests()->where('status','Approval')->whereHas('purchaseOrder',function (){},'!=')->orderBy('id', 'desc')->get() as $item){
-                                            $data[$item->id]=  $item->purchase_number.'('.$item->employee?->fullName.')';
+                                    ->options(function ($operation,$record){
+                                        if ($operation==="edit"){
+                                            $data=[];
+                                            foreach (getCompany()->purchaseRequests()->where('id',$record->purchase_request_id)->get() as $item){
+                                                $data[$item->id]=  $item->purchase_number.'('.$item->employee?->fullName.')';
+                                            }
+                                            return $data;
+                                        }else{
+                                            $data=[];
+                                            foreach (getCompany()->purchaseRequests()->where('status','Approval')->whereHas('purchaseOrder',function (){},'!=')->orderBy('id', 'desc')->get() as $item){
+                                                $data[$item->id]=  $item->purchase_number.'('.$item->employee?->fullName.')';
+                                            }
+                                            return $data;
                                         }
-                                        return $data;
+
                                     }),
 
                                 Forms\Components\DateTimePicker::make('date_of_po')->default(now())
@@ -209,7 +228,7 @@ implements HasShieldPermissions
                                     ->searchable()
                                     ->preload()
                                     ->label('Processed By')
-                                    ->options(getCompany()->employees->where('id',getEmployee()->id)->pluck('fullName', 'id'))
+                                    ->options(fn($operation,$record)=> $operation==="edit"? getCompany()->employees->where('id',$record->prepared_by)->pluck('fullName', 'id'):getCompany()->employees->where('id',getEmployee()->id)->pluck('fullName', 'id'))
                                     ->default(fn() => getEmployee()->id)->required(),
 
                                 Forms\Components\TextInput::make('purchase_orders_number')->label('PO No')->prefix('ATGT/UNC/')->readOnly()
@@ -256,23 +275,40 @@ implements HasShieldPermissions
 
                                             return  $data;
                                         } else {
-                                            return $record?->items->where('status', 'approve')->toArray();
+                                            $data=$record?->items->where('status', 'approve')->toArray();
+                                            if ($data===null){
+                                                $data=[];
+                                            }
+                                            foreach ($data as  &$item){
+                                                $item['unit_price']=number_format($item['estimated_unit_cost']);
+                                                $item['total'] = number_format($item['estimated_unit_cost']*$item['quantity']);
+
+                                            }
+                                            return $data;
                                         }
                                     })
                                     ->relationship('items')
                                     // ->formatStateUsing(fn(Get $get) => dd($get('purchase_request_id')):'')
                                     ->schema([
+                                        Forms\Components\Hidden::make('row_number')
+                                            ->default(fn (Get $get, \Livewire\Component $livewire) => count($get('../items') ?? []) + 1)
+                                        ->formatStateUsing(fn ($state, Get $get) => $state ?? count($get('../items') ?? []) + 1),
+
                                         Forms\Components\Select::make('product_id')->columnSpan(3)
-                                            ->label('Product')->options(function ($state) {
-                                                $products = getCompany()->products->where('id',$state);
+                                                ->label('Product') ->prefix(fn (Get $get) => $get('row_number'))->options(function ($state) {
+                                                if ($state){
+                                                    $products = getCompany()->products->where('id',$state);
+                                                }else{
+                                                    $products= getCompany()->products;
+                                                }
                                                 $data = [];
                                                 foreach ($products as $product) {
                                                     $data[$product->id] = $product->info;
                                                 }
                                                 return $data;
                                             })->required()->searchable()->preload(),
-                                        Forms\Components\TextInput::make('description')->label('Description')->columnSpan(3)->required(),
-                                        Forms\Components\Select::make('unit_id')->columnSpan(2)->required()->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id')),
+                                        Forms\Components\TextInput::make('description')->label('Description')->columnSpan(4)->required(),
+                                        Forms\Components\Select::make('unit_id')->columnSpan(1)->required()->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id')),
                                         Forms\Components\TextInput::make('quantity')->numeric()->required()->live(true),
                                         Forms\Components\TextInput::make('unit_price')->prefix(fn(Get $get)=>$get->getData()['currency'])->afterStateUpdated(function ($state, Set $set, Get $get) {
                                             $freights = $get('taxes') === null ? 0 : (float) $get('taxes');
@@ -285,7 +321,7 @@ implements HasShieldPermissions
                                             ->numeric()
                                             ->required()
                                             ->mask(RawJs::make('$money($input)'))
-                                            ->stripCharacters(',')->label('Final Price'),
+                                            ->stripCharacters(',')->label('Unit Price'),
                                         Forms\Components\TextInput::make('taxes')->default(0)->afterStateUpdated(function ($state, Set $set, Get $get) {
 
                                             $freights = intval($get('freights') == null ? 0 : (float)$get('freights'));
@@ -594,7 +630,7 @@ implements HasShieldPermissions
 
     public static function table(Table $table): Table
     {
-        return $table->defaultSort('date_of_po', 'desc')
+        return $table->defaultSort('created_at', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('NO')->label('No')->rowIndex(),
                 Tables\Columns\TextColumn::make('purchase_orders_number')
@@ -613,7 +649,6 @@ implements HasShieldPermissions
                     ->label('Total')
                     ->state(fn($record) => number_format($record->items->map(fn($item) => (($item['quantity'] * str_replace(',', '', $item['unit_price'])) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['taxes']) / 100) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['freights']) / 100)))?->sum()).$record->currency->symbol)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('bid.total_cost')->alignCenter()->label('Total Final Price')->numeric(),
 
                 // Tables\Columns\TextColumn::make('currency')
                 // ->searchable(),
@@ -622,8 +657,8 @@ implements HasShieldPermissions
                 // ->sortable(),
 
 
-                Tables\Columns\TextColumn::make('purchaseRequest.purchase_number')->badge()->url(fn($record) => PurchaseRequestResource::getUrl('index') . "?tableFilters[purchase_number][value]=" . $record->purchaseRequest?->id)
-                    ->sortable()->label("PR No"),
+                Tables\Columns\TextColumn::make('purchaseRequest.purchase_number')->badge()->url(fn($record) => PurchaseRequestResource::getUrl('index') . "?tableFilters[purchase_number][value]=" . $record->purchaseRequest?->id)->sortable()->label("PR No"),
+                Tables\Columns\TextColumn::make('purchaseRequest.employee.fullName')->badge()->sortable()->label("PR Requester"),
 
                 Tables\Columns\TextColumn::make('date_of_delivery')
                     ->date()
@@ -634,7 +669,16 @@ implements HasShieldPermissions
                     ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
 
-                Tables\Columns\Textcolumn::make('status')->badge()
+                Tables\Columns\Textcolumn::make('status')->state(fn($record)=>match ($record->status){
+                    'pending'=>"Pending",
+                    'Approved'=>"Approved",
+                    'rejected'=>"Rending",
+                    'GRN'=>'GRN',
+                    'Approve Logistic Head'=>'Approve Review',
+                    'GRN And inventory'=>'GRN And inventory',
+                    'Inventory'=>'Inventory',
+                    'Approve Verification'=>'Approve Verified',
+                })->badge()
                     ->label('Status'),
 
             ])
@@ -649,13 +693,17 @@ implements HasShieldPermissions
 
                 //         return 'Created at ' . Carbon::parse($data['date'])->toFormattedDateString();
                 //     })
+                SelectFilter::make('employee_id')->label('PR Requester')->options(getCompany()->employees->pluck('fullName', 'id'))->searchable()->preload()->query(fn($query,$data)=> isset($data['value'])?  $query->whereHas('purchaseRequest',function ($query)use($data){
+                    $query->where('employee_id',$data['value']);
+                }):$query),
+
                 SelectFilter::make('id')->searchable()->preload()->options(PurchaseOrder::where('company_id', getCompany()->id)->get()->pluck('purchase_orders_number', 'id'))
                     ->label("Po No"),
                 SelectFilter::make('purchase_request_id')->searchable()->preload()->options(PurchaseRequest::where('company_id', getCompany()->id)->where('status','Approval')->get()->pluck('purchase_number', 'id'))
                     ->label("PR No"),
                 SelectFilter::make('vendor_id')->searchable()->preload()->options(Parties::where('company_id', getCompany()->id)->where('account_code_vendor', '!=', null)->get()->pluck('name', 'id'))
                     ->label("Vendor"),
-                DateRangeFilter::make('date_of_po'),
+                DateRangeFilter::make('date_of_po')->label('PO Date'),
 
                 // SelectFilter::make('position_id')->searchable()->preload()->options(Position::where('company_id', getCompany()->id)->get()->pluck('title', 'id'))
                 //     ->label('Designation'),
@@ -703,7 +751,7 @@ implements HasShieldPermissions
                         $query->where('product_type', 'unConsumable');
                     })->count() and $record->status === 'Approved')->hidden(fn($record) => $record->status === 'GRN And inventory' or $record->status === 'GRN'),
                 //                Tables\Actions\DeleteAction::make()->visible(fn($record)=>$record->status==="pending" )
-                Tables\Actions\Action::make('Inventory')->visible(fn($record) => $record->items()->whereHas('product', function ($query) {
+                Tables\Actions\Action::make('Inventory')->label('GRN')->visible(fn($record) => $record->items()->whereHas('product', function ($query) {
                         $query->where('product_type', 'consumable');
                     })->count() and $record->status === 'Approved')->form(function ($record) {
                     $products = Product::query()

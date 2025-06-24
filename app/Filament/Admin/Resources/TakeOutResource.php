@@ -17,6 +17,7 @@ use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -47,7 +48,6 @@ class TakeOutResource extends Resource implements HasShieldPermissions
             'delete',
             'delete_any',
             'reception',
-            'Admin',
             'security'
         ];
     }
@@ -119,13 +119,17 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('status')->label('Status Items')->badge(),
                 Tables\Columns\TextColumn::make('type')->badge(),
                 Tables\Columns\TextColumn::make('gate_status')->label('Gate Status')->badge(),
+                Tables\Columns\TextColumn::make('OutSide_date')->label('Take OUT ')->dateTime(),
+                Tables\Columns\TextColumn::make('InSide_date')->label('Take IN ')->dateTime(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('employee_id')->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id')),
+                Tables\Filters\SelectFilter::make('employee_id')->searchable()->label('Employee')->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id')),
                 DateRangeFilter::make('date')->label('Date'),
+                Tables\Filters\SelectFilter::make('status')->options(['Returnable'=>'Returnable','Non-Returnable'=>'Non-Returnable'])->searchable()->preload(),
+                Tables\Filters\SelectFilter::make('gate_status')->options(['Pending'=>'Pending','CheckedIn'=>'Checked IN','CheckedOut'=>'Checked OUT','Canceled'=>'Canceled'])->searchable()->preload(),
             ], getModelFilter())
             ->actions([
-                Tables\Actions\Action::make('ActionOutSide')->label(' Check OUT')->form([
+                Tables\Actions\Action::make('ActionOutSide')->label('Take OUT ')->form([
                     Forms\Components\DateTimePicker::make('OutSide_date')->withoutSeconds()->label(' Date And Time')->required()->default(now()),
                     Forms\Components\Textarea::make('OutSide_comment')->label(' Comment')
                 ])->requiresConfirmation()->action(function ($data, $record) {
@@ -154,7 +158,7 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                     }
                     return false;
                 }),
-                Tables\Actions\Action::make('ActionInSide')->label('Check IN')->form([
+                Tables\Actions\Action::make('ActionInSide')->label('Take IN ')->form([
                     Forms\Components\DateTimePicker::make('InSide_date')->withoutSeconds()->label(' Date And Time')->required()->default(now()),
                     Forms\Components\Textarea::make('inSide_comment')->label(' Comment')
                 ])->requiresConfirmation()->action(function ($data, $record) {
@@ -189,6 +193,13 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                 Tables\Actions\ViewAction::make('view')->infolist([
                     Section::make([
                         TextEntry::make('employee.fullName'),
+                        ImageEntry::make('pic')->state(function ($record) {
+                            return $record->employee->media->where('collection_name', 'images')->first()?->original_url;
+                        })
+                            ->defaultImageUrl(fn($record) => $record->employee->gender === "male" ? asset('img/user.png') : asset('img/female.png'))
+                            ->label('Employee Photo')
+                            ->width(80)
+                            ->height(80),
                         TextEntry::make('from'),
                         TextEntry::make('to'),
                         TextEntry::make('date')->date(),
@@ -205,20 +216,23 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                             TextEntry::make('quantity'),
                             TextEntry::make('unit'),
                             TextEntry::make('remarks'),
+                            TextEntry::make('status')->color(fn ($state)=>match ($state){
+                                'Approved'=>'success','Not Approved'=>'danger','Pending'=>'primary'
+                            })->badge(),
                             ImageEntry::make('image')->width(100)->height(100)
                                 ->url(fn($state)=>asset('images/'.$state))
                             ,
-                        ])->columnSpanFull()->columns(5),
+                        ])->columnSpanFull()->columns(6),
                         \Filament\Infolists\Components\Section::make([
-                            TextEntry::make('OutSide_date')->dateTime(),
-                            TextEntry::make('OutSide_comment'),
+                            TextEntry::make('OutSide_date')->label('Outside Date')->dateTime(),
+                            TextEntry::make('OutSide_comment')->label('Outside Comment '),
                         ])->columns(),
                         \Filament\Infolists\Components\Section::make([
-                            TextEntry::make('InSide_date')->dateTime(),
-                            TextEntry::make('inSide_comment'),
+                            TextEntry::make('InSide_date')->label('Inside Date')->dateTime(),
+                            TextEntry::make('inSide_comment')->label('Inside Comment'),
                         ])->columns(),
                     ])->columns()
-                ]),
+                ])->modalWidth(MaxWidth::FiveExtraLarge),
                 Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')
                     ->url(fn($record) => route('pdf.takeOut', ['id' => $record->id]))->openUrlInNewTab(),
             ])

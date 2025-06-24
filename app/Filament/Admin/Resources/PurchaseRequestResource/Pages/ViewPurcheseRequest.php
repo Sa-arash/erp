@@ -36,7 +36,7 @@ class ViewPurcheseRequest extends ViewRecord
                     RepeatableEntry::make('approvals')->schema([
                         ImageEntry::make('employee.image')->circular()->label('')->state(fn($record) => $record->employee->media->where('collection_name', 'images')->first()?->original_url),
                         TextEntry::make('employee.fullName')->label(fn($record) => $record->employee?->position?->title),
-                        TextEntry::make('created_at')->label('Request Date')->dateTime(),
+                        TextEntry::make('read_at')->label('Checked at Date')->dateTime(),
                         TextEntry::make('status')->state(fn($record)=>match ($record->status->value){
                             'Approve'=>"Approved",
                             'NotApprove'=>"Not Approved",
@@ -47,7 +47,7 @@ class ViewPurcheseRequest extends ViewRecord
                             'Pending'=>"primary",
                         }),
                         TextEntry::make('comment')->tooltip(fn($record) => $record->comment)->limit(50),
-                        TextEntry::make('approve_date')->dateTime(),
+                        TextEntry::make('approve_date')->dateTime()->label('Approve Date'),
                         ImageEntry::make('employee.signature')->label('')->state(fn($record) => $record->status->value === "Approve" ? $record->employee->media->where('collection_name', 'signature')->first()?->original_url : ''),
                     ])->columns(7)->columnSpanFull()
                 ])->columns(3)]),

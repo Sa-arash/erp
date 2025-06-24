@@ -228,7 +228,16 @@
     </div>
 </htmlpageheader>
 <htmlpagefooter name="MyFooter">
-    <div style="text-align: center; font-size: 10px;margin-top: 5px">
-        Page {PAGENO} of {nbpg}
-    </div>
+
+
+
+    @if($dateShow??false)
+        <p style="font-size: 10px;color: gray; margin-left:40% !important; margin-top: auto;text-align: right ">Report Generated Date: {{now()->format('Y/F/d H:iA')}}</p>
+    @endif
+        <div style="text-align: center; font-size: 10px;margin-top: 5px">
+
+            Page {PAGENO} of {nbpg}
+
+
+        </div>
 </htmlpagefooter>

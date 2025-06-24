@@ -24,6 +24,8 @@ return new class extends Migration
             $table->enum('status',['pending','rejected','accepted','approveHead'])->default('pending');
             $table->text('comment')->nullable();
             $table->timestamp('approval_date')->nullable();
+            $table->time('checkOUT')->nullable();
+            $table->time('checkIN')->nullable();
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();
             $table->softDeletes();
             $table->timestamps();

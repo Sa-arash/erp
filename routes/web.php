@@ -148,6 +148,13 @@ Route::get('/', function () {
 });
 Route::get('/test', function () {
 
+//    $t=TakeOut::query()->where('id',8)->first();
+//    $data=[];
+//    foreach ($t->itemsOut as $item){
+//        $item['unit']='EA';
+//        $data[]=$item;
+//    }
+//    $t->update(['itemsOut'=>$data]);
 //    $roll=\Spatie\Permission\Models\Role::query()->firstWhere('id',1);
 //    dd($roll->permissions->pluck('id')->toArray());
 //    $vi=VisitorRequest::query()->get();

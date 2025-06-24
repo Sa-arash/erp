@@ -25,8 +25,8 @@
     }
 
     th {
-        background-color: #817c7c;
-        color: white;
+        background-color: #c9c1c1;
+        color: #000000;
     }
 
     .comments, .signature {
@@ -67,7 +67,7 @@
     <thead>
     <tr>
         <th>NO</th>
-        <th>SKU</th>
+        <th style="width: 20%">SKU</th>
         <th>Description</th>
         <th>Unit</th>
         <th>Qty</th>
@@ -94,7 +94,7 @@
         <tr>
             <td rowspan="1">{{$i++}}</td>
 
-            <td>   {{  $item->product->title."-".$item->product?->sku}}</td>
+            <td>   {{  $item->product?->title."-".$item->product?->sku}}</td>
             <td>
 
                 {{ $item->description }}

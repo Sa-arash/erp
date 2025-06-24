@@ -109,6 +109,8 @@ class UrgentLeaveResource extends Resource  implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('approvals.employee.fullName')->tooltip(fn($record)=>isset($record->approvals[0])? $record->approvals[0]?->approve_date:'')->label('Approve Head')->sortable(),
                 Tables\Columns\TextColumn::make('status')->badge(),
                 Tables\Columns\TextColumn::make('approval_date')->dateTime()->sortable(),
+                Tables\Columns\TextColumn::make('checkOUT')->label('Check OUT')->time()->sortable(),
+                Tables\Columns\TextColumn::make('checkIN')->label('Check IN')->time()->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('department')->searchable()->preload()->label('Department')->options(getCompany()->departments()->pluck('title','id'))->query(fn($query,$data)=>isset($data['value'])? $query->whereHas('employee',function ($query)use($data){

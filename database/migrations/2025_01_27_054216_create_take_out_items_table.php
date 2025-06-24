@@ -18,6 +18,7 @@ return new class extends Migration
             $table->text('remarks')->nullable();
             $table->foreignId('company_id')->constrained('companies')->cascadeOnUpdate()->cascadeOnDelete();
             $table->date('returned_date')->nullable();
+            $table->enum('status',['Pending','Approved','Not Approved'])->default('Pending');
             $table->timestamps();
         });
     }

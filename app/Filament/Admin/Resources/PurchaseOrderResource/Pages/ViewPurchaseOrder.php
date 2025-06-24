@@ -17,9 +17,9 @@ class ViewPurchaseOrder extends ViewRecord
     {
       return $infolist ->schema([
            Section::make('Order Info')->schema([
-               TextEntry::make('purchase_orders_number')->label('PO NO'),
+               TextEntry::make('purchase_orders_number')->label('PO No'),
                TextEntry::make('date_of_po')->label('Date of PO')->date(),
-               TextEntry::make('purchase_request.purchase_number')->label('PR NO'),
+               TextEntry::make('purchaseRequest.purchase_number')->label('PR No'),
                TextEntry::make('vendor.info')->label('Vendor'),
                TextEntry::make('currency.name')->label('Currency'),
                TextEntry::make('exchange_rate')->label('Exchange Rate'),

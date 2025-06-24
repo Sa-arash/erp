@@ -182,10 +182,10 @@
     @if($employee->emergency_contact)
     @foreach($employee->emergency_contact as $emergency)
     <tr>
-        <th>Name : {{$emergency['name'] }}</th>
-        <th>Relation : {{$emergency['relation']}} </th>
-        <th>Number : {{$emergency['number']}}</th>
-        <th>Email : {{$emergency['email']}}</th>
+        <th>Name : {{$emergency['name']??"" }}</th>
+        <th>Relation : {{$emergency['relation']??""}} </th>
+        <th>Number : {{$emergency['number']??""}}</th>
+        <th>Email : {{$emergency['email']??""}}</th>
         <td></td>
     </tr>
     @endforeach

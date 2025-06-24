@@ -288,7 +288,7 @@ class PurchaseRequestResource extends Resource
                                 ])->label('Vendor')->options(Parties::query()->where('company_id', getCompany()->id)->where('type', 'vendor')->get()->pluck('info', 'id'))->searchable()->preload()->required(),
                                 Forms\Components\DatePicker::make('date')->default(now())->required(),
                                 Forms\Components\Select::make('employee_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Logistic By'),
-                                Forms\Components\Select::make('employee_operation_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Operation'),
+                                Forms\Components\Select::make('employee_operation_id')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload()->label('Quality Control'),
                                 getSelectCurrency(),
                                 Forms\Components\FileUpload::make('file')->downloadable()->columnSpanFull(),
                                 Forms\Components\Textarea::make('description')->columnSpanFull()->nullable()
@@ -389,7 +389,7 @@ class PurchaseRequestResource extends Resource
                                     }
                                     return $data;
                                 })->required()->label('Quotation Selected')->preload()->searchable()->live(),
-                                Select::make('position_procurement_controller')->label(' Procurement Controller')->multiple()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->preload()->searchable(),
+                                Select::make('position_procurement_controller')->label(' Procurement and Logistics ')->multiple()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->preload()->searchable(),
                                 Select::make('procurement_committee_members')->label(' Committee Members')->multiple()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->preload()->searchable(),
 
                             ])->columns(4),

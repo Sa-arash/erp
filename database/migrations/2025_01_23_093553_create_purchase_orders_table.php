@@ -26,10 +26,10 @@ return new class extends Migration
                 'GRN And inventory',
                 'Inventory',
                 'pending',
-                'Approved',
+                'Approved', // approve ceo
                  'rejected',
-                'Approve Logistic Head',
-                'Approve Verification',
+                'Approve Logistic Head', // review
+                'Approve Verification', // verified
             ])->default('pending');
             $table->foreignId('prepared_by')->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('bid_id')->nullable()->constrained('bids')->cascadeOnDelete()->cascadeOnUpdate();

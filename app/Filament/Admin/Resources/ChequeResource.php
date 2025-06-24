@@ -120,7 +120,16 @@ class ChequeResource extends Resource
                     ->badge()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('type')->state(fn($record) => $record->type ? "Payable" : "Receivable")->badge(),
-                Tables\Columns\TextColumn::make('status')->badge(),
+                Tables\Columns\TextColumn::make('status')->badge()->state(fn($record)=> match ($record->status->value){
+                    'pending'=>"Pending",
+                    'paid'=> $record->type? 'Paid':"Receive",
+                    default=> $record->status->value
+                })->color(fn($state)=>match ($state){
+                    'Pending'=>"Pending",
+                    'Paid'=> 'success',
+                    'Receive'=> 'success',
+                    default=> 'primary'
+                }),
             ])
             ->filters([
                 SelectFilter::make('type')->options([0 => 'Receivable', 1 => 'Payable'])->searchable(),
@@ -139,12 +148,12 @@ class ChequeResource extends Resource
                 Tables\Actions\Action::make('invoice')->visible(fn($record) => (bool)$record->transaction_id)->url(fn($record) => $record->transaction_id ? InvoiceResource::getUrl('edit', ['record' => $record->transaction->invoice_id]) : false),
                 Tables\Actions\EditAction::make()->hidden(fn($record) => $record->status->name === "Paid"),
                 Tables\Actions\Action::make('action')->requiresConfirmation()->extraModalFooterActions([
-                    Tables\Actions\Action::make('Paid')->label('Paid')->form(function ($record) {
+                    Tables\Actions\Action::make('Paid')->modalWidth(MaxWidth::SevenExtraLarge)->label('Paid')->form(function ($record) {
                         if ($record->transaction) {
                             return [
                                 Forms\Components\Section::make([
                                     Forms\Components\TextInput::make('number')->label('Voucher NO')->default(getDocumentCode())->required()->readOnly(),
-                                    Forms\Components\TextInput::make('name')->label('Voucher Title')->default(fn($record) => "Cheque " . $record->payer_name . " - " . $record->payee_name . " Paid")->required(),
+                                    Forms\Components\TextInput::make('name')->label('Voucher Title')->default(fn($record) => $record->type ?  "Cheque " . $record->payer_name . " - " . $record->payee_name . " Paid" : "Cheque " . $record->payer_name . " - " . $record->payee_name . "  Receive"  )->required(),
                                     Forms\Components\DatePicker::make('date')->label('Date ')->required()->default(fn($record) => $record->due_date),
                                     SelectTree::make('account_id')->defaultOpenLevel(3)->required()->live()->label('Account')->model(Transaction::class)->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('stamp', 'Assets')->where('company_id', getCompany()->id))->searchable(),
 
@@ -154,57 +163,114 @@ class ChequeResource extends Resource
                     })->action(function ($data, $record,Tables\Actions\Action $action) {
 //dd($action->shouldCancelAllParentActions(),$action->cancelParentActions());
                         if (isset($record->transaction)) {
-
                             $invoice = Invoice::query()->create([
                                 'name' => $data['name'],
                                 'number' => $data['number'],
                                 'date' => $data['date'],
                                 'company_id' => getCompany()->id,
                             ]);
+                            if ($record->transaction->currency_id != defaultCurrency()->id){
 
-                            if ($record->transaction->debtor > 0) {
-                                $invoice->transactions()->create([
-                                    'account_id' => $data['account_id'],
-                                    'creditor' => 0,
-                                    'debtor' => $record->transaction->debtor,
-                                    'description' => $data['name'],
-                                    'company_id' => getCompany()->id,
-                                    'user_id' => auth()->id(),
-                                    'financial_period_id' => getPeriod()->id,
-                                    'currency_id' => defaultCurrency()?->id
-                                ]);
-                                $invoice->transactions()->create([
-                                    'account_id' => $record->transaction->account?->id,
-                                    'creditor' => $record->transaction->debtor,
-                                    'debtor' => 0,
-                                    'description' => $data['name'],
-                                    'company_id' => getCompany()->id,
-                                    'user_id' => auth()->id(),
-                                    'financial_period_id' => getPeriod()->id,
-                                    'currency_id' => defaultCurrency()?->id
-                                ]);
-                            } else {
-                                $invoice->transactions()->create([
-                                    'account_id' => $data['account_id'],
-                                    'creditor' => $record->transaction->creditor,
-                                    'debtor' => 0,
-                                    'description' => $data['name'],
-                                    'company_id' => getCompany()->id,
-                                    'user_id' => auth()->id(),
-                                    'financial_period_id' => getPeriod()->id,
-                                    'currency_id' => defaultCurrency()?->id
-                                ]);
-                                $invoice->transactions()->create([
-                                    'account_id' => $record->transaction->account?->id,
-                                    'creditor' => 0,
-                                    'debtor' => $record->transaction->creditor,
-                                    'description' => $data['name'],
-                                    'company_id' => getCompany()->id,
-                                    'user_id' => auth()->id(),
-                                    'financial_period_id' => getPeriod()->id,
-                                    'currency_id' => defaultCurrency()?->id
-                                ]);
+                                if ($record->transaction->debtor > 0) {
+                                    $invoice->transactions()->create([
+                                        'account_id' => $data['account_id'],
+                                        'creditor' => 0,
+                                        'debtor' => $record->transaction->debtor,
+                                        'debtor_foreign' => $record->transaction->debtor/$record->transaction->currency->exchange_rate,
+                                        'description' => $data['name'],
+                                        'company_id' => getCompany()->id,
+                                        'user_id' => auth()->id(),
+                                        'financial_period_id' => getPeriod()->id,
+                                        'exchange_rate' => $record->transaction->currency->exchange_rate,
+                                        'currency_id' => $record->transaction->currency_id
+                                    ]);
+                                    $invoice->transactions()->create([
+                                        'account_id' => $record->transaction->account?->id,
+                                        'creditor' => $record->transaction->debtor,
+                                        'debtor' => 0,
+                                        'creditor_foreign' => $record->transaction->debtor/$record->transaction->currency->exchange_rate,
+                                        'description' => $data['name'],
+                                        'company_id' => getCompany()->id,
+                                        'user_id' => auth()->id(),
+                                        'exchange_rate' => $record->transaction->currency->exchange_rate,
+                                        'financial_period_id' => getPeriod()->id,
+                                        'currency_id' => $record->transaction->currency_id
+                                    ]);
+                                } else {
+                                    $invoice->transactions()->create([
+                                        'account_id' => $data['account_id'],
+                                        'debtor' => 0,
+                                        'creditor' => $record->transaction->creditor,
+                                        'creditor_foreign' => $record->transaction->creditor/$record->transaction->currency->exchange_rate,
+                                        'description' => $data['name'],
+                                        'company_id' => getCompany()->id,
+                                        'user_id' => auth()->id(),
+                                        'exchange_rate' => $record->transaction->currency->exchange_rate,
+                                        'financial_period_id' => getPeriod()->id,
+                                        'currency_id' => defaultCurrency()?->id
+                                    ]);
+                                    $invoice->transactions()->create([
+                                        'account_id' => $record->transaction->account?->id,
+                                        'creditor' => 0,
+                                        'debtor' => $record->transaction->creditor,
+                                        'debtor_foreign' => $record->transaction->creditor/$record->transaction->currency->exchange_rate,
+                                        'description' => $data['name'],
+                                        'company_id' => getCompany()->id,
+                                        'user_id' => auth()->id(),
+                                        'exchange_rate' => $record->transaction->currency->exchange_rate,
+                                        'financial_period_id' => getPeriod()->id,
+                                        'currency_id' => defaultCurrency()?->id
+                                    ]);
+                                }
+                            }else{
+                                if ($record->transaction->debtor > 0) {
+                                    $invoice->transactions()->create([
+                                        'account_id' => $data['account_id'],
+                                        'creditor' => 0,
+                                        'debtor' => $record->transaction->debtor,
+                                        'description' => $data['name'],
+                                        'company_id' => getCompany()->id,
+                                        'user_id' => auth()->id(),
+                                        'financial_period_id' => getPeriod()->id,
+                                        'currency_id' => defaultCurrency()?->id
+                                    ]);
+                                    $invoice->transactions()->create([
+                                        'account_id' => $record->transaction->account?->id,
+                                        'creditor' => $record->transaction->debtor,
+                                        'debtor' => 0,
+                                        'description' => $data['name'],
+                                        'company_id' => getCompany()->id,
+                                        'user_id' => auth()->id(),
+                                        'financial_period_id' => getPeriod()->id,
+                                        'currency_id' => defaultCurrency()?->id
+                                    ]);
+                                } else {
+                                    $invoice->transactions()->create([
+                                        'account_id' => $data['account_id'],
+                                        'creditor' => $record->transaction->creditor,
+                                        'debtor' => 0,
+                                        'description' => $data['name'],
+                                        'company_id' => getCompany()->id,
+                                        'user_id' => auth()->id(),
+                                        'financial_period_id' => getPeriod()->id,
+                                        'currency_id' => defaultCurrency()?->id
+                                    ]);
+                                    $invoice->transactions()->create([
+                                        'account_id' => $record->transaction->account?->id,
+                                        'creditor' => 0,
+                                        'debtor' => $record->transaction->creditor,
+                                        'description' => $data['name'],
+                                        'company_id' => getCompany()->id,
+                                        'user_id' => auth()->id(),
+                                        'financial_period_id' => getPeriod()->id,
+                                        'currency_id' => defaultCurrency()?->id
+                                    ]);
+                                }
                             }
+
+
+
+
                         }
                         $record->update(['status' => 'paid']);
                         Notification::make('paid-cheque')->success()->title('Check Paid')->send()->sendToDatabase(auth()->user());

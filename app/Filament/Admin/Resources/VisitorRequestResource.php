@@ -115,8 +115,8 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                             Forms\Components\TextInput::make('phone')->label('Phone'),
                             Forms\Components\TextInput::make('organization')->label('Organization'),
                             Forms\Components\TextInput::make('remarks')->label('Remarks'),
-                            FileUpload::make('attachment')->downloadable()
-                                ->disk('public')->columnSpanFull(),
+                            FileUpload::make('attachment')
+                                ->disk('public')->openable()->columnSpanFull(),
                         ])->columns(5)->columnSpanFull(),
                     Section::make([
                         Forms\Components\Repeater::make('armed')->grid(3)->label('Armed Close Protection Officers (If Applicable)')->columnSpanFull()->schema([
@@ -174,8 +174,8 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                                 ->label('Color'),
                             Forms\Components\TextInput::make('Registration_Plate')->required(),
                             Forms\Components\TextInput::make('trip')->required(),
-                            FileUpload::make('driver')->label('Driver National Identification Card')->imageEditor()->image()->columnSpan(3),
-                            FileUpload::make('image')->label('Vehicle Number Plate Photo')->imageEditor()->image()->columnSpan(4),
+                            FileUpload::make('driver')->openable()->label('Driver National Identification Card')->imageEditor()->image()->columnSpan(3),
+                            FileUpload::make('image')->openable()->label('Vehicle Number Plate Photo')->imageEditor()->image()->columnSpan(4),
 
                         ])->columns(7)->columnSpanFull(),
                     Forms\Components\Hidden::make('company_id')
@@ -255,8 +255,8 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('employee.fullName')->label('Requester')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('visitors_detail')->label('Visitors')->state(fn($record) => array_map(fn($item) => $item['name'], $record->visitors_detail))->numeric()->sortable()->badge()->limitList(1),
                 Tables\Columns\TextColumn::make('visiting_dates')->limitList(5)->bulleted()->label('Scheduled Visit Dates')->sortable(),
-                Tables\Columns\TextColumn::make('arrival_time')->time('H:i A'),
-                Tables\Columns\TextColumn::make('departure_time')->time('H:i A'),
+                Tables\Columns\TextColumn::make('arrival_time')->time('h:i A'),
+                Tables\Columns\TextColumn::make('departure_time')->time('h:i A'),
                 Tables\Columns\TextColumn::make('status')->label('Head of Security ')->tooltip(fn($record)=>isset($record->approvals[0])? $record->approvals[0]->approve_date : false )->alignCenter()->state(fn($record)=>match ($record->status){
                     'approved'=>'Approved',
                     'Pending'=>'Pending',
@@ -358,6 +358,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                                     $img = asset('images/' . $visitor['driver']);
                                     if (isset($array) and key_exists($get('date'), $array)) {
                                         $dateArray = $array[$get('date')];
+
                                         if (!key_exists($name, $dateArray['drivers'])) {
                                             $validVisitor[$name] = "
                                             <div style='display: flex; align-items: center; padding: 5px; border-bottom: 1px solid #ddd;'>
@@ -366,6 +367,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                                             </div>";
                                         }
                                     } else {
+
                                         $validVisitor[$name] = "
                                             <div style='display: flex; align-items: center; padding: 5px; border-bottom: 1px solid #ddd;'>
                                                 <img src='{$img}' style='width: 50px; height: 50px; border-radius: 50%; margin-right: 10px;' alt=''>
@@ -373,6 +375,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                                             </div>";
                                     }
                                 }
+
                                 return $validVisitor;
                             })->searchable()->preload()->multiple()->allowHtml()->columnSpanFull(),
                             Forms\Components\Textarea::make('comment')->label(' Comment')->columnSpanFull()

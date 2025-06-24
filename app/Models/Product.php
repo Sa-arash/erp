@@ -61,6 +61,10 @@ class Product extends Model implements HasMedia
     {
         return $this->hasMany(PurchaseRequestItem::class);
     }
+    public function purchaseOrderItem(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(PurchaseOrderItem::class);
+    }
 
     public function assets(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
