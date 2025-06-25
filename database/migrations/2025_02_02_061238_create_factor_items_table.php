@@ -19,6 +19,7 @@ return new class extends Migration
             $table->foreignId('unit_id')->constrained('units')->cascadeOnUpdate()->cascadeOnDelete();
             $table->bigInteger('unit_price');
             $table->integer('discount')->default(0);
+            $table->bigInteger('total')->default(0);
             $table->timestamps();
         });
     }

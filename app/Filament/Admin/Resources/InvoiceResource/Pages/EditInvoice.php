@@ -14,12 +14,7 @@ class EditInvoice extends EditRecord
 {
     protected static string $resource = InvoiceResource::class;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            Actions\DeleteAction::make()->hidden(),
-        ];
-    }
+
     public function save(bool $shouldRedirect = true, bool $shouldSendSavedNotification = true): void
     {
         $this->authorizeAccess();

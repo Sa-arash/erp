@@ -58,14 +58,12 @@ class FactorResource extends Resource
                             Forms\Components\TextInput::make('title')->live(true)->afterStateUpdated(function ($state, Forms\Set $set) {
                                 $set('invoice.name', $state);
                             })->required()->maxLength(255),
-                            Forms\Components\Hidden::make('setPrice')->live()->default(0)->nullable(),
                             Forms\Components\ToggleButtons::make('type')->live()->afterStateUpdated(function (Forms\Set $set) {
                                 $set('party_id', null);
                                 $set('account_id', null);
                                 $set('to', null);
                                 $set('from', null);
                                 $set('invoice.transactions', []);
-                                $set('setPrice', 0);
                             })->required()->default(0)->boolean('Income', 'Expense')->grouped(),
                             Select::make('currency_id')->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([\Filament\Forms\Components\Section::make([
                                 TextInput::make('name')->required()->maxLength(255),
@@ -80,14 +78,13 @@ class FactorResource extends Resource
                                 TextInput::make('symbol')->required()->maxLength(255),
                                 TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                             ])->columns(3)])->afterStateUpdated(function (Forms\Set $set, $state) {
-                                $set('setPrice', 0);
                                 $currency = Currency::query()->firstWhere('id', $state);
                                 if ($currency) {
                                     $set('currency', $currency->symbol);
                                 }
                             })->live(),
                             SelectTree::make('account_id')->label(fn(Forms\Get $get) => $get('type') === "1" ? "Income Account" : "Expense Account")->searchable()->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: function ($query, Get $get) {
-                                $type = $get('type') === "1" ? "Income" : "Expense";
+                                $type = $get('type') === 1 ? "Income" : "Expense";
                                 return $query->where('group', [$type])->where('company_id', getCompany()->id);
                             })->defaultOpenLevel(3)->afterStateUpdated(function ($state, Forms\Set $set, Forms\Get $get) {
                                 if ($get('type') !== "0") {
@@ -97,7 +94,7 @@ class FactorResource extends Resource
                                 }
                             })->live(true),
                             Forms\Components\Select::make('party_id')->label(fn(Forms\Get $get) => $get('type') === "1" ? "Customer" : "Vendor")->searchable()->required()->options(function (Forms\Get $get) {
-                                $type = $get('type') === "1" ? "customer" : "vendor";
+                                $type = $get('type') === 1 ? "customer" : "vendor";
                                 return getCompany()->parties->whereIn('type', [$type, 'both'])->pluck('info', 'id');
                             })->createOptionUsing(function ($data) {
 
@@ -344,7 +341,6 @@ class FactorResource extends Resource
                             })->default(0)->required(),
                             Forms\Components\TextInput::make('total')->live()->readOnly()->default(0)->required()->label('Total'),
                         ])->columnSpanFull()->columns(7)->afterStateUpdated(function (Forms\Set $set) {
-                            $set('setPrice', 0);
                         }),
                     ])->columns(2),
                     Forms\Components\Wizard\Step::make('journal')->label('Journal Entry')->schema([
@@ -623,29 +619,30 @@ class FactorResource extends Resource
                     ->state(fn($record) => $record->type == "1" ? "Income" : "Expense")
                     ->badge()->color(fn($record) => $record->type == "1" ? "success" : "danger"),
                 Tables\Columns\TextColumn::make('total')
-                    ->state(fn($record) => number_format($record->items->map(fn($item) => (($item['quantity'] * str_replace(',', '', $item['unit_price'])) - (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['discount']) / 100)))?->sum(), 2))
+                    ->state(fn($record) => number_format($record->items->sum('total'), 2))
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')->label('Date')
                     ->dateTime()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //
             ])
             ->actions([
-//                Tables\Actions\EditAction::make(),
+                Tables\Actions\Action::make('print')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->color('primary')->url(fn($record) => route('pdf.sales', ['id' => $record->id])),
+                Tables\Actions\EditAction::make(),
                 Tables\Actions\DeleteAction::make()->action(function ($record) {
-                    $record->invoice()->delete();
+                    if ($record->invoice) {
+                        $record->invoice->transactions()->delete();
+                        $record->invoice()->delete();
+                    }
                     $record->delete();
                     Notification::make('success')->success()->title('Deleted')->send();
                 }),
-                Tables\Actions\Action::make('print')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->color('primary')->url(fn($record) => route('pdf.sales', ['id' => $record->id]))
+                Tables\Actions\Action::make('journal')->label('Journal Entry')->url(fn($record)=>InvoiceResource::getUrl('edit',['record'=>$record->invoice_id]))
+
 //                    ->form([
 //                        Section::make([
 //                            TextInput::make('bank')->label('Beneficiary Bank')->required(),
@@ -699,14 +696,12 @@ class FactorResource extends Resource
                     Forms\Components\TextInput::make('title')->live(true)->afterStateUpdated(function ($state, Forms\Set $set) {
                         $set('invoice.name', $state);
                     })->required()->maxLength(255),
-                    Forms\Components\Hidden::make('setPrice')->live()->default(0)->nullable(),
                     Forms\Components\ToggleButtons::make('type')->live()->afterStateUpdated(function (Forms\Set $set) {
                         $set('party_id', null);
                         $set('account_id', null);
                         $set('to', null);
                         $set('from', null);
                         $set('invoice.transactions', []);
-                        $set('setPrice', 0);
                     })->required()->default(0)->boolean('Income', 'Expense')->grouped(),
                     Select::make('currency_id')->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->createOptionForm([\Filament\Forms\Components\Section::make([
                         TextInput::make('name')->required()->maxLength(255),
@@ -721,7 +716,6 @@ class FactorResource extends Resource
                         TextInput::make('symbol')->required()->maxLength(255),
                         TextInput::make('exchange_rate')->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                     ])->columns(3)])->afterStateUpdated(function (Forms\Set $set, $state) {
-                        $set('setPrice', 0);
                         $currency = Currency::query()->firstWhere('id', $state);
                         if ($currency) {
                             $set('currency', $currency->symbol);
@@ -736,7 +730,6 @@ class FactorResource extends Resource
                         } else {
                             $set('to', getCompany()->AccountTitle);
                         }
-                        $set('setPrice', 0);
                     })->live(true),
                     Forms\Components\Select::make('party_id')->label(fn(Forms\Get $get) => $get('type') === "1" ? "Customer" : "Vendor")->searchable()->required()->options(function (Forms\Get $get) {
                         $type = $get('type') === "1" ? "customer" : "vendor";
@@ -843,7 +836,6 @@ class FactorResource extends Resource
                         } else {
                             $set('to', $party?->name);
                         }
-                        $set('setPrice', 0);
 
                     })->live(true)->createOptionForm([
                         Forms\Components\Section::make([
@@ -952,12 +944,180 @@ class FactorResource extends Resource
                 ])->columns(3),
                 Forms\Components\TextInput::make('from')->required()->maxLength(255),
                 Forms\Components\TextInput::make('to')->required()->maxLength(255),
-                Forms\Components\Repeater::make('items')->required()->relationship('items')->schema([
+                Forms\Components\Repeater::make('items')->hintAction(Forms\Components\Actions\Action::make('Calculate')->action(function (Get $get, Forms\Set $set) {
+                    $state = $get->getData();
+                    unset($state['invoice']['transactions']);
+                    $produtTotal = array_map(function ($item) {
+                        try {
+                            return (($item['quantity'] * str_replace(',', '', $item['unit_price'])) - (($item['quantity'] * str_replace(',', '', $item['unit_price'])) * $item['discount']) / 100);
+                        } catch (\Throwable $th) {
+                            return null;
+                        }
+                    }, $state['items']);
+
+
+                    $currency = Currency::query()->firstWhere('id', $state['currency_id']);
+                    $party = Parties::query()->firstWhere('id', $state['party_id']);
+                    $total = number_format(round(collect($produtTotal)->sum() * $currency?->exchange_rate, 2), 2);
+                    $productCurrency = collect($produtTotal)->sum();
+                    $defaultCurrency = defaultCurrency();
+                    $account = Account::query()->firstWhere('id', $state['account_id']);
+
+                    if ($state['type'] == '1') {
+                        if ($party?->accountCustomer?->has_cheque) {
+                            $state['invoice']['transactions'] = [
+                                [
+                                    'account_id' => $party?->account_customer,
+                                    'description' => null,
+                                    'creditor' => 0,
+                                    'company_id' => getCompany()->id,
+                                    'debtor' => $total,
+                                    'exchange_rate' => $currency?->exchange_rate,
+                                    'financial_period_id' => getPeriod()->id,
+                                    'isCurrency' => $party?->currency_id !== defaultCurrency()->id ? true : false,
+                                    'debtor_foreign' => $party?->currency_id !== defaultCurrency()->id ? $productCurrency : 0,
+                                    'creditor_foreign' => 0,
+                                    'currency_id' => $party?->currency_id,
+                                    'Cheque' => $party?->accountCustomer?->has_cheque ? true : false,
+                                    'cheque' => [
+                                        'amount' => number_format(round(collect($produtTotal)->sum() * $currency?->exchange_rate, 2), 2),
+                                        'issue_date' => now(),
+                                        'payer_name' => $party->name,
+                                        'type' => 0
+                                    ]
+
+                                ],
+                                [
+                                    'account_id' => $state['account_id'],
+                                    'description' => null,
+                                    'creditor' => $total,
+                                    'company_id' => getCompany()->id,
+                                    'debtor' => 0,
+                                    'isCurrency' => $account?->currency_id !== $defaultCurrency->id,
+                                    'currency_id' => $account?->currency_id,
+                                    'exchange_rate' => $currency?->exchange_rate,
+                                    'debtor_foreign' => 0,
+                                    'creditor_foreign' => $account?->currency_id != $defaultCurrency->id ? $productCurrency : 0,
+                                    'financial_period_id' => $state['party_id']
+                                ]
+                            ];
+//                            dd($account ,$defaultCurrency->id ,$productCurrency);
+                        } else {
+                            $state['invoice']['transactions'] = [
+                                [
+                                    'account_id' => $party?->account_customer,
+                                    'description' => null,
+                                    'creditor' => 0,
+                                    'company_id' => getCompany()->id,
+                                    'debtor' => number_format(round(collect($produtTotal)->sum() * $currency?->exchange_rate, 2), 2),
+                                    'exchange_rate' => $currency?->exchange_rate,
+                                    'isCurrency' => $party?->currency_id !== $defaultCurrency->id ? true : false,
+                                    'currency_id' => $party?->currency_id,
+                                    'debtor_foreign' => $party?->currency_id !== defaultCurrency()->id ? $productCurrency : 0,
+                                    'creditor_foreign' => 0,
+                                    'financial_period_id' => getPeriod()->id,
+                                    'Cheque' => false,
+                                ],
+                                [
+                                    'account_id' => $state['account_id'],
+                                    'description' => null,
+                                    'creditor' => number_format(round(collect($produtTotal)->sum() * $currency?->exchange_rate, 2), 2),
+                                    'company_id' => getCompany()->id,
+                                    'debtor' => 0,
+                                    'exchange_rate' => $currency?->exchange_rate,
+                                    'debtor_foreign' => 0,
+                                    'isCurrency' => $account?->currency_id !== $defaultCurrency->id,
+                                    'currency_id' => $account?->currency_id,
+                                    'creditor_foreign' => $account?->currency_id != $defaultCurrency->id ? $productCurrency : 0,
+                                    'financial_period_id' => $state['party_id']
+                                ]
+                            ];
+                        }
+
+
+                    } else {
+
+                        if ($party?->accountVendor?->has_cheque) {
+
+                            $state['invoice']['transactions'] = [
+                                [
+                                    'account_id' => $party?->account_vendor,
+                                    'description' => null,
+                                    'creditor' => $total,
+                                    'company_id' => getCompany()->id,
+                                    'debtor' => 0,
+                                    'exchange_rate' => $currency?->exchange_rate,
+                                    'financial_period_id' => getPeriod()->id,
+                                    'isCurrency' => $party?->currency_id !== $defaultCurrency->id,
+                                    'currency_id' => $party?->currency_id,
+                                    'debtor_foreign' => 0,
+                                    'creditor_foreign' => $party?->currency_id !== $defaultCurrency->id ? $productCurrency : 0,
+                                    'Cheque' => (bool)$party?->accountVendor?->has_cheque,
+                                    'cheque' => [
+                                        'amount' => number_format(round(collect($produtTotal)->sum() * $currency?->exchange_rate, 2), 2),
+                                        'issue_date' => now(),
+                                        'payee_name' => $party->name,
+                                        'type' => 1
+                                    ]
+                                ],
+                                [
+                                    'account_id' => $state['account_id'],
+                                    'description' => null,
+                                    'creditor' => 0,
+                                    'company_id' => getCompany()->id,
+                                    'debtor' => $total,
+                                    'exchange_rate' => $currency?->exchange_rate,
+                                    'debtor_foreign' => $account?->currency_id != $defaultCurrency->id ? $productCurrency : 0,
+                                    'creditor_foreign' => 0,
+                                    'isCurrency' => $account?->currency_id !== $defaultCurrency->id,
+                                    'currency_id' => $account?->currency_id,
+                                    'Cheque' => false,
+                                    'financial_period_id' => $state['party_id']
+                                ]
+                            ];
+                        } else {
+                            $state['invoice']['transactions'] = [
+                                [
+                                    'account_id' => $party?->account_vendor,
+                                    'description' => null,
+                                    'creditor' => $total,
+                                    'company_id' => getCompany()->id,
+                                    'debtor' => 0,
+                                    'exchange_rate' => $currency?->exchange_rate,
+                                    'debtor_foreign' => 0,
+                                    'creditor_foreign' => $party?->currency_id !== $defaultCurrency->id ? $productCurrency : 0,
+                                    'isCurrency' => $party?->currency_id !== $defaultCurrency->id,
+                                    'currency_id' => $party?->currency_id,
+                                    'financial_period_id' => getPeriod()->id,
+                                    'Cheque' => false,
+                                ],
+                                [
+                                    'account_id' => $state['account_id'],
+                                    'description' => null,
+                                    'creditor' => 0,
+                                    'company_id' => getCompany()->id,
+                                    'debtor' => $total,
+                                    'exchange_rate' => $currency?->exchange_rate,
+                                    'debtor_foreign' => $account?->currency_id != $defaultCurrency->id ? $productCurrency : 0,
+                                    'creditor_foreign' => 0,
+                                    'isCurrency' => $account?->currency_id !== $defaultCurrency->id,
+                                    'currency_id' => $account?->currency_id,
+                                    'Cheque' => false,
+                                    'financial_period_id' => $state['party_id']
+                                ]
+                            ];
+                        }
+
+
+                    }
+
+                    $set('invoice', $state['invoice']);
+                })->icon('heroicon-o-calculator')->color('danger')->iconSize(IconSize::Large))->required()->relationship('items')->schema([
                     Forms\Components\TextInput::make('title')->required()->label('Invoice Item')->columnSpan(2),
                     Forms\Components\TextInput::make('quantity')->default(1)->numeric()->live(true)->required()->label('Quantity')->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
                         $count = $get('quantity') === null ? 0 : (float)$get('quantity');
-                        $unitPrice = $get('unit_price') === null ?  0 : (float)str_replace(',', '', $get('unit_price'));
-                        $discount = $get('discount') === null ?  0 : (float)$get('discount');
+                        $unitPrice = $get('unit_price') === null ? 0 : (float)str_replace(',', '', $get('unit_price'));
+                        $discount = $get('discount') === null ? 0 : (float)$get('discount');
                         $set('total', number_format(($count * $unitPrice) - (($count * $unitPrice) * $discount) / 100, 2));
                     }),
                     Forms\Components\Select::make('unit_id')->label('Unit')->required()->options(Unit::query()->where('company_id', getCompany()->id)->pluck('title', 'id'))->searchable()->preload(),
@@ -976,20 +1136,18 @@ class FactorResource extends Resource
                     })->stripCharacters(',')->afterStateUpdated(function (Forms\Get $get, Forms\Set $set, Forms\Components\Component $component) {
 
                         $count = $get('quantity') === null ? 0 : (float)$get('quantity');
-                        $unitPrice = $get('unit_price') === null ?  0 : (float)str_replace(',', '', $get('unit_price'));
-                        $discount = $get('discount') === null ?  0 : (float)$get('discount');
+                        $unitPrice = $get('unit_price') === null ? 0 : (float)str_replace(',', '', $get('unit_price'));
+                        $discount = $get('discount') === null ? 0 : (float)$get('discount');
                         $set('total', number_format(($count * $unitPrice) - (($count * $unitPrice) * $discount) / 100, 2));
                     })->required()->live(true),
                     Forms\Components\TextInput::make('discount')->label('Discount(%)')->numeric()->live(true)->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
                         $count = $get('quantity') === null ? 0 : (float)$get('quantity');
-                        $unitPrice = $get('unit_price') === null ?  0 : (float)str_replace(',', '', $get('unit_price'));
-                        $discount = $get('discount') === null ?  0 : (float)$get('discount');
+                        $unitPrice = $get('unit_price') === null ? 0 : (float)str_replace(',', '', $get('unit_price'));
+                        $discount = $get('discount') === null ? 0 : (float)$get('discount');
                         $set('total', number_format(($count * $unitPrice) - (($count * $unitPrice) * $discount) / 100, 2));
                     })->default(0)->required(),
                     Forms\Components\TextInput::make('total')->live()->readOnly()->default(0)->required()->label('Total'),
-                ])->columnSpanFull()->columns(7)->afterStateUpdated(function (Forms\Set $set) {
-                    $set('setPrice', 0);
-                }),
+                ])->columnSpanFull()->columns(7),
             ])->columns(2),
             Forms\Components\Wizard\Step::make('journal')->label('Journal Entry')->schema([
 
@@ -1229,7 +1387,7 @@ class FactorResource extends Resource
         return [
             'index' => Pages\ListFactors::route('/'),
             'create' => Pages\CreateFactor::route('/create'),
-//            'edit' => Pages\EditFactor::route('/{record}/edit'),
+            'edit' => Pages\EditFactor::route('/{record}/edit'),
         ];
     }
 }

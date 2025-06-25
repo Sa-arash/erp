@@ -51,6 +51,7 @@ class InvoiceResource extends Resource
 
     public static function canEdit(Model $record): bool
     {
+
         if (isset($record->transactions[0])) {
             return ($record->transactions[0]->financialPeriod->end_date > now());
         }
