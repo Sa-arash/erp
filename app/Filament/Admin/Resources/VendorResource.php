@@ -77,16 +77,16 @@ class VendorResource extends Resource
                 Tables\Columns\TextColumn::make('phone')->searchable(),
                 Tables\Columns\TextColumn::make('email')->searchable(),
                 Tables\Columns\TextColumn::make('address')->limit(30)->tooltip(fn($record)=>$record->address)->searchable(),
-                Tables\Columns\TextColumn::make('purchase_order_count')->label('Count PO ')->alignCenter()->counts('purchaseOrder'),
-                Tables\Columns\TextColumn::make('PO')->label('Total PO ')->state(function ($record){
-                    $total=0;
-                    foreach ($record->purchaseOrder as $purchase ){
-                        foreach ($purchase->items as $item){
-                            $total+=$item->total;
-                        }
-                    }
-                    return number_format($total,2);
-                }),
+//                Tables\Columns\TextColumn::make('purchase_order_count')->label('Count PO ')->alignCenter()->counts('purchaseOrder'),
+//                Tables\Columns\TextColumn::make('PO')->label('Total PO ')->state(function ($record){
+//                    $total=0;
+//                    foreach ($record->purchaseOrder as $purchase ){
+//                        foreach ($purchase->items as $item){
+//                            $total+=$item->total;
+//                        }
+//                    }
+//                    return number_format($total,2);
+//                }),
                 Tables\Columns\TextColumn::make('status')->color(fn($state)=> match ($state){'Green'=>'success','Red'=>'danger','Gray'=>'grayBack',})->badge(),
 
             ])

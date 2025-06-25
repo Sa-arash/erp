@@ -119,9 +119,9 @@
 
 
         @page  {
-            margin-top: 40mm;  /* این خط خیلی مهمه: فضای کافی برای هدر */
-            margin-left: 10px;
-            margin-right: 10px;
+            margin-top: 25mm;  /* این خط خیلی مهمه: فضای کافی برای هدر */
+            margin-left: 20px;
+            margin-right: 20px;
             footer: MyFooter;
             header: MyHeader;
 
@@ -155,22 +155,48 @@
 </htmlpageheader>
 
 
-<table>
+<table style="border: 2px solid black">
 
     @if($histories->employee_id)
         <tr>
-            <td><b>Employee: </b>{{$histories->employee->fullName}}</td>
-            <td><b>Badge Number : </b>{{$histories->employee->ID_number}}</td>
-            <td><b>Department : </b>{{$histories->employee?->department?->title}}</td>
-            <td><b>Position: </b>{{$histories->employee?->position?->title}}</td>
-            <td><b>Location: </b>{{$histories->employee?->warehouse?->title.' '.getParents($histories->employee?->structure)}}</td>
+            <!-- ستون اطلاعات کارمند -->
+            <td style="width: 75%; vertical-align: top;">
+                <p><b>Employee Name:</b> {{ $histories->employee->fullName }}</p>
+                <p><b>Position:</b> {{ $histories->employee?->position?->title }}</p>
+                <p><b>Badge Number:</b> {{ $histories->employee->ID_number }}</p>
+                <p><b>Department:</b> {{ $histories->employee?->department?->title }}</p>
+                <p><b>Location:</b> {{ $histories->employee?->warehouse?->title . ' ' . getParents($histories->employee?->structure) }}</p>
+            </td>
+
+            <!-- ستون تصویر کارمند -->
+            <td style="width: 25%; text-align: right; vertical-align: top;">
+                @if(file_exists($histories->employee->media->where('collection_name','images')->first()?->getPath()))
+                    <img width="100"
+                         src="{{ $histories->employee->media->where('collection_name','images')->first()?->getPath() }}"
+                         alt="Employee Image">
+                @endif
+            </td>
         </tr>
+
+
+
     @else
         <tr>
-            <td><b>Personnel: </b>{{$histories->person->name}}</td>
-            <td><b>Group: </b>{{$histories->person->person_group}}</td>
-            <td><b>Personnel Number: </b>{{$histories->person->number}}</td>
-            <td><b>Job Title: </b>{{$histories->person->job_title}}</td>
+            <td style="width: 75%; vertical-align: top;">
+                <p><b>Personnel: </b>{{$histories->person->name}}</p>
+                <p><b>Group: </b>{{$histories->person->person_group}}</p>
+                <p><b>Badge Number:</b> {{ $histories->employee->ID_number }}</p>
+                <p><b>Personnel Number: </b>{{$histories->person->number}}</p>
+                <p><b>Job Title: </b>{{$histories->person->job_title}}</p>
+            </td>
+
+            <td style="width: 25%; text-align: right; vertical-align: top;">
+                @if(file_exists($histories->person->media->where('collection_name','images')->first()?->getPath()))
+                    <img width="100"
+                         src="{{ $histories->person->media->where('collection_name','images')->first()?->getPath() }}"
+                         alt="Employee Image">
+                @endif
+            </td>
         </tr>
     @endif
 </table>
@@ -184,11 +210,11 @@
             <td style="width: 80%;border: 2px solid black">
                 <table style="width: 100%;">
                     <tr>
-                        <td colspan="4" style="text-align: center;font-size: 16px;background-color: #ffffaa"><b> Asset Info</b></td>
+                        <td colspan="4" style="text-align: center;font-size: 16px;background-color: #ffffaa"><b>Asset Description</b></td>
                     </tr>
 
                     <tr>
-                        <td><strong>Asset Description</strong></td>
+                        <td><strong> Asset Specification</strong></td>
                         <td>{{$history->asset->description}}</td>
                         <td><strong>Asset Number:</strong></td>
                         <td>{{$history->asset->number}}</td>
@@ -205,14 +231,19 @@
                         <td><strong>Condition:</strong></td>
                         <td>{{$history->asset->quality}}</td>
                     </tr>
-
+                    <tr>
+                        <td><strong>Price:</strong></td>
+                        <td>{{number_format($history->asset->price)}}</td>
+                        <td><strong>PO No:</strong></td>
+                        <td>{{$history->asset->po_number}}</td>
+                    </tr>
                     <tr>
                         <td><strong>Note</strong></td>
                         <td colspan="3" class="notes">{{$history->asset->note}}</td>
                     </tr>
 
                     <tr>
-                        <td colspan="4" style="text-align: center;font-size: 16px;background-color: #ffffaa"><b> History Info</b></td>
+                        <td colspan="4" style="text-align: center;font-size: 16px;background-color: #ffffaa"><b> History Overview</b></td>
                     </tr>
                     <tr>
                         <td><strong>Location:</strong></td>
@@ -221,7 +252,7 @@
                         <td>{{$history->type}}</td>
                     </tr>
                     <tr>
-                        <td><strong>Assign/Return Date:</strong></td>
+                        <td><strong>Assign / Return Date:</strong></td>
                         <td>{{\Illuminate\Support\Carbon::make($history->created_at)->format('d/M/Y h:i A')}}</td>
                         <td><strong>Due Date:</strong></td>
                         <td>{{$history->due_date ?  \Illuminate\Support\Carbon::make($history->due_date)->format('d/M/Y '):'' }}</td>

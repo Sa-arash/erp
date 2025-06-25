@@ -38,7 +38,7 @@ class WarehouseResource extends Resource
     protected static ?string $model = Warehouse::class;
     protected static ?string $navigationGroup = 'Logistic Management';
     protected static ?string $navigationIcon = 'heroicon-c-home-modern';
-    protected static ?int $navigationSort=5;
+    protected static ?int $navigationSort=4;
     protected static ?string $label="Warehouse";
     protected static ?string $pluralLabel="Warehouse";
 
@@ -103,7 +103,7 @@ class WarehouseResource extends Resource
             }
         })
             ->columns([
-                Tables\Columns\TextColumn::make('')->rowIndex(),
+                Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
                 Tables\Columns\TextColumn::make('title')->label('Location Name')->searchable(),
                 Tables\Columns\TextColumn::make('employee.fullName')->label('Manager By')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('phone')->searchable(),

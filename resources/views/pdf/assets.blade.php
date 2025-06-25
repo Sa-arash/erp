@@ -231,7 +231,7 @@ switch ($type){
                             <td class="barcode">
                                 {!! '<img src="data:image/png;base64,' . \Milon\Barcode\Facades\DNS1DFacade::getBarcodePNG($asset->number, 'C39',1   ,20) .'" style="width:400px" alt="barcode"/>' !!}
                                 {{$asset->number}}<br><br>
-                                @if($asset->media->where('collection_name','images')->first())
+                                @if(file_exists($asset->media->where('collection_name','images')->first()?->getPath()))
                                     <img class="asset-image"
                                          src="{{$asset->media->where('collection_name','images')->first()?->getPath()}}"
                                          alt="">

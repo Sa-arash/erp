@@ -15,7 +15,7 @@ class PartiesPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_parties');
+        return $user->can('view_any_vendor');
     }
 
     /**
@@ -23,7 +23,7 @@ class PartiesPolicy
      */
     public function view(User $user, Parties $parties): bool
     {
-        return $user->can('view_parties');
+        return $user->can('view_vendor');
     }
 
     /**
@@ -31,7 +31,7 @@ class PartiesPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('create_parties');
+        return $user->can('{{ Create }}');
     }
 
     /**
@@ -39,7 +39,7 @@ class PartiesPolicy
      */
     public function update(User $user, Parties $parties): bool
     {
-        return $user->can('update_parties');
+        return $user->can('update_vendor');
     }
 
     /**
@@ -47,7 +47,7 @@ class PartiesPolicy
      */
     public function delete(User $user, Parties $parties): bool
     {
-        return $user->can('delete_parties');
+        return $user->can('{{ Delete }}');
     }
 
     /**
@@ -55,7 +55,7 @@ class PartiesPolicy
      */
     public function deleteAny(User $user): bool
     {
-        return $user->can('delete_any_parties');
+        return $user->can('{{ DeleteAny }}');
     }
 
     /**
@@ -63,7 +63,7 @@ class PartiesPolicy
      */
     public function forceDelete(User $user, Parties $parties): bool
     {
-        return $user->can('force_delete_parties');
+        return $user->can('{{ ForceDelete }}');
     }
 
     /**
@@ -79,7 +79,7 @@ class PartiesPolicy
      */
     public function restore(User $user, Parties $parties): bool
     {
-        return $user->can('restore_parties');
+        return $user->can('{{ Restore }}');
     }
 
     /**

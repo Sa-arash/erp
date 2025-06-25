@@ -23,21 +23,12 @@ class PurchaseOrderItem extends Model
     {
         return $this->belongsTo(Company::class);
     }
-    protected $appends=['total'];
 
     public function getLogAttribute(){
         return $this?->product?->title."#-#".$this?->purchaseOrder?->purchase_orders_number;
     }
 
-    public function getTotalAttribute(){
-        $freights = $this->freights ;
-        $q = $this->quantity;
-        $tax = $this->taxes;
-        $price = $this->unit_price;
 
-        return ($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100);
-
-    }
 
     public function purchaseOrder(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
@@ -50,5 +41,17 @@ class PurchaseOrderItem extends Model
     public function unit(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Unit::class);
+    }
+    public function vendor(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Parties::class);
+    }
+    public function currency(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Currency::class);
+    }
+    public function employee(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Employee::class);
     }
 }

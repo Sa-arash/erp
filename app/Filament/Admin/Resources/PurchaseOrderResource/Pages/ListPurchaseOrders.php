@@ -36,7 +36,7 @@ class ListPurchaseOrders extends ListRecords
 
             return [
                 Actions\CreateAction::make()
-                    ->label('New Purchase Order '),
+                    ->label('New PO '),
             ];
         }else{
             return [
@@ -45,4 +45,5 @@ class ListPurchaseOrders extends ListRecords
             ];
         }
     }
+    protected static ?string $title="Purchase Order (PO)";
 }

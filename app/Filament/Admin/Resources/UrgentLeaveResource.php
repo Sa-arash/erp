@@ -67,7 +67,12 @@ class UrgentLeaveResource extends Resource  implements HasShieldPermissions
                    Forms\Components\TextInput::make('number')->disabled()->label('Badge Number'),
               ])->columns(3),
                 Forms\Components\Section::make([
-                    Forms\Components\TimePicker::make('time_out')->before('time_in')->seconds(false)->reactive()
+                    Forms\Components\TimePicker::make('time_out')->before(function (Get $get){
+                        if ($get('time_in')){
+                            return $get('time_in');
+                        }
+                        return false;
+                    })->seconds(false)->reactive()
                         ->afterStateUpdated(function (Set $set, $state) {
                             $set('time_in', $state);
                         })
@@ -98,7 +103,7 @@ class UrgentLeaveResource extends Resource  implements HasShieldPermissions
 
     public static function table(Table $table): Table
     {
-        return $table
+        return $table->defaultSort('id','desc')
             ->columns([
                 Tables\Columns\TextColumn::make('NO')->label('NO')->rowIndex(),
                 Tables\Columns\TextColumn::make('employee.fullName')->numeric()->sortable(),

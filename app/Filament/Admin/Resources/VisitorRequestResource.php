@@ -16,7 +16,6 @@ use Filament\Forms\Form;
 use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
 use Filament\Tables;
@@ -253,15 +252,15 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('SN_code')->label('Department Code'),
                 Tables\Columns\TextColumn::make('employee.fullName')->label('Requester')->numeric()->sortable(),
-                Tables\Columns\TextColumn::make('visitors_detail')->label('Visitors')->state(fn($record) => array_map(fn($item) => $item['name'], $record->visitors_detail))->numeric()->sortable()->badge()->limitList(1),
+                Tables\Columns\TextColumn::make('visitors_detail')->label('Visitors')->state(fn($record) => array_map(fn($item) => $item['name'], $record->visitors_detail))->numeric()->sortable()->bulleted()->limitList(7),
                 Tables\Columns\TextColumn::make('visiting_dates')->limitList(5)->bulleted()->label('Scheduled Visit Dates')->sortable(),
                 Tables\Columns\TextColumn::make('arrival_time')->time('h:i A'),
                 Tables\Columns\TextColumn::make('departure_time')->time('h:i A'),
-                Tables\Columns\TextColumn::make('status')->label('Head of Security ')->tooltip(fn($record)=>isset($record->approvals[0])? $record->approvals[0]->approve_date : false )->alignCenter()->state(fn($record)=>match ($record->status){
-                    'approved'=>'Approved',
-                    'Pending'=>'Pending',
-                    'notApproved'=>'Not Approved',
-                    'default'=>''
+                Tables\Columns\TextColumn::make('status')->label('Head of Security ')->tooltip(fn($record) => isset($record->approvals[0]) ? $record->approvals[0]->approve_date : false)->alignCenter()->state(fn($record) => match ($record->status) {
+                    'approved' => 'Approved',
+                    'Pending' => 'Pending',
+                    'notApproved' => 'Not Approved',
+                    'default' => ''
                 })->color(function ($state) {
                     switch ($state) {
                         case "Approved":
@@ -272,11 +271,42 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                             return 'danger';
                     }
                 })->badge(),
-                Tables\Columns\TextColumn::make('gate_status')->state(fn($record)=>match ($record->gate_status){
-                    'CheckedOut'=>'Checked OUT',
-                    'CheckedIn'=>'Checked IN',
-                    default=>''
-                })->label('Reception')->badge(),
+                Tables\Columns\TextColumn::make('CheckIN')->label('Check IN')->state(function ($record) {
+                    if ($record->entry_and_exit) {
+                        $lastKey = $record->entry_and_exit[array_key_last($record->entry_and_exit)];
+                        if ( isset($lastKey['visitors']) and count($lastKey['visitors'])) {
+                        return $lastKey['visitors'][array_key_last($lastKey['visitors'])]['Check IN'];
+                        }elseif (isset($lastKey['drivers']) and count($lastKey['drivers'])){
+                            return $lastKey['drivers'][array_key_last($lastKey['drivers'])]['Check IN'];
+                        }
+                    }
+                })->time('h:i A'),
+                Tables\Columns\TextColumn::make('CheckOUT')->label('Check OUT')->state(function ($record) {
+                    if ($record->entry_and_exit) {
+                        $lastKey = $record->entry_and_exit[array_key_last($record->entry_and_exit)];
+                        if ( isset($lastKey['visitors']) and count($lastKey['visitors'])) {
+                            return $lastKey['visitors'][array_key_last($lastKey['visitors'])]['Check OUT'];
+                        }elseif (isset($lastKey['drivers']) and count($lastKey['drivers'])){
+                            return $lastKey['drivers'][array_key_last($lastKey['drivers'])]['Check OUT'];
+                        }
+                    }
+                })->time('h:i A'),
+                Tables\Columns\TextColumn::make('track')->label('Track Time')->state(function ($record) {
+                    if ($record->entry_and_exit) {
+
+                        $lastKey = $record->entry_and_exit[array_key_last($record->entry_and_exit)];
+                        if ( isset($lastKey['visitors']) and count($lastKey['visitors'])) {
+                            if (isset($lastKey['visitors'][array_key_last($lastKey['visitors'])]['Track Time'])){
+                                return $lastKey['visitors'][array_key_last($lastKey['visitors'])]['Track Time'];
+                            }
+                        }elseif (isset($lastKey['drivers']) and count($lastKey['drivers'])){
+                            if (isset($lastKey['drivers'][array_key_last($lastKey['drivers'])]['Track Time'])){
+                                return $lastKey['drivers'][array_key_last($lastKey['drivers'])]['Track Time'];                            }
+
+                        }
+                    }
+                }),
+
                 Tables\Columns\ToggleColumn::make('ICON')->label("ICON")->sortable()->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])

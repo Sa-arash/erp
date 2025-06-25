@@ -91,6 +91,7 @@ class ServiceResource extends Resource
     {
         return $table->defaultSort('id','desc')
             ->columns([
+                Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
                 Tables\Columns\TextColumn::make('employee.fullName')
                     ->numeric()
                     ->sortable(),

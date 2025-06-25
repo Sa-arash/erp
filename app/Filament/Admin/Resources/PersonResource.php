@@ -74,7 +74,7 @@ class PersonResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('#')->rowIndex(),
+                Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
                 Tables\Columns\TextColumn::make('name')->searchable(),
                 Tables\Columns\TextColumn::make('person_group')->searchable(),
                 Tables\Columns\TextColumn::make('number')->searchable(),

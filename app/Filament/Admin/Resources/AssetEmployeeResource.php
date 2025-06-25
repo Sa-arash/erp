@@ -165,7 +165,7 @@ class AssetEmployeeResource extends Resource
             ])
             ->columns([
 
-                Tables\Columns\TextColumn::make('')->rowIndex(),
+                Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
                 Tables\Columns\TextColumn::make('employee.fullName')->state(fn($record) => $record->employee_id ? $record->employee->fullName : $record->person?->name . '(' . $record->person?->number . ')')->label('Employee/Personnel')->sortable(),
                 Tables\Columns\TextColumn::make('date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('description')->sortable(),
@@ -208,8 +208,8 @@ class AssetEmployeeResource extends Resource
                 DateRangeFilter::make('date'),
             ],getModelFilter())
             ->actions([
-                Tables\Actions\Action::make('pdf')->color('warning')->tooltip('Print History')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('Print History')->url(fn($record) => route('pdf.employeeAssetHistory', ['id' => $record->id,'type'=>'ID','company'=>$record->company_id]))->openUrlInNewTab(),
-                Tables\Actions\Action::make('pdf')->color('success')->tooltip('Print Assets')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('Print Assets')->url(fn($record) => route('pdf.employeeAsset', ['id' => $record->id,'type'=>'ID','company'=>$record->company_id]))->openUrlInNewTab(),
+                Tables\Actions\Action::make('pdf')->color('warning')->tooltip('Print History')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label(' History')->url(fn($record) => route('pdf.employeeAssetHistory', ['id' => $record->id,'type'=>'ID','company'=>$record->company_id]))->openUrlInNewTab(),
+                Tables\Actions\Action::make('pdf')->color('success')->tooltip('Print Assets')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('Print ')->url(fn($record) => route('pdf.employeeAsset', ['id' => $record->id,'type'=>'ID','company'=>$record->company_id]))->openUrlInNewTab(),
 
             ])
             ->bulkActions([

@@ -31,7 +31,12 @@ class MyUrgent extends BaseWidget
                 Tables\Actions\Action::make('new')->label('New Urgent Leave')->form([
                     Section::make([
                         DateTimePicker::make('date')->default(now())->required(),
-                        TimePicker::make('time_out')->before('time_out')->seconds(false)->reactive()
+                        TimePicker::make('time_out')->before(function (Get $get){
+                            if ($get('time_in')){
+                                return $get('time_in');
+                            }
+                            return false;
+                        })->seconds(false)->reactive()
                             ->afterStateUpdated(function (Set $set, $state) {
                                 $set('time_in', $state);
                             })->default(now())

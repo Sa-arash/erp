@@ -115,7 +115,7 @@ class AccountResource extends Resource
                     if ($currency) {
                         $set('exchange_rate', $currency->exchange_rate);
                     }
-                }),
+                })->default(defaultCurrency()?->id),
                 Forms\Components\ToggleButtons::make('type')->disabled()->formatStateUsing(function ($state) {
                     if ((int)Request::query('parent')){
                         return Account::query()->where('id', (int)Request::query('parent'))->first()?->type;

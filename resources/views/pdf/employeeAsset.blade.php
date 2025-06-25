@@ -157,22 +157,46 @@
 </htmlpageheader>
 
 
-<table>
+<table style="border: 2px solid black">
 
     @if($record->employee_id)
         <tr>
-            <td><b>Employee: </b>{{$record->employee->fullName}}</td>
-            <td><b>Badge Number: </b>{{$record->employee->ID_number}}</td>
-            <td><b>Department :</b>{{$record->employee?->department?->title}}</td>
-            <td><b>Position:</b>{{$record->employee?->position?->title}}</td>
-            <td><b>Location: </b>{{$record->employee?->warehouse?->title.' '.getParents($record->employee?->structure)}}</td>
+            <!-- ستون اطلاعات کارمند -->
+            <td style="width: 75%; vertical-align: top;">
+                <p><b>Employee Name:</b> {{ $record->employee->fullName }}</p>
+                <p><b>Position:</b> {{ $record->employee?->position?->title }}</p>
+                <p><b>Badge Number:</b> {{ $record->employee->ID_number }}</p>
+                <p><b>Department:</b> {{ $record->employee?->department?->title }}</p>
+                <p><b>Location:</b> {{ $record->employee?->warehouse?->title . ' ' . getParents($record->employee?->structure) }}</p>
+            </td>
+
+            <!-- ستون تصویر کارمند -->
+            <td style="width: 25%; text-align: right; vertical-align: top;">
+                @if(file_exists($record->employee->media->where('collection_name','images')->first()?->getPath()))
+                    <img width="100"
+                         src="{{ $record->employee->media->where('collection_name','images')->first()?->getPath() }}"
+                         alt="Employee Image">
+                @endif
+            </td>
         </tr>
     @else
+
         <tr>
-            <td><b>Personnel: </b>{{$record->person->name}}</td>
-            <td><b>Group: </b>{{$record->person->person_group}}</td>
-            <td><b>Personnel Number: </b>{{$record->person->number}}</td>
-            <td><b>Job Title: </b>{{$record->person->job_title}}</td>
+            <td style="width: 75%; vertical-align: top;">
+                <p><b>Personnel: </b>{{$record->person->name}}</p>
+                <p><b>Group: </b>{{$record->person->person_group}}</p>
+                <p><b>Badge Number:</b> {{ $record->employee->ID_number }}</p>
+                <p><b>Personnel Number: </b>{{$record->person->number}}</p>
+                <p><b>Job Title: </b>{{$record->person->job_title}}</p>
+            </td>
+
+            <td style="width: 25%; text-align: right; vertical-align: top;">
+                @if(file_exists($record->person->media->where('collection_name','images')->first()?->getPath()))
+                    <img width="100"
+                         src="{{ $record->person->media->where('collection_name','images')->first()?->getPath() }}"
+                         alt="Employee Image">
+                @endif
+            </td>
         </tr>
     @endif
 </table>
@@ -186,10 +210,10 @@
             <td style="width: 80%;border: 2px solid black">
                 <table style="width: 100%;">
                     <tr>
-                        <td colspan="4" style="text-align: center;font-size: 16px"><b> Asset Info</b></td>
+                        <td colspan="4" style="text-align: center;font-size: 16px"><b> Asset Description</b></td>
                     </tr>
                     <tr>
-                        <td><strong>Asset Description</strong></td>
+                        <td><strong> Asset Specification</strong></td>
                         <td>{{$history->asset->description}}</td>
                         <td><strong>Asset Number:</strong></td>
                         <td>{{$history->asset->number}}</td>
@@ -206,6 +230,12 @@
                         <td><strong>Condition:</strong></td>
                         <td>{{$history->asset->quality}}</td>
                     </tr>
+                    <tr>
+                        <td><strong>Price:</strong></td>
+                        <td>{{number_format($history->asset->price)}}</td>
+                        <td><strong>PO No:</strong></td>
+                        <td>{{$history->asset->po_number}}</td>
+                    </tr>
 
                     <tr>
                         <td><strong>Note</strong></td>
@@ -213,7 +243,7 @@
                     </tr>
 
                     <tr>
-                        <td colspan="4" style="text-align: center;font-size: 16px"><b> History Info</b></td>
+                        <td colspan="4" style="text-align: center;font-size: 16px"><b> History Overview</b></td>
                     </tr>
                     <tr>
                         <td><strong>Location:</strong></td>
@@ -222,7 +252,7 @@
                         <td>{{$history->type}}</td>
                     </tr>
                     <tr>
-                        <td><strong>Assign/Return Date:</strong></td>
+                        <td><strong>Assign / Return Date:</strong></td>
                         <td>{{\Illuminate\Support\Carbon::make($history->created_at)->format('d/M/Y h:i A')}}</td>
                         <td><strong>Due Date:</strong></td>
                         <td>{{$history->due_date ?  \Illuminate\Support\Carbon::make($history->due_date)->format('d/M/Y '):'' }}</td>

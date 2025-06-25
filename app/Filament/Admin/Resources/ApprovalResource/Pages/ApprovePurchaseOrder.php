@@ -38,7 +38,7 @@ class ApprovePurchaseOrder extends ManageRelatedRecords
         return $table
             ->query(PurchaseOrderItem::query()->where('purchase_order_id',$this->record->approvable_id))
             ->columns([
-                Tables\Columns\TextColumn::make('#')->rowIndex(),
+                Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
                 Tables\Columns\TextColumn::make('product.info'),
                 Tables\Columns\TextColumn::make('description'),
                 Tables\Columns\TextColumn::make('unit.title'),
@@ -46,7 +46,10 @@ class ApprovePurchaseOrder extends ManageRelatedRecords
                 Tables\Columns\TextColumn::make('unit_price')->numeric(2)->label('Unit Price'),
                 Tables\Columns\TextColumn::make('taxes')->label('Taxes'),
                 Tables\Columns\TextColumn::make('freights')->label('Freights'),
-                Tables\Columns\TextColumn::make('total')->label('Total')->numeric(2),
+                Tables\Columns\TextColumn::make('vendor.name')->label('Vendor'),
+                Tables\Columns\TextColumn::make('currency.name')->label('Currency'),
+                Tables\Columns\TextColumn::make('exchange_rate')->label('Exchange Rate'),
+                Tables\Columns\TextColumn::make('total')->summarize(Tables\Columns\Summarizers\Sum::make())->label('Total')->numeric(2),
 
             ])
             ->filters([
@@ -61,10 +64,7 @@ class ApprovePurchaseOrder extends ManageRelatedRecords
                         Section::make([
                             TextEntry::make('purchase_orders_number')->prefix('ATGT/UNC/')->state($record->purchase_orders_number)->label('PO No'),
                             TextEntry::make('purchase_orders_number')->prefix('ATGT/UNC/')->state($record->purchaseRequest?->purchase_number)->label('PR No'),
-                            TextEntry::make('Currency')->state($record->currency->name)->label('Currency'),
-                            TextEntry::make('Exchange Rate')->numeric(3)->state($record->exchange_rate)->label('Exchange Rate'),
                             TextEntry::make('date_of_po')->state($record->date_of_po)->label('Date of PO'),
-                            TextEntry::make('vendor')->state($record->vendor->name.'('.$record->vendor?->accountVendor?->code.')')->label('Vendor'),
                             TextEntry::make('status')->state(function ()use($record){
                                 return match ($record->status){
                                     'pending'=>'Pending',

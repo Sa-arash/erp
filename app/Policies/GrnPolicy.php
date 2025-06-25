@@ -3,10 +3,10 @@
 namespace App\Policies;
 
 use App\Models\User;
-use App\Models\UrgentLeave;
+use App\Models\Grn;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
-class UrgentLeavePolicy
+class GrnPolicy
 {
     use HandlesAuthorization;
 
@@ -15,15 +15,15 @@ class UrgentLeavePolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can('view_any_urgent::leave::security');
+        return $user->can('view_any_grn');
     }
 
     /**
      * Determine whether the user can view the model.
      */
-    public function view(User $user, UrgentLeave $urgentLeave): bool
+    public function view(User $user, Grn $grn): bool
     {
-        return $user->can('{{ View }}');
+        return $user->can('view_grn');
     }
 
     /**
@@ -31,23 +31,23 @@ class UrgentLeavePolicy
      */
     public function create(User $user): bool
     {
-        return $user->can('{{ Create }}');
+        return $user->can('create_grn');
     }
 
     /**
      * Determine whether the user can update the model.
      */
-    public function update(User $user, UrgentLeave $urgentLeave): bool
+    public function update(User $user, Grn $grn): bool
     {
-        return $user->can('{{ Update }}');
+        return $user->can('update_grn');
     }
 
     /**
      * Determine whether the user can delete the model.
      */
-    public function delete(User $user, UrgentLeave $urgentLeave): bool
+    public function delete(User $user, Grn $grn): bool
     {
-        return $user->can('{{ Delete }}');
+        return $user->can('delete_grn');
     }
 
     /**
@@ -61,7 +61,7 @@ class UrgentLeavePolicy
     /**
      * Determine whether the user can permanently delete.
      */
-    public function forceDelete(User $user, UrgentLeave $urgentLeave): bool
+    public function forceDelete(User $user, Grn $grn): bool
     {
         return $user->can('{{ ForceDelete }}');
     }
@@ -77,7 +77,7 @@ class UrgentLeavePolicy
     /**
      * Determine whether the user can restore.
      */
-    public function restore(User $user, UrgentLeave $urgentLeave): bool
+    public function restore(User $user, Grn $grn): bool
     {
         return $user->can('{{ Restore }}');
     }
@@ -93,7 +93,7 @@ class UrgentLeavePolicy
     /**
      * Determine whether the user can replicate.
      */
-    public function replicate(User $user, UrgentLeave $urgentLeave): bool
+    public function replicate(User $user, Grn $grn): bool
     {
         return $user->can('{{ Replicate }}');
     }

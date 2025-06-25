@@ -530,12 +530,12 @@ class AssetResource extends Resource
                     ])->label('Export')->color('purple')
             ])
             ->columns([
-                Tables\Columns\TextColumn::make('')->rowIndex(),
+                Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
                 Tables\Columns\ImageColumn::make('media.original_url')->state(function ($record) {
                     return $record->media->where('collection_name', 'images')->first()?->original_url;
                 })->disk('public')
                     ->defaultImageUrl(fn($record) => asset('img/defaultAsset.png'))
-                    ->alignLeft()->label('Asset Picture')->width(50)->height(50)->extraAttributes(['style' => 'border-radius:50px!important']),
+                    ->alignLeft()->label('Asset Image')->width(50)->height(50)->extraAttributes(['style' => 'border-radius:50px!important']),
                 Tables\Columns\TextColumn::make('number')->state(fn() => '___________')->label('Barcode')->searchable()->description(function ($record) {
 
                     $barcode = '<img src="data:image/png;base64,' . \Milon\Barcode\Facades\DNS1DFacade::getBarcodePNG($record->number, 'C39', 1, 20) . '" alt="barcode"/>';
@@ -544,7 +544,7 @@ class AssetResource extends Resource
                 })->action(function ($record) {
                     return redirect(route('pdf.barcode', ['code' => $record->number]));
                 }),
-                Tables\Columns\TextColumn::make('purchase_order_id')->label('PO NO')->state(fn($record) => $record->purchase_order_id === null ? "---" : PurchaseOrder::find($record->purchase_order_id)->purchase_orders_number)
+                Tables\Columns\TextColumn::make('purchase_order_id')->label('PO No')->state(fn($record) => $record->purchase_order_id === null ? "---" : PurchaseOrder::find($record->purchase_order_id)->purchase_orders_number)
                     ->url(fn($record) => $record->purchase_order_id ? PurchaseOrderResource::getUrl() . "?tableFilters[id][value]=" . $record->purchase_order_id : false),
                 Tables\Columns\TextColumn::make('titlen')->label('Asset Description'),
                 Tables\Columns\TextColumn::make('brand.title'),
@@ -591,7 +591,7 @@ class AssetResource extends Resource
                 Tables\Filters\SelectFilter::make('product_id')->searchable()->options(getCompany()->products->where('product_type','unConsumable')->pluck('title', 'id'))->label('Product'),
                 Tables\Filters\SelectFilter::make('status')->searchable()->options(['inuse' => "In Use", 'inStorageUsable' => "In Storage",  'loanedOut' => "Loaned Out", 'outForRepair' => 'Out For Repair', 'StorageUnUsable' => " Scrap"]),
                 DateRangeFilter::make('buy_date')->label('Purchase Date'),
-                DateRangeFilter::make('guarantee_data')->label('Guarantee Data'),
+                DateRangeFilter::make('guarantee_date')->label('Guarantee Data'),
                 Tables\Filters\Filter::make('employee')->columnSpan(4)
                     ->form([
                         Section::make([

@@ -306,7 +306,7 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
                 })->icon('heroicon-o-check-badge')->iconSize(IconSize::Large)->color('success'),
 
                 Tables\Actions\Action::make('approve')->hidden(function ($record) {
-                    if (substr($record->approvable_type, 11) === "PurchaseRequest" or substr($record->approvable_type, 11) === "PurchaseOrder" or substr($record->approvable_type, 11) === "Loan"or substr($record->approvable_type, 11) === "Leave" or substr($record->approvable_type, 11) === "TakeOut") {
+                    if (substr($record->approvable_type, 11) === "PurchaseRequest" or substr($record->approvable_type, 11) === "PurchaseOrder" or substr($record->approvable_type, 11) === "Loan"or substr($record->approvable_type, 11) === "Leave" or substr($record->approvable_type, 11) === "TakeOut"or substr($record->approvable_type, 11) === "Grn") {
                         return true;
                     }
                 })->icon('heroicon-o-check-badge')->iconSize(IconSize::Large)->color('success')->form([
@@ -427,6 +427,11 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
                         return true;
                     }
                 })->label('Purchase Order Approve')->icon( fn($record)=>$record->status->value=='Approve'? 'heroicon-o-check-badge':'heroicon-o-x-circle')->iconSize(IconSize::Large)->color(fn($record)=>$record->status->value=='Approve'? 'success':'danger' )->url(fn($record)=>ApprovalResource::getUrl('purchase_order',['record'=>$record->id])),
+                Action::make('urlOrder')->visible(function ($record) {
+                    if (substr($record->approvable_type, 11) === "Grn" and isset($record->approvable)) {
+                        return true;
+                    }
+                })->label('GRN Approve')->icon( fn($record)=>$record->status->value=='Approve'? 'heroicon-o-check-badge':'heroicon-o-x-circle')->iconSize(IconSize::Large)->color(fn($record)=>$record->status->value=='Approve'? 'success':'danger' )->url(fn($record)=>ApprovalResource::getUrl('grn',['record'=>$record->id])),
             ])->actionsAlignment(CellAlignment::LEFT)
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -461,6 +466,7 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
             'index' => Pages\ListApprovals::route('/'),
             'purchase'=>Pages\ApprovePurchase::route('/purchase/{record}'),
             'purchase_order'=>Pages\ApprovePurchaseOrder::route('/purchase-order/{record}'),
+            'grn'=>Pages\ApproveGRNItem::route('GRN/{record}')
             //            'create' => Pages\CreateApproval::route('/create'),
             //            'edit' => Pages\EditApproval::route('/{record}/edit'),
         ];

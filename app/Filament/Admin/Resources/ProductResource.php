@@ -61,8 +61,12 @@ class ProductResource extends Resource
                             }
                         }
                     }),
-                    Select::make('product_type')->searchable()->options(['consumable' => 'Consumable', 'unConsumable' => 'non-Consumable'])->default('consumable')->live()->afterStateUpdated(function(Set $set){
-                        $set('account_id',null);
+                    Select::make('product_type')->searchable()->options(['consumable' => 'Consumable', 'unConsumable' => 'non-Consumable'])->default('consumable')->live()->afterStateUpdated(function(Set $set,$state){
+                        if ($state=="consumable"){
+                            $set('account_id',getCompany()->product_expence_accounts[0]);
+                        }else{
+                            $set('account_id',getCompany()->product_accounts[0]);
+                        }
                     }),
                     Forms\Components\TextInput::make('sku')->readOnly()->label(' SKU')->unique(ignoreRecord:true ,modifyRuleUsing: function (Unique $rule) {
                             return $rule->where('company_id', getCompany()->id);
@@ -113,7 +117,7 @@ class ProductResource extends Resource
                     }
                     return $data;
                 }
-                })->required()->model(Transaction::class)->searchable()->label('Category')->live(),
+                })->required()->model(Transaction::class)->searchable()->label('Category')->live()->default(getCompany()->product_expence_accounts[0]),
 
                 Select::make('sub_account_id')->label('SubCategory')->required()->options(function (Get $get){
                     $parent=$get('account_id');

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Admin\Resources\PurchaseOrderResource\RelationManagers;
+namespace App\Filament\Admin\Resources\GrnResource\RelationManagers;
 
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -10,7 +10,7 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class PurchaseOrderItemRelationManager extends RelationManager
+class ItemsGrnRelationManager extends RelationManager
 {
     protected static string $relationship = 'items';
 
@@ -18,7 +18,7 @@ class PurchaseOrderItemRelationManager extends RelationManager
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('product')
+                Forms\Components\TextInput::make('id')
                     ->required()
                     ->maxLength(255),
             ]);
@@ -27,7 +27,7 @@ class PurchaseOrderItemRelationManager extends RelationManager
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('product')
+
             ->columns([
                 Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
                 Tables\Columns\TextColumn::make('product.info')->searchable(query: fn($query,$search)=>$query->whereHas('product',function ($query)use($search){
@@ -42,11 +42,14 @@ class PurchaseOrderItemRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('vendor.name')->label('Vendor'),
                 Tables\Columns\TextColumn::make('currency.name')->label('Currency'),
                 Tables\Columns\TextColumn::make('exchange_rate')->label('Exchange Rate'),
-                Tables\Columns\TextColumn::make('total')->summarize(Tables\Columns\Summarizers\Sum::make())->label('Total')->numeric(2),
-            ])
-            ->filters([
-
-            ])
-        ;
+                Tables\Columns\TextColumn::make('employee.fullName'),
+                Tables\Columns\TextColumn::make('receive_status')->color(fn($state) => match ($state) {
+                    'Approved' => 'success',
+                    'Rejected' => 'danger',
+                    default=>"primary"
+                })->badge(),
+                Tables\Columns\TextColumn::make('receive_comment')->wrap(),
+                Tables\Columns\TextColumn::make('total')->summarize(Tables\Columns\Summarizers\Sum::make()->numeric())->label('Total')->numeric(2),
+            ]) ;
     }
 }

@@ -74,11 +74,11 @@ class InventoryResource extends Resource implements HasShieldPermissions
             ])->label('Export Inventory')->color('purple')
         ])
 
-        
-        
+
+
         ->recordUrl(fn($record)=>InventoryResource::getUrl('stocks',['record'=>$record->id]))
             ->columns([
-                Tables\Columns\TextColumn::make('')->rowIndex(),
+                Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
                 Tables\Columns\TextColumn::make('product.info'),
                 Tables\Columns\TextColumn::make('product.unit.title'),
                 Tables\Columns\TextColumn::make('warehouse.title')->label('Warehouse'),

@@ -22,10 +22,7 @@ class PurchaseOrder extends Model
     {
         return $this->belongsTo(Company::class);
     }
-    public function currency(): \Illuminate\Database\Eloquent\Relations\BelongsTo
-    {
-        return $this->belongsTo(Currency::class);
-    }
+
     public function account(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Account::class, 'account_id');
@@ -46,10 +43,6 @@ class PurchaseOrder extends Model
     public function purchaseRequest(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(PurchaseRequest::class, 'purchase_request_id');
-    }
-    public function vendor(): \Illuminate\Database\Eloquent\Relations\BelongsTo
-    {
-        return $this->belongsTo(Parties::class, 'vendor_id');
     }
     public function invoice(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {

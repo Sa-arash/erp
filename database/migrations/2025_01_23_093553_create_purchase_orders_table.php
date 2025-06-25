@@ -18,8 +18,6 @@ return new class extends Migration
             $table->date('date_of_delivery')->nullable();
             $table->string('location_of_delivery', 255)->nullable();
             $table->string('purchase_orders_number')->unique();
-            $table->foreignId('currency_id')->constrained('currencies')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->decimal('exchange_rate', 50, 8)->nullable();
             $table->date('date_of_po');
             $table->enum('status', [
                 'GRN',
@@ -38,11 +36,7 @@ return new class extends Migration
             // $table->boolean('bid_summary')->default(false);
             // $table->boolean('request_form')->default(false);
             $table->foreignId('purchase_request_id')->nullable()->constrained('purchase_requests')->cascadeOnDelete()->cascadeOnUpdate();
-            $table->foreignId('vendor_id')->constrained('parties')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();
-
-
-
 
             $table->timestamps();
         });

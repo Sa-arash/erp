@@ -382,4 +382,8 @@ class Company extends Model implements HasAvatar, HasName, HasMedia
     {
         return $this->hasMany(Person::class);
     }
+    public function grns(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Grn::class);
+    }
 }

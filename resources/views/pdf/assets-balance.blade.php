@@ -1,4 +1,4 @@
-@include('pdf.header', ['title'=>'Assets   Report','titles' => [''],'css'=>true])
+@include('pdf.header', ['title'=>'Assets   Summary By Location','titles' => [''],'css'=>true])
 
 
     <style>
@@ -39,7 +39,14 @@
             text-align: right;
             border: none;
         }
+        @page  {
+            margin-left: 20px;
+            margin-right: 20px;
+        }
     </style>
+<div>
+    This report contain assets with no purchase date entered and asset purchased between
+</div>
 
 
 
