@@ -145,7 +145,7 @@ class ApprovePurchase extends ManageRelatedRecords
                 //
             ])
             ->headerActions([
-                Tables\Actions\Action::make('Approve')->label('Approved Or Rejected')->color('success')->form([
+                Tables\Actions\Action::make('Approve')->label('Approve Or Reject')->color('success')->form([
                     Forms\Components\Section::make([
                         Forms\Components\Section::make([
                             Select::make('employee')->disabled()->default(fn($record) => $this->record?->approvable?->employee_id)->options(fn($record) => Employee::query()->where('id', $this->record?->approvable?->employee_id)->get()->pluck('info', 'id'))->searchable(),

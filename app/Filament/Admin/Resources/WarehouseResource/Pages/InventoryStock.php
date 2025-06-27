@@ -94,17 +94,8 @@ class InventoryStock extends ManageRelatedRecords
                 ]),
             ])->label('Export Stock')->color('purple')
         ])
-
-
-
-
-
-
-
-
-
             ->columns([
-                Tables\Columns\TextColumn::make('')->rowIndex(),
+                Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
                 Tables\Columns\TextColumn::make('employee.fullName'),
                 Tables\Columns\TextColumn::make('inventory.product.info'),
                 Tables\Columns\TextColumn::make('description')->searchable(),
@@ -126,7 +117,7 @@ class InventoryStock extends ManageRelatedRecords
                 Tables\Filters\TernaryFilter::make('transaction')->label('Transaction')->placeholder('All Stocks')->trueLabel('Yes')->falseLabel('No')->searchable()
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make()->action(function ($data) {
+                Tables\Actions\CreateAction::make()->label('New Stock OUT')->color('danger')->action(function ($data) {
                     $quantity = (int)$data['quantity'];
                     $inventory = \App\Models\Inventory::query()->firstWhere('id', $data['inventory_id']);
 

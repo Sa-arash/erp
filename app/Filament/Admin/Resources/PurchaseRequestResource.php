@@ -6,7 +6,6 @@ use App\Filament\Admin\Resources\PurchaseRequestResource\Pages;
 use App\Filament\Admin\Resources\PurchaseRequestResource\RelationManagers;
 use App\Models\Account;
 use App\Models\Bid;
-use App\Models\Currency;
 use App\Models\Employee;
 use App\Models\Parties;
 use App\Models\Product;
@@ -18,14 +17,13 @@ use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Facades\Filament;
 use Filament\Forms;
-use Filament\Forms\Set;
-use Illuminate\Database\Eloquent\Builder;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\IconSize;
@@ -35,7 +33,7 @@ use Filament\Tables;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\HtmlString;
 use Illuminate\Validation\Rules\Unique;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
@@ -199,11 +197,24 @@ class PurchaseRequestResource extends Resource
                         foreach ($record->items as $item) {
                             $total += $item->quantity * $item->estimated_unit_cost;
                         }
-                        return number_format($total,2) ." " .$record->currency?->symbol;
+                        return number_format($total, 2) . " " . $record->currency?->symbol;
                     })->numeric(),
 
-                Tables\Columns\TextColumn::make('is_quotation')->sortable()->alignCenter()->label(' Quotation Status' )->badge()->state(fn($record)=>$record->is_quotation ? "Yes":"No")->color(fn($record)=>$record->is_quotation ? "danger":"secondary"),
-                Tables\Columns\TextColumn::make('bid.total_cost')->alignCenter()->label('Total Final Price' )->numeric(),
+                Tables\Columns\TextColumn::make('is_quotation')->sortable()->alignCenter()->label(' Quotation Status')->badge()->state(fn($record) => $record->is_quotation ? "Yes" : "No")->color(fn($record) => $record->is_quotation ? "danger" : "secondary"),
+                Tables\Columns\TextColumn::make('bid.total_cost')->alignCenter()->label('Total Final Price')->numeric(),
+                Tables\Columns\ImageColumn::make('approvals')->state(function ($record) {
+                    $data = [];
+                    foreach ($record->approvals as $approval) {
+                        if ($approval->status->value == "Approve") {
+                            if ($approval->employee->media->where('collection_name', 'images')->first()?->original_url) {
+                                $data[] = $approval->employee->media->where('collection_name', 'images')->first()?->original_url;
+                            } else {
+                                $data[] = $approval->employee->gender === "male" ? asset('img/user.png') : asset('img/female.png');
+                            }
+                        }
+                    }
+                    return $data;
+                })->circular()->stacked(),
 
             ])
 

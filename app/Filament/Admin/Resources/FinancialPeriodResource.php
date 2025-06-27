@@ -63,22 +63,23 @@ class FinancialPeriodResource extends Resource
 
     public static function table(Table $table): Table
     {
-        return $table->headerActions([
-            Tables\Actions\Action::make('clear')->requiresConfirmation()->action(function (){
-                FinancialPeriod::query()->where('company_id',getCompany()->id)->delete();
-                Invoice::query()->where('company_id',getCompany()->id)->forceDelete();
-                Factor::query()->where('company_id',getCompany()->id)->delete();
-                Bank::query()->where('company_id',getCompany()->id)->delete();
-                Parties::query()->where('company_id',getCompany()->id)->delete();
-                Account::query()->where('company_id',getCompany()->id)->whereNot('built_in',1)->forceDelete();
-                Cheque::query()->where('company_id',getCompany()->id)->delete();
-                $url = "admin/" . getCompany()->id . "/financial-periods";
-                return redirect($url);
-
-            })
-        ])
+        return $table
+//            ->headerActions([
+//            Tables\Actions\Action::make('clear')->requiresConfirmation()->action(function (){
+//                FinancialPeriod::query()->where('company_id',getCompany()->id)->delete();
+//                Invoice::query()->where('company_id',getCompany()->id)->forceDelete();
+//                Factor::query()->where('company_id',getCompany()->id)->delete();
+//                Bank::query()->where('company_id',getCompany()->id)->delete();
+//                Parties::query()->where('company_id',getCompany()->id)->delete();
+//                Account::query()->where('company_id',getCompany()->id)->whereNot('built_in',1)->forceDelete();
+//                Cheque::query()->where('company_id',getCompany()->id)->delete();
+//                $url = "admin/" . getCompany()->id . "/financial-periods";
+//                return redirect($url);
+//
+//            })
+//        ])
             ->columns([
-                Tables\Columns\TextColumn::make('')->rowIndex(),
+                Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
                 Tables\Columns\TextColumn::make('name')->searchable(),
                 Tables\Columns\TextColumn::make('start_date')->label('Start Date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('end_date')->label('End Date')->date()->sortable(),

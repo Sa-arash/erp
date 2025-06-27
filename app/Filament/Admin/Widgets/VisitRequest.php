@@ -77,7 +77,7 @@ class VisitRequest extends BaseWidget
                     $record->delete();
                     Notification::make('success')->success()->title('Deleted')->send();
                 }),
-                Tables\Actions\ReplicateAction::make()->label('Duplicate')->modalSubmitActionLabel('Duplicate')->modalHeading('Duplicate')->form(
+                Tables\Actions\ReplicateAction::make()->slideOver()->label('Duplicate')->modalSubmitActionLabel('Duplicate')->modalHeading('Duplicate')->form(
                     [
                         Section::make('Visitor Access Details')->schema([
                             Section::make('')->schema([
@@ -230,10 +230,17 @@ class VisitRequest extends BaseWidget
                     Notification::make('success')->color('success')->success()->title('Request Sent')->send()->sendToDatabase(auth()->user());
 
                 })->modalWidth(MaxWidth::Full),
-                EditAction::make()->visible(fn($record)=>$record->status=='Pending')->form(VisitorRequestResource::getForm())->modalWidth(MaxWidth::Full),
+                EditAction::make()->slideOver()->visible(fn($record)=>in_array($record->status, ['Pending', 'notApproved']))->form(VisitorRequestResource::getForm())->modalWidth(MaxWidth::Full)->action(function ($record,$data){
+                        $record->status = 'Pending';
+                        if (isset($record->approvals[0])){
+                            $record->approvals[0]->update(['status'=>"Pending",'read_at'=>null,'approve_date'=>null]);
+                        }
+                        $record->fill($data);
+                        $record->save();
+                }),
             ])
             ->headerActions([
-                Action::make('Visit Request')->label('New Visit Request')->modalWidth(MaxWidth::Full)->form(
+                Action::make('Visit Request')->modalWidth(MaxWidth::Full)->form(
                     [
                         Section::make('Visitor Access Details')->schema([
                             Section::make('')->schema([
@@ -381,7 +388,7 @@ class VisitRequest extends BaseWidget
                     // sendSecurity(getEmployee(),$visitorRequest,getCompany());
                     Notification::make('success')->color('success')->success()->title('Request Sent')->send()->sendToDatabase(auth()->user());
 
-                })->label('Visitor Access Request'),
+                })->label('New Visitor Access Request')->slideOver(),
 
             ])
             ->bulkActions([

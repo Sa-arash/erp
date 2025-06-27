@@ -13,7 +13,8 @@ return new class extends Migration
     {
         Schema::create('purchase_orders', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('invoice_id')->nullable()->constrained('invoices')->cascadeOnDelete()->cascadeOnUpdate();
+            $table->foreignId('invoice_id')->nullable()->constrained('invoices')->nullOnDelete();
+            $table->foreignId('finance_id')->nullable()->constrained('employees')->nullOnDelete();
 
             $table->date('date_of_delivery')->nullable();
             $table->string('location_of_delivery', 255)->nullable();
@@ -21,8 +22,9 @@ return new class extends Migration
             $table->date('date_of_po');
             $table->enum('status', [
                 'GRN',
-                'GRN And inventory',
+                'Asset & Inventory',
                 'Inventory',
+                'Asset',
                 'pending',
                 'Approved', // approve ceo
                  'rejected',

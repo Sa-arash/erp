@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class TakeOut extends Model
+class TakeOut extends Model implements HasMedia
 {
+    use InteractsWithMedia;
+
     protected $guarded=['id'];
     protected $casts=['itemsOut'=>'array'];
 

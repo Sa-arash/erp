@@ -164,7 +164,7 @@ class Replicate extends CreateRecord
                 Repeater::make('items')->addActionLabel('Add')->relationship('items')->schema([
                     Select::make('type')->required()->options(['Service', 'Product'])->default(1)->searchable(),
                     Select::make('department_id')->columnSpan(['default'=>8,'md'=>2,'xl'=>2,'2xl'=>1])->label('Section')->options(getCompany()->departments->pluck('title', 'id'))->searchable()->preload()->live(),
-                        Select::make('product_id')->columnSpan(['default'=>8,'md'=>2])->disableOptionsWhenSelectedInSiblingRepeaterItems()->label('Product/Service')->options(function (Get $get) {
+                        Select::make('product_id')->columnSpan(['default'=>8,'md'=>2])->label('Product/Service')->options(function (Get $get) {
 
                                 if ($get('department_id')) {
                                     $data = [];

@@ -28,7 +28,7 @@ use Filament\Resources\Pages\EditRecord;
 use Filament\Support\Facades\FilamentView;
 use Filament\Support\RawJs;
 
-class InvoicePurchaseOrder extends EditRecord
+class   InvoicePurchaseOrder extends EditRecord
 {
     protected static string $resource = PurchaseOrderResource::class;
 
@@ -52,6 +52,7 @@ class InvoicePurchaseOrder extends EditRecord
                     'creditor' => number_format($item->total, 2),
                     'debtor' => 0,
                     'Cheque' => $item->vendor->accountVendor->has_cheque,
+                    'need_cheque' => $item->vendor->accountVendor->has_cheque,
                     'isCurrency' => $ex ? 1 : 0,
                     'currency_id' => $item->currency_id,
                     'exchange_rate' => $item->exchange_rate,
@@ -69,9 +70,23 @@ class InvoicePurchaseOrder extends EditRecord
                 ];
             }
 
-        }
+            $transactions[] = [
+                'account_id' => $item->product->sub_account_id,
+                'description' => $item->description,
+                'creditor' => 0,
+                'debtor' => number_format($item->total, 2),
+                'Cheque' => 0,
+                'isCurrency' => $ex ? 1 : 0,
+                'currency_id' => $item->currency_id,
+                'exchange_rate' => $item->exchange_rate,
+                'creditor_foreign' => 0,
+                'debtor_foreign' => number_format($item->total / $item->exchange_rate, 2),
+                'financial_period_id' => $financial,
 
-        $this->data['invoice']['name'] = "Pay PO " . $this->record->purchase_orders_number;
+
+            ];
+        }
+        $this->data['invoice']['name'] = "Paid PO " . $this->record->purchase_orders_number;
 
         $this->data['invoice']['transactions'] = $transactions;
         $this->previousUrl = url()->previous();
@@ -120,8 +135,10 @@ class InvoicePurchaseOrder extends EditRecord
                                 }
                                 if ($query->has_cheque == 1) {
                                     $set('Cheque', true);
+//                                    $set('need_cheque', true);
                                 } else {
                                     $set('Cheque', false);
+//                                    $set('need_cheque', false);
                                 }
 
 
@@ -239,7 +256,9 @@ class InvoicePurchaseOrder extends EditRecord
                         ])->columns(4)->visible(function (Get $get) {
                             return $get('isCurrency');
                         }),
-                        ToggleButtons::make('Cheque')->grouped()->boolean()->label('Cheque/Instalment')->live(),
+
+                        Hidden::make('need_cheque')->default(0)->dehydrated(false)->label('Cheque/Instalment')->live(),
+                        ToggleButtons::make('Cheque')->visible(fn(Get $get)=> $get('need_cheque'))->grouped()->boolean()->label('Cheque/Instalment')->live(),
                         Section::make([
                             Fieldset::make('cheque')->label('Cheque/Instalment')->relationship('cheque')->schema([
                                 TextInput::make('cheque_number')->maxLength(255),
@@ -311,7 +330,7 @@ class InvoicePurchaseOrder extends EditRecord
                 return;
             }
 
-
+            $data['finance_id']=getEmployee()->id;
             $data = $this->mutateFormDataBeforeSave($data);
 
             $this->handleRecordUpdate($this->getRecord(), $data);

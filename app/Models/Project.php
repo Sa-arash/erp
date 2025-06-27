@@ -34,6 +34,6 @@ class Project extends Model implements HasMedia
     }
     public function purchaseRequestItem(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(PurchaseRequestItem::class,'project_id')->where('approval_decision','approve');
+        return $this->hasMany(PurchaseRequestItem::class,'project_id');
     }
 }

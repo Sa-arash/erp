@@ -37,17 +37,19 @@ class CreateAsset extends CreateRecord
                $PO= PurchaseOrder::find($data['purchase_order_id']);
                if ($PO->status==='Inventory'){
                    $PO->update([
-                       'status' => "GRN And inventory",
+                       'status' => "Asset And inventory",
                    ]);
                }else{
                    $PO->update([
-                       'status' => "GRN",
+                       'status' => "Asset",
                    ]);
                }
             }
 
+
             foreach ($data['assets'] as $asset) {
                 $asset['manager_id']=getEmployee()->id;
+
 
                 $this->record = $this->handleRecordCreation($asset);
 

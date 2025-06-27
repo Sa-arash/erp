@@ -185,7 +185,6 @@
             <td style="width: 75%; vertical-align: top;">
                 <p><b>Personnel: </b>{{$record->person->name}}</p>
                 <p><b>Group: </b>{{$record->person->person_group}}</p>
-                <p><b>Badge Number:</b> {{ $record->employee->ID_number }}</p>
                 <p><b>Personnel Number: </b>{{$record->person->number}}</p>
                 <p><b>Job Title: </b>{{$record->person->job_title}}</p>
             </td>

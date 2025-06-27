@@ -25,6 +25,10 @@ class EditPurchaseOrder extends EditRecord
         $this->fillForm();
 
         $this->data['purchase_orders_number']=$this->record->purchase_orders_number;
+        $i=1;
+        foreach ($this->data['RequestedItems'] as &$item){
+            $item['row_number']=$i++;
+        }
 //         $this->data['']=$this->record->purchaseRequest?->purchase_number;
 
         $this->previousUrl = url()->previous();

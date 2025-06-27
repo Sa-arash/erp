@@ -55,6 +55,7 @@ return new class extends Migration
             $table->text('asset_qualities')->nullable();
             $table->text('warehouse_type')->nullable();
             $table->text('logo')->nullable();
+            $table->text('purchaser_department')->nullable();
             $table->timestamps();
         });
     }

@@ -87,6 +87,8 @@ implements HasShieldPermissions
                                             $set('purchase_orders_number', $record->purchase_number.'1');
                                             if ($record->bid) {
                                                 $data = [];
+                                                $i=1;
+
                                                 foreach ($record->bid->quotation?->quotationItems->toArray() as $item) {
                                                     $prItem = PurchaseRequestItem::query()->firstWhere('id', $item['purchase_request_item_id']);
                                                     $item['quantity'] = $prItem->quantity;
@@ -98,6 +100,7 @@ implements HasShieldPermissions
                                                     $item['unit_price'] = number_format($item['unit_rate']);
                                                     $price = $item['unit_rate'];
                                                     $tax = $item['taxes'];
+                                                    $item['row_number'] = $i++;
 
                                                     $freights = $item['freights'];
 
@@ -108,12 +111,15 @@ implements HasShieldPermissions
                                                 $set('vendor_id', $record->bid->quotation->party_id);
                                                 $set('currency_id', $record->bid->quotation->currency_id);
                                             } else {
+
                                                 $data = $record->items->where('status', 'approve')->toArray();
                                                 if ($data===null){
                                                     $data=[];
                                                 }
+                                                $i=1;
                                                 foreach($data as &$item) {
                                                     $item['taxes'] = 0;
+                                                    $item['row_number'] = $i++;
                                                     $item['freights'] = 0;
                                                     $item['unit_price'] = number_format($item['estimated_unit_cost']);
 
@@ -158,8 +164,9 @@ implements HasShieldPermissions
                                                 $set('exchange_rate', $record->bid->quotation->currency->exchange_rate);
                                             } else {
                                                 $data = [];
+                                                $i=1;
                                                 foreach ($record->items->where('status', 'approve')->toArray() as $item) {
-
+                                                    $item['row_number'] = $i++;
                                                     $item['taxes'] = 0;
                                                     $item['freights'] = 0;
                                                     $item['vendor_id'] = null;
@@ -245,11 +252,14 @@ implements HasShieldPermissions
 
                                             return  $data;
                                         } else {
+
                                             $data=$record?->items->where('status', 'approve')->toArray();
                                             if ($data===null){
                                                 $data=[];
                                             }
+                                            $i=1;
                                             foreach ($data as  &$item){
+                                                $item['row_number']=$i++;
                                                 $item['unit_price']=number_format($item['estimated_unit_cost']);
                                                 $item['total'] = number_format($item['estimated_unit_cost']*$item['quantity']);
 
@@ -260,9 +270,9 @@ implements HasShieldPermissions
                                     ->relationship('items')
                                     // ->formatStateUsing(fn(Get $get) => dd($get('purchase_request_id')):'')
                                     ->schema([
-//                                        Forms\Components\Hidden::make('row_number')
-//                                            ->default(fn (Get $get, \Livewire\Component $livewire) => count($get('../items') ?? []) + 1)
-//                                        ->formatStateUsing(fn ($state, Get $get) => $state ?? count($get('../items') ?? []) + 1),
+                                            Forms\Components\Hidden::make('row_number')->dehydrated(false)
+                                            ->default(fn (Get $get) => count($get->getData()['RequestedItems'] ?? []) )
+                                        ->formatStateUsing(fn ($state, Get $get) => $state ?? count($get->getData()['RequestedItems'] ?? []) ),
                                         Forms\Components\Select::make('product_id')->columnSpan(3)->label('Product') ->prefix(fn (Get $get) => $get('row_number'))->options(function ($state) {
                                                 if ($state){
                                                     $products = getCompany()->products->where('id',$state);
@@ -305,7 +315,7 @@ implements HasShieldPermissions
                                                 }
                                             })->required()->live(true)->options(getCompany()->currencies->pluck('name','id'))->searchable()->preload()->columnSpan(2),
                                         TextInput::make('exchange_rate')->readOnly()->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-                                        TextInput::make('total')->required()->hintAction(Forms\Components\Actions\Action::make('Calculate')->action(function (Set $set,Get $get){
+                                        TextInput::make('total')->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->hintAction(Forms\Components\Actions\Action::make('Calculate')->action(function (Set $set,Get $get){
                                             $freights = $get('taxes') === null ? 0 : (float)$get('taxes');
                                             $q = $get('quantity');
                                             $tax = $get('taxes') === null ? 0 : (float)$get('taxes');
@@ -314,8 +324,14 @@ implements HasShieldPermissions
                                             $set('total', number_format($total, 2));
                                         })->icon('heroicon-o-calculator')->color('danger')->iconSize(IconSize::Large))->columnSpan(2)->readOnly(),
                                     ])->live()
-                                    ->columns(13)
+                                    ->columns(13)->addActionLabel('Add Item')
                                     ->columnSpanFull(),
+                                Section::make()->schema([
+                                    TextInput::make('totals')->prefix(defaultCurrency()?->name)->inlineLabel()->label('Sub Total')->hintAction(Forms\Components\Actions\Action::make('Calculate')->action(function (Set $set,Get $get){
+                                        $total= collect($get('RequestedItems'))->map(fn($item) => $item['total']? str_replace(',','',$item['total']):0)->sum();
+                                        $set('totals',number_format($total));
+                                    })->icon('heroicon-o-calculator')->color('danger')->iconSize(IconSize::Large))->dehydrated(false)->readOnly()
+                                ])->columns(2)
                             ])->columns(3),
 
 
@@ -326,40 +342,40 @@ implements HasShieldPermissions
     {
         return $table->defaultSort('created_at', 'desc')
             ->columns([
-                Tables\Columns\TextColumn::make('NO')->label('No')->rowIndex(),
-                Tables\Columns\TextColumn::make('purchase_orders_number')
-                    ->label('PO No')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('date_of_po')
-                    ->label('Date Of PO')
-                    ->date()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('total')
-                    ->label('Total'),
-
-                Tables\Columns\TextColumn::make('purchaseRequest.purchase_number')->badge()->url(fn($record) => PurchaseRequestResource::getUrl('index') . "?tableFilters[purchase_number][value]=" . $record->purchaseRequest?->id)->sortable()->label("PR No"),
+                Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
+                Tables\Columns\TextColumn::make('purchase_orders_number')->label('PO No')->searchable(),
+                Tables\Columns\TextColumn::make('date_of_po')->label('Date Of PO')->date()->sortable(),
+                Tables\Columns\TextColumn::make('items_sum_total')->numeric(2)->sum('items','total')->label('Total'),
+                Tables\Columns\TextColumn::make('purchaseRequest.purchase_number')->badge()->url(fn($record) =>$record->purchase_request_id? PurchaseRequestResource::getUrl('view',['record'=>$record->purchase_request_id]):false )->sortable()->label("PR No"),
                 Tables\Columns\TextColumn::make('purchaseRequest.employee.fullName')->badge()->sortable()->label("PR Requester"),
-
-                Tables\Columns\TextColumn::make('date_of_delivery')
-                    ->date()
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('location_of_delivery')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(),
-
+                Tables\Columns\TextColumn::make('date_of_delivery')->date()->toggleable(isToggledHiddenByDefault: true)->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('location_of_delivery')->toggleable(isToggledHiddenByDefault: true)->searchable(),
+                Tables\Columns\ImageColumn::make('approvals')->state(function ($record) {
+                    $data = [];
+                    foreach ($record->approvals as $approval) {
+                        if ($approval->status->value == "Approve") {
+                            if ($approval->employee->media->where('collection_name', 'images')->first()?->original_url) {
+                                $data[] = $approval->employee->media->where('collection_name', 'images')->first()?->original_url;
+                            } else {
+                                $data[] = $approval->employee->gender === "male" ? asset('img/user.png') : asset('img/female.png');
+                            }
+                        }
+                    }
+                    return $data;
+                })->circular()->stacked(),
                 Tables\Columns\Textcolumn::make('status')->state(fn($record)=>match ($record->status){
                     'pending'=>"Pending",
                     'Approved'=>"Approved",
                     'rejected'=>"Rending",
                     'GRN'=>'GRN',
+                    'Asset'=>'Asset',
                     'Approve Logistic Head'=>'Approve Review',
-                    'GRN And inventory'=>'GRN And inventory',
+                    'Asset & Inventory'=>'Asset & Inventory',
                     'Inventory'=>'Inventory',
                     'Approve Verification'=>'Approve Verified',
                 })->badge()
                     ->label('Status'),
+
 
             ])
             ->filters([
@@ -381,8 +397,6 @@ implements HasShieldPermissions
                     ->label("Po No"),
                 SelectFilter::make('purchase_request_id')->searchable()->preload()->options(PurchaseRequest::where('company_id', getCompany()->id)->where('status','Approval')->get()->pluck('purchase_number', 'id'))
                     ->label("PR No"),
-                SelectFilter::make('vendor_id')->searchable()->preload()->options(Parties::where('company_id', getCompany()->id)->where('account_code_vendor', '!=', null)->get()->pluck('name', 'id'))
-                    ->label("Vendor"),
                 DateRangeFilter::make('date_of_po')->label('PO Date'),
 
                 // SelectFilter::make('position_id')->searchable()->preload()->options(Position::where('company_id', getCompany()->id)->get()->pluck('title', 'id'))
@@ -423,17 +437,21 @@ implements HasShieldPermissions
 
             ], getModelFilter())
             ->actions([
-                Tables\Actions\Action::make('Invoice')->visible(fn($record) => $record->status==="Approved" and auth()->user()->can('invoice_purchase::order') and $record->invoice == null)->label('Invoice')->tooltip('Invoice')->icon('heroicon-o-credit-card')->iconSize(IconSize::Medium)->color('warning')->url(fn($record) => PurchaseOrderResource::getUrl('InvoicePurchaseOrder', ['record' => $record->id])),
+                Tables\Actions\Action::make('Invoice')->visible(fn($record) => $record->status==="GRN" and auth()->user()->can('invoice_purchase::order') and $record->invoice == null)->label('Invoice')->tooltip('Invoice')->icon('heroicon-o-credit-card')->iconSize(IconSize::Medium)->color('warning')->url(fn($record) => PurchaseOrderResource::getUrl('InvoicePurchaseOrder', ['record' => $record->id])),
 
-                Tables\Actions\Action::make('prPDF')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.po', ['id' => $record->id]))->openUrlInNewTab(),
-                Tables\Actions\EditAction::make()->hidden(fn($record) => $record->status == 'Approved'),
-                Tables\Actions\Action::make('GRN')->label('GRN')->url(fn($record) => AssetResource::getUrl('create', ['po' => $record->id]))->visible(fn($record) => $record->items()->whereHas('product', function ($query) {
+                Tables\Actions\Action::make('prPDF')->label('')->tooltip('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.po', ['id' => $record->id]))->openUrlInNewTab(),
+                Tables\Actions\EditAction::make()->hidden(fn($record) => $record->status != 'pending'),
+                Tables\Actions\Action::make('Asset')->label('Asset')->url(fn($record) => AssetResource::getUrl('create', ['po' => $record->id]))->visible(fn($record) => $record->items()->whereHas('product', function ($query) {
                         $query->where('product_type', 'unConsumable');
-                    })->count() and $record->status === 'Approved')->hidden(fn($record) => $record->status === 'GRN And inventory' or $record->status === 'GRN'),
-                //                Tables\Actions\DeleteAction::make()->visible(fn($record)=>$record->status==="pending" )
-                Tables\Actions\Action::make('Inventory')->label('GRN')->visible(fn($record) => $record->items()->whereHas('product', function ($query) {
+                    })->count() and ($record->status === 'GRN' or $record->status==="Inventory" ))->hidden(fn($record) => $record->status === 'Asset & inventory' or $record->status === 'Asset'),
+                Tables\Actions\DeleteAction::make()->visible(fn($record)=>$record->status==="pending" )->action(function ($record){
+                    $record->approvals()->delete();
+                    $record->purchaseRequest()->update(['status'=>"Approval"]);
+                    $record->delete();
+                }),
+                Tables\Actions\Action::make('Inventory')->label('Inventory')->visible(fn($record) => $record->items()->whereHas('product', function ($query) {
                         $query->where('product_type', 'consumable');
-                    })->count() and $record->status === 'Approved')->form(function ($record) {
+                    })->count() and ($record->status === 'GRN' or $record->status==="Asset" ))->form(function ($record) {
                     $products = Product::query()
                         ->whereIn('id', function ($query) use ($record) {
                             return $query->select('product_id')
@@ -447,6 +465,7 @@ implements HasShieldPermissions
                             $data = $record->items->whereIn('product_id',array_keys($products->toArray()))->map(function ($item) {
                                 return [
                                     'product' => $item->product->title,
+                                    'unit' => $item->unit->title,
                                     'quantity' => $item->quantity,
                                 ];
                             })->toArray();
@@ -456,6 +475,7 @@ implements HasShieldPermissions
             <thead style="background-color: #f0f0f0;">
                 <tr>
                     <th style="padding: 8px; border: 1px solid #ccc;color: black !important">Product Title</th>
+                    <th style="padding: 8px; border: 1px solid #ccc;color: black !important">Unit</th>
                     <th style="padding: 8px; border: 1px solid #ccc;color: black !important">Quantity</th>
                 </tr>
             </thead>
@@ -465,6 +485,7 @@ implements HasShieldPermissions
                                 $table .= '
             <tr>
                 <td style="padding: 8px; border: 1px solid #ccc;text-align: center">' . $row['product'] . '</td>
+                <td style="padding: 8px; border: 1px solid #ccc;text-align: center">' . $row['unit'] . '</td>
                 <td style="padding: 8px; border: 1px solid #ccc;text-align: center">' . number_format($row['quantity']) . '</td>
             </tr>';
                             }
@@ -480,19 +501,9 @@ implements HasShieldPermissions
                         Repeater::make('inventories')->schema([
                             Select::make('product_id')->label('Product')->options($products)->searchable()->preload()->required(),
                             Select::make('warehouse_id')->label('Warehouse Location')->required()->options(getCompany()->warehouses()->where('type', 1)->pluck('title', 'id'))->searchable()->preload(),
-                            Forms\Components\Select::make('package_id')->label('Package')->live()->searchable()->options(fn() => getCompany()->packages->mapWithKeys(function ($item) {
-                                return [$item->id => $item->title . ' (' . $item->quantity . ')'];
-                            }))->createOptionForm([
-                                Forms\Components\TextInput::make('title')->required()->maxLength(255),
-                                Forms\Components\TextInput::make('quantity')->required()->numeric(),
-                            ])->createOptionUsing(function ($data){
-                                $record= Package::query()->create(['title'=>$data['title'],'quantity'=>$data['quantity'],'company_id'=>getCompany()->id]);
-                                Notification::make('success')->success()->title('Submitted Successfully')->send();
-                                return $record->getKey();
-                            }),
                             TextInput::make('quantity')->numeric()->required(),
                             Forms\Components\Textarea::make('description')->columnSpanFull()->required(),
-                        ])->columns(4)->formatStateUsing(function ($record) use ($products) {
+                        ])->columns(3)->formatStateUsing(function ($record) use ($products) {
                             $data = [];
                             foreach ($record->items->whereIn('product_id', array_keys($products->toArray())) as $item) {
                                 $data[] = ['product_id' => $item->product_id, 'description' => $item->description, 'warehouse_id' => null, 'quantity' => null];
@@ -501,22 +512,18 @@ implements HasShieldPermissions
                         })->reorderable(false)
                     ];
                 })->action(function ($data, $record) {
-                    $products = Product::query()
+                    $productsAll= Product::query()->with('unit')
                         ->whereIn('id', function ($query) use ($record) {
                             return $query->select('product_id')
                                 ->from('purchase_order_items')
                                 ->where('purchase_order_id', $record->id);
-                        })->where('product_type', 'consumable')
-                        ->pluck('title', 'id');
+                        })->where('product_type', 'consumable')->get();
+
+                    $products =$productsAll->pluck('title', 'id');
+//                    dd($productsAll,$products,$data['inventories']);
                     $validateData = [];
                     foreach ($data['inventories'] as $inventory) {
                         $quantity=(int)$inventory['quantity'];
-                        if (isset($inventory['package_id'])){
-                            $package=Package::query()->firstWhere('id',$inventory['package_id']);
-                            if ($package){
-                                $quantity=$quantity*$package->quantity;
-                            }
-                        }
                         if (key_exists($inventory['product_id'], $validateData)) {
                             $lastQuantity = $validateData[$inventory['product_id']];
                             $validateData[$inventory['product_id']] = $lastQuantity + $quantity;
@@ -524,6 +531,7 @@ implements HasShieldPermissions
                             $validateData[$inventory['product_id']] = $quantity;
                         };
                     }
+
                     foreach ($record->items->whereIn('product_id',array_keys($products->toArray())) as $item) {
                         if (key_exists($item->product_id, $validateData)) {
                             $quantity = $validateData[$item->product_id];
@@ -533,9 +541,11 @@ implements HasShieldPermissions
                             }
                         }
                     }
+
                     if (count(array_keys($validateData))!= $record->items->whereIn('product_id',array_keys($products->toArray()))->count()){
                         Notification::make('danger')->danger()->title('Product Not Valid')->send();
                     }
+
                     foreach ($data['inventories'] as $inventory) {
                         $inv = Inventory::query()->where('warehouse_id', $inventory['warehouse_id'])->where('product_id', $inventory['product_id'])->first();
                         if (!$inv) {
@@ -546,31 +556,38 @@ implements HasShieldPermissions
                                 'company_id' => $record->company_id
                             ]);
                         }
+
+                        $item= $record->items->firstWhere('product_id',$inventory['product_id']);
+                        $quantity=(int)$inventory['quantity'];
+
+                        if (isset($item->unit) and $item->unit->is_package){
+
+                            $package=$item->unit;
+                            if ($package){
+                                $quantity=$quantity*$package->items_per_package;
+                            }
+
+                        }
+
                         Stock::query()->create([
                             'inventory_id' => $inv->id,
                             'employee_id' => getEmployee()->id,
-                            'quantity' => $inventory['quantity'],
+                            'quantity' => $quantity,
                             'description' => $inventory['description'],
                             'type' => 1,
                             'purchase_order_id' => $record->id
                         ]);
-                        $quantity=(int)$inventory['quantity'];
-                        if (isset($inventory['package_id'])){
-                            $package=Package::query()->firstWhere('id',$inventory['package_id']);
-                            if ($package){
-                                $quantity=$quantity*$package->quantity;
-                            }
-                        }
+
                         $inv->update(['quantity' => $inv->quantity + $quantity]);
                     }
                     if ($record->status === "GRN") {
-                        $record->update(['status' => 'GRN And inventory']);
+                        $record->update(['status' => 'inventory']);
                     } else {
-                        $record->update(['status' => 'Inventory']);
+                        $record->update(['status' => 'Asset & Inventory']);
                     }
 
                     Notification::make('success')->success()->title('Successfully')->send();
-                })->modalWidth(MaxWidth::SixExtraLarge)->hidden(fn($record) => $record->status === 'GRN And inventory' or $record->status === 'Inventory' or  $record->status === 'pending' or $record->status === 'rejected')
+                })->modalWidth(MaxWidth::SixExtraLarge)->hidden(fn($record) => $record->status === 'Asset & inventory' or $record->status === 'Inventory' or  $record->status === 'pending' or $record->status === 'rejected')
 
             ])
             ->bulkActions([

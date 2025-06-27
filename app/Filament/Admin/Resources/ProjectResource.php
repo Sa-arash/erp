@@ -71,7 +71,7 @@ class ProjectResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-        
+
         ->defaultSort('id', 'desc')->headerActions([
             ExportAction::make()
                 ->after(function () {
@@ -96,7 +96,7 @@ class ProjectResource extends Resource
                     ]),
                 ])->label('Export Project')->color('purple')
         ])
-        
+
         ->recordUrl(fn($record)=>ProjectResource::getUrl('view',['record'=>$record->id]))
             ->columns([
                 Tables\Columns\TextColumn::make('#')->rowIndex(),
@@ -113,14 +113,8 @@ class ProjectResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('Supplies')->label('Supplies')->infolist(function ($record){
-                  return  [
-                      RepeatableEntry::make('purchaseRequestItem')->schema([
-                          TextEntry::make('product.title'),
-                          TextEntry::make('status')->badge(),
-                      ])->columns(4)
-                  ];
-                })
+                Tables\Actions\DeleteAction::make()->hidden(fn($record)=>$record->purchaseRequestItem()->count())
+
             ])
             ->bulkActions([
                 ExportBulkAction::make()

@@ -54,7 +54,7 @@ class CurrencyResource extends Resource
         return $table
             ->columns([
 
-                Tables\Columns\TextColumn::make('id')->searchable(),
+                Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
                 Tables\Columns\TextColumn::make('name')->searchable(),
                 Tables\Columns\TextColumn::make('symbol')->searchable(),
                 Tables\Columns\TextColumn::make('exchange_rate')->numeric()->sortable()->label('Exchange Rate'),

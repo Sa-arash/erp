@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources;
 use App\Filament\Admin\Resources\InventoryResource\Pages;
 use App\Filament\Admin\Resources\InventoryResource\RelationManagers;
 use App\Models\Inventory;
+use App\Models\Package;
 use App\Models\Product;
 use App\Models\Stock;
 use App\Models\Structure;
@@ -106,9 +107,19 @@ class InventoryResource extends Resource implements HasShieldPermissions
                 Tables\Actions\Action::make('Transaction')->iconSize(IconSize::Medium)->form(function ($record){
                     return [
                         Section::make([
+                            Select::make('package_id')->columnSpan(2)->label('Package')->live()->searchable()->options(fn()=>getCompany()->packages->mapWithKeys(function ($item) {
+                                return [$item->id => $item->title . ' (' . $item->quantity.')'];
+                            }))->createOptionForm([
+                               TextInput::make('title')->required()->maxLength(255),
+                               TextInput::make('quantity')->required()->numeric(),
+                            ])->createOptionUsing(function ($data){
+                                $record= Package::query()->create(['title'=>$data['title'],'quantity'=>$data['quantity'],'company_id'=>getCompany()->id]);
+                                Notification::make('success')->success()->title('Submitted Successfully')->send();
+                                return $record->getKey();
+                            }),
                             TextInput::make('quantity')->minValue(1)->required()->numeric(),
-                            Select::make('warehouse_id')->required()->live(true)->label('Warehouse')->options(getCompany()->warehouses()->where('type',1)->pluck('title','id'))->searchable()->preload(),
-                            SelectTree::make('structure_id')->hidden(function (Get $get)use($record){
+                            Select::make('warehouse_id')->columnSpan(2)->required()->live(true)->label('Warehouse')->options(getCompany()->warehouses()->where('type',1)->pluck('title','id'))->searchable()->preload(),
+                            SelectTree::make('structure_id')->columnSpan(2)->hidden(function (Get $get)use($record){
 
                                 return Inventory::query()->where('warehouse_id',$get('warehouse_id'))->where('product_id',$record->product_id)->first();
 
@@ -116,7 +127,7 @@ class InventoryResource extends Resource implements HasShieldPermissions
                                 return $query->where('warehouse_id', $get('warehouse_id'));
                             })->required(),
                             Textarea::make('description')->required()->maxLength(255)->columnSpanFull(),
-                        ])->columns(3)
+                        ])->columns(7)
                     ];
                 })->action(function ($data,$record){
 
@@ -124,7 +135,25 @@ class InventoryResource extends Resource implements HasShieldPermissions
                         Notification::make('error')->warning()->title('Quantity Not Valid')->send();
                         return;
                     }
-                   $inventory= Inventory::query()->where('warehouse_id',$data['warehouse_id'])->where('product_id',$record->product_id)->first();
+
+                    $item= Package::query()->firstWhere('id',$data['package_id']);
+                    $quantity=(int)$data['quantity'];
+                    if ($item){
+                            $quantity=$quantity*$item->quantity;
+
+                    }
+
+                    Stock::query()->create([
+                        'inventory_id'=>$record->id,
+                        'employee_id'=>getEmployee()->id,
+                        'quantity'=>$quantity,
+                        'description'=>$data['description'],
+                        'type'=>0,
+                        'package_id'=>$data['package_id'],
+                        'transaction'=>1
+                    ]);
+                    $record->update(['quantity'=>$record->quantity-$quantity]);
+                    $inventory= Inventory::query()->where('warehouse_id',$data['warehouse_id'])->where('product_id',$record->product_id)->first();
                     if (!$inventory){
                         if (isset($data['structure_id'])){
                             $inventory= Inventory::query()->create([
@@ -137,26 +166,18 @@ class InventoryResource extends Resource implements HasShieldPermissions
                         }
                     }
                     Stock::query()->create([
-                        'inventory_id'=>$record->id,
-                        'employee_id'=>getEmployee()->id,
-                        'quantity'=>$data['quantity'],
-                        'description'=>$data['description'],
-                        'type'=>0,
-                        'transaction'=>1
-                    ]);
-                    $record->update(['quantity'=>$record->quantity-$data['quantity']]);
-                    Stock::query()->create([
                         'inventory_id'=>$inventory->id,
                         'employee_id'=>getEmployee()->id,
-                        'quantity'=>$data['quantity'],
+                        'quantity'=>$quantity,
                         'description'=>$data['description'],
                         'type'=>1,
+                        'package_id'=>$data['package_id'],
                         'transaction'=>1
                     ]);
-                    $inventory->update(['quantity'=>$inventory->quantity+$data['quantity']]);
+                    $inventory->update(['quantity'=>$inventory->quantity+$quantity]);
                     Notification::make('success')->success()->title('Successfully')->send();
 
-                })->requiresConfirmation()->modalWidth(MaxWidth::FiveExtraLarge)->icon('heroicon-c-arrow-up-tray')->modalIcon('heroicon-c-arrow-up-tray')->color('warning'),
+                })->requiresConfirmation()->modalWidth(MaxWidth::SevenExtraLarge)->icon('heroicon-c-arrow-up-tray')->modalIcon('heroicon-c-arrow-up-tray')->color('warning'),
                 Tables\Actions\Action::make('stocks')->url(fn($record)=>InventoryResource::getUrl('stocks',['record'=>$record->id]))
             ])
             ->bulkActions([

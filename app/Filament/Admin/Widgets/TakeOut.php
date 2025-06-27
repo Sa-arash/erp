@@ -14,6 +14,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Get;
+use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
@@ -24,6 +25,7 @@ use Filament\Tables;
 use Filament\Tables\Actions\Action;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
+use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
 
 class TakeOut extends BaseWidget
 {
@@ -34,7 +36,7 @@ protected static ?string $heading='Gate Pass';
     public function table(Table $table): Table
     {
         return $table->emptyStateHeading('No Gate Pass')->heading('Gate Pass')->headerActions([
-            Action::make('Take Out')->label('New Gate Pass')->form([
+            Action::make('Take Out')->slideOver()->label('New Gate Pass')->form([
                 \Filament\Forms\Components\Section::make([
                     TextInput::make('from')->label('From (Location)')->default(getEmployee()->structure?->title)->required()->maxLength(255),
                     TextInput::make('to')->label('To (Location)')->required()->maxLength(255),
@@ -49,6 +51,7 @@ protected static ?string $heading='Gate Pass';
                             return ['Personal Belonging' => 'Personal Belonging', 'Domestic Waste' => 'Domestic Waste', 'Construction Waste' => 'Construction Waste'];
                         }
                     }),
+                    FileUpload::make('image')->columnSpanFull()->label('Signature Document')->required()->image()->imageEditor()->columnSpan(2),
                     Repeater::make('items')->required(function (Get $get){
                         if (!$get('itemsOut')){
                             return true;
@@ -89,15 +92,14 @@ protected static ?string $heading='Gate Pass';
                         TextInput::make('quantity')->required(),
                         Select::make('unit')->searchable()->options(Unit::query()->where('company_id', getCompany()->id)->pluck('title','title'))->required(),
                         TextInput::make('remarks')->nullable(),
-                        FileUpload::make('image')->columnSpanFull()->label('Image Upload')->image()->imageEditor(),
+                        FileUpload::make('image')->columnSpanFull()->label('Image Upload')->required()->image()->imageEditor(),
                     ])->columnSpanFull()->columns(4)
                 ])->columns(4)
 
-            ])->modalWidth(MaxWidth::SixExtraLarge)->action(function ($data) {
+            ])->modalWidth(MaxWidth::Full)->action(function ($data) {
                 $id = getCompany()->id;
                 $data['company_id'] = $id;
                 $employee = getEmployee();
-
                 $data['employee_id'] = $employee->id;
                 $items = $data['items'];
                 unset($data['items']);
@@ -110,6 +112,10 @@ protected static ?string $heading='Gate Pass';
                 foreach ($items as $item) {
                     $item['company_id'] = $id;
                     $takeOut->items()->create($item);
+                }
+                $media = $data['image'] ?? null;
+                if (isset($media)) {
+                    $takeOut->addMedia(public_path('images/'.$media))->toMediaCollection('image');
                 }
                 $employee = User::whereHas('roles.permissions', function ($query) {
                     $query->where('name', 'security_take::out');
@@ -128,10 +134,11 @@ protected static ?string $heading='Gate Pass';
             })->color('warning')
         ])
             ->query(
-                \App\Models\TakeOut::query()->where('employee_id', getEmployee()->id)->orderBy('id','desc')
-            )
+                \App\Models\TakeOut::query()->where('company_id',getCompany()->id)
+            )->defaultSort('id','desc')
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
+                Tables\Columns\TextColumn::make('employee.fullName'),
                 Tables\Columns\TextColumn::make('assets.product.title')->state(fn($record)=> $record->assets->pluck('title')->toArray())->badge()->label('Assets'),
                 Tables\Columns\TextColumn::make('itemsOut')->state(function($record){
                     $data=[];
@@ -161,7 +168,7 @@ protected static ?string $heading='Gate Pass';
 
             ])->actions([
                 Tables\Actions\Action::make('pdf')->url(fn($record) => route('pdf.takeOut', ['id' => $record->id]))->icon('heroicon-s-printer')->iconSize(IconSize::Large)->label('PDF'),
-                Tables\Actions\ViewAction::make('view')->infolist([
+                Tables\Actions\ViewAction::make('view')->stickyModalHeader(false)->modalHeading('Gate Pass')->slideOver()->infolist([
                     Section::make([
                         TextEntry::make('employee.fullName'),
                         TextEntry::make('from'),
@@ -169,6 +176,7 @@ protected static ?string $heading='Gate Pass';
                         TextEntry::make('date')->date(),
                         TextEntry::make('status')->badge(),
                         TextEntry::make('type')->badge(),
+                        ImageEntry::make('media.original_url')->label('Signature Document')->height(100),
                         RepeatableEntry::make('items')->label('Assets')->schema([
                             TextEntry::make('asset.description')->label('Asset Description'),
                             TextEntry::make('asset.number')->label('Asset Number'),
@@ -186,6 +194,7 @@ protected static ?string $heading='Gate Pass';
                             })->badge(),
                             TextEntry::make('unit'),
                             TextEntry::make('remarks'),
+                            ImageEntry::make('image')->height(100)
                         ])->columnSpanFull()->columns(),
                         \Filament\Infolists\Components\Section::make([
                             TextEntry::make('OutSide_date')->label('Outside Date')->dateTime(),
@@ -196,10 +205,10 @@ protected static ?string $heading='Gate Pass';
                             TextEntry::make('inSide_comment')->label('Inside Comment'),
                         ])->columns(),
                     ])->columns()
-                ]),
+                ])->modalWidth(MaxWidth::Full),
 
             ])->filters([
                 getFilterSubordinate()
-            ],getModelFilter());
+            ]);
     }
 }

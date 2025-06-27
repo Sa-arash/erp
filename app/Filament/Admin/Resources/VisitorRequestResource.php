@@ -21,6 +21,7 @@ use Filament\Support\Enums\IconSize;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Malzariey\FilamentDaterangepickerFilter\Fields\DateRangePicker;
 use Malzariey\FilamentDaterangepickerFilter\Filters\DateRangeFilter;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
@@ -253,6 +254,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('SN_code')->label('Department Code'),
                 Tables\Columns\TextColumn::make('employee.fullName')->label('Requester')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('visitors_detail')->label('Visitors')->state(fn($record) => array_map(fn($item) => $item['name'], $record->visitors_detail))->numeric()->sortable()->bulleted()->limitList(7),
+                Tables\Columns\TextColumn::make('driver_vehicle_detail')->label('Drivers')->state(fn($record) => array_map(fn($item) => $item['name'], $record->driver_vehicle_detail))->numeric()->sortable()->bulleted()->limitList(7),
                 Tables\Columns\TextColumn::make('visiting_dates')->limitList(5)->bulleted()->label('Scheduled Visit Dates')->sortable(),
                 Tables\Columns\TextColumn::make('arrival_time')->time('h:i A'),
                 Tables\Columns\TextColumn::make('departure_time')->time('h:i A'),
@@ -271,6 +273,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                             return 'danger';
                     }
                 })->badge(),
+                Tables\Columns\TextColumn::make('approvals.comment')->label('Comment'),
                 Tables\Columns\TextColumn::make('CheckIN')->label('Check IN')->state(function ($record) {
                     if ($record->entry_and_exit) {
                         $lastKey = $record->entry_and_exit[array_key_last($record->entry_and_exit)];
@@ -311,12 +314,31 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                DateRangeFilter::make('visit_date'),
+                DateRangeFilter::make('visit_date')->label('Visit Date')
+                    ->query(function ($query, $data) {
+                        if (!isset($data['visit_date']) || !Str::contains($data['visit_date'], ' - ')) {
+                            return;
+                        }
+                        [$start, $end] = explode(' - ', $data['visit_date']);
+
+                        $startDate = Carbon::createFromFormat('d/m/Y', trim($start))->startOfDay();
+                        $endDate = Carbon::createFromFormat('d/m/Y', trim($end))->endOfDay();
+
+                        $datesInRange = [];
+                        for ($date = $startDate->copy(); $date->lte($endDate); $date->addDay()) {
+                            $datesInRange[] = $date->format('d/m/Y');
+                        }
+
+                        $query->where(function ($q) use ($datesInRange) {
+                            foreach ($datesInRange as $date) {
+                                $q->orWhereJsonContains('visiting_dates', $date);
+                            }
+                        });
+                    }),
                 Tables\Filters\SelectFilter::make('department')->searchable()->preload()->label('Department')->options(getCompany()->departments()->pluck('title','id'))->query(fn($query,$data)=>isset($data['value'])? $query->whereHas('employee',function ($query)use($data){
                     return $query->where('department_id',$data['value']);
                 }):$query),
                 Tables\Filters\SelectFilter::make('requested_by')->options(getCompany()->employees->pluck('info', 'id'))->searchable()->preload()->label('Employee'),
-                DateRangeFilter::make('visit_date')->label('Visit Date'),
                 Tables\Filters\SelectFilter::make('status')->options(['approved' => 'approved', 'notApproved' => 'notApproved'])->searchable()
             ], getModelFilter())
             ->actions([
@@ -345,10 +367,8 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                                 $validDate = [];
                                 foreach ($record->visiting_dates as $date) {
                                     $day = Carbon::createFromFormat('d/m/Y', $date)->format('Y/m/d');
-                                    if ($day == now()->endOfDay()->format('Y/m/d')) {
-                                        $set('date', $day);
                                         $validDate[$day] = $day;
-                                    }
+
                                 }
                                 return $validDate;
                             })->searchable()->preload()->afterStateUpdated(function (Forms\Set $set) {
@@ -469,21 +489,14 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                     }
 
                     $record->update(['entry_and_exit' => $array]);
-                }),
+                })->icon('heroicon-s-arrow-left-on-rectangle')->iconSize(IconSize::Large)->color('success')->label('')->tooltip('Check IN'),
                 Tables\Actions\Action::make('check_out')->visible(function ($record) {
                     if (!auth()->user()->can('reception_visitor::request') or  $record->status!=="approved") {
                         return false;
                     }
-                    if (isset($record->visiting_dates)){
-                        foreach ($record->visiting_dates as $date) {
-                            $day = Carbon::createFromFormat('d/m/Y', $date)->format('Y/m/d');
-                            if ($day == now()->endOfDay()->format('Y/m/d')) {
-                                return true;
-                            }
-                        }
-                    }
-                    return false;
-                })->label('Check OUT')->form(function ($record) {
+
+                    return true;
+                })->icon('heroicon-s-arrow-right-start-on-rectangle')->iconSize(IconSize::Large)->color('warning')->label('')->tooltip('Check OUT')->form(function ($record) {
                     return [
                         Section::make([
                             Select::make('date')->required()->options(function (Forms\Set $set) use ($record) {
@@ -623,7 +636,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                         TextEntry::make('OutSide_comment'),
                     ])->columns(),
                 ]),
-                Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('Print Preview')->url(fn($record) => route('pdf.requestVisit', ['id' => $record->id]))->openUrlInNewTab(),
+                Tables\Actions\Action::make('pdf')->tooltip('Print Preview')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')->url(fn($record) => route('pdf.requestVisit', ['id' => $record->id]))->openUrlInNewTab(),
                 Tables\Actions\Action::make('pdfCheck')->color('warning')->tooltip('Print Check IN and Check OUT')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')->url(fn($record) => route('pdf.entryAndExit', ['id' => $record->id]))->openUrlInNewTab(),
 
             ])

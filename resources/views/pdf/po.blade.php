@@ -43,7 +43,7 @@
 
 
     <tr>
-        <td style="text-align: left">PO Date: {{\Illuminate\Support\Carbon::create($po->date_of_delivery)->format('M j, Y / h:iA ')}}</td>
+        <td style="text-align: left">PO Date: {{\Illuminate\Support\Carbon::create($po->date_of_po)->format('M j, Y ')}}</td>
         <td style="text-align: left">PR No: ATGT/UNC {{$po->purchase_orders_number}}</td>
     </tr>
     <tr>
@@ -52,8 +52,8 @@
             Position: {{$po->employee?->position?->title}}</td>
     </tr>
     <tr>
-        <td style="text-align: left">Currency: {{$po->currency->name}} ({{number_format($po->exchange_rate,4)}})  </td>
         <td style="text-align: left">Location of Delivery :  {{$po->location_of_delivery}}</td>
+        <td style="text-align: left">Date of Delivery :  {{$po->date_of_delivery ? \Illuminate\Support\Carbon::create($po->date_of_delivery)->format('M j, Y '):''}}</td>
     </tr>
 
 </table>
@@ -74,6 +74,9 @@
         <th>Unit Price</th>
         <th>Taxes</th>
         <th>Freights</th>
+        <th>Vendor</th>
+        <th>Currency</th>
+        <th>Exchange Rate</th>
         <th>TEC</th>
 
     </tr>
@@ -104,6 +107,10 @@
             <td>{{number_format($item->unit_price)}}</td>
             <td>{{$item->taxes}}%</td>
             <td>{{$item->freights}}%</td>
+            <td>{{$item->vendor?->name}}</td>
+            <td style=""> {{$item->currency?->name}}   </td>
+            <td style="">{{number_format($item->exchange_rate,4)}}</td>
+
             <td>{{number_format($item->total)}}</td>
 
         </tr>
@@ -114,6 +121,9 @@
     <tr>
         <td colspan="5">Total Cost</td>
         <td>{{number_format($totalEstimated)}}</td>
+        <td >---</td>
+        <td >---</td>
+        <td >---</td>
         <td >---</td>
         <td >---</td>
         <td>{{number_format($totalBudget)   }}</td>
@@ -165,66 +175,5 @@
         @endforeach
     </tr>
     </table>
-{{--@php--}}
-{{--    $document=$po->invoice;--}}
-{{--@endphp--}}
-{{--<div style="text-align: left; padding: 0; margin: 0;">--}}
-{{--    <p style="margin: 0; padding: 0;">Voc No: {{ $document->number }}</p>--}}
-{{--    <p style="margin: 0; padding: 0;">Date: {{ \Carbon\Carbon::parse($document->date)->format('Y-m-d') }}</p>--}}
-{{--    <p style="margin: 0; padding: 0;">Voc Description: {{ $document->name }}</p>--}}
-{{--</div>--}}
-{{--<table>--}}
-{{--    <thead>--}}
-{{--    <tr>--}}
-{{--        <th>No</th>--}}
-{{--        <th>Account Name</th>--}}
-{{--        <th>Account Code</th>--}}
-{{--        <th>Description</th>--}}
-{{--        <th>Currency</th>--}}
-{{--        <th>Debit Foreign</th>--}}
-{{--        <th>Credit Foreign</th>--}}
-{{--        <th>Exchange Rate</th>--}}
-{{--        <th>Debit({{ PDFdefaultCurrency($company)}})</th>--}}
-{{--        <th>Credit({{ PDFdefaultCurrency($company)}})</th>--}}
-{{--    </tr>--}}
-{{--    </thead>--}}
-{{--    <tbody>--}}
-{{--    @foreach ($document->transactions as $id => $transaction)--}}
-{{--        <tr>--}}
-{{--            <td>{{ $id + 1 }}</td>--}}
-{{--            <td>{{ $transaction->account->name }}</td>--}}
-{{--            <td>{{ $transaction->account->code }}</td>--}}
-{{--            <td>{{ $transaction->description }}</td>--}}
-{{--            <td>{{ $transaction->currency->name }}</td>--}}
-{{--            <td>{{ number_format($transaction->debtor_foreign,2) }}</td>--}}
-{{--            <td>{{ number_format($transaction->creditor_foreign,2) }}</td>--}}
-{{--            <td>{{ number_format($transaction->exchange_rate,5) }}</td>--}}
-{{--            <td>{{ number_format($transaction->debtor) }}</td>--}}
-{{--            <td>{{ number_format($transaction->creditor) }}</td>--}}
-{{--        </tr>--}}
-{{--    @endforeach--}}
-
-{{--    <tr>--}}
-{{--        <td colspan="5">--}}
-{{--            Total--}}
-{{--        </td>--}}
-{{--        <td>--}}
-{{--            {{ number_format($document->transactions->sum('debtor_foreign')) }}--}}
-{{--        </td>--}}
-{{--        <td>--}}
-{{--            {{ number_format($document->transactions->sum('creditor_foreign')) }}--}}
-{{--        </td>--}}
-{{--        <td></td>--}}
-{{--        <td>--}}
-{{--            {{ number_format($document->transactions->sum('debtor')) }}--}}
-{{--        </td>--}}
-{{--        <td>--}}
-{{--            {{ number_format($document->transactions->sum('creditor')) }}--}}
-{{--        </td>--}}
-{{--    </tr>--}}
-{{--    </tbody>--}}
-{{--</table>--}}
-
-
 </body>
-</html>
+

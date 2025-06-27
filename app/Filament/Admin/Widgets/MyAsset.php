@@ -16,6 +16,10 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Get;
+use Filament\Infolists\Components\Group;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\IconSize;
 use Filament\Support\Enums\MaxWidth;
@@ -108,6 +112,143 @@ class MyAsset extends BaseWidget
                 Tables\Columns\TextColumn::make('return_date')->label('Return Date')->date(),
             ])
              ->actions([
+                 Tables\Actions\Action::make('view')->modalSubmitAction(false)->slideOver()->modalWidth(MaxWidth::SevenExtraLarge)->infolist([
+                     \Filament\Infolists\Components\Section::make([
+                         Group::make([
+                             TextEntry::make('product.sku')
+                                 ->label('SKU')
+                                 ->badge()
+                                 ->inlineLabel()
+                                 ->state(fn($record) => $record->asset?->product?->sku),
+
+                             TextEntry::make('product.title')
+                                 ->inlineLabel()
+                                 ->state(fn($record) => $record->asset?->product?->title),
+
+                             TextEntry::make('description')
+                                 ->inlineLabel()
+                                 ->state(fn($record) => $record->asset?->description),
+
+                             TextEntry::make('serial_number')
+                                 ->label("Serial Number")
+                                 ->badge()
+                                 ->inlineLabel()
+                                 ->state(fn($record) => $record->asset?->serial_number),
+
+                             TextEntry::make('po_number')
+                                 ->label("PO Number")
+                                 ->badge()
+                                 ->inlineLabel()
+                                 ->state(fn($record) => $record->asset?->po_number),
+
+                             TextEntry::make('status')
+                                 ->badge()
+                                 ->inlineLabel()
+                                 ->state(fn($record) => match ($record->asset?->status) {
+                                     'inuse' => "In Use",
+                                     'inStorageUsable' => "In Storage",
+                                     'loanedOut' => "Loaned Out",
+                                     'outForRepair' => 'Out For Repair',
+                                     'StorageUnUsable' => "Scrap",
+                                     default => "-"
+                                 }),
+
+                             TextEntry::make('price')
+                                 ->numeric()
+                                 ->inlineLabel()
+                                 ->state(fn($record) => $record->asset?->price),
+
+                             TextEntry::make('scrap_value')
+                                 ->label("Scrap Value")
+                                 ->numeric()
+                                 ->inlineLabel()
+                                 ->state(fn($record) => $record->asset?->scrap_value),
+
+                             TextEntry::make('warehouse.title')
+                                 ->badge()
+                                 ->inlineLabel()
+                                 ->state(fn($record) => $record->asset?->warehouse?->title),
+
+                             TextEntry::make('structure.title')
+                                 ->badge()
+                                 ->label('Location')
+                                 ->inlineLabel()
+                                 ->state(fn($record) => $record->asset?->structure?->title),
+
+                             TextEntry::make('check_out_to')
+                                 ->badge()
+                                 ->label('Check Out To')
+                                 ->inlineLabel()
+                                 ->state(fn($record) =>
+                                 $record->asset?->check_out_to
+                                     ? $record->asset?->checkOutTo?->fullName
+                                     : $record->asset?->person?->name
+                                 ),
+
+                             TextEntry::make('party.name')
+                                 ->badge()
+                                 ->label('Vendor')
+                                 ->inlineLabel()
+                                 ->state(fn($record) => $record->asset?->party?->name),
+
+                             TextEntry::make('buy_date')
+                                 ->inlineLabel()
+                                 ->label('Buy Date')
+                                 ->state(fn($record) => $record->asset?->buy_date),
+
+                             TextEntry::make('guarantee_date')
+                                 ->inlineLabel()
+                                 ->label('Due Date')
+                                 ->state(fn($record) => $record->asset?->guarantee_date),
+
+                             TextEntry::make('warranty_date')
+                                 ->inlineLabel()
+                                 ->label('Warranty End')
+                                 ->state(fn($record) => $record->asset?->warranty_date),
+
+                             TextEntry::make('type')
+                                 ->badge()
+                                 ->label('Asset Type')
+                                 ->inlineLabel()
+                                 ->state(fn($record) => $record->asset?->type),
+
+                             TextEntry::make('depreciation_years')
+                                 ->inlineLabel()
+                                 ->label('Depreciation Years')
+                                 ->state(fn($record) => $record->asset?->depreciation_years),
+
+                             TextEntry::make('depreciation_amount')
+                                 ->inlineLabel()
+                                 ->label('Depreciation Amount')
+                                 ->state(fn($record) => $record->asset?->depreciation_amount),
+                         ]),
+
+                         Group::make([
+                             ImageEntry::make('media.original_url')
+                                 ->label('Asset Picture')
+                                 ->width(200)
+                                 ->height(200)
+                                 ->disk('public')
+                                 ->defaultImageUrl(fn($record) => asset('img/defaultAsset.png'))
+                                 ->alignLeft()
+                                 ->extraAttributes(['style' => 'border-radius:50px!important'])
+                                 ->state(fn($record) =>
+                                 $record->asset?->media?->where('collection_name', 'images')?->first()?->original_url
+                                 ),
+
+                             TextEntry::make('note')
+                                 ->state(fn($record) => $record->asset?->note),
+
+                             RepeatableEntry::make('attributes')
+                                 ->columns(3)
+                                 ->schema([
+                                     TextEntry::make('title'),
+                                     TextEntry::make('value'),
+                                 ])
+                                 ->state(fn($record) => $record->asset?->attributes ?? []),
+                         ]),
+                     ])->columns(2)
+                 ]),
                  Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')
                      ->url(fn($record) => route('pdf.asset', ['id' => $record->asset_id]))->openUrlInNewTab(),
 //                 Action::make('view')->infolist([

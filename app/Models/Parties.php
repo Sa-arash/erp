@@ -63,8 +63,8 @@ class Parties extends Model implements HasMedia
         return $this->belongsTo(Account::class, 'account_customer');
     }
 
-    public function purchaseOrder(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function purchaseOrderItems(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(PurchaseOrder::class,'vendor_id');
+        return $this->hasMany(PurchaseOrderItem::class,'vendor_id');
     }
 }

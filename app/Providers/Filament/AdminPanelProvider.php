@@ -127,7 +127,7 @@ class AdminPanelProvider extends PanelProvider
                             [
                                 'period' => $financialPeriod->id,
                                 'reportTitle' => 'Profit And Loss',
-                                'account' => implode('-', $accounts)
+                                'account' => implode('-', $accounts).' '
                             ]);
 
 
@@ -157,7 +157,7 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Sky,
                 'grayBack' => Color::Gray,
                 'aColor' => Color::Cyan,
-                'view' => Color::Yellow,
+                'view' => Color::Cyan,
                 'edit' => Color::Green,
                 'purple' => Color::Purple,
             ])

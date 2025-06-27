@@ -41,10 +41,14 @@ class MyPurchaseRequest extends BaseWidget
     {
         return $table
             ->query(
-                PurchaseRequest::query()->where('employee_id', getEmployee()->id)
+                PurchaseRequest::query()->where('company_id',getCompany()->id)
             )->defaultSort('id', 'desc')
+            ->filters([
+                getFilterSubordinate()
+            ])
             ->columns([
                 Tables\Columns\TextColumn::make('No')->rowIndex(),
+                Tables\Columns\TextColumn::make('employee.fullName')->label('fullName'),
                 Tables\Columns\TextColumn::make('purchase_number')->label('PR No')->searchable(),
                 Tables\Columns\TextColumn::make('description')->wrap()->label('Description')->searchable(),
                 Tables\Columns\TextColumn::make('request_date')->dateTime()->sortable(),
@@ -68,6 +72,9 @@ class MyPurchaseRequest extends BaseWidget
 
 ->actions([
     Tables\Actions\DeleteAction::make()->hidden(function ($record) {
+        if ($record->employee_id != getEmployee()->id){
+            return true;
+        }
 //        dd($record->approvals);
         return $record->approvals()->where('status', 'Approve')->count();
     })->action(function ($record) {
@@ -206,8 +213,8 @@ class MyPurchaseRequest extends BaseWidget
         }
         $record->items()->whereNotIn('id', $ids)->delete();
         Notification::make('success')->success()->title('Edited Successfully')->send();
-    })->modalWidth(MaxWidth::Full)->visible(fn($record)=>$record->status->value==="Requested" or $record->need_change),
-    Action::make('view')->modalWidth(MaxWidth::Full)->infolist([
+    })->modalWidth(MaxWidth::Full)->visible(fn($record)=>$record->status->value==="Requested" or $record->need_change)->hidden(fn($record)=>$record->employee_id != getEmployee()->id),
+    Action::make('view')->slideOver()->modalWidth(MaxWidth::Full)->infolist([
         ComponentsSection::make('Purchase Request')->schema([
             TextEntry::make('request_date')->dateTime(),
             TextEntry::make('purchase_number')->label('PR NO')->badge(),
@@ -323,7 +330,7 @@ class MyPurchaseRequest extends BaseWidget
 
 ])
             ->headerActions([
-                Action::make('Purchase Request ')->label(' Purchase Request ') ->modalWidth(MaxWidth::FitContent  )->form([
+                Action::make('Purchase Request ')->label('New PR ') ->modalWidth(MaxWidth::FitContent  )->form([
                     Section::make('')->schema([
                         TextInput::make('purchase_number')->default(function (){
                             $puncher= PurchaseRequest::query()->where('company_id',getCompany()->id)->latest()->first();

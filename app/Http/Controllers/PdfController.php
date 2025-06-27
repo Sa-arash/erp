@@ -11,6 +11,7 @@ use App\Models\Company;
 use App\Models\Employee;
 use App\Models\Factor;
 use App\Models\FinancialPeriod;
+use App\Models\Grn;
 use App\Models\Holiday;
 use App\Models\Invoice;
 use App\Models\Leave;
@@ -756,6 +757,13 @@ class PdfController extends Controller
         }
         $company=Company::query()->firstWhere('id',$company);
         $pdf = Pdf::loadView('pdf.employeeAsset', compact('record','histories','company'));
+        return $pdf->stream();
+    }
+
+    public function grn($id,$company){
+        $GRN=Grn::query()->with(['items','manager','purchaseOrder','purchaseOrder'])->findOrFail($id);
+        $company=Company::query()->firstWhere('id',$company);
+        $pdf = Pdf::loadView('pdf.grn', compact('GRN','company'));
         return $pdf->stream();
     }
 }

@@ -19,7 +19,6 @@ use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Infolists\Infolist;
-use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Support\Enums\MaxWidth;
 
@@ -208,8 +207,6 @@ class ViewAsset extends ViewRecord
     {
         return $infolist->schema([
             Section::make([
-
-
                 Group::make([
                     TextEntry::make('product.sku')->label('SKU')->badge()->inlineLabel(),
                     TextEntry::make('product.title')->inlineLabel(),
@@ -236,15 +233,12 @@ class ViewAsset extends ViewRecord
                     TextEntry::make('depreciation_years')->inlineLabel()->label('Depreciation Years'),
                     TextEntry::make('depreciation_amount')->inlineLabel()->label('Depreciation Amount'),
                 ]),
-
                 Group::make([
                     ImageEntry::make('media.original_url')->state(function ($record) {
                         return $record->media->where('collection_name', 'images')->first()?->original_url;
                     })->disk('public')
                         ->defaultImageUrl(fn($record) => asset('img/defaultAsset.png'))
                         ->alignLeft()->label('Asset Picture')->width(200)->height(200)->extraAttributes(['style' => 'border-radius:50px!important']),
-
-
                         TextEntry::make('note'),
                     RepeatableEntry::make('attributes')
                         ->schema([
@@ -253,9 +247,6 @@ class ViewAsset extends ViewRecord
                         ])
                         ->columns(3),
                 ]),
-
-
-
             ])->columns(2)
         ]);
     }

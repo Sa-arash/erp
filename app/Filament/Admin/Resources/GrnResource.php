@@ -11,6 +11,7 @@ use App\Models\PurchaseOrder;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Filament\Forms;
 use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
@@ -53,7 +54,11 @@ class GrnResource extends Resource implements HasShieldPermissions
                     $PO = PurchaseOrder::query()->with('items')->firstWhere('id', $state);
                     if ($PO) {
                         $set('number', $PO->purchase_orders_number);
-                        $set('RequestedItems', $PO->items->toArray());
+                        $items = $PO->items->toArray();
+                        foreach ($items as $index => &$item) {
+                            $item['row_number'] = $index + 1;
+                        }
+                        $set('RequestedItems', $items);
                     }
                 })->searchable()->preload()->label('PO No')->required()->prefix('ATGT/UNC/')->options(fn($record)=> $record ==null ?PurchaseOrder::query()->where('status', 'Approved')->where('company_id', getCompany()->id)->pluck('purchase_orders_number', 'id'):PurchaseOrder::query()->where('id',$record->purchase_order_id)->pluck('purchase_orders_number', 'id')),
                 Forms\Components\Select::make('manager_id')->default(getEmployee()?->id)->label('Process By')->required()->options(getCompany()->employees()->where('id', getEmployee()?->id)->pluck('fullName', 'id'))->preload()->searchable(),
@@ -64,10 +69,14 @@ class GrnResource extends Resource implements HasShieldPermissions
 
                         $PO = (PurchaseOrder::query()->with('bid')->firstWhere('id', $request->PO));
                         if ($PO) {
-
                             $set('number', $PO->purchase_orders_number);
                             $set('purchase_order_id', $PO->id);
-                          return $PO->items->toArray();
+                            $items = $PO->items->toArray();
+                            foreach ($items as $index => &$item) {
+                                $item['row_number'] = $index + 1;
+                            }
+                          return  $items;
+
                         }
 
                     })
@@ -130,10 +139,16 @@ class GrnResource extends Resource implements HasShieldPermissions
                             $total = (($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100)) * (float)$get('exchange_rate');
                             $set('total', number_format($total, 2));
                         })->icon('heroicon-o-calculator')->color('danger')->iconSize(IconSize::Large))->required()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->columnSpan(2)->readOnly(),
-                        Select::make('employee_id')->label('Employee Ordered')->columnSpan(3)->required()->options(getCompany()->employees()->pluck('fullName', 'id'))->searchable()->preload()
+                        Select::make('employee_id')->label(' Purchaser')->columnSpan(3)->required()->options(getCompany()->employees()->whereIn('department_id',getCompany()->purchaser_department)->pluck('fullName', 'id'))->searchable()->preload()
                     ])->live()
                     ->columns(13)
                     ->columnSpanFull()->addable(false),
+                Section::make()->schema([
+                    TextInput::make('totals')->prefix(defaultCurrency()?->name)->inlineLabel()->label('Sub Total')->hintAction(Forms\Components\Actions\Action::make('Calculate')->action(function (Set $set,Get $get){
+                        $total= collect($get('RequestedItems'))->map(fn($item) => $item['total']? str_replace(',','',$item['total']):0)->sum();
+                        $set('totals',number_format($total,2));
+                    })->icon('heroicon-o-calculator')->color('danger')->iconSize(IconSize::Large))->dehydrated(false)->readOnly()
+                ])->columns(2)
             ]);
     }
 
@@ -154,6 +169,8 @@ class GrnResource extends Resource implements HasShieldPermissions
                 //
             ])
             ->actions([
+                Tables\Actions\Action::make('prPDF')->label('Print ')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.grn', ['id' => $record->id,'company'=>getCompany()->id]))->openUrlInNewTab(),
+
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\EditAction::make()->hidden(function ($record){
                     return $record->items()->where('receive_status','!=','Approved')->count();
@@ -161,7 +178,7 @@ class GrnResource extends Resource implements HasShieldPermissions
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
+//                    Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
     }

@@ -185,7 +185,6 @@
             <td style="width: 75%; vertical-align: top;">
                 <p><b>Personnel: </b>{{$histories->person->name}}</p>
                 <p><b>Group: </b>{{$histories->person->person_group}}</p>
-                <p><b>Badge Number:</b> {{ $histories->employee->ID_number }}</p>
                 <p><b>Personnel Number: </b>{{$histories->person->number}}</p>
                 <p><b>Job Title: </b>{{$histories->person->job_title}}</p>
             </td>

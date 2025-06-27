@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class PurchaseOrderRelationManager extends RelationManager
 {
-    protected static string $relationship = 'purchaseOrder';
+    protected static string $relationship = 'purchaseOrderItems';
 
     public function form(Form $form): Form
     {
@@ -30,55 +30,24 @@ class PurchaseOrderRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('id')
             ->columns([
-                Tables\Columns\TextColumn::make('NO')->label('No')->rowIndex(),
-                Tables\Columns\TextColumn::make('purchase_orders_number')
-                    ->label('PO No')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('date_of_po')
-                    ->label('Date Of PO')
-                    ->date()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('vendor.name')
-                    ->numeric()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('total')
-                    ->label('Total')
-                    ->state(fn($record) => number_format($record->items->map(fn($item) => (($item['quantity'] * str_replace(',', '', $item['unit_price'])) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['taxes']) / 100) + (($item['quantity'] * str_replace(',', '', $item['unit_price']) * $item['freights']) / 100)))?->sum()).$record->currency->symbol)
-                    ->searchable(),
-
-
-
-                Tables\Columns\TextColumn::make('purchaseRequest.purchase_number')->badge()->url(fn($record) => PurchaseRequestResource::getUrl('index') . "?tableFilters[purchase_number][value]=" . $record->purchaseRequest?->id)
-                    ->sortable()->label("PR No"),
-
-                Tables\Columns\TextColumn::make('date_of_delivery')
-                    ->date()
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('location_of_delivery')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(),
-
-                Tables\Columns\Textcolumn::make('status')->badge()
-                    ->label('Status'),
+                Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
+                Tables\Columns\TextColumn::make('product.info')->searchable(query: fn($query,$search)=>$query->whereHas('product',function ($query)use($search){
+                    return  $query->where('title','like',"%{$search}%")->orWhere('second_title','like',"%{$search}%")->orWhere('sku','like',"%{$search}%");
+                })),
+                Tables\Columns\TextColumn::make('description')->wrap()->searchable(),
+                Tables\Columns\TextColumn::make('unit.title')->searchable(),
+                Tables\Columns\TextColumn::make('quantity')->summarize(Tables\Columns\Summarizers\Sum::make()->numeric()),
+                Tables\Columns\TextColumn::make('unit_price')->numeric(2)->label('Unit Price'),
+                Tables\Columns\TextColumn::make('taxes')->label('Taxes'),
+                Tables\Columns\TextColumn::make('freights')->label('Freights'),
+                Tables\Columns\TextColumn::make('vendor.name')->label('Vendor'),
+                Tables\Columns\TextColumn::make('currency.name')->label('Currency'),
+                Tables\Columns\TextColumn::make('exchange_rate')->label('Exchange Rate'),
+                Tables\Columns\TextColumn::make('total')->summarize(Tables\Columns\Summarizers\Sum::make())->label('Total')->numeric(2),
             ])
             ->filters([
                 //
             ])
-            ->headerActions([
-                Tables\Actions\CreateAction::make(),
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
+           ;
     }
 }

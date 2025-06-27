@@ -42,7 +42,7 @@ class ItemsGrnRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('vendor.name')->label('Vendor'),
                 Tables\Columns\TextColumn::make('currency.name')->label('Currency'),
                 Tables\Columns\TextColumn::make('exchange_rate')->label('Exchange Rate'),
-                Tables\Columns\TextColumn::make('employee.fullName'),
+                Tables\Columns\TextColumn::make('employee.fullName')->label('Purchaser'),
                 Tables\Columns\TextColumn::make('receive_status')->color(fn($state) => match ($state) {
                     'Approved' => 'success',
                     'Rejected' => 'danger',

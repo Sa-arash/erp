@@ -79,11 +79,11 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('comment')->sortable(),
                 Tables\Columns\TextColumn::make('status')->state(fn($record) => match ($record->status->value) {
                     'Approve' => 'Approved',
-                    'NotApprove' => 'Not Approved',
+                    'NotApprove' => 'Rejected',
                     'Pending' => 'Pending',
                 })->color(fn($state) => match ($state) {
                     'Approved' => 'success',
-                    'Not Approved' => 'danger',
+                    'Rejected' => 'danger',
                     'Pending'=>'info',
                 })->label('Status')->badge(),
             ])

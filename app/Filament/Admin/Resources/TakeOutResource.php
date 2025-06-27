@@ -91,7 +91,7 @@ class TakeOutResource extends Resource implements HasShieldPermissions
             ])
             ->columns([
                 Tables\Columns\TextColumn::make('NO')->label('No')->rowIndex(),
-                Tables\Columns\TextColumn::make('employee.fullName'),
+                Tables\Columns\TextColumn::make('employee.fullName')->label('Employee Name'),
                 Tables\Columns\TextColumn::make('assets.product.title')->state(fn($record) => $record->assets->pluck('title')->toArray())->badge()->label('Registered Asset'),
                 Tables\Columns\TextColumn::make('itemsOut')->label('Unregistered Asset')->state(function ($record) {
                     $data = [];
@@ -116,11 +116,13 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                             return 'danger';
                     }
                 })->badge(),
+                Tables\Columns\TextColumn::make('approvals.comment')->label('Comment')->wrap(),
                 Tables\Columns\TextColumn::make('status')->label('Status Items')->badge(),
                 Tables\Columns\TextColumn::make('type')->badge(),
                 Tables\Columns\TextColumn::make('gate_status')->label('Gate Status')->badge(),
                 Tables\Columns\TextColumn::make('OutSide_date')->label('Take OUT ')->dateTime(),
                 Tables\Columns\TextColumn::make('InSide_date')->label('Take IN ')->dateTime(),
+
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('employee_id')->searchable()->label('Employee')->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id')),
@@ -190,7 +192,7 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                     }
                     return  false;
                 }),
-                Tables\Actions\ViewAction::make('view')->infolist([
+                Tables\Actions\ViewAction::make('view')->slideOver()->infolist([
                     Section::make([
                         TextEntry::make('employee.fullName'),
                         ImageEntry::make('pic')->state(function ($record) {
@@ -205,6 +207,7 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                         TextEntry::make('date')->date(),
                         TextEntry::make('status')->badge(),
                         TextEntry::make('type')->badge(),
+                        ImageEntry::make('media.original_url')->label('Signature Document')->height(100),
                         RepeatableEntry::make('items')->label('Assets')->schema([
                             TextEntry::make('asset.description')->label('Asset Description'),
                             TextEntry::make('asset.number')->label('Asset Number'),
@@ -232,7 +235,7 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                             TextEntry::make('inSide_comment')->label('Inside Comment'),
                         ])->columns(),
                     ])->columns()
-                ])->modalWidth(MaxWidth::FiveExtraLarge),
+                ])->modalWidth(MaxWidth::SevenExtraLarge),
                 Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')
                     ->url(fn($record) => route('pdf.takeOut', ['id' => $record->id]))->openUrlInNewTab(),
             ])

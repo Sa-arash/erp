@@ -39,7 +39,7 @@ class Dashboard extends BaseDashboard
             StockConsumable::class,
             StockAlert::class,
             OverdueChecks::class,
-           ChequeReport::class
+//           ChequeReport::class
 
         ];
     }

@@ -14,7 +14,7 @@ class PurchaseOrderGRN extends BaseWidget
     protected int | string | array $columnSpan='full';
     public function table(Table $table): Table
     {
-        return $table
+        return $table->heading('Purchase Order Need to GRN')
             ->query(
                 PurchaseOrder::query()->where('company_id',getCompany()->id)->where('status','Approved')
             )

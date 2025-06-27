@@ -148,6 +148,8 @@ Route::get('/', function () {
 });
 Route::get('/test', function () {
 
+    dd(1);
+
 //    $t=TakeOut::query()->where('id',8)->first();
 //    $data=[];
 //    foreach ($t->itemsOut as $item){
@@ -279,6 +281,7 @@ Route::get('/pdf/audit/{ids}/{company}',[\App\Http\Controllers\PdfController::cl
 Route::get('/pdf/audit-checklist/{company}/{type}',[\App\Http\Controllers\PdfController::class,'auditChecklist'])->name('pdf.audit-checklist');
 Route::get('/pdf/employeeAssetHistory/{id}/{type}/{company}',[\App\Http\Controllers\PdfController::class,'employeeAssetHistory'])->name('pdf.employeeAssetHistory');
 Route::get('/pdf/employeeAsset/{id}/{type}/{company}',[\App\Http\Controllers\PdfController::class,'employeeAsset'])->name('pdf.employeeAsset');
+Route::get('/pdf/grn/{id}/{company}',[\App\Http\Controllers\PdfController::class,'grn'])->name('pdf.grn');
 
 });
 Route::get('fix',function (){

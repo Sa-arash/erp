@@ -24,7 +24,7 @@ class BrandResource extends Resource
     protected static ?string $model = Brand::class;
     protected static ?string $navigationGroup = 'Logistic Management';
     protected static ?string $cluster = StackManagementSettings::class;
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-s-flag';
     protected static ?string $label="Brands";
     protected static ?string $pluralLabel="Brands ";
 
@@ -69,7 +69,7 @@ class BrandResource extends Resource
                 Tables\Actions\DeleteAction::make(),
             ])
             ->bulkActions([
-               
+
                 ExportBulkAction::make()
             ->after(function (){
                 if (Auth::check()) {
@@ -86,7 +86,7 @@ class BrandResource extends Resource
                     Column::make('id')->formatStateUsing(fn ($record)=>number_format($record->assets->count()))->heading('Quantity'),
                 ]),
             ])->label('Export Brand')->color('purple')
-                
+
             ]);
     }
 

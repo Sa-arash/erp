@@ -10,10 +10,11 @@ class MyPurchaseRequest extends Page
 {
 
     use HasPageShield;
-    
+
     protected static string $view = 'filament.admin.pages.my-purchase-request';
     protected static ?string $navigationLabel = "My Purchase Requests";
     protected static ?string $navigationIcon = 'heroicon-s-credit-card';
+    protected static ?string $title="My Purchase Requests (PR)";
 
 
     protected function getHeaderWidgets(): array

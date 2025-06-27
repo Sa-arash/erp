@@ -26,7 +26,7 @@ class Company extends Model implements HasAvatar, HasName, HasMedia
     }
 
 
-    protected $fillable = ['payment_to_finance','title_sales_finance','phone_finance','email_finance','warehouse_type','asset_qualities','person_grope','asset_types','asset_depreciation_years','signature_finance','stamp_finance','supersedes_security','effective_date_security','description_security','SOP_number','visitrequest_model','visitrequest_color','agency', 'logo_security', 'title_security', 'product_service_accounts', 'security_id', 'warehouse_id', 'structure_asset_id', 'product_expence_accounts', 'account_cash', 'product_accounts', 'category_account', 'customer_account', 'vendor_account', 'account_bank', 'weekend_days', 'daily_working_hours', 'overtime_rate', 'title', 'logo', 'description', 'user_id', 'country', 'address', 'contact_information', 'company_registration_document'];
+    protected $fillable = ['purchaser_department','payment_to_finance','title_sales_finance','phone_finance','email_finance','warehouse_type','asset_qualities','person_grope','asset_types','asset_depreciation_years','signature_finance','stamp_finance','supersedes_security','effective_date_security','description_security','SOP_number','visitrequest_model','visitrequest_color','agency', 'logo_security', 'title_security', 'product_service_accounts', 'security_id', 'warehouse_id', 'structure_asset_id', 'product_expence_accounts', 'account_cash', 'product_accounts', 'category_account', 'customer_account', 'vendor_account', 'account_bank', 'weekend_days', 'daily_working_hours', 'overtime_rate', 'title', 'logo', 'description', 'user_id', 'country', 'address', 'contact_information', 'company_registration_document'];
 
     public function getLogAttribute(){
         return $this?->title."#-#".$this?->user?->name;
@@ -44,7 +44,8 @@ class Company extends Model implements HasAvatar, HasName, HasMedia
         'asset_depreciation_years' => 'array',
         'asset_qualities' => 'array',
         'warehouse_type' => 'array',
-        'payment_to_finance'=>'array'
+        'payment_to_finance'=>'array',
+        'purchaser_department'=>'array',
     ];
 
     public function getFilamentAvatarUrl(): ?string

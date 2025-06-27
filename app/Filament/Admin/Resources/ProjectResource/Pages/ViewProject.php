@@ -21,8 +21,8 @@ class ViewProject extends ViewRecord
                 ->schema([
                     TextEntry::make('name'),
                     TextEntry::make('code'),
-                    TextEntry::make('start_date')->date(),
-                    TextEntry::make('end_date')->date(),
+                    TextEntry::make('start_date')->label('Start Date')->date(),
+                    TextEntry::make('end_date')->label('End Date')->date(),
                     TextEntry::make('budget')->state(fn($record)=>number_format($record->budget,2).defaultCurrency()->symbol),
                     TextEntry::make('priority_level'),
                     TextEntry::make('employee.fullName')->label('Project Manager'),

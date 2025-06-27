@@ -39,7 +39,7 @@ class ProductServiceResource extends Resource
     protected static ?string $navigationGroup = 'Logistic Management';
     protected static ?string $pluralLabel = "Service";
     protected static ?string $cluster = StackManagementSettings::class;
-    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+    protected static ?string $navigationIcon = 'heroicon-m-wrench-screwdriver';
 
     public static function form(Form $form): Form
     {
