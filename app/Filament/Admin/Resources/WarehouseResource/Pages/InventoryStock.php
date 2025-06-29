@@ -9,6 +9,7 @@ use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ManageRelatedRecords;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
@@ -117,7 +118,7 @@ class InventoryStock extends ManageRelatedRecords
                 Tables\Filters\TernaryFilter::make('transaction')->label('Transaction')->placeholder('All Stocks')->trueLabel('Yes')->falseLabel('No')->searchable()
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make()->label('New Stock OUT')->color('danger')->action(function ($data) {
+                Tables\Actions\CreateAction::make()->modalWidth(MaxWidth::SixExtraLarge)->label('New Stock OUT')->color('danger')->action(function ($data) {
                     $quantity = (int)$data['quantity'];
                     $inventory = \App\Models\Inventory::query()->firstWhere('id', $data['inventory_id']);
 

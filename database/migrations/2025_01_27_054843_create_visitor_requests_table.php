@@ -27,12 +27,8 @@ return new class extends Migration
             $table->json('driver_vehicle_detail')->nullable();
             $table->date('approval_date')->nullable();
             $table->enum('status', ['approved','Pending', 'notApproved'])->default('Pending');
-            $table->enum('gate_status',['Pending','CheckedIn','CheckedOut','Canceled'])->default('Pending');
             $table->longText('entry_and_exit')->nullable();
-            $table->timestamp('InSide_date')->nullable();
-            $table->timestamp('OutSide_date')->nullable();
-            $table->text('inSide_comment')->nullable();
-            $table->text('OutSide_comment')->nullable();
+            $table->dateTime('read_at_reception')->nullable();
             $table->foreignId('requested_by')->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('approved_by')->nullable()->constrained('employees')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();

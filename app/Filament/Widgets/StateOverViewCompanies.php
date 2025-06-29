@@ -15,11 +15,19 @@ class StateOverViewCompanies extends BaseWidget
     protected function getStats(): array
     {
         return Cache::remember('dashboard_stats_' . auth()->id(), 60, function () {
-            $company=getCompany()->id;
-            $employeeCount = Employee::query()->where('company_id',$company)->count();
-            $assetCount = Asset::query()->where('company_id',$company)->count();
-            $assetPriceSum = Asset::query()->where('company_id',$company)->sum('price');
-            $projectCount = Project::query()->where('company_id',$company)->count();
+            $company=getCompany()?->id;
+            if ($company){
+                $employeeCount = Employee::query()->where('company_id',$company)->count();
+                $assetCount = Asset::query()->where('company_id',$company)->count();
+                $assetPriceSum = Asset::query()->where('company_id',$company)->sum('price');
+                $projectCount = Project::query()->where('company_id',$company)->count();
+            }else{
+                $employeeCount = Employee::query()->count();
+                $assetCount = Asset::query()->count();
+                $assetPriceSum = Asset::query()->sum('price');
+                $projectCount = Project::query()->count();
+            }
+
 
             return [
                 Stat::make('Employee', number_format($employeeCount)),

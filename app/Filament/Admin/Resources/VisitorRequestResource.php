@@ -238,11 +238,6 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                     Column::make('approval_date'),
                     Column::make('status'),
                     Column::make('armed'),
-                    Column::make('gate_status'),
-                    Column::make('InSide_date'),
-                    Column::make('OutSide_date'),
-                    Column::make('inSide_comment'),
-                    Column::make('OutSide_comment'),
                     Column::make('employee.fullName'),
                     Column::make('created_at'),
                 ]),
@@ -274,6 +269,15 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                     }
                 })->badge(),
                 Tables\Columns\TextColumn::make('approvals.comment')->label('Comment'),
+                Tables\Columns\TextColumn::make('read_at_reception')
+//                    ->action(Tables\Actions\Action::make('read')->action(function ($record){
+//
+//                    if (  auth()->user()->roles->where('name', 'RECEPTION')->first() !== null and auth()->user()->can('reception_visitor::request') and   $record->status!="Pending"    ){
+//                        VisitorRequest::query()->where('company_id',getCompany()->id)->where('read_at_reception',null)->update(['read_at_reception'=>now()]);
+//                    }
+//                })->icon('heroicon-c-check')->tooltip('wa')->color('success')->label('Read')
+//                    )
+                    ->label('Read at')->dateTime(),
                 Tables\Columns\TextColumn::make('CheckIN')->label('Check IN')->state(function ($record) {
                     if ($record->entry_and_exit) {
                         $lastKey = $record->entry_and_exit[array_key_last($record->entry_and_exit)];
@@ -309,7 +313,6 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                         }
                     }
                 }),
-
                 Tables\Columns\ToggleColumn::make('ICON')->label("ICON")->sortable()->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')->dateTime()->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
@@ -682,11 +685,6 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                         Column::make('approval_date'),
                         Column::make('status'),
                         Column::make('armed'),
-                        Column::make('gate_status'),
-                        Column::make('InSide_date'),
-                        Column::make('OutSide_date'),
-                        Column::make('inSide_comment'),
-                        Column::make('OutSide_comment'),
                         Column::make('employee.fullName'),
                         Column::make('created_at'),
                     ])])->label('Export Visitor Requests')->color('purple') ,

@@ -4,6 +4,7 @@ namespace App\Filament\Admin\Resources\VisitorRequestResource\Pages;
 
 use App\Filament\Admin\Resources\VisitorRequestResource;
 use App\Models\Employee;
+use App\Models\VisitorRequest;
 use Filament\Actions;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
@@ -32,5 +33,24 @@ class ListVisitorRequests extends ListRecords
                 Notification::make('success')->success()->title('Submitted Successfully')->send();
             })->visible(fn()=>auth()->user()->can('logo_and_name_visitor::request'))
         ];
+    }
+
+    public function mount(): void
+    {
+        parent::mount();
+
+        $user = auth()->user();
+
+        if (
+            $user &&
+            $user->roles->where('name', 'RECEPTION')->first() !== null &&
+            $user->can('reception_visitor::request')
+        ) {
+            VisitorRequest::query()
+                ->where('company_id', getCompany()->id)
+                ->where('read_at_reception', null)
+                ->where('status', '!=', 'Pending')
+                ->update(['read_at_reception' => now()]);
+        }
     }
 }

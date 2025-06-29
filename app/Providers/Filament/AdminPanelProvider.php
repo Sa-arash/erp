@@ -235,4 +235,5 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->databaseNotifications()->tenant(Company::class, 'id', 'company');
     }
+
 }

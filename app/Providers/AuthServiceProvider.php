@@ -12,5 +12,6 @@ class AuthServiceProvider extends ServiceProvider
         // Update `Activity::class` with the one defined in `config/activitylog.php`
         Activity::class => ActivityPolicy::class,
     ];
-    //...
+
+
 }
