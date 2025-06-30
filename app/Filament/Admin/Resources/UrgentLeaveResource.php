@@ -105,10 +105,11 @@ class UrgentLeaveResource extends Resource  implements HasShieldPermissions
     {
         return $table->defaultSort('id','desc')
             ->columns([
-                Tables\Columns\TextColumn::make('NO')->label('NO')->rowIndex(),
+                Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
+                Tables\Columns\TextColumn::make('employee.ID_number')->label('ID Number'),
                 Tables\Columns\TextColumn::make('employee.fullName')->numeric()->sortable(),
-                Tables\Columns\TextColumn::make('time_out')->time()->sortable(),
-                Tables\Columns\TextColumn::make('time_in')->time()->sortable(),
+                Tables\Columns\TextColumn::make('time_out')->label('Time OUT')->time()->sortable(),
+                Tables\Columns\TextColumn::make('time_in')->label('Time IN')->time()->sortable(),
                 Tables\Columns\TextColumn::make('hours')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('date')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('approvals.employee.fullName')->tooltip(fn($record)=>isset($record->approvals[0])? $record->approvals[0]?->approve_date:'')->label('Approve Head')->sortable(),

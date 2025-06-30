@@ -429,6 +429,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                             Select::make('drivers')->options(function (Forms\Get $get) use ($record) {
                                 $validVisitor = [];
                                 $array = $record->entry_and_exit;
+
                                 foreach ($record->driver_vehicle_detail as $visitor) {
                                     $name = $visitor['name'] . '(' . $visitor['id'] . ')';
                                     $img = asset('images/' . $visitor['driver']);

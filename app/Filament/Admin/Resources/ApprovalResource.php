@@ -87,6 +87,7 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
                     'Pending'=>'info',
                 })->label('Status')->badge(),
             ])
+
             ->filters([
                 Tables\Filters\SelectFilter::make('status')->label('Status')->options(['Approve'=>'Approve','NotApprove'=>'NotApproved','Pending'=>'Pending'])->searchable(),
                 Tables\Filters\SelectFilter::make('department')->searchable()->preload()->label('Department')->options(getCompany()->departments()->pluck('title','id'))->query(fn($query,$data)=>isset($data['value'])? $query->whereHas('approvable',function ($query)use($data){
@@ -96,7 +97,7 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
                 }):$query),
             ], getModelFilter())
 
-            //            ->group(['employee.department_id'])
+
             ->actions([
                 Tables\Actions\Action::make('viewLeave')->visible(fn($record) => substr($record->approvable_type, 11) === "Leave")->infolist(function ($record){
                     return [

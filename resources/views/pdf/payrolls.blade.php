@@ -40,79 +40,70 @@
     }
 
 </style>
-<div class="table-container" >
-
-    <table>
-
-        <tr >
+<div class="table-container">
+    <table border="1" style="width: 100%; border-collapse: collapse;">
+        <thead>
+        <tr style="text-align: center;">
             <th>#</th>
             <th>Employee</th>
             <th>Department</th>
             <th>Month</th>
             <th>Year</th>
-            <th>Base Salary (Amount)</th>
+            <th>Base Salary</th>
             <th>Total Allowance</th>
             <th>Total Deduction</th>
             <th colspan="2">Net Pay</th>
-            <th >Status</th>
+            <th>Status</th>
         </tr>
-
-
+        </thead>
         <tbody>
         @php
-            $totalBase=0;
-            $i=1;
-            $totals=[];
+            $totals = [];
+            $i = 1;
         @endphp
-        @foreach($payrolls as $payroll)
-            @php
-                if (key_exists($payroll->employee->currency?->name,$totals)){
-                    $totals[$payroll->employee->currency?->name]= $totals[$payroll->employee->currency?->name] +$payroll->amount_pay;
-                }else{
-                 $totals[$payroll->employee->currency?->name]=$payroll->amount_pay;
-                }
 
-                $totalBase+=$payroll->employee?->base_salary;
-                    $month = \Carbon\Carbon::parse($payroll->start_date);
+        @foreach($payrolls as $department => $records)
+            {{-- سطر گروه (دپارتمان) --}}
+{{--            <tr style="background-color: #f1f1f1; text-align: left;">--}}
+{{--                <td colspan="11" style="font-weight: bold; padding: 6px;">--}}
+{{--                    Department: {{ $department }}--}}
+{{--                </td>--}}
+{{--            </tr>--}}
+
+            @foreach($records as $payroll)
+                @php
+                    $currency = $payroll->employee->currency?->name;
+                    $symbol = $payroll->employee->currency?->symbol;
+                    $month = \Carbon\Carbon::parse($payroll->start_date)->format('F');
                     $year = \Carbon\Carbon::parse($payroll->start_date)->year;
-            @endphp
-        <tr style="margin:  0!important;text-align: center!important;" >
-            <td  style="padding: 3px">{{$i++}}</td>
-            <td  style="padding: 3px;width: 20%">{{$payroll->employee?->fullName}}</td>
-            <td  style="padding: 3px;width: 20%">{{$payroll->employee?->department?->title}}</td>
-            <td style="padding: 3px">{{$month->format('F')}}</td>
-            <td style="padding: 3px">{{$year}}</td>
-            <td style="padding: 3px">{{number_format($payroll->employee?->base_salary).' '.$payroll->employee?->currency?->name}}</td>
-            <td style="padding: 3px">{{number_format($payroll->total_allowance).' '.$payroll->employee?->currency?->name}}</td>
-            <td style="padding: 3px">{{number_format($payroll->total_deduction).' '.$payroll->employee?->currency?->name}}</td>
-            <td style="padding: 3px" colspan="2">{{number_format($payroll->amount_pay).' '.$payroll->employee?->currency?->name}}</td>
-            <td  style="padding: 3px">{{$payroll->status->name}}</td>
-        </tr>
+                    $totals[$currency] = ($totals[$currency] ?? 0) + $payroll->amount_pay;
+                @endphp
+                <tr style="text-align: center;">
+                    <td>{{ $i++ }}</td>
+                    <td>{{ $payroll->employee->fullName }}</td>
+                    <td>{{ $payroll->employee->department?->title }}</td>
+                    <td>{{ $month }}</td>
+                    <td>{{ $year }}</td>
+                    <td>{{ number_format($payroll->employee->base_salary) . ' ' . $currency }}</td>
+                    <td>{{ number_format($payroll->total_allowance) . ' ' . $currency }}</td>
+                    <td>{{ number_format($payroll->total_deduction) . ' ' . $currency }}</td>
+                    <td colspan="2">{{ number_format($payroll->amount_pay) . ' ' . $currency }}</td>
+                    <td>{{ $payroll->status->name }}</td>
+                </tr>
+            @endforeach
         @endforeach
         </tbody>
-        <tfoot>
-        <tr >
-{{--            <th style="background:#4b4949!important;" colspan="4">Total </th>--}}
-{{--            <td style="background:#4b4949!important;color: white">{{number_format($totalBase)}}</td>--}}
-{{--            <th style="background:#4b4949!important;" >{{number_format($payrolls->sum('total_allowance'))}}</th>--}}
-{{--            <td style="background:#4b4949!important;color: white">{{number_format($payrolls->sum('total_deduction'))}}</td>--}}
-{{--            <th style="background:#4b4949!important;">{{number_format($payrolls->sum('amount_pay'))}}</th>--}}
-{{--            <td style="background:#4b4949!important;"></td>--}}
-
-        </tr>
-        </tfoot>
     </table>
-    <table>
-        @foreach($totals as $key=> $totalPay)
-            <tr>
 
-                <td><b>Total  {{$key}}</b> : {{number_format($totalPay,2)}}</td>
+    {{-- مجموع کل در انتها --}}
+    <table style="margin-top: 20px;" border="1">
+        @foreach($totals as $currency => $total)
+            <tr>
+                <td><strong>Total {{ $currency }}</strong>: {{ number_format($total, 2) }}</td>
             </tr>
         @endforeach
-
     </table>
-
-
-
 </div>
+
+
 

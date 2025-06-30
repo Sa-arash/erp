@@ -353,8 +353,10 @@ implements HasShieldPermissions
 
     public static function table(Table $table): Table
     {
-        return $table
-            ->defaultSort('id', 'desc')
+        return $table->defaultSort('id','desc')
+            ->groups([
+                Tables\Grouping\Group::make('employee.department.title')->label('Department')->collapsible(),
+            ])
             ->headerActions([
                 ExportAction::make()
                     ->after(function () {
@@ -587,7 +589,8 @@ implements HasShieldPermissions
 
             ])
             ->columns([
-                Tables\Columns\TextColumn::make('')->rowIndex(),
+                Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
+                Tables\Columns\TextColumn::make('employee.ID_number')->label('ID Number')->alignLeft()->sortable(),
                 Tables\Columns\TextColumn::make('employee.fullName')->alignLeft()->sortable(),
                 Tables\Columns\TextColumn::make('employee.department.title')->alignLeft()->sortable(),
                 Tables\Columns\TextColumn::make('month')->state(fn($record) => Carbon::parse($record->start_date)->format('F'))->alignLeft()->sortable(true,fn($query, $direction)=> $query->orderBy('start_date',$direction)),

@@ -419,7 +419,8 @@ class PdfController extends Controller
     public function payrolls($ids)
     {
 
-        $payrolls =  Payroll::query()->whereIn('id', explode('-', $ids))->get();
+        $payrolls =  Payroll::query()->whereIn('id', explode('-', $ids))->get() ->groupBy(fn($payroll) => $payroll->employee->department->title);
+
         $company = auth()->user()->employee->company;
         $pdf = Pdf::loadView(
             'pdf.payrolls',
