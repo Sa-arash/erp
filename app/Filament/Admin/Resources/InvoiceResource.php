@@ -249,7 +249,7 @@ class InvoiceResource extends Resource
                                 })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->numeric(),
                                 Forms\Components\DatePicker::make('issue_date')->default(now())->required(),
                                 Forms\Components\DatePicker::make('due_date')->required(),
-                                Forms\Components\TextInput::make('payer_name')->maxLength(255),
+                                Forms\Components\TextInput::make('payer_name')->label('Payor Name')->maxLength(255),
                                 Forms\Components\TextInput::make('payee_name')->maxLength(255),
                                 Forms\Components\TextInput::make('bank_name')->maxLength(255),
                                 Forms\Components\TextInput::make('branch_name')->maxLength(255),

@@ -132,7 +132,7 @@ class VisitRequest extends BaseWidget
                                 TextInput::make('phone')->label('Phone'),
                                 TextInput::make('organization')->label('Organization'),
                                 TextInput::make('remarks')->label('Remarks'),
-                                FileUpload::make('attachment')->downloadable()
+                                FileUpload::make('attachment')->downloadable()->image()->imageEditor()
                                     ->disk('public')->columnSpanFull(),
                             ])->columns(5)->columnSpanFull(),
                             Section::make([
@@ -193,8 +193,8 @@ class VisitRequest extends BaseWidget
                                     ,
                                     TextInput::make('Registration_Plate')->required(),
                                     TextInput::make('trip')->required()->numeric(),
-                                    FileUpload::make('driver')->label('Driver National Identification Card')->imageEditor()->image()->columnSpan(3),
-                                    FileUpload::make('image')->label('Vehicle Number Plate Photo')->imageEditor()->image()->columnSpan(4),
+                                    FileUpload::make('driver')->image()->imageEditor()->label('Driver National Identification Card')->imageEditor()->image()->columnSpan(3),
+                                    FileUpload::make('image')->image()->imageEditor()->label('Vehicle Number Plate Photo')->imageEditor()->image()->columnSpan(4),
                                 ])->columns(7)->columnSpanFull(),
                         ])->columns(2)
                     ]
@@ -295,7 +295,7 @@ class VisitRequest extends BaseWidget
                                 TextInput::make('phone')->label('Phone'),
                                 TextInput::make('organization')->label('Organization'),
                                 TextInput::make('remarks')->label('Remarks'),
-                                FileUpload::make('attachment')->downloadable()->disk('public')->columnSpanFull(),
+                                FileUpload::make('attachment')->image()->imageEditor()->downloadable()->disk('public')->columnSpanFull(),
                             ])->columns(5)->columnSpanFull(),
                             Section::make([
                                 Repeater::make('armed')->grid(3)->label('Armed Close Protection Officers (If Applicable)')->columnSpanFull()->schema([
@@ -355,8 +355,8 @@ class VisitRequest extends BaseWidget
                                     ,
                                     TextInput::make('Registration_Plate')->required(),
                                     TextInput::make('trip')->required()->numeric(),
-                                    FileUpload::make('driver')->label('Driver National Identification Card')->imageEditor()->image()->columnSpan(3),
-                                    FileUpload::make('image')->label('Vehicle Number Plate Photo')->imageEditor()->image()->columnSpan(4),
+                                    FileUpload::make('driver')->image()->imageEditor()->label('Driver National Identification Card')->imageEditor()->image()->columnSpan(3),
+                                    FileUpload::make('image')->image()->imageEditor()->label('Vehicle Number Plate Photo')->imageEditor()->image()->columnSpan(4),
                                 ])->columns(7)->columnSpanFull(),
                         ])->columns(2)
                     ]

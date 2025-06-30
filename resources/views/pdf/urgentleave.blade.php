@@ -73,9 +73,11 @@
               {{$urgent->approvals->first()?->employee->fullName}}
           </td>
       <td style="border-left: none !important;">
-          @if ($urgent->approvals[0]->    employee?->media->where('collection_name', 'signature')?->first())
+          @if(isset($urgent->approvals[0]))
+          @if (   $urgent->approvals[0]->    employee?->media->where('collection_name', 'signature')?->first())
               <img width="60" height="60"
                    src="{{ $urgent->approvals[0]->employee?->media->where('collection_name', 'signature')?->first()?->getPath() }}">
+          @endif
           @endif
       </td></tr>
       <tr><td style="text-align: center;"><b>Approved by HR Department:</b></td><td style="border-right: none !important">{{$urgent->admin?->fullName}}</td>

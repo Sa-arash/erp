@@ -36,9 +36,7 @@
             margin-bottom: 20px;
             font-weight: bold;
         }
-        @page  {
-           margin: 5px;
-        }
+
     </style>
 </head>
 <body>

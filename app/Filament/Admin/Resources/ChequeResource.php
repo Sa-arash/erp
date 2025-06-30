@@ -53,7 +53,7 @@ class ChequeResource extends Resource
                 ])->columns(3),
                 Forms\Components\Section::make([
                     Forms\Components\TextInput::make('amount')->prefix(defaultCurrency()?->symbol)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->numeric(),
-                    Forms\Components\TextInput::make('payer_name')->required()->maxLength(255),
+                    Forms\Components\TextInput::make('payer_name')->label('Payor Name')->required()->maxLength(255),
                     Forms\Components\TextInput::make('payee_name')->required()->maxLength(255),
                 ])->columns(3),
                 Forms\Components\Textarea::make('description')->columnSpanFull(),
@@ -82,7 +82,7 @@ class ChequeResource extends Resource
                             Column::make('amount'),
                             Column::make('issue_date'),
                             Column::make('due_date'),
-                            Column::make('payer_name'),
+                            Column::make('payer_name')->heading('Payor Name'),
                             Column::make('payee_name'),
                             Column::make('id')->heading('Due Days')->formatStateUsing(function ($record) {
                                 $daysUntilDue = Carbon::make($record->due_date)->diffInDays(now(), false);
@@ -102,7 +102,7 @@ class ChequeResource extends Resource
                 Tables\Columns\TextColumn::make('amount')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('issue_date')->date()->sortable(),
                 Tables\Columns\TextColumn::make('due_date')->date()->sortable(),
-                Tables\Columns\TextColumn::make('payer_name')->searchable(),
+                Tables\Columns\TextColumn::make('payer_name')->label('Payor Name')->searchable(),
                 Tables\Columns\TextColumn::make('payee_name')->searchable(),
                 Tables\Columns\TextColumn::make('Due Days')->label('Due Days')->state(function ($record) {
                     $daysUntilDue = Carbon::make($record->due_date)->diffInDays(now(), false);
@@ -308,7 +308,7 @@ class ChequeResource extends Resource
                         Column::make('amount'),
                         Column::make('issue_date'),
                         Column::make('due_date'),
-                        Column::make('payer_name'),
+                        Column::make('payer_name')->heading('Payor Name'),
                         Column::make('payee_name'),
                         Column::make('id')->heading('Due Days')->formatStateUsing(function ($record) {
                             $daysUntilDue = Carbon::make($record->due_date)->diffInDays(now(), false);

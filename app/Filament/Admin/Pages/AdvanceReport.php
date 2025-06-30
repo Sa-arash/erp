@@ -127,8 +127,8 @@ class AdvanceReport extends Page
                     ]);
                 }
             }),
-        Action::make('Profit or Loss')
-            ->label('Profit or Loss')->modal()
+        Action::make('Profit and Loss')
+            ->label('Profit and Loss')->modal()
             ->form([
                 DateRangePicker::make('date'),
                 Select::make('financial_period')->searchable()
@@ -157,14 +157,14 @@ class AdvanceReport extends Page
                 if ($data['date']) {
                     return redirect()->route('pdf.account', [
                         'period' => $data['financial_period'],
-                        'reportTitle' => 'Profit or Loss',
+                        'reportTitle' => 'Profit and Loss',
                         'account' => implode('-', $data['accounts_id']),
                         'date' => str_replace('/', '-', $data['date']),
                     ]);
                 } else {
                     return redirect()->route('pdf.account', [
                         'period' => $data['financial_period'],
-                        'reportTitle' => 'Profit or Loss',
+                        'reportTitle' => 'Profit and Loss',
                         'account' => implode('-', $data['accounts_id']),
                     ]);
                 }

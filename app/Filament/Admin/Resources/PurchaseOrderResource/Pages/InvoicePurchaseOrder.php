@@ -87,6 +87,7 @@ class   InvoicePurchaseOrder extends EditRecord
             ];
         }
         $this->data['invoice']['name'] = "Paid PO " . $this->record->purchase_orders_number;
+        $this->data['invoice']['reference'] = " PO No " . $this->record->purchase_orders_number;
 
         $this->data['invoice']['transactions'] = $transactions;
         $this->previousUrl = url()->previous();
@@ -273,7 +274,7 @@ class   InvoicePurchaseOrder extends EditRecord
                                 })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->numeric(),
                                 DatePicker::make('issue_date')->default(now())->required(),
                                 DatePicker::make('due_date')->required(),
-                                TextInput::make('payer_name')->maxLength(255),
+                                TextInput::make('payer_name')->label('Payor Name')->maxLength(255),
                                 TextInput::make('payee_name')->maxLength(255),
                                 TextInput::make('bank_name')->maxLength(255),
                                 TextInput::make('branch_name')->maxLength(255),

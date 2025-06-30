@@ -62,7 +62,7 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
 
     public static function table(Table $table): Table
     {
-        return $table->query(Approval::query()->where('employee_id', getEmployee()->id)->orderBy('id', 'desc'))
+        return $table->query(Approval::query()->where('employee_id', getEmployee()->id))->defaultSort('status','desc')
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex()->label('No'),
                 Tables\Columns\TextColumn::make('approvable.employee.fullName')->label('Employee')->description(function ($record) {
@@ -89,7 +89,14 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('status')->label('Status')->options(['Approve'=>'Approve','NotApprove'=>'NotApproved','Pending'=>'Pending'])->searchable(),
+                Tables\Filters\SelectFilter::make('department')->searchable()->preload()->label('Department')->options(getCompany()->departments()->pluck('title','id'))->query(fn($query,$data)=>isset($data['value'])? $query->whereHas('approvable',function ($query)use($data){
+                    return $query->whereHas('employee',function ($query)use($data){
+                            return $query->where('department_id',$data['value']);
+                        });
+                }):$query),
             ], getModelFilter())
+
+            //            ->group(['employee.department_id'])
             ->actions([
                 Tables\Actions\Action::make('viewLeave')->visible(fn($record) => substr($record->approvable_type, 11) === "Leave")->infolist(function ($record){
                     return [

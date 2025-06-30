@@ -174,9 +174,9 @@
 
 
 
-    <div style="text-align:center;font-size:15px;font-weight: bold;text-justify: auto"> Employee Name: ____________________________________________Employee ID: ___________________
-        Job Title: ___________________Department: _______________________Last Day of Worked:_________
-        Term Date (return to HOR/Demob/Release): __________________Site Location: ICON Compound- Kabul, AFG
+    <div style="text-align:center;font-size:15px;font-weight: bold;text-justify: auto"> Employee Name: <span style="border-bottom: 1px solid black">{{$clearance->employee->fullName}}</span>  Employee ID: <span style="border-bottom: 1px solid black">{{$clearance->employee->ID_number}}</span>
+        Job Title:<span style="border-bottom: 1px solid black">{{$clearance->employee->position->title}}</span> Department: <span style="border-bottom: 1px solid black">{{$clearance->employee->department->title}}</span>  Last Day of Worked:_________
+        Term Date (return to HOR/Demob/Release):  __________________ Site Location: ICON Compound- Kabul, AFG
         Reason for Termination:</div>
 
 
@@ -309,7 +309,7 @@
             <td></td>
             <td></td>
         </tr>
-        <tr> <td style="border:none" colspan="8">Last Updated: 02/22/2023</td></tr>
+        <tr> <td style="border:none" colspan="8"></td></tr>
     </table>
 
     <div class="page-break"></div>
@@ -413,11 +413,10 @@
             <td></td>
             <td></td>
         </tr>
-    <tr> <td style="border:none" colspan="5">Last Updated: 02/22/2023</td></tr>
+    <tr> <td style="border:none" colspan="5"></td></tr>
     </table>
 
 
-    <div class="page-break"></div>
 
 
 
@@ -497,7 +496,7 @@
                 </table>
             </td>
         </tr>
-        <tr> <td style="border:none" colspan="5">Last Updated: 02/22/2023</td></tr>
+        <tr> <td style="border:none" colspan="5"></td></tr>
     </table>
 
 </body>

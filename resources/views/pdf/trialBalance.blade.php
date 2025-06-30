@@ -1,4 +1,4 @@
-@ -0,0 +1,118 @@
+
 
 
     @include('pdf.header', ['titles' => [''],'title'=>'Trial Balance'])
@@ -11,15 +11,12 @@
             <tr>
                 <th rowspan="2">Account Code</th>
                 <th rowspan="2">Account Name</th>
-                <th colspan="2">Total Transactions</th>
                 <th colspan="2">Account Balance</th>
             </tr>
             <tr>
-                <th>debtor({{ PDFdefaultCurrency($company)}})</th>
-                <th>creditor({{ PDFdefaultCurrency($company)}})</th>
 
-                <th>debtor({{ PDFdefaultCurrency($company)}})</th>
-                <th>creditor({{ PDFdefaultCurrency($company)}})</th>
+                <th>Debtor({{ PDFdefaultCurrency($company)}})</th>
+                <th>Creditor({{ PDFdefaultCurrency($company)}})</th>
             </tr>
         </thead>
         <tbody>
@@ -28,8 +25,6 @@
                     <tr>
                         <td>{{ $account->code }}</td>
                         <td>{{ $account->name }}</td>
-                        <td>{{ number_format($account->transactions->sum('debtor')) }}</td>
-                        <td>{{ number_format($account->transactions->sum('creditor')) }}</td>
                         <td>{{ number_format($account->type == 'debtor' ? $account->transactions->sum('debtor') - $account->transactions->sum('creditor') : 0) }}
                         </td>
                         <td>{{ number_format($account->type == 'creditor' ? $account->transactions->sum('creditor') - $account->transactions->sum('debtor') : 0) }}
@@ -39,8 +34,6 @@
             @endforeach
             <tr>
                 <td colspan="2">Total:</td>
-                <td>{{ number_format($accounts->map(fn($item) => $item->transactions->sum('debtor'))->sum()) }}</td>
-                <td>{{ number_format($accounts->map(fn($item) => $item->transactions->sum('creditor'))->sum()) }}</td>
 
                 <td>
                     {{ number_format(

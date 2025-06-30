@@ -34,7 +34,7 @@
 <table>
     <tr>
         <td style="text-align: left"> <span style="font-weight: bold">Date:</span>  {{\Illuminate\Support\Carbon::create($pr->request_date)->format('M j, Y / h:iA ')}}</td>
-        <td style="text-align: left"><strong style="font-weight: bold" >Reg.No</strong>: ATGT/UNC {{$pr->purchase_number}}</td>
+        <td style="text-align: left"><strong style="font-weight: bold" >PR No</strong>: ATGT/UNC {{$pr->purchase_number}}</td>
     </tr>
     <tr>
         <td style="text-align: left"><span  style="font-weight: bold">Requestor Name:</span>  {{$pr->employee?->fullName}}</td>

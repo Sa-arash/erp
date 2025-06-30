@@ -207,7 +207,7 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                         TextEntry::make('date')->date(),
                         TextEntry::make('status')->badge(),
                         TextEntry::make('type')->badge(),
-                        ImageEntry::make('media.original_url')->label('Signature Document')->height(100),
+                        ImageEntry::make('media.original_url')->label('Attach Document & Supporting Document'  )->height(100),
                         RepeatableEntry::make('items')->label('Assets')->schema([
                             TextEntry::make('asset.description')->label('Asset Description'),
                             TextEntry::make('asset.number')->label('Asset Number'),

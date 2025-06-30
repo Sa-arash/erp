@@ -217,7 +217,7 @@ class MyPurchaseRequest extends BaseWidget
     Action::make('view')->slideOver()->modalWidth(MaxWidth::Full)->infolist([
         ComponentsSection::make('Purchase Request')->schema([
             TextEntry::make('request_date')->dateTime(),
-            TextEntry::make('purchase_number')->label('PR NO')->badge(),
+            TextEntry::make('purchase_number')->label('PR No')->badge(),
             TextEntry::make('employee.fullName'),
             TextEntry::make('description')->columnSpanFull()->label('Description'),
         ])->columns(3),
@@ -228,12 +228,12 @@ class MyPurchaseRequest extends BaseWidget
                 $approves=$record->approvals->where('approve_date','!=',null)->all();
                 $headers = [
                     'Product/Service', 'Unit', 'Quantity', 'Est. Unit Cost', 'Project',
-                    'Description','Warehouse Commenter ', 'Warehouse Decision', 'Warehouse Comment' ,'Verification Commenter ' ,
-                    'Verification Decision', 'Verification Comment', 'Approval Commenter ' ,
+                    'Description','Warehouse Commenter ', 'Warehouse Decision', 'Warehouse Comment' ,'Verified by ' ,
+                    'Verification Decision', 'Verification Comment', 'Approved by ' ,
                     'Approval Decision', 'Approval Comment'
                 ];
 
-                $html = '<table style="width: 100%; border-collapse: collapse; font-size: 12px;">';
+                $html = '<table style="width: 100%; border-collapse: collapse; font-size: 12px;margin-left: 5%">';
 
                 // Header Row
                 $html .= '<tr>';

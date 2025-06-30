@@ -21,6 +21,7 @@ use Filament\Notifications\Notification;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
+use Illuminate\Support\HtmlString;
 
 class MyLeave extends BaseWidget
 {
@@ -30,7 +31,15 @@ class MyLeave extends BaseWidget
     {
         return $table ->query(
             Leave::query()->where('company_id',getCompany()->id)
-        )->defaultSort('id','desc')
+        )->defaultSort('id','desc')->heading(function (){
+                $leaves= Leave::query()->where('employee_id',getEmployee()->id)->whereBetween('start_leave', [now()->startOfYear(), now()->endOfYear()])->whereBetween('end_leave', [now()->startOfYear(), now()->endOfYear()])->where('status','accepted')->sum('days');
+                $year=now()->year;
+                return new HtmlString("<div style='font-size: 25px !important;'>  <span style='color: red;font-size: 25px !important;'>$leaves</span> Days ($year) </div>");
+
+        })->contentFooter(function (){
+
+            return view('leave-report');
+        })
             ->headerActions([
                 Tables\Actions\Action::make('New Leave')->action(function ($data){
                     $data['company_id']=getCompany()->id;

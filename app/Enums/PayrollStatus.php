@@ -14,8 +14,8 @@ enum PayrollStatus:string implements HasColor,HasLabel
     {
         return match ($this){
             self::Pending => 'Pending',
-            self::Accepted => 'Accepted',
-            self::Payed => 'Payed',
+            self::Accepted => 'Approved',
+            self::Payed => 'Paid',
 
         };
     }

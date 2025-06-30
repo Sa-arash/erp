@@ -360,7 +360,7 @@ class BalancePeriod extends ManageRelatedRecords
                             Forms\Components\TextInput::make('amount')->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->numeric(),
                             Forms\Components\DatePicker::make('issue_date')->required(),
                             Forms\Components\DatePicker::make('due_date')->required(),
-                            Forms\Components\TextInput::make('payer_name')->required()->maxLength(255),
+                            Forms\Components\TextInput::make('payer_name')->label('Payor Name')->required()->maxLength(255),
                             Forms\Components\TextInput::make('payee_name')->required()->maxLength(255),
                             Forms\Components\TextInput::make('bank_name')->maxLength(255),
                             Forms\Components\TextInput::make('branch_name')->maxLength(255),

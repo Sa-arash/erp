@@ -2,18 +2,25 @@
 
 namespace App\Filament\Admin\Resources\PurchaseRequestResource\RelationManagers;
 
+use Carbon\Carbon;
 use Filament\Facades\Filament;
 use Filament\Forms;
+use Filament\Forms\Components\KeyValue;
+use Filament\Forms\Components\Section;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Notifications\Notification;
 use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Activitylog\Models\Activity as ActivityModel;
 
 class ItemsRelationManager extends RelationManager
 {
@@ -100,7 +107,7 @@ class ItemsRelationManager extends RelationManager
                     default => 'primary',
                 })->label('Warehouse Decision')->alignCenter()->badge(),
                 Tables\Columns\TextColumn::make('clarification_comment')->label('Warehouse  Comment'),
-                Tables\Columns\TextColumn::make('verification_commenter')->state(isset($approves[1])? $approves[1]?->employee?->fullName:"")->label('Verification Commenter'),
+                Tables\Columns\TextColumn::make('verification_commenter')->state(isset($approves[1])? $approves[1]?->employee?->fullName:"")->label('Verified by '),
                 Tables\Columns\TextColumn::make('verification_decision')->state(fn($record)=>match ($record->verification_decision){
                     'approve' => 'Approved',
                     'reject' => 'Rejected',
@@ -111,7 +118,7 @@ class ItemsRelationManager extends RelationManager
                     default => 'primary',
                 })->label('Verification Decision')->alignCenter()->badge(),
                 Tables\Columns\TextColumn::make('verification_comment')->label('Verification Comment'),
-                Tables\Columns\TextColumn::make('approval_commenter')->state(isset($approves[2])? $approves[2]?->employee?->fullName:"")->label('Approval Commenter'),
+                Tables\Columns\TextColumn::make('approval_commenter')->state(isset($approves[2])? $approves[2]?->employee?->fullName:"")->label('Approved by'),
                 Tables\Columns\TextColumn::make('approval_decision')->state(fn($record)=>match ($record->approval_decision){
                     'approve' => 'Approved',
                     'reject' => 'Rejected',
@@ -134,6 +141,52 @@ class ItemsRelationManager extends RelationManager
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\ViewAction::make()->label('View History')->slideOver()->color('warning')->modalWidth(MaxWidth::SixExtraLarge)->form([
+                    Forms\Components\Repeater::make('activities')->relationship('activities')->schema([
+                        Section::make([TextInput::make('causer_id')
+                            ->afterStateHydrated(function ($component, ?Model $record) {
+                                /** @phpstan-ignore-next-line */
+                                return $component->state($record->causer?->employee?->fullName ? $record->causer?->employee?->fullName : $record->causer->name);
+                            })
+                            ->label('Employee'),
+                            TextInput::make('created_at')
+                                ->afterStateHydrated(function ($component, ?Model $record) {
+                                    /** @phpstan-ignore-next-line */
+                                    return $component->state(Carbon::make($record->created_at)->format('Y/m/d h:i A'));
+                                })
+                                ->label('Date'),])->columns(),
+                        Section::make()
+                            ->columns()
+                            ->visible(fn($record) => $record->properties?->count() > 0)
+                            ->schema(function (?Model $record) {
+                                /** @var \Spatie\Activitylog\Contracts\Activity&ActivityModel $record */
+                                $properties = $record->properties->except(['attributes', 'old']);
+
+                                $schema = [];
+
+                                if ($properties->count()) {
+                                    $schema[] = KeyValue::make('properties')
+                                        ->label(__('filament-logger::filament-logger.resource.label.properties'))
+                                        ->columnSpan('full');
+                                }
+
+                                if ($old = $record->properties->get('old')) {
+                                    $schema[] = KeyValue::make('old')
+                                        ->afterStateHydrated(fn (KeyValue $component) => $component->state($old))
+                                        ->label(__('filament-logger::filament-logger.resource.label.old'));
+                                }
+
+                                if ($attributes = $record->properties->get('attributes')) {
+                                    $schema[] = KeyValue::make('attributes')
+                                        ->afterStateHydrated(fn (KeyValue $component) => $component->state($attributes))
+                                        ->label(__('filament-logger::filament-logger.resource.label.new'));
+                                }
+
+                                return $schema;
+                            }),
+                    ])
+                ])
+
 //                Tables\Actions\DeleteAction::make(),
 
             ])

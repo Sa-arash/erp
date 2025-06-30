@@ -21,6 +21,7 @@ use App\Models\Payroll;
 use App\Models\Person;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseRequest;
+use App\Models\Separation;
 use App\Models\TakeOut;
 use App\Models\Task;
 use App\Models\Transaction;
@@ -61,10 +62,10 @@ class PdfController extends Controller
         $leave = Leave::query()->with(['employee','company','typeLeave'])->findOrFail($id);
         $holidays=Holiday::query()->where('company_id',$company->id)->get()->toArray();
         $types=Typeleave::query()->where('company_id',$company->id)->orderBy('sort')->get();
+
         $lastleave = Leave::query()
-            ->where('employee_id', $leave->employee->id)
+            ->where('employee_id', $leave->employee->id)->where('id','<',$leave->id)
             ->orderBy('id', 'desc')
-            ->skip(1)
             ->first();
 
 
@@ -537,15 +538,15 @@ class PdfController extends Controller
         );
         return $pdf->stream('cashPayment.pdf');
     }
-     public function clearance($ids)
+     public function clearance($id,$company)
     {
-
-        $company = auth()->user()->employee->company;
+        $clearance=Separation::query()->with('employee')->findOrFail($id);
+        $company = Company::query()->findOrFail($company);
 
 
         $pdf = Pdf::loadView(
             'pdf.clearance',
-            compact('company')
+            compact('company','clearance')
         );
         return $pdf->stream('clearance.pdf');
     }

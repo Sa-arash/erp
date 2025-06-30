@@ -51,7 +51,8 @@ protected static ?string $heading='Gate Pass';
                             return ['Personal Belonging' => 'Personal Belonging', 'Domestic Waste' => 'Domestic Waste', 'Construction Waste' => 'Construction Waste'];
                         }
                     }),
-                    FileUpload::make('image')->columnSpanFull()->label('Signature Document')->required()->image()->imageEditor()->columnSpan(2),
+                    FileUpload::make('image')->label('Attach Document')->image()->imageEditor()->columnSpan(1),
+                    FileUpload::make('supporting')->label('Attached Supporting Documents')->image()->imageEditor()->columnSpan(1),
                     Repeater::make('items')->required(function (Get $get){
                         if (!$get('itemsOut')){
                             return true;
@@ -77,7 +78,7 @@ protected static ?string $heading='Gate Pass';
                                     });
                                 })->where('company_id', getCompany()->id)->get();
                                 foreach ($assets as $asset) {
-                                    $data[$asset->id] = $asset->product?->title." ".$asset->description . " ( SKU #" . $asset->product?->sku . " )";
+                                    $data[$asset->id] = $asset->product?->title. " ( SKU #" . $asset->product?->sku . " )";
                                 }
                                 return $data;
                             })->required()->searchable()->preload(),
@@ -92,7 +93,7 @@ protected static ?string $heading='Gate Pass';
                         TextInput::make('quantity')->required(),
                         Select::make('unit')->searchable()->options(Unit::query()->where('company_id', getCompany()->id)->pluck('title','title'))->required(),
                         TextInput::make('remarks')->nullable(),
-                        FileUpload::make('image')->columnSpanFull()->label('Image Upload')->required()->image()->imageEditor(),
+                        FileUpload::make('image')->columnSpanFull()->label('Image Upload')->image()->imageEditor(),
                     ])->columnSpanFull()->columns(4)
                 ])->columns(4)
 
@@ -116,6 +117,10 @@ protected static ?string $heading='Gate Pass';
                 $media = $data['image'] ?? null;
                 if (isset($media)) {
                     $takeOut->addMedia(public_path('images/'.$media))->toMediaCollection('image');
+                }
+                $media = $data['supporting'] ?? null;
+                if (isset($media)) {
+                    $takeOut->addMedia(public_path('images/'.$media))->toMediaCollection('supporting');
                 }
                 $employee = User::whereHas('roles.permissions', function ($query) {
                     $query->where('name', 'security_take::out');
@@ -167,6 +172,66 @@ protected static ?string $heading='Gate Pass';
                 Tables\Columns\TextColumn::make('approvals.comment')->label('Comments')
 
             ])->actions([
+                Tables\Actions\EditAction::make()->visible(fn($record)=>$record->mood ==="Pending")->form([
+                    \Filament\Forms\Components\Section::make([
+                        TextInput::make('from')->label('From (Location)')->default(getEmployee()->structure?->title)->required()->maxLength(255),
+                        TextInput::make('to')->label('To (Location)')->required()->maxLength(255),
+                        DatePicker::make('date')->default(now())->required()->label('Check OUT Date'),
+                        DatePicker::make('return_date')->label('Check IN Date'),
+                        Textarea::make('reason')->columnSpanFull()->required(),
+                        ToggleButtons::make('status')->default('Returnable')->colors(['Returnable' => 'success', 'Non-Returnable' => 'danger'])->live()->required()->grouped()->options(['Returnable' => 'Returnable', 'Non-Returnable' => 'Non-Returnable']),
+                        ToggleButtons::make('type')->default('Modification')->required()->grouped()->options(function (Get $get) {
+                            if ($get('status') === "Returnable") {
+                                return ['Modification' => 'Modification'];
+                            } else {
+                                return ['Personal Belonging' => 'Personal Belonging', 'Domestic Waste' => 'Domestic Waste', 'Construction Waste' => 'Construction Waste'];
+                            }
+                        }),
+                        FileUpload::make('image')->label('Attach Document')->image()->imageEditor()->columnSpan(1),
+                        FileUpload::make('supporting')->label('Attached Supporting Documents')->image()->imageEditor()->columnSpan(1),                        Repeater::make('items')->required(function (Get $get){
+                            if (!$get('itemsOut')){
+                                return true;
+                            }
+                        })->label('Registered Asset')->addActionLabel('Add to Register Asset')->orderable(false)->schema([
+                            Select::make('asset_id')
+                                ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                                ->live()->label('Asset')->options(function () {
+                                    $data = [];
+                                    $sub = AssetEmployeeItem::selectRaw('MAX(id) as id')
+                                        ->whereHas('assetEmployee', function ($q) {
+                                            $q->where('employee_id', getEmployee()->id);
+                                        })
+                                        ->groupBy('asset_id');
+
+                                    $assetA=AssetEmployeeItem::query()
+                                        ->whereIn('id', $sub)
+                                        ->where('type', 'Assigned')->pluck('asset_id')->toArray();
+
+                                    $assets = Asset::query()->with('product')->whereIn('id',$assetA)->whereHas('employees', function ($query) {
+                                        return $query->whereHas('assetEmployee', function ($query) {
+                                            return $query->where('employee_id', getEmployee()->id);
+                                        });
+                                    })->where('company_id', getCompany()->id)->get();
+                                    foreach ($assets as $asset) {
+                                        $data[$asset->id] = $asset->product?->title. " ( SKU #" . $asset->product?->sku . " )";
+                                    }
+                                    return $data;
+                                })->required()->searchable()->preload(),
+                            TextInput::make('remarks')->nullable()
+                        ])->columnSpanFull()->columns(),
+                        Repeater::make('itemsOut')->required(function (Get $get){
+                            if (!$get('items')){
+                                return true;
+                            }
+                        })->label('Unregistered Asset')->addActionLabel('Add to UnRegister Asset')->orderable(false)->schema([
+                            TextInput::make('name')->required(),
+                            TextInput::make('quantity')->required(),
+                            Select::make('unit')->searchable()->options(Unit::query()->where('company_id', getCompany()->id)->pluck('title','title'))->required(),
+                            TextInput::make('remarks')->nullable(),
+                            FileUpload::make('image')->columnSpanFull()->label('Image Upload')->image()->imageEditor(),
+                        ])->columnSpanFull()->columns(4)
+                    ])->columns(4)
+                ])->slideOver()->modalWidth(MaxWidth::Full),
                 Tables\Actions\Action::make('pdf')->url(fn($record) => route('pdf.takeOut', ['id' => $record->id]))->icon('heroicon-s-printer')->iconSize(IconSize::Large)->label('PDF'),
                 Tables\Actions\ViewAction::make('view')->stickyModalHeader(false)->modalHeading('Gate Pass')->slideOver()->infolist([
                     Section::make([
@@ -176,7 +241,7 @@ protected static ?string $heading='Gate Pass';
                         TextEntry::make('date')->date(),
                         TextEntry::make('status')->badge(),
                         TextEntry::make('type')->badge(),
-                        ImageEntry::make('media.original_url')->label('Signature Document')->height(100),
+                        ImageEntry::make('media.original_url')->label('Attach Document & Supporting Document'  )->height(100),
                         RepeatableEntry::make('items')->label('Assets')->schema([
                             TextEntry::make('asset.description')->label('Asset Description'),
                             TextEntry::make('asset.number')->label('Asset Number'),

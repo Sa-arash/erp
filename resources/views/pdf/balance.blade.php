@@ -72,8 +72,6 @@
                         <br>
                     @endforeach
                      @php
-                        $incomes = $accounts['Income']['Income']['sum'];
-                        $Expenses = $accounts['Expenses']['Expenses']['sum'];
                         $sumAsset = $accounts['Assets']['Assets']['sum'];
                     $sumLib = $accounts['Liabilities']['Liabilities']['sum'];
                     $sumEq = $accounts['Equity']['Equity']['sum'];
@@ -94,9 +92,7 @@
 
 
 
-                    <li style="font-weight: bold">
-                        Profit or Loss: {{ number_format($incomes - $Expenses) }}
-                    </li>
+
                 </ul>
             </td>
 
@@ -132,7 +128,7 @@
                 {{ number_format($sumAsset) }}
             </td>
             <td>
-                <strong>Total :</strong> {{ number_format($sumLib + $sumEq + ($incomes - $Expenses)) }}
+                <strong>Total :</strong> {{ number_format($sumLib + $sumEq ) }}
             </td>
         </tr>
     </tbody>

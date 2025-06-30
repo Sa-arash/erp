@@ -11,6 +11,7 @@ use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\IconSize;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -50,22 +51,7 @@ class SeparationResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\ViewAction::make()->infolist([
-                    Section::make([
-                        TextEntry::make('employee.info'),
-                        TextEntry::make('created_at')->date()->label('Date of Resignation Submission'),
-                        TextEntry::make('date')->date()->label('Date of Resignation '),
-                        TextEntry::make('reason')->columnSpanFull()->label('Reason for Resignation:'),
-                        TextEntry::make('feedback')->columnSpanFull(),
-                        RepeatableEntry::make('approvals')->schema([
-                            TextEntry::make('employee.info'),
-                            TextEntry::make('position'),
-                            TextEntry::make('status'),
-                            TextEntry::make('approve_date')->date(),
-                            TextEntry::make('comment')
-                        ])->columnSpanFull()->columns(4)
-                    ])->columns(3)
-                ]),
+               Tables\Actions\Action::make('pdf')->tooltip('Print Preview')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')->url(fn($record)=>route('pdf.clearance',['id'=>$record->id,'company'=>$record->company_id]))
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

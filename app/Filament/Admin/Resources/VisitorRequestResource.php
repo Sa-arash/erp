@@ -115,7 +115,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                             Forms\Components\TextInput::make('phone')->label('Phone'),
                             Forms\Components\TextInput::make('organization')->label('Organization'),
                             Forms\Components\TextInput::make('remarks')->label('Remarks'),
-                            FileUpload::make('attachment')
+                            FileUpload::make('attachment')->image()->imageEditor()
                                 ->disk('public')->openable()->columnSpanFull(),
                         ])->columns(5)->columnSpanFull(),
                     Section::make([
@@ -204,7 +204,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
             })->exports([
                 ExcelExport::make()->askForFilename('Visitor Form')->withColumns([
                     Column::make('employee.fullName'),
-                    Column::make('visit_date'),
+                    Column::make('visiting_dates'),
                     Column::make('arrival_time'),
                     Column::make('departure_time'),
                     Column::make('agency'),
@@ -238,7 +238,27 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                     Column::make('approval_date'),
                     Column::make('status'),
                     Column::make('armed'),
-                    Column::make('employee.fullName'),
+                    Column::make('entry_and_exit')->heading('Check IN & Check OUT')->formatStateUsing(function ($state,$record) {
+                        if (!is_array($state)) {
+                            return '-';
+                        }
+                        $i = 0;
+
+                        $name=key($state);
+                        $trackTime=$state[$name]['Track Time']?? $state[$name]['Track Time '] ??null;
+
+                        if (isset($state[$name]['Check IN'])){
+                            return collect($state)->map(fn($item, $index) => ($i + 1) . ") " .
+                                "Name: {$name}, " .
+                                "Check IN: {$item['Check IN']}, " .
+                                "Check OUT: {$item['Check OUT']}, " .
+                                "Track Time: {$trackTime}, " .
+                                "Comment IN: {$item['Comment IN']}, " .
+                                "Comment OUT: {$item['Comment OUT']}")->implode("\n");
+                        }
+                        return "";
+
+                    }),
                     Column::make('created_at'),
                 ]),
             ])->label('Export Visitor Requests')->color('purple')
@@ -370,7 +390,10 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                                 $validDate = [];
                                 foreach ($record->visiting_dates as $date) {
                                     $day = Carbon::createFromFormat('d/m/Y', $date)->format('Y/m/d');
-                                        $validDate[$day] = $day;
+                                    if ($day == now()->endOfDay()->format('Y/m/d')) {
+                                        $set('date', $day);
+                                    }
+                                    $validDate[$day] = $day;
 
                                 }
                                 return $validDate;
@@ -448,7 +471,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                             $visitors[$visitor] = [
                                 'Check IN' => $time,
                                 'Check OUT' => null,
-                                'Track Time ' => null,
+                                'Track Time' => null,
                                 'Comment IN' => $comment,
                                 'Comment OUT' => null,
                             ];
@@ -506,10 +529,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                                 $validDate = [];
                                 foreach ($record->visiting_dates as $date) {
                                     $day = Carbon::createFromFormat('d/m/Y', $date)->format('Y/m/d');
-                                    if ($day == now()->endOfDay()->format('Y/m/d')) {
-                                        $set('date', $day);
                                         $validDate[$day] = $day;
-                                    }
                                 }
                                 return $validDate;
                             })->searchable()->preload()->afterStateUpdated(function (Forms\Set $set) {
@@ -758,7 +778,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                         Forms\Components\TextInput::make('phone')->label('Phone'),
                         Forms\Components\TextInput::make('organization')->label('Organization'),
                         Forms\Components\TextInput::make('remarks')->label('Remarks'),
-                        FileUpload::make('attachment')->downloadable()
+                        FileUpload::make('attachment')->downloadable()->image()->imageEditor()
                             ->disk('public')->columnSpanFull(),
                     ])->columns(5)->columnSpanFull(),
                 Section::make([
@@ -817,8 +837,8 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                             ->label('Color'),
                         Forms\Components\TextInput::make('Registration_Plate')->required(),
                         Forms\Components\TextInput::make('trip')->required(),
-                        FileUpload::make('driver')->label('Driver National Identification Card')->imageEditor()->image()->columnSpan(3),
-                        FileUpload::make('image')->label('Vehicle Number Plate Photo')->imageEditor()->image()->columnSpan(4),
+                        FileUpload::make('driver')->image()->imageEditor()->label('Driver National Identification Card')->imageEditor()->image()->columnSpan(3),
+                        FileUpload::make('image')->image()->imageEditor()->label('Vehicle Number Plate Photo')->imageEditor()->image()->columnSpan(4),
 
                     ])->columns(7)->columnSpanFull(),
                 Forms\Components\Hidden::make('company_id')

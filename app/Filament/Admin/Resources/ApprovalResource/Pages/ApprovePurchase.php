@@ -8,6 +8,7 @@ use App\Filament\Admin\Widgets\PurchaseItemHistory;
 use App\Models\Employee;
 use App\Models\Product;
 use App\Models\PurchaseRequestItem;
+use Carbon\Carbon;
 use Filament\Forms;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Placeholder;
@@ -16,13 +17,14 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
+use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ManageRelatedRecords;
+use Filament\Support\Enums\IconSize;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\HtmlString;
 use Spatie\Activitylog\Models\Activity as ActivityModel;
@@ -145,16 +147,35 @@ class ApprovePurchase extends ManageRelatedRecords
                 //
             ])
             ->headerActions([
+                Tables\Actions\Action::make('Revise')->visible(function () {
+                    if ($this->record->status->name === "Approve" and $this->record->approvable !== "Finished") {
+                        if (substr($this->record->approvable_type, 11) === "PurchaseRequest") {
+                            return true;
+                        }
+                    }
+                    return false;
+                })->label('Change Decision')->color('warning')->requiresConfirmation()->action(function () {
+                    $this->record->update(['status' => 'Pending']);
+                    $PR = $this->record->approvable;
+                    if ($PR->status->name === "Clarification") {
+                        $PR->update(['Requested']);
+                    } else if ($PR->status->name === "Verification") {
+                        $PR->update(['Clarification']);
+                    } else if ($PR->status->name === "Approval") {
+                        $PR->update(['Verification']);
+                    }
+                    sendSuccessNotification();
+                }),
                 Tables\Actions\Action::make('Approve')->label('Approve Or Reject')->color('success')->form([
                     Forms\Components\Section::make([
                         Forms\Components\Section::make([
                             Select::make('employee')->disabled()->default(fn($record) => $this->record?->approvable?->employee_id)->options(fn($record) => Employee::query()->where('id', $this->record?->approvable?->employee_id)->get()->pluck('info', 'id'))->searchable(),
-                            Forms\Components\ToggleButtons::make('status')->default('Approve')->colors(['Approve' => 'success', 'NotApprove' => 'danger'])->options(['Approve' => 'Approved', 'Pending' => 'Pending', 'NotApprove' => 'Rejected'])->grouped(),
+                            Forms\Components\ToggleButtons::make('status')->default('Approve')->colors(['Approve' => 'success', 'NotApprove' => 'danger'])->options(['Approve' => 'Approve', 'Pending' => 'Pending', 'NotApprove' => 'Reject'])->grouped(),
                             Forms\Components\ToggleButtons::make('is_quotation')->disabled($this->record->position === "PR Approval")->default($this->record?->approvable?->is_quotation)->required()->label('Need Quotation')->boolean(' With Quotation', 'Without Quotation')->grouped()->inline(),
                             Forms\Components\Textarea::make('comment')->nullable()->columnSpanFull(),
                         ])->columns(3),
-                        Forms\Components\Repeater::make('items')->deletable(false)->formatStateUsing(function(){
-                            $data=[];
+                        Forms\Components\Repeater::make('items')->deletable(false)->formatStateUsing(function () {
+                            $data = [];
                             foreach ($this->record?->approvable?->items?->toArray() as $item){
                                 $item['decision']='approve';
                                 $data[]=$item;
@@ -184,7 +205,16 @@ class ApprovePurchase extends ManageRelatedRecords
                             }),
                             TextInput::make('comment')->columnSpan(6),
                             Forms\Components\ToggleButtons::make('decision')->grouped()->inline()->columnSpan(2)->options(['approve' => 'Approve', 'reject' => 'Reject', 'Revise' => 'Revise'])->required()->colors(['approve' => 'success', 'reject' => 'danger', 'Revise' => 'warning']),
-                        ])->columns(8)->columnSpanFull()->addable(false)->orderable(false)
+                        ])->columns(8)->columnSpanFull()->addable(false)->orderable(false),
+                        TextInput::make('totals')->readOnly()->dehydrated(false)->columnSpanFull()->hintAction(Forms\Components\Actions\Action::make('Calculate')->action(function (Set $set, Get $get) {
+                            $total = 0;
+                            foreach ($get('items') as $item) {
+                                $q = (int)$item['quantity'];
+                                $price = (float)$item['estimated_unit_cost'];
+                                $total += $q * $price;
+                            }
+                            $set('totals', number_format($total));
+                        })->icon('heroicon-o-calculator')->color('danger')->iconSize(IconSize::Large))
                     ])->columns(),
                 ])->modalWidth(MaxWidth::Full)->action(function ($data) {
 
@@ -276,18 +306,30 @@ class ApprovePurchase extends ManageRelatedRecords
                 })
             ])
             ->actions([
-                    Tables\Actions\ViewAction::make()->label('View History')->color('warning')->modalWidth(MaxWidth::SixExtraLarge)->form([
-                        Forms\Components\Repeater::make('activities')->relationship('activities')->schema([
-                            Section::make()
-                                ->columns()
-                                ->visible(fn ($record) => $record->properties?->count() > 0)
-                                ->schema(function (?Model $record) {
-                                    /** @var \Spatie\Activitylog\Contracts\Activity&ActivityModel $record */
-                                    $properties = $record->properties->except(['attributes', 'old']);
+                Tables\Actions\ViewAction::make()->label('View History')->slideOver()->color('warning')->modalWidth(MaxWidth::SixExtraLarge)->form([
+                    Forms\Components\Repeater::make('activities')->relationship('activities')->schema([
+                        Section::make([TextInput::make('causer_id')
+                            ->afterStateHydrated(function ($component, ?Model $record) {
+                                /** @phpstan-ignore-next-line */
+                                return $component->state($record->causer?->employee?->fullName ? $record->causer?->employee?->fullName : $record->causer->name);
+                            })
+                            ->label('Employee'),
+                            TextInput::make('created_at')
+                                ->afterStateHydrated(function ($component, ?Model $record) {
+                                    /** @phpstan-ignore-next-line */
+                                    return $component->state(Carbon::make($record->created_at)->format('Y/m/d h:i A'));
+                                })
+                                ->label('Date'),])->columns(),
+                        Section::make()
+                            ->columns()
+                            ->visible(fn($record) => $record->properties?->count() > 0)
+                            ->schema(function (?Model $record) {
+                                /** @var \Spatie\Activitylog\Contracts\Activity&ActivityModel $record */
+                                $properties = $record->properties->except(['attributes', 'old']);
 
-                                    $schema = [];
+                                $schema = [];
 
-                                    if ($properties->count()) {
+                                if ($properties->count()) {
                                         $schema[] = KeyValue::make('properties')
                                             ->label(__('filament-logger::filament-logger.resource.label.properties'))
                                             ->columnSpan('full');

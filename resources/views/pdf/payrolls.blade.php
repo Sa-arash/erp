@@ -8,7 +8,7 @@
         margin-bottom: 20px;
         border: 1px solid #ddd;
         box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        font-size: 12px;
+        font-size: 10px;
         /* کوچک‌تر کردن فونت جدول */
     }
     table {
@@ -16,10 +16,10 @@
     }
     th,
     td {
-        padding: 10px;
+        padding: 3px;
         /* کاهش اندازه padding برای تراکم بیشتر محتوا */
         text-align: left;
-        font-size: 12px;
+        font-size: 10px;
         /* کوچک‌تر کردن فونت سلول‌ها */
     }
 
@@ -34,8 +34,9 @@
         font-size: 10pt;
     }
     @page  {
-        margin-left: 15px;
-        margin-right:15px ;
+        margin-top: 28mm;
+        margin-left: 25px;
+        margin-right:25px ;
     }
 
 </style>
@@ -76,16 +77,16 @@
                     $year = \Carbon\Carbon::parse($payroll->start_date)->year;
             @endphp
         <tr style="margin:  0!important;text-align: center!important;" >
-            <td  style="padding: 5px">{{$i++}}</td>
-            <td  style="padding: 5px">{{$payroll->employee?->fullName}}</td>
-            <td  style="padding: 5px">{{$payroll->employee?->department?->title}}</td>
-            <td style="padding: 5px">{{$month->format('F')}}</td>
-            <td style="padding: 5px">{{$year}}</td>
-            <td style="padding: 5px">{{number_format($payroll->employee?->base_salary).' '.$payroll->employee?->currency?->name}}</td>
-            <td style="padding: 5px">{{number_format($payroll->total_allowance).' '.$payroll->employee?->currency?->name}}</td>
-            <td style="padding: 5px">{{number_format($payroll->total_deduction).' '.$payroll->employee?->currency?->name}}</td>
-            <td style="padding: 5px" colspan="2">{{number_format($payroll->amount_pay).' '.$payroll->employee?->currency?->name}}</td>
-            <td  style="padding: 5px">{{$payroll->status->name}}</td>
+            <td  style="padding: 3px">{{$i++}}</td>
+            <td  style="padding: 3px;width: 20%">{{$payroll->employee?->fullName}}</td>
+            <td  style="padding: 3px;width: 20%">{{$payroll->employee?->department?->title}}</td>
+            <td style="padding: 3px">{{$month->format('F')}}</td>
+            <td style="padding: 3px">{{$year}}</td>
+            <td style="padding: 3px">{{number_format($payroll->employee?->base_salary).' '.$payroll->employee?->currency?->name}}</td>
+            <td style="padding: 3px">{{number_format($payroll->total_allowance).' '.$payroll->employee?->currency?->name}}</td>
+            <td style="padding: 3px">{{number_format($payroll->total_deduction).' '.$payroll->employee?->currency?->name}}</td>
+            <td style="padding: 3px" colspan="2">{{number_format($payroll->amount_pay).' '.$payroll->employee?->currency?->name}}</td>
+            <td  style="padding: 3px">{{$payroll->status->name}}</td>
         </tr>
         @endforeach
         </tbody>

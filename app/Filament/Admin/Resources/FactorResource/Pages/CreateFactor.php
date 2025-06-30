@@ -135,7 +135,6 @@ class CreateFactor extends CreateRecord
                             'amount' => str_replace(',', '', $transaction['cheque']['amount']),
                             'issue_date' => $transaction['cheque']['issue_date'] ?? null,
                             'due_date' => $transaction['cheque']['due_date'] ?? null,
-                            'status' => $transaction['cheque']['status'] ?? null,
                             'payer_name' => $transaction['cheque']['payer_name'] ?? null,
                             'payee_name' => $transaction['cheque']['payee_name'] ?? null,
                             'description' => $transaction['cheque']['description'] ?? null,

@@ -244,7 +244,7 @@ Route::middleware('auth')->group(function(){
 
 Route::get('/pdf/asset/{id}',[\App\Http\Controllers\PdfController::class,'asset'])->name('pdf.asset');
 Route::get('/pdf/cashPayment/{id}',[\App\Http\Controllers\PdfController::class,'cashPayment'])->name('pdf.cashPayment');
-Route::get('/pdf/clearance/{id}',[\App\Http\Controllers\PdfController::class,'clearance'])->name('pdf.clearance');
+Route::get('/pdf/clearance/{id}/{company}',[\App\Http\Controllers\PdfController::class,'clearance'])->name('pdf.clearance');
 Route::get('/pdf/overtime/{id}',[\App\Http\Controllers\PdfController::class,'overtime'])->name('pdf.overtime');
 Route::get('/pdf/leaverequest/{id}',[\App\Http\Controllers\PdfController::class,'leaverequest'])->name('pdf.leaverequest');
 Route::get('/pdf/urgentleave/{id}',[\App\Http\Controllers\PdfController::class,'urgentleave'])->name('pdf.urgentleave');
