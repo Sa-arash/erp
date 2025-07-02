@@ -224,7 +224,7 @@ class PurchaseRequestResource extends Resource
                 }):$query),
                 SelectFilter::make('employee_id')->label('Requestor')->options(getCompany()->employees->pluck('fullName', 'id'))->searchable()->preload(),
                 SelectFilter::make('id')->searchable()->preload()->options(PurchaseRequest::where('company_id', getCompany()->id)->get()->pluck('purchase_number', 'id'))
-                    ->label("PR NO"),
+                    ->label("PR No"),
 
                     Filter::make('vendor')
                     ->form([

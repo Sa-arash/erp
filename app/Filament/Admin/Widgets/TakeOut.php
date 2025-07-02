@@ -51,8 +51,8 @@ protected static ?string $heading='Gate Pass';
                             return ['Personal Belonging' => 'Personal Belonging', 'Domestic Waste' => 'Domestic Waste', 'Construction Waste' => 'Construction Waste'];
                         }
                     }),
-                    FileUpload::make('image')->label('Attach Document')->image()->imageEditor()->columnSpan(1),
-                    FileUpload::make('supporting')->label('Attached Supporting Documents')->image()->imageEditor()->columnSpan(1),
+                    FileUpload::make('image')->label('Attached for all sections')->image()->imageEditor()->columnSpan(1),
+                    FileUpload::make('supporting')->label('Attached Supporting Document')->image()->imageEditor()->columnSpan(1),
                     Repeater::make('items')->required(function (Get $get){
                         if (!$get('itemsOut')){
                             return true;
@@ -88,7 +88,7 @@ protected static ?string $heading='Gate Pass';
                         if (!$get('items')){
                             return true;
                         }
-                    })->label('Unregistered Asset')->addActionLabel('Add to UnRegister Asset')->orderable(false)->schema([
+                    })->label('Unregistered Asset')->addActionLabel('Add to Unregister Asset')->orderable(false)->schema([
                         TextInput::make('name')->required(),
                         TextInput::make('quantity')->required(),
                         Select::make('unit')->searchable()->options(Unit::query()->where('company_id', getCompany()->id)->pluck('title','title'))->required(),
@@ -187,8 +187,8 @@ protected static ?string $heading='Gate Pass';
                                 return ['Personal Belonging' => 'Personal Belonging', 'Domestic Waste' => 'Domestic Waste', 'Construction Waste' => 'Construction Waste'];
                             }
                         }),
-                        FileUpload::make('image')->label('Attach Document')->image()->imageEditor()->columnSpan(1),
-                        FileUpload::make('supporting')->label('Attached Supporting Documents')->image()->imageEditor()->columnSpan(1),                        Repeater::make('items')->required(function (Get $get){
+                        FileUpload::make('image')->label('Attached for all sections')->image()->imageEditor()->columnSpan(1),
+                        FileUpload::make('supporting')->label('Attached Supporting Document')->image()->imageEditor()->columnSpan(1),                        Repeater::make('items')->required(function (Get $get){
                             if (!$get('itemsOut')){
                                 return true;
                             }
@@ -223,7 +223,7 @@ protected static ?string $heading='Gate Pass';
                             if (!$get('items')){
                                 return true;
                             }
-                        })->label('Unregistered Asset')->addActionLabel('Add to UnRegister Asset')->orderable(false)->schema([
+                        })->label('Unregistered Asset')->addActionLabel('Add to Unregister Asset')->orderable(false)->schema([
                             TextInput::make('name')->required(),
                             TextInput::make('quantity')->required(),
                             Select::make('unit')->searchable()->options(Unit::query()->where('company_id', getCompany()->id)->pluck('title','title'))->required(),

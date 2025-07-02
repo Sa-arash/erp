@@ -21,7 +21,7 @@ return new class extends Migration
             $table->timestamp('date')->nullable();
 
             $table->text('reason')->nullable();
-            $table->enum('status',['pending','rejected','accepted','approveHead'])->default('pending');
+            $table->enum('status',['pending','rejected','accepted','approveHead','Not Returned','Returned'])->default('pending');
             $table->text('comment')->nullable();
             $table->timestamp('approval_date')->nullable();
             $table->time('checkOUT')->nullable();

@@ -574,17 +574,17 @@ implements HasShieldPermissions
                 }),
                     Tables\Actions\Action::make('print')
                         ->label('Print')
-                        ->action(function ($livewire) {
+                        ->url(function ($livewire) {
                             $query = $livewire->getTableQueryForExport()->get(); // ✔️ این متد وجود داره
 
                             $ids = $query->pluck('id')->toArray();
 
                             if (!empty($ids)) {
-                                return redirect()->route('pdf.payrolls', [
+                                return route('pdf.payrolls', [
                                     'ids' => implode('-', $ids),
                                 ]);
                             }
-                        })
+                        },true)
 
 
             ])
@@ -656,7 +656,7 @@ implements HasShieldPermissions
             ], getModelFilter())
             ->actions([
 
-                Tables\Actions\ViewAction::make('approve')->iconSize(IconSize::Medium)->color('success')->tooltip(fn($record) => ($record->status->value) === 'Accepted' ? 'Change Status' : 'Approve')->icon(fn($record) => ($record->status->value) === 'Accepted' ? 'heroicon-m-cog-8-tooth' : 'heroicon-o-check-badge')->label(fn($record) => ($record->status->value) === 'Accepted' ? 'Change Status' : 'Approve')->iconSize(IconSize::Medium)->color('success')->form(function ($record) {
+                Tables\Actions\ViewAction::make('approve')->slideOver()->iconSize(IconSize::Medium)->color('success')->tooltip(fn($record) => ($record->status->value) === 'Accepted' ? 'Change Status' : 'Approve')->icon(fn($record) => ($record->status->value) === 'Accepted' ? 'heroicon-m-cog-8-tooth' : 'heroicon-o-check-badge')->label(fn($record) => ($record->status->value) === 'Accepted' ? 'Change Status' : 'Approve')->iconSize(IconSize::Medium)->color('success')->form(function ($record) {
                     return [
                         Forms\Components\Section::make([
                             Forms\Components\Select::make('employee_id')->disabled()->default($record->employee_id)->label('Employee')->required()->options(Employee::query()->where('company_id', getCompany()->id)->pluck('fullName', 'id'))->searchable()->preload(),
@@ -792,7 +792,7 @@ implements HasShieldPermissions
                         })
                     ]
                 )->modalWidth(MaxWidth::FitContent)->visible(fn($record) => $record->status->value === "pending" and auth()->user()->can('approve_payroll')),
-                Tables\Actions\Action::make('payment')->visible(fn($record) => $record->status->value === "accepted" and auth()->user()->can('payment_payroll'))->label('Payment')->tooltip('Payment')->icon('heroicon-o-credit-card')->iconSize(IconSize::Medium)->color('warning')->action(function ($data, $record) {
+                Tables\Actions\Action::make('payment')->slideOver()->visible(fn($record) => $record->status->value === "accepted" and auth()->user()->can('payment_payroll'))->label('Payment')->tooltip('Payment')->icon('heroicon-o-credit-card')->iconSize(IconSize::Medium)->color('warning')->action(function ($data, $record) {
                     $debtor = 0;
                     $creditor = 0;
                     $debtorID = 0;
@@ -983,7 +983,7 @@ implements HasShieldPermissions
                             ])->columns(1)->columnSpanFull()
                         ])->columns(2)
                     ];
-                })->modalSubmitActionLabel('Payment')->modalWidth(MaxWidth::ScreenTwoExtraLarge),
+                })->modalSubmitActionLabel('Payment')->modalWidth(MaxWidth::Full),
 
                 Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')
                     ->action(fn($record,$data) => redirect(route('pdf.payroll', ['id' => $record->id,'title'=>$data['title']])))->form([

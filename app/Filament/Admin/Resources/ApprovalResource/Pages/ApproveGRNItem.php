@@ -16,6 +16,7 @@ class ApproveGRNItem extends ManageRelatedRecords
     protected static string $resource = ApprovalResource::class;
 
     protected static string $relationship = 'approvable';
+    protected ?string $heading="Approve ";
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 

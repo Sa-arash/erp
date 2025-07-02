@@ -37,6 +37,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
     protected static ?int $navigationSort = 100;
     protected static ?string $navigationIcon = 'heroicon-o-eye';
 
+
     public static function getPermissionPrefixes(): array
     {
         return [
@@ -238,27 +239,36 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                     Column::make('approval_date'),
                     Column::make('status'),
                     Column::make('armed'),
-                    Column::make('entry_and_exit')->heading('Check IN & Check OUT')->formatStateUsing(function ($state,$record) {
-                        if (!is_array($state)) {
-                            return '-';
-                        }
-                        $i = 0;
+                    Column::make('entry_and_exit')
+                        ->heading('Check IN & Check OUT')
+                        ->formatStateUsing(function ($state, $record) {
+                            if (!is_array($state)) {
+                                return '-';
+                            }
 
-                        $name=key($state);
-                        $trackTime=$state[$name]['Track Time']?? $state[$name]['Track Time '] ??null;
+                            $output = '';
+                            $i = 0;
 
-                        if (isset($state[$name]['Check IN'])){
-                            return collect($state)->map(fn($item, $index) => ($i + 1) . ") " .
-                                "Name: {$name}, " .
-                                "Check IN: {$item['Check IN']}, " .
-                                "Check OUT: {$item['Check OUT']}, " .
-                                "Track Time: {$trackTime}, " .
-                                "Comment IN: {$item['Comment IN']}, " .
-                                "Comment OUT: {$item['Comment OUT']}")->implode("\n");
-                        }
-                        return "";
+                            foreach (['visitors', 'drivers'] as $groupKey) {
+                                $group = $state[$groupKey] ?? [];
 
-                    }),
+                                foreach ($group as $name => $item) {
+                                    $i++;
+                                    $checkIn = $item['Check IN'] ?? '-';
+                                    $checkOut = $item['Check OUT'] ?? '-';
+                                    $trackTime = $item['Track Time'] ?? $item['Track Time '] ?? '-';
+                                    $commentIn = $item['Comment IN'] ?? '-';
+                                    $commentOut = $item['Comment OUT'] ?? '-';
+
+                                    $output .= "{$i}) Name: {$name}, Check IN: {$checkIn}, Check OUT: {$checkOut}, Track Time: {$trackTime}, Comment IN: {$commentIn}, Comment OUT: {$commentOut}\n";
+                                }
+                            }
+
+                            return trim($output);
+                        }),
+
+
+
                     Column::make('created_at'),
                 ]),
             ])->label('Export Visitor Requests')->color('purple')
@@ -266,6 +276,22 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
             ->columns([
 
                 Tables\Columns\TextColumn::make('')->rowIndex(),
+                Tables\Columns\ImageColumn::make('approvals')->label('Requested By')->state(function ($record) {
+                    $data = [];
+
+                    $data[]=$record->employee->media->where('collection_name', 'images')->first()?->original_url;
+
+                    foreach ($record->approvals as $approval) {
+                        if ($approval->status->value == "Approve") {
+                            if ($approval->employee->media->where('collection_name', 'images')->first()?->original_url) {
+                                $data[] = $approval->employee->media->where('collection_name', 'images')->first()?->original_url;
+                            } else {
+                                $data[] = $approval->employee->gender === "male" ? asset('img/user.png') : asset('img/female.png');
+                            }
+                        }
+                    }
+                    return $data;
+                })->circular()->stacked(),
                 Tables\Columns\TextColumn::make('SN_code')->label('Department Code'),
                 Tables\Columns\TextColumn::make('employee.fullName')->label('Requester')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('visitors_detail')->label('Visitors')->state(fn($record) => array_map(fn($item) => $item['name'], $record->visitors_detail))->numeric()->sortable()->bulleted()->limitList(7),
@@ -290,14 +316,8 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                 })->badge(),
                 Tables\Columns\TextColumn::make('approvals.comment')->label('Comment'),
                 Tables\Columns\TextColumn::make('read_at_reception')
-//                    ->action(Tables\Actions\Action::make('read')->action(function ($record){
-//
-//                    if (  auth()->user()->roles->where('name', 'RECEPTION')->first() !== null and auth()->user()->can('reception_visitor::request') and   $record->status!="Pending"    ){
-//                        VisitorRequest::query()->where('company_id',getCompany()->id)->where('read_at_reception',null)->update(['read_at_reception'=>now()]);
-//                    }
-//                })->icon('heroicon-c-check')->tooltip('wa')->color('success')->label('Read')
-//                    )
-                    ->label('Read at')->dateTime(),
+                    ->label('Read by Reception')->dateTime(),
+
                 Tables\Columns\TextColumn::make('CheckIN')->label('Check IN')->state(function ($record) {
                     if ($record->entry_and_exit) {
                         $lastKey = $record->entry_and_exit[array_key_last($record->entry_and_exit)];
@@ -361,10 +381,20 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                 Tables\Filters\SelectFilter::make('department')->searchable()->preload()->label('Department')->options(getCompany()->departments()->pluck('title','id'))->query(fn($query,$data)=>isset($data['value'])? $query->whereHas('employee',function ($query)use($data){
                     return $query->where('department_id',$data['value']);
                 }):$query),
-                Tables\Filters\SelectFilter::make('requested_by')->options(getCompany()->employees->pluck('info', 'id'))->searchable()->preload()->label('Employee'),
+                Tables\Filters\SelectFilter::make('requested_by')->options(getCompany()->employees->pluck('fullName', 'id'))->searchable()->preload()->label('Employee'),
                 Tables\Filters\SelectFilter::make('status')->options(['approved' => 'approved', 'notApproved' => 'notApproved'])->searchable()
             ], getModelFilter())
             ->actions([
+                Tables\Actions\Action::make('read')->visible(function ($record){
+                    if (   auth()->user()->can('reception_visitor::request') and   $record->status!="Pending" and $record->read_at_reception ===null  ) {
+                        return true;
+                    }
+                    })->action(function ($record){
+                    if (   auth()->user()->can('reception_visitor::request') and   $record->status!="Pending" and $record->read_at_reception ===null   ){
+                        $record->update(['read_at_reception'=>now()]);
+                    }
+                })->icon('heroicon-c-check')->color('success')->label('Read'),
+
                 Tables\Actions\Action::make('check_in')->visible(function ($record) {
 
                     if (!auth()->user()->can('reception_visitor::request') or  $record->status!=="approved") {
@@ -707,6 +737,33 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                         Column::make('status'),
                         Column::make('armed'),
                         Column::make('employee.fullName'),
+                        Column::make('entry_and_exit')
+                            ->heading('Check IN & Check OUT')
+                            ->formatStateUsing(function ($state, $record) {
+                                if (!is_array($state)) {
+                                    return '-';
+                                }
+
+                                $output = '';
+                                $i = 0;
+
+                                foreach (['visitors', 'drivers'] as $groupKey) {
+                                    $group = $state[$groupKey] ?? [];
+
+                                    foreach ($group as $name => $item) {
+                                        $i++;
+                                        $checkIn = $item['Check IN'] ?? '-';
+                                        $checkOut = $item['Check OUT'] ?? '-';
+                                        $trackTime = $item['Track Time'] ?? $item['Track Time '] ?? '-';
+                                        $commentIn = $item['Comment IN'] ?? '-';
+                                        $commentOut = $item['Comment OUT'] ?? '-';
+
+                                        $output .= "{$i}) Name: {$name}, Check IN: {$checkIn}, Check OUT: {$checkOut}, Track Time: {$trackTime}, Comment IN: {$commentIn}, Comment OUT: {$commentOut}\n";
+                                    }
+                                }
+
+                                return trim($output);
+                            }),
                         Column::make('created_at'),
                     ])])->label('Export Visitor Requests')->color('purple') ,
             ]);

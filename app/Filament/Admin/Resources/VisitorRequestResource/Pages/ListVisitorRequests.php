@@ -35,22 +35,5 @@ class ListVisitorRequests extends ListRecords
         ];
     }
 
-    public function mount(): void
-    {
-        parent::mount();
 
-        $user = auth()->user();
-
-        if (
-            $user &&
-            $user->roles->where('name', 'RECEPTION')->first() !== null &&
-            $user->can('reception_visitor::request')
-        ) {
-            VisitorRequest::query()
-                ->where('company_id', getCompany()->id)
-                ->where('read_at_reception', null)
-                ->where('status', '!=', 'Pending')
-                ->update(['read_at_reception' => now()]);
-        }
-    }
 }

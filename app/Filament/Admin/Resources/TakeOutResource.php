@@ -91,6 +91,22 @@ class TakeOutResource extends Resource implements HasShieldPermissions
             ])
             ->columns([
                 Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
+                Tables\Columns\ImageColumn::make('approvals')->label('Requested By')->state(function ($record) {
+                    $data = [];
+
+                    $data[]=$record->employee->media->where('collection_name', 'images')->first()?->original_url;
+
+                    foreach ($record->approvals as $approval) {
+                        if ($approval->status->value == "Approve") {
+                            if ($approval->employee->media->where('collection_name', 'images')->first()?->original_url) {
+                                $data[] = $approval->employee->media->where('collection_name', 'images')->first()?->original_url;
+                            } else {
+                                $data[] = $approval->employee->gender === "male" ? asset('img/user.png') : asset('img/female.png');
+                            }
+                        }
+                    }
+                    return $data;
+                })->circular()->stacked(),
                 Tables\Columns\TextColumn::make('employee.ID_number')->label('ID Number'),
                 Tables\Columns\TextColumn::make('employee.fullName')->label('Employee Name'),
                 Tables\Columns\TextColumn::make('assets.product.title')->state(fn($record) => $record->assets->pluck('title')->toArray())->badge()->label('Registered Asset'),
@@ -102,22 +118,26 @@ class TakeOutResource extends Resource implements HasShieldPermissions
                         }
                     }
                     return $data;
-                })->limitList(5)->badge(),
+                })->bulleted()->limitList(5),
                 Tables\Columns\TextColumn::make('from'),
                 Tables\Columns\TextColumn::make('to'),
                 Tables\Columns\TextColumn::make('date')->date(),
                 Tables\Columns\TextColumn::make('return_date')->date(),
-                Tables\Columns\TextColumn::make('mood')->label('Status')->color(function ($state) {
+                Tables\Columns\TextColumn::make('mood')->state(fn($record)=> match ($record->mood){
+                    "NotApproved"=>"Not Approved",
+                    default=>$record->mood
+                })->label('Status')->color(function ($state) {
                     switch ($state) {
                         case "Approved":
                             return 'success';
                         case "Pending":
                             return 'info';
-                        case "NotApproved":
+                        case "Not Approved":
                             return 'danger';
                     }
                 })->badge(),
                 Tables\Columns\TextColumn::make('approvals.comment')->label('Comment')->wrap(),
+
                 Tables\Columns\TextColumn::make('status')->label('Status Items')->badge(),
                 Tables\Columns\TextColumn::make('type')->badge(),
                 Tables\Columns\TextColumn::make('gate_status')->label('Gate Status')->badge(),

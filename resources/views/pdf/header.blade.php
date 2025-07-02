@@ -198,7 +198,7 @@
 <htmlpageheader name="MyHeader">
 
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding: 0; margin-top: 0 !important;">
-        <table style="border: 1px solid black">
+        <table class="w-100" style="border: 1px solid black">
             <tr>
                 <td style="border: none;width: 20%; text-align: left; padding-left: 10px;">
                     @if ($customImage??false)

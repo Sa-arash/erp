@@ -45,6 +45,7 @@
         <thead>
         <tr style="text-align: center;">
             <th>#</th>
+            <th>ID Number</th>
             <th>Employee</th>
             <th>Department</th>
             <th>Month</th>
@@ -80,6 +81,7 @@
                 @endphp
                 <tr style="text-align: center;">
                     <td>{{ $i++ }}</td>
+                    <td>{{ $payroll->employee->ID_number }}</td>
                     <td>{{ $payroll->employee->fullName }}</td>
                     <td>{{ $payroll->employee->department?->title }}</td>
                     <td>{{ $month }}</td>

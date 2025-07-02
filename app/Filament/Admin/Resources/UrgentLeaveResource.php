@@ -17,6 +17,10 @@ use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
+use Filament\Infolists\Components\Grid;
+use Filament\Infolists\Components\Group;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Enums\ActionSize;
@@ -112,9 +116,28 @@ class UrgentLeaveResource extends Resource  implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('time_in')->label('Time IN')->time()->sortable(),
                 Tables\Columns\TextColumn::make('hours')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('date')->dateTime()->sortable(),
-                Tables\Columns\TextColumn::make('approvals.employee.fullName')->tooltip(fn($record)=>isset($record->approvals[0])? $record->approvals[0]?->approve_date:'')->label('Approve Head')->sortable(),
+                Tables\Columns\TextColumn::make('approvals.employee.fullName')->tooltip(fn($record)=>isset($record->approvals[0])? $record->approvals[0]?->approve_date:'')->label('Line Manager')->sortable(),
                 Tables\Columns\TextColumn::make('status')->badge(),
                 Tables\Columns\TextColumn::make('approval_date')->dateTime()->sortable(),
+                Tables\Columns\ImageColumn::make('approvals')->state(function ($record) {
+                    $data = [];
+
+                        $data[]=$record->employee->media->where('collection_name', 'images')->first()?->original_url;
+
+                    foreach ($record->approvals as $approval) {
+                        if ($approval->status->value == "Approve") {
+                            if ($approval->employee->media->where('collection_name', 'images')->first()?->original_url) {
+                                $data[] = $approval->employee->media->where('collection_name', 'images')->first()?->original_url;
+                            } else {
+                                $data[] = $approval->employee->gender === "male" ? asset('img/user.png') : asset('img/female.png');
+                            }
+                        }
+                    }
+                    if ($record->admin){
+                        $data[]=$record->admin->media->where('collection_name', 'images')->first()?->original_url;
+                    }
+                    return $data;
+                })->circular()->stacked(),
                 Tables\Columns\TextColumn::make('checkOUT')->label('Check OUT')->time()->sortable(),
                 Tables\Columns\TextColumn::make('checkIN')->label('Check IN')->time()->sortable(),
             ])
@@ -126,8 +149,29 @@ class UrgentLeaveResource extends Resource  implements HasShieldPermissions
                 DateRangeFilter::make('date')
             ],getModelFilter())
             ->actions([
+                Tables\Actions\ViewAction::make()->infolist([
+                    Grid::make(3)->schema([
+                        TextEntry::make('employee.fullName')->label('Full Name'),
+                        TextEntry::make('employee.ID_number')->label('ID Number'),
+                        TextEntry::make('date')->label('Date & Time')->dateTime(),
+                        TextEntry::make('time_in')->label('Time IN')->time(),
+                        TextEntry::make('time_out')->label('Time OUT')->time(),
+                        TextEntry::make('hours')->label('Total Hours'),
+                        TextEntry::make('checkIN')->label('Check IN')->time(),
+                        TextEntry::make('checkOUT')->label('Check OUT')->time(),
+                        TextEntry::make('status')->badge(),
+                        TextEntry::make('approval_date')->label('Approve Date')->dateTime(),
+                        TextEntry::make('approvals.0.employee.fullName')->label('Line Manager'),
+                    ]),
+
+                    Group::make([
+                        ImageEntry::make('employee.media.0.original_url')->circular()->label('Employee'),
+                        ImageEntry::make('approvals.0.employee.media.0.original_url')->circular()->label('Line Manager'),
+                        ImageEntry::make('admin.media.0.original_url')->circular()->label('Admin'),
+                    ])->columns(3),
+                ]),
 //                Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('pdf')->label('PDF')->tooltip('Print')->icon('heroicon-s-printer')->size(ActionSize::Medium)
+                Tables\Actions\Action::make('pdf')->label('')->tooltip('Print')->icon('heroicon-s-printer')->size(ActionSize::Medium)
                     ->url(fn($record) => route('pdf.urgentleave',['id'=>$record->id]))->openUrlInNewTab(),
                 Tables\Actions\Action::make('approve')->iconSize(IconSize::Medium)->color('success')
                     ->icon(fn($record)=>($record->status->value) === 'accepted'?'heroicon-m-cog-8-tooth':'heroicon-o-check-badge')->label(fn($record)=>($record->status->value) === 'accepted'?'Change Status':'Approve')

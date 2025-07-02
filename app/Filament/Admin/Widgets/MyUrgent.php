@@ -77,6 +77,25 @@ class MyUrgent extends BaseWidget
                 Tables\Columns\TextColumn::make('date')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('status')->badge(),
                 Tables\Columns\TextColumn::make('approval_date')->dateTime()->sortable(),
+                Tables\Columns\ImageColumn::make('approvals')->state(function ($record) {
+                    $data = [];
+
+                    $data[]=$record->employee->media->where('collection_name', 'images')->first()?->original_url;
+
+                    foreach ($record->approvals as $approval) {
+                        if ($approval->status->value == "Approve") {
+                            if ($approval->employee->media->where('collection_name', 'images')->first()?->original_url) {
+                                $data[] = $approval->employee->media->where('collection_name', 'images')->first()?->original_url;
+                            } else {
+                                $data[] = $approval->employee->gender === "male" ? asset('img/user.png') : asset('img/female.png');
+                            }
+                        }
+                    }
+                    if ($record->admin){
+                        $data[]=$record->admin->media->where('collection_name', 'images')->first()?->original_url;
+                    }
+                    return $data;
+                })->circular()->stacked(),
             ]);
     }
 }

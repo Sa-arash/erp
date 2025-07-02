@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\LeaveStatus2;
+use App\Enums\UrgentStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -11,7 +12,7 @@ class UrgentLeave extends Model
     use HasFactory;
 
     protected $guarded=['id'];
-    protected $casts = ['status' => LeaveStatus2::class];
+    protected $casts = ['status' => UrgentStatus::class];
 
     public function getLogAttribute(){
         return $this?->employee?->fullName."#-#".$this?->hours."#-#".$this?->date;
