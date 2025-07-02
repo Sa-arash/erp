@@ -17,7 +17,7 @@ use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
 
-class MyUrgent extends BaseWidget
+class   MyUrgent extends BaseWidget
 {
     protected int | string | array $columnSpan='full';
     protected static ?string $heading='Urgent Leave';
@@ -96,6 +96,12 @@ class MyUrgent extends BaseWidget
                     }
                     return $data;
                 })->circular()->stacked(),
+            ])->actions([
+                Tables\Actions\DeleteAction::make()->visible(fn($record)=> $record->status->value=="pending")->action(function ($record){
+                    $record->approvals()->delete();
+                    $record->delete();
+                }),
+
             ]);
     }
 }

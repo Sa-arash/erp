@@ -276,22 +276,7 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
             ->columns([
 
                 Tables\Columns\TextColumn::make('')->rowIndex(),
-                Tables\Columns\ImageColumn::make('approvals')->label('Requested By')->state(function ($record) {
-                    $data = [];
-
-                    $data[]=$record->employee->media->where('collection_name', 'images')->first()?->original_url;
-
-                    foreach ($record->approvals as $approval) {
-                        if ($approval->status->value == "Approve") {
-                            if ($approval->employee->media->where('collection_name', 'images')->first()?->original_url) {
-                                $data[] = $approval->employee->media->where('collection_name', 'images')->first()?->original_url;
-                            } else {
-                                $data[] = $approval->employee->gender === "male" ? asset('img/user.png') : asset('img/female.png');
-                            }
-                        }
-                    }
-                    return $data;
-                })->circular()->stacked(),
+                Tables\Columns\ImageColumn::make('employee.media.0.original_url')->label('Requested By')->circular(),
                 Tables\Columns\TextColumn::make('SN_code')->label('Department Code'),
                 Tables\Columns\TextColumn::make('employee.fullName')->label('Requester')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('visitors_detail')->label('Visitors')->state(fn($record) => array_map(fn($item) => $item['name'], $record->visitors_detail))->numeric()->sortable()->bulleted()->limitList(7),

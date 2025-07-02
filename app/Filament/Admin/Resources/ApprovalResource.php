@@ -23,6 +23,7 @@ use Filament\Forms\Get;
 use Filament\Infolists\Components\Fieldset;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\Section;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -138,36 +139,51 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
                     ];
                 }),
 
-                Tables\Actions\Action::make('viewGatePass')->visible(fn($record) => substr($record->approvable_type, 11) === "TakeOut")->infolist(function ($record) {
-                    return [
-                        Fieldset::make('Gate Pass')->schema([
-                            TextEntry::make('employee.info')->label('Employee'),
-                            TextEntry::make('from')->label('From'),
-                            TextEntry::make('to')->label('To'),
-                            TextEntry::make('reason')->label('Reason'),
-                            TextEntry::make('date')->label('Date'),
-                            TextEntry::make('status')->label('Status'),
-                            TextEntry::make('type')->label('Type'),
-                            RepeatableEntry::make('items')->schema([
-                                TextEntry::make('asset.description'),
-                                TextEntry::make('asset.number')->label('Asset Number'),
-                                TextEntry::make('status')->color(fn ($state)=>match ($state){
-                                    'Approved'=>'success','Not Approved'=>'danger','Pending'=>'primary'
-                                })->badge(),
-                                TextEntry::make('remarks'),
-                            ])->columnSpanFull()->columns(4),
-                            RepeatableEntry::make('itemsOut')->label('Unregistered Asset')->schema([
-                                TextEntry::make('name'),
-                                TextEntry::make('quantity'),
-                                TextEntry::make('unit'),
-                                TextEntry::make('status')->color(fn ($state)=>match ($state){
-                                    'Approved'=>'success','Not Approved'=>'danger','Pending'=>'primary'
-                                })->badge(),
-                                TextEntry::make('remarks'),
-                            ])->columnSpanFull()->columns(4),
-                        ])->relationship('approvable')->columns()
-                    ];
-                })->modalWidth(MaxWidth::SevenExtraLarge),
+                Tables\Actions\ViewAction::make('viewGatePass')->visible(fn($record) => substr($record->approvable_type, 11) === "TakeOut")->slideOver()->infolist([
+                    Fieldset::make('View')->relationship('approvable')->schema([
+                        TextEntry::make('employee.fullName'),
+                        ImageEntry::make('pic')->state(function ($record) {
+                            return $record->employee->media->where('collection_name', 'images')->first()?->original_url;
+                        })->url(fn($state)=>$state,true)
+                            ->defaultImageUrl(fn($record) => $record->employee->gender === "male" ? asset('img/user.png') : asset('img/female.png'))
+                            ->label('Employee Photo')
+                            ->width(80)
+                            ->height(80),
+                        TextEntry::make('from'),
+                        TextEntry::make('to'),
+                        TextEntry::make('date')->date(),
+                        TextEntry::make('status')->badge(),
+                        TextEntry::make('type')->badge(),
+                        ImageEntry::make('media.0.original_url')->url(fn($state)=>$state)->openUrlInNewTab()->label('Attach Document & Supporting Document'  )->height(100),
+                        ImageEntry::make('media.1.original_url')->url(fn($state)=>$state)->openUrlInNewTab()->label('Attach Document & Supporting Document'  )->height(100),                        RepeatableEntry::make('items')->label('Assets')->schema([
+                            TextEntry::make('asset.description')->label('Asset Description'),
+                            TextEntry::make('asset.number')->label('Asset Number'),
+                            TextEntry::make('remarks'),
+                            TextEntry::make('returned_date'),
+                        ])->columnSpanFull()->columns(4),
+                        RepeatableEntry::make('itemsOut')->label('Unregistered Asset')->schema([
+                            TextEntry::make('name'),
+                            TextEntry::make('quantity'),
+                            TextEntry::make('unit'),
+                            TextEntry::make('remarks'),
+                            TextEntry::make('status')->color(fn ($state)=>match ($state){
+                                'Approved'=>'success','Not Approved'=>'danger','Pending'=>'primary'
+                            })->badge(),
+                            ImageEntry::make('image')->width(100)->height(100)
+                                ->url(fn($state)=>asset('images/'.$state),true)
+                            ,
+                        ])->columnSpanFull()->columns(6),
+                        \Filament\Infolists\Components\Section::make([
+                            TextEntry::make('OutSide_date')->label('Outside Date')->dateTime(),
+                            TextEntry::make('OutSide_comment')->label('Outside Comment '),
+                        ])->columns(),
+                        \Filament\Infolists\Components\Section::make([
+                            TextEntry::make('InSide_date')->label('Inside Date')->dateTime(),
+                            TextEntry::make('inSide_comment')->label('Inside Comment'),
+                        ])->columns(),
+                    ])->columns(3)
+                ])->modalWidth(MaxWidth::SevenExtraLarge),
+
                 Tables\Actions\Action::make('viewVisitorRequest')->url(fn($record)=>VisitorRequestResource::getUrl('view',['record'=>$record->approvable_id]))->label('View')->visible(fn($record) => substr($record->approvable_type, 11) === "VisitorRequest")
                     ->modalWidth(MaxWidth::SevenExtraLarge),
                 Action::make('viewPurchaseRequest')->label('View')->modalWidth(MaxWidth::Full)->infolist(function () {

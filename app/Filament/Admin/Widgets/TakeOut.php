@@ -172,6 +172,44 @@ protected static ?string $heading='Gate Pass';
                 Tables\Columns\TextColumn::make('approvals.comment')->label('Comments')
 
             ])->actions([
+                Tables\Actions\ViewAction::make('view')->stickyModalHeader(false)->modalHeading('Gate Pass')->slideOver()->infolist([
+                    Section::make([
+                        TextEntry::make('employee.fullName'),
+                        TextEntry::make('from'),
+                        TextEntry::make('to'),
+                        TextEntry::make('date')->date(),
+                        TextEntry::make('status')->badge(),
+                        TextEntry::make('type')->badge(),
+                        ImageEntry::make('media.original_url')->label('Attach Document & Supporting Document'  )->height(100),
+                        RepeatableEntry::make('items')->label('Assets')->schema([
+                            TextEntry::make('asset.description')->label('Asset Description'),
+                            TextEntry::make('asset.number')->label('Asset Number'),
+                            TextEntry::make('status')->color(fn ($state)=>match ($state){
+                                'Approved'=>'success','Not Approved'=>'danger','Pending'=>'primary'
+                            })->badge(),
+                            TextEntry::make('remarks'),
+                            TextEntry::make('returned_date'),
+                        ])->columnSpanFull()->columns(4),
+                        RepeatableEntry::make('itemsOut')->label('itemsOut')->schema([
+                            TextEntry::make('name'),
+                            TextEntry::make('quantity'),
+                            TextEntry::make('status')->color(fn ($state)=>match ($state){
+                                'Approved'=>'success','Not Approved'=>'danger','Pending'=>'primary'
+                            })->badge(),
+                            TextEntry::make('unit'),
+                            TextEntry::make('remarks'),
+                            ImageEntry::make('image')->height(100)
+                        ])->columnSpanFull()->columns(),
+                        \Filament\Infolists\Components\Section::make([
+                            TextEntry::make('OutSide_date')->label('Outside Date')->dateTime(),
+                            TextEntry::make('OutSide_comment')->label('Outside Comment '),
+                        ])->columns(),
+                        \Filament\Infolists\Components\Section::make([
+                            TextEntry::make('InSide_date')->label('Inside Date')->dateTime(),
+                            TextEntry::make('inSide_comment')->label('Inside Comment'),
+                        ])->columns(),
+                    ])->columns()
+                ])->modalWidth(MaxWidth::Full),
                 Tables\Actions\EditAction::make()->visible(fn($record)=>$record->mood ==="Pending")->form([
                     \Filament\Forms\Components\Section::make([
                         TextInput::make('from')->label('From (Location)')->default(getEmployee()->structure?->title)->required()->maxLength(255),
@@ -232,45 +270,13 @@ protected static ?string $heading='Gate Pass';
                         ])->columnSpanFull()->columns(4)
                     ])->columns(4)
                 ])->slideOver()->modalWidth(MaxWidth::Full),
-                Tables\Actions\Action::make('pdf')->url(fn($record) => route('pdf.takeOut', ['id' => $record->id]))->icon('heroicon-s-printer')->iconSize(IconSize::Large)->label('PDF'),
-                Tables\Actions\ViewAction::make('view')->stickyModalHeader(false)->modalHeading('Gate Pass')->slideOver()->infolist([
-                    Section::make([
-                        TextEntry::make('employee.fullName'),
-                        TextEntry::make('from'),
-                        TextEntry::make('to'),
-                        TextEntry::make('date')->date(),
-                        TextEntry::make('status')->badge(),
-                        TextEntry::make('type')->badge(),
-                        ImageEntry::make('media.original_url')->label('Attach Document & Supporting Document'  )->height(100),
-                        RepeatableEntry::make('items')->label('Assets')->schema([
-                            TextEntry::make('asset.description')->label('Asset Description'),
-                            TextEntry::make('asset.number')->label('Asset Number'),
-                            TextEntry::make('status')->color(fn ($state)=>match ($state){
-                                'Approved'=>'success','Not Approved'=>'danger','Pending'=>'primary'
-                            })->badge(),
-                            TextEntry::make('remarks'),
-                            TextEntry::make('returned_date'),
-                        ])->columnSpanFull()->columns(4),
-                        RepeatableEntry::make('itemsOut')->label('itemsOut')->schema([
-                            TextEntry::make('name'),
-                            TextEntry::make('quantity'),
-                            TextEntry::make('status')->color(fn ($state)=>match ($state){
-                                'Approved'=>'success','Not Approved'=>'danger','Pending'=>'primary'
-                            })->badge(),
-                            TextEntry::make('unit'),
-                            TextEntry::make('remarks'),
-                            ImageEntry::make('image')->height(100)
-                        ])->columnSpanFull()->columns(),
-                        \Filament\Infolists\Components\Section::make([
-                            TextEntry::make('OutSide_date')->label('Outside Date')->dateTime(),
-                            TextEntry::make('OutSide_comment')->label('Outside Comment '),
-                        ])->columns(),
-                        \Filament\Infolists\Components\Section::make([
-                            TextEntry::make('InSide_date')->label('Inside Date')->dateTime(),
-                            TextEntry::make('inSide_comment')->label('Inside Comment'),
-                        ])->columns(),
-                    ])->columns()
-                ])->modalWidth(MaxWidth::Full),
+                Tables\Actions\Action::make('pdf')->url(fn($record) => route('pdf.takeOut', ['id' => $record->id]))->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')->tooltip('Print PDF'),
+                Tables\Actions\DeleteAction::make()->visible(fn($record)=> $record->mood=="Pending")->action(function ($record){
+                    $record->approvals()->delete();
+                    $record->delete();
+                }),
+
+
 
             ])->filters([
                 getFilterSubordinate()

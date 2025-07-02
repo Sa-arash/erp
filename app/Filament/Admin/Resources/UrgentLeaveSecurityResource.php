@@ -62,7 +62,7 @@ class UrgentLeaveSecurityResource extends Resource implements HasShieldPermissio
                 Tables\Columns\TextColumn::make('approvals.employee.fullName')->tooltip(fn($record)=>isset($record->approvals[0])? $record->approvals[0]?->approve_date:'')->label('Line Manager')->sortable(),
                 Tables\Columns\TextColumn::make('status')->badge(),
                 Tables\Columns\TextColumn::make('approval_date')->label('Approve Date & Time')->dateTime()->sortable(),
-                Tables\Columns\ImageColumn::make('approvals')->label('Requested By')->state(function ($record) {
+                Tables\Columns\ImageColumn::make('approvals')->label('Process Status ')->state(function ($record) {
                     $data = [];
 
                     $data[]=$record->employee->media->where('collection_name', 'images')->first()?->original_url;
