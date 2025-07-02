@@ -275,8 +275,10 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
         ])
             ->columns([
 
-                Tables\Columns\TextColumn::make('')->rowIndex(),
-                Tables\Columns\ImageColumn::make('employee.media.0.original_url')->label('Requested By')->circular(),
+                Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
+                Tables\Columns\ImageColumn::make('employee.media.original_url')->state(function ($record) {
+                    return $record->employee?->media->where('collection_name','images')->first()?->original_url;
+                })->disk('public')->defaultImageUrl(fn( $record) => $record->employee->gender === "male" ? asset('img/user.png') : asset('img/female.png'))->alignLeft()->label('Requested By')->width(50)->height(50)->extraAttributes(['style' => 'border-radius:50px!important']),
                 Tables\Columns\TextColumn::make('SN_code')->label('Department Code'),
                 Tables\Columns\TextColumn::make('employee.fullName')->label('Requester')->numeric()->sortable(),
                 Tables\Columns\TextColumn::make('visitors_detail')->label('Visitors')->state(fn($record) => array_map(fn($item) => $item['name'], $record->visitors_detail))->numeric()->sortable()->bulleted()->limitList(7),
