@@ -252,6 +252,7 @@ Route::get('/pdf/payroll/{id}/{title}',[\App\Http\Controllers\PdfController::cla
 Route::get('/pdf/jornal/{transactions}',[\App\Http\Controllers\PdfController::class,'jornal'])->name('pdf.jornal');
 Route::get('/pdf/account/{period}/{account}',[\App\Http\Controllers\PdfController::class,'account'])->name('pdf.account');
 Route::get('/pdf/balance/{period}',[\App\Http\Controllers\PdfController::class,'balance'])->name('pdf.balance');
+Route::get('/pdf/PL/{period}/',[\App\Http\Controllers\PdfController::class,'PL'])->name('pdf.PL');
 Route::get('/pdf/document/{document}',[\App\Http\Controllers\PdfController::class,'document'])->name('pdf.document');
 Route::get('/pdf/trialBalance/{period}',[\App\Http\Controllers\PdfController::class,'trialBalance'])->name('pdf.trialBalance');
 Route::get('/pdf/employee/{id}',[\App\Http\Controllers\PdfController::class,'employee'])->name('pdf.employee');

@@ -14,6 +14,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Namu\WireChat\Models\Conversation;
+use Namu\WireChat\Traits\Chatable;
 use Spatie\Permission\PermissionRegistrar;
 use Spatie\Permission\Traits\HasRoles;
 use TomatoPHP\FilamentMediaManager\Traits\InteractsWithMediaFolders;
@@ -23,8 +25,16 @@ class User extends Authenticatable implements HasTenants, FilamentUser, HasName,
     use HasRoles, Notifiable;
     use HasFactory;
     use InteractsWithMediaFolders;
+    use Chatable;
+    public function canCreateGroups(): bool
+    {
+        return  true;
+    }
 
-
+    public function canCreateChats(): bool
+    {
+        return true;
+    }
     public function getLogAttribute(){
         return $this?->name."#-#".$this?->email;
     }

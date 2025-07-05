@@ -22,15 +22,17 @@
                             {{ $key }}:
                             {{ number_format($asset['sum']) }}
                         </li>
-
-
-                        @foreach ($asset['item'] as $key => $Children)
+                            @foreach ($asset['item'] as $key => $Children)
                             {{--  @if ($difference != 0)  --}}
                             {{-- @dd($key,$Children) --}}
                             <li>
                                 {{ $key }}:
                                 {{ number_format($Children['sum']) }}
                             </li>
+
+                            @if (isset($asset['item']) && count($asset['item']))
+                                @include('components.pdf.account-item', ['items' => $Children['item']])
+                            @endif
                             {{--  @endif  --}}
                         @endforeach
                     </ul>
@@ -38,43 +40,42 @@
                 @endforeach
             </td>
             <td>
+                @php
+                    $incomes = $accounts['Income']['Income']['sum'];
+                         $Expenses = $accounts['Expenses']['Expenses']['sum'];
+                @endphp
+
                 <ul class="item-list">
                     @foreach (['Liabilities', 'Equity'] as $type)
-                        @php
-                            // دریافت لیست مربوط به Libility یا Equity
-                            $items = $accounts[$type];
-                        @endphp
+                        @php $items = $accounts[$type]; @endphp
                         @foreach ($items as $key => $item)
-                            {{-- @if ($item['sum'] != 0) --}}
-                                <li style="font-weight: bold">
-                                    @if($key==="Equity")
-                                        Equity`s
-                                    @else
-                                        {{ $key }}:
-                                    @endif
+                            <li style="font-weight: bold">
+                                @if($key === "Equity")
+                                    Equity`s: {{ number_format($item['sum'] + $incomes + $Expenses) }}
+                                @else
+                                    {{ $key }}: {{ number_format($item['sum']) }}
+                                @endif
+                            </li>
 
-                                    {{ number_format($item['sum']) }}
+                            @php
+                                $innerItems = $item['item'];
 
-                                </li>
-                                {{--  @dd($items)  --}}
-                                @foreach ($item['item'] as $key => $credit)
-                                    <li>
-                                        @if($key==="Equity")
-                                            Equity`s
-                                        @else
-                                            {{ $key }}:
-                                        @endif
-                                        {{ number_format($credit['sum']) }}
-                                    </li>
-                                @endforeach
-                            {{-- @endif --}}
+                            @endphp
+
+                            @include('components.pdf.account-item', ['items' => $innerItems])
                         @endforeach
+                        @if ($key === "Equity")
+                        <li style="font-weight: bold"> Total Earnings:{{number_format($incomes + $Expenses)}}</li>
+                    @endif
                         <br>
+
                     @endforeach
-                     @php
-                        $sumAsset = $accounts['Assets']['Assets']['sum'];
-                    $sumLib = $accounts['Liabilities']['Liabilities']['sum'];
-                    $sumEq = $accounts['Equity']['Equity']['sum'];
+
+                    @php
+
+                       $sumAsset = $accounts['Assets']['Assets']['sum'];
+                   $sumLib = $accounts['Liabilities']['Liabilities']['sum'];
+                   $sumEq = $accounts['Equity']['Equity']['sum'];
                     @endphp
                     {{-- @dd($accounts['Income'],$accounts['Assets']['Assets']) --}}
                     {{--
@@ -103,32 +104,10 @@
                 <strong>Total :</strong>
 
 
-                <!-- محاسبه مجموع برای Assets -->
-                {{-- @foreach ($accounts['Assets'] as $asset)
-                    @php
-                        $sumAsset += $asset['sum']; // جمع مقادیر
-                    @endphp
-                @endforeach
-                {{--  @dd($accounts,$sumAsset)  --}}
-
-                <!-- محاسبه مجموع برای Liabilities -->
-                {{-- @foreach ($accounts['Liabilities'] as $liability)
-                    @php
-                        $sumLib += $liability['sum']; // جمع مقادیر
-                    @endphp
-                @endforeach
-
-                <!-- محاسبه مجموع برای Equity -->
-                @foreach ($accounts['Equity'] as $equity)
-                    @php
-                        $sumEq += $equity['sum']; // جمع مقادیر
-                    @endphp
-                @endforeach --}}
-
                 {{ number_format($sumAsset) }}
             </td>
             <td>
-                <strong>Total :</strong> {{ number_format($sumLib + $sumEq ) }}
+                <strong>Total :</strong> {{ number_format($sumLib + $sumEq +($incomes + $Expenses) ) }}
             </td>
         </tr>
     </tbody>

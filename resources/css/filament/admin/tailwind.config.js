@@ -1,10 +1,10 @@
-import preset from './vendor/filament/support/tailwind.config.preset'
+import preset from '../../../../vendor/filament/filament/tailwind.config.preset'
 
 export default {
     presets: [preset],
     content: [
-        './app/Filament/**/*.php',
-        './resources/views/**/*.blade.php',
+        './app/Filament/Clusters/AccountSettings/**/*.php',
+        './resources/views/filament/clusters/account-settings/**/*.blade.php',
         './vendor/filament/**/*.blade.php',
         './vendor/namu/wirechat/resources/views/**/*.blade.php',
         './vendor/namu/wirechat/src/Livewire/**/*.php'

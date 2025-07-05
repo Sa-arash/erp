@@ -49,7 +49,7 @@ class PurchaseRequestResource extends Resource
     protected static ?string $modelLabel = 'Purchase Request';
     protected static ?string $Label = 'Purchase Request';
     protected static ?string $navigationGroup = 'Logistic Management';
-    protected static ?string $navigationIcon = 'heroicon-c-document-arrow-down';
+    protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
 
     public static function getPermissionPrefixes(): array
     {

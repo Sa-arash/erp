@@ -238,7 +238,6 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                     }),
                     Column::make('approval_date'),
                     Column::make('status'),
-                    Column::make('armed'),
                     Column::make('entry_and_exit')
                         ->heading('Check IN & Check OUT')
                         ->formatStateUsing(function ($state, $record) {
@@ -722,7 +721,6 @@ class VisitorRequestResource extends Resource implements HasShieldPermissions
                         }),
                         Column::make('approval_date'),
                         Column::make('status'),
-                        Column::make('armed'),
                         Column::make('employee.fullName'),
                         Column::make('entry_and_exit')
                             ->heading('Check IN & Check OUT')

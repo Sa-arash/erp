@@ -32,6 +32,7 @@ use Filament\Support\Facades\FilamentAsset;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Support\Enums\MaxWidth;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets;
 use Filament\Facades\Filament;
 use Filament\Navigation\NavigationGroup;
@@ -42,6 +43,7 @@ use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Blade;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
 
@@ -112,7 +114,7 @@ class AdminPanelProvider extends PanelProvider
 
                 NavigationItem::make()
                     ->icon('heroicon-o-document-text')
-                    ->label('Profit or Loss Report')
+                    ->label('Profit & Loss Report')
                     ->url(function () use ($financialPeriod) {
                         $accountsID = getCompany()->accounts->whereIn('stamp', ['Income', 'Expenses'])->pluck('id')->toArray();
                         $accounts = Account::query()->whereIn('id', $accountsID)->orWhereIn('parent_id', $accountsID)
@@ -135,6 +137,18 @@ class AdminPanelProvider extends PanelProvider
                     ->visible(fn() => isset($financialPeriod) && $financialPeriod != null &&(auth()->user()->can('view_financial::period')))
                     ->group('Accounting Report')
                     ->sort(5),
+                NavigationItem::make()
+                    ->icon('heroicon-o-document-text')
+                    ->label('P&L Statement')
+                    ->url(function () use ($financialPeriod) {
+                        return route('pdf.PL',
+                            [
+                                'period' => $financialPeriod->id,
+                            ]);
+                    })
+                    ->visible(fn() => isset($financialPeriod) && $financialPeriod != null &&(auth()->user()->can('view_financial::period')))
+                    ->group('Accounting Report')
+                    ->sort(6),
 
             ];
 
@@ -215,6 +229,14 @@ class AdminPanelProvider extends PanelProvider
 
 
             ])
+            ->viteTheme('resources/css/filament/admin/theme.css')
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn():string=>Blade::render('@wirechatStyles')
+            )->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn():string=>Blade::render('@wirechatAssets')
+            )
             ->tenantProfile(EditTeamProfile::class)
             ->navigationItems([
 

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Widgets;
 
+use App\Events\PrRequested;
 use App\Filament\Admin\Resources\PurchaseRequestResource;
 use App\Filament\Admin\Resources\PurchaseRequestResource\Pages\ViewPurcheseRequest;
 use App\Models\Product;
@@ -409,7 +410,9 @@ class MyPurchaseRequest extends BaseWidget
                             $item->addMedia(public_path('images/'.$mediaItem))->toMediaCollection('document');
                         }
                     }
-                  sendApprove($request,'PR Warehouse_approval');
+                    broadcast(new PrRequested($request));
+
+                    sendApprove($request,'PR Warehouse_approval');
                     Notification::make('success')->success()->title('Successfully Submitted')->send();
                 })
             ]);

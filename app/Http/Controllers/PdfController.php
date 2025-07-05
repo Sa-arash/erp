@@ -163,6 +163,60 @@ class PdfController extends Controller
         );
         return $pdf->stream('account.accountCurrency');
     }
+    private function calculateAccountTree($group, $request)
+    {
+        $startDate = Carbon::parse($this->period->start_date);
+        $endDate = isset($request->date) ? Carbon::createFromFormat('Y-m-d', $request->date) : null;
+
+        // محاسبه sum برای این گروه
+        $sum = $group
+            ->where('id', $group->id)->orWhere('parent_id', $group->id)
+            ->orWhereHas('account', function ($query) use ($group) {
+                return $query->where('parent_id', $group->id)->orWhereHas('account', function ($query) use ($group) {
+                    return $query->where('parent_id', $group->id);
+                });
+            })
+            ->get()
+            ->map(function ($account) use ($startDate, $endDate) {
+                if ($account->type == 'debtor') {
+                    return $account->transactions()
+                            ->whereHas('invoice', function ($invoiceQuery) use ($startDate, $endDate) {
+                                $invoiceQuery->whereDate('date', '>=', $startDate->toDateString());
+                                if ($endDate) $invoiceQuery->whereDate('date', '<=', $endDate->toDateString());
+                            })
+                            ->where('financial_period_id', $this->period->id)->sum('debtor')
+                        -
+                        $account->transactions()
+                            ->whereHas('invoice', function ($invoiceQuery) use ($startDate, $endDate) {
+                                $invoiceQuery->whereDate('date', '>=', $startDate->toDateString());
+                                if ($endDate) $invoiceQuery->whereDate('date', '<=', $endDate->toDateString());
+                            })->where('financial_period_id', $this->period->id)->sum('creditor');
+                } elseif ($account->type == 'creditor') {
+                    return $account->transactions()
+                            ->whereHas('invoice', function ($invoiceQuery) use ($startDate, $endDate) {
+                                $invoiceQuery->whereDate('date', '>=', $startDate->toDateString());
+                                if ($endDate) $invoiceQuery->whereDate('date', '<=', $endDate->toDateString());
+                            })->where('financial_period_id', $this->period->id)->sum('creditor')
+                        -
+                        $account->transactions()
+                            ->whereHas('invoice', function ($invoiceQuery) use ($startDate, $endDate) {
+                                $invoiceQuery->whereDate('date', '>=', $startDate->toDateString());
+                                if ($endDate) $invoiceQuery->whereDate('date', '<=', $endDate->toDateString());
+                            })->where('financial_period_id', $this->period->id)->sum('debtor');
+                }
+            })->sum();
+
+        // بازگشتی برای childerns
+        $items = $group->childerns->pluck(null, 'stamp')->map(function ($child) use ($request) {
+            return $this->calculateAccountTree($child, $request);
+        });
+
+        return [
+            'sum' => $sum,
+            'item' => $items
+        ];
+    }
+
 
     public function balance($period, Request $request)
     {
@@ -183,151 +237,21 @@ class PdfController extends Controller
             $this->period = FinancialPeriod::query()
                 ->where('company_id', $company->id)
                 ->find($period);
-            $this->period->id;
         } catch (\Exception $e) {
             abort(404, 'Invalid parameters provided.');
         }
 
-        $accounts = $company->accounts
+        $accounts =  $company->accounts
             ->where('level', 'main')
             ->pluck(null, 'stamp')
+            ->filter(function ($account) {
+
+                return in_array($account->level, ['main', 'group', 'general']);
+            })
             ->map(function ($group) use ($request) {
-                return
-                    [$group->stamp => [
-                        'sum' =>
-                        $group
-                            ->where('id', $group->id)->orWhere('parent_id', $group->id)
-                            ->orWhereHas('account', function ($query) use ($group) {
-                                return $query->where('parent_id', $group->id)->orWhereHas('account', function ($query) use ($group) {
-                                    return $query->where('parent_id', $group->id);
-                                });
-                            })
-                            ->get()->map(function ($account) use ($request) {
-                                $endDate = isset($request->date) ? Carbon::createFromFormat('Y-m-d', $request->date) : null;
-
-                                $startDate = Carbon::parse($this->period->start_date);
-
-                                if ($account->type == 'debtor') {
-                                    return $account->transactions()
-                                        ->whereHas('invoice', function ($invoiceQuery) use ($startDate, $endDate) {
-                                            $invoiceQuery->whereDate('date', '>=', $startDate->toDateString());
-                                            if ($endDate) $invoiceQuery->whereDate('date', '<=', $endDate->toDateString());
-                                        })
-                                        ->where('financial_period_id', $this->period->id)->sum('debtor')
-                                        -
-                                        $account->transactions()
-                                        ->whereHas('invoice', function ($invoiceQuery) use ($startDate, $endDate) {
-                                            $invoiceQuery->whereDate('date', '>=', $startDate->toDateString());
-                                            if ($endDate) $invoiceQuery->whereDate('date', '<=', $endDate->toDateString());
-                                        })->where('financial_period_id', $this->period->id)->sum('creditor');
-                                } elseif ($account->type == 'creditor') {
-                                    return $account->transactions()
-                                        ->whereHas('invoice', function ($invoiceQuery) use ($startDate, $endDate) {
-                                            $invoiceQuery->whereDate('date', '>=', $startDate->toDateString());
-                                            if ($endDate) $invoiceQuery->whereDate('date', '<=', $endDate->toDateString());
-                                        })->where('financial_period_id', $this->period->id)->sum('creditor')
-                                        -
-                                        $account->transactions()
-                                        ->whereHas('invoice', function ($invoiceQuery) use ($startDate, $endDate) {
-                                            $invoiceQuery->whereDate('date', '>=', $startDate->toDateString());
-                                            if ($endDate) $invoiceQuery->whereDate('date', '<=', $endDate->toDateString());
-                                        })->where('financial_period_id', $this->period->id)->sum('debtor');
-                                }
-                            })->sum(),
-                        'item' => $group->childerns->pluck(null, 'stamp')->map(function ($child) use ($request) {
-                            return [
-                                'sum' => $child
-                                    ->where('id', $child->id)->orWhere('parent_id', $child->id)
-                                    ->orWhereHas('account', function ($query) use ($child) {
-                                        return $query->where('parent_id', $child->id)->orWhereHas('account', function ($query) use ($child) {
-                                            return $query->where('parent_id', $child->id);
-                                        });
-                                    })
-                                    ->get()->map(function ($account) use ($request) {
-                                        $endDate = isset($request->date) ? Carbon::createFromFormat('Y-m-d', $request->date) : null;
-
-                                        $startDate = Carbon::parse($this->period->start_date);
-
-                                        if ($account->type == 'debtor') {
-                                            return $account->transactions()
-                                                ->whereHas('invoice', function ($invoiceQuery) use ($startDate, $endDate) {
-                                                    $invoiceQuery->whereDate('date', '>=', $startDate->toDateString());
-                                                    if ($endDate) $invoiceQuery->whereDate('date', '<=', $endDate->toDateString());
-                                                })
-                                                ->where('financial_period_id', $this->period->id)->sum('debtor')
-                                                -
-                                                $account->transactions()
-                                                ->whereHas('invoice', function ($invoiceQuery) use ($startDate, $endDate) {
-                                                    $invoiceQuery->whereDate('date', '>=', $startDate->toDateString());
-                                                    if ($endDate) $invoiceQuery->whereDate('date', '<=', $endDate->toDateString());
-                                                })->where('financial_period_id', $this->period->id)->sum('creditor');
-                                        } elseif ($account->type == 'creditor') {
-                                            return $account->transactions()
-                                                ->whereHas('invoice', function ($invoiceQuery) use ($startDate, $endDate) {
-                                                    $invoiceQuery->whereDate('date', '>=', $startDate->toDateString());
-                                                    if ($endDate) $invoiceQuery->whereDate('date', '<=', $endDate->toDateString());
-                                                })->where('financial_period_id', $this->period->id)->sum('creditor')
-                                                -
-                                                $account->transactions()
-                                                ->whereHas('invoice', function ($invoiceQuery) use ($startDate, $endDate) {
-                                                    $invoiceQuery->whereDate('date', '>=', $startDate->toDateString());
-                                                    if ($endDate) $invoiceQuery->whereDate('date', '<=', $endDate->toDateString());
-                                                })->where('financial_period_id', $this->period->id)->sum('debtor');
-                                        }
-                                    })->sum(),
-                                'item' => $child->childerns->pluck(null, 'stamp')->map(function ($item) use ($request) {
-                                    return $item
-                                        ->where('id', $item->id)->orWhere('parent_id', $item->id)
-                                        ->orWhereHas('account', function ($query) use ($item) {
-                                            return $query->where('parent_id', $item->id)->orWhereHas('account', function ($query) use ($item) {
-                                                return $query->where('parent_id', $item->id);
-                                            });
-                                        })
-                                        ->get()->pluck(null, 'name')
-                                        ->map(function ($itemaccount) use ($request) {
-                                            $endDate = isset($request->date) ? Carbon::createFromFormat('Y-m-d', $request->date) : null;
-                                            $startDate = Carbon::parse($this->period->start_date);
-
-                                            if ($itemaccount->type == 'debtor') {
-                                                return $itemaccount
-
-                                                    ->transactions()
-                                                    ->whereHas('invoice', function ($invoiceQuery) use ($startDate, $endDate) {
-                                                        $invoiceQuery->whereDate('date', '>=', $startDate->toDateString());
-                                                        if ($endDate) $invoiceQuery->whereDate('date', '<=', $endDate->toDateString());
-                                                    })
-                                                    ->where('financial_period_id', $this->period->id)->sum('debtor')
-                                                    -
-                                                    $itemaccount
-
-                                                    ->transactions()
-                                                    ->whereHas('invoice', function ($invoiceQuery) use ($startDate, $endDate) {
-                                                        $invoiceQuery->whereDate('date', '>=', $startDate->toDateString());
-                                                        if ($endDate) $invoiceQuery->whereDate('date', '<=', $endDate->toDateString());
-                                                    })
-                                                    ->where('financial_period_id', $this->period->id)->sum('creditor');
-                                            } elseif ($itemaccount->type == 'creditor') {
-                                                return $itemaccount
-
-                                                    ->transactions()
-                                                    ->whereHas('invoice', function ($invoiceQuery) use ($startDate, $endDate) {
-                                                        $invoiceQuery->whereDate('date', '>=', $startDate->toDateString());
-                                                        if ($endDate) $invoiceQuery->whereDate('date', '<=', $endDate->toDateString());
-                                                    })->where('financial_period_id', $this->period->id)->sum('creditor')
-                                                    -
-                                                    $itemaccount
-
-                                                    ->transactions()
-                                                    ->whereHas('invoice', function ($invoiceQuery) use ($startDate, $endDate) {
-                                                        $invoiceQuery->whereDate('date', '>=', $startDate->toDateString());
-                                                        if ($endDate) $invoiceQuery->whereDate('date', '<=', $endDate->toDateString());
-                                                    })->where('financial_period_id', $this->period->id)->sum('debtor');
-                                            }
-                                        })->sum();
-                                })
-                            ];
-                        })
-                    ]];
+                return [
+                    $group->stamp => $this->calculateAccountTree($group, $request)
+                ];
             });
 
         // dd($accounts);
@@ -339,6 +263,68 @@ class PdfController extends Controller
         );
         return $pdf->stream('balance.pdf');
     }
+    public function PL($period, Request $request)
+    {
+        $financialPeriod = FinancialPeriod::query()
+            ->findOrFail($period);
+        $company = $financialPeriod->company;
+        $endDate = null;
+
+        if ($request->date) {
+            try {
+                $endDate = Carbon::createFromFormat('Y-m-d', $request->date);
+            } catch (\Exception $e) {
+                abort(404, 'Invalid date format.');
+            }
+        }
+
+
+
+        $accounts = $company->accounts()
+            ->with(['childrenRecursive.transactions' => function ($q) use ($financialPeriod) {
+                $q->where('financial_period_id', $financialPeriod);
+            }])
+            ->whereIn('group', ['Income', 'Expense'])
+            ->get();
+
+        // محاسبه مجموع‌ها
+        $report = [
+            'Income' => [],
+            'Expense' => [],
+            'IncomeTotal' => 0,
+            'ExpensesTotal' => 0,
+        ];
+
+        foreach ($accounts as $account) {
+            $debitSum = $account->transactions()
+                ->sum('debtor');
+
+            $creditSum = $account->transactions()
+                ->sum('creditor');
+
+            $sum =   $creditSum-$debitSum;
+            $report[$account->group][$account->name] = abs($sum);
+
+            if ($account->group === 'Income') {
+                $report['IncomeTotal'] += $sum;
+            } elseif ($account->group === 'Expense') {
+                $report['ExpensesTotal'] += abs($sum );
+            }
+        }
+
+        $report['NetProfit'] = $report['IncomeTotal'] - $report['ExpensesTotal'];
+        // ایجاد PDF
+        $pdf = Pdf::loadView('pdf.P&L', [
+            'report' => $report,
+            'company' => $company,
+            'endDate' => $endDate,
+        ]);
+
+        return $pdf->stream();
+    }
+
+
+
 
     public function document($document)
     {

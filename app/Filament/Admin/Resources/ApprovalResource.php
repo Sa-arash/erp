@@ -63,7 +63,7 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
 
     public static function table(Table $table): Table
     {
-        return $table->query(Approval::query()->where('employee_id', getEmployee()->id))->defaultSort('status','desc')
+        return $table->query(Approval::query()->where('employee_id', getEmployee()->id))->defaultSort('id','desc')
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex()->label('No'),
                 Tables\Columns\TextColumn::make('approvable.employee.fullName')->label('Employee')->description(function ($record) {
@@ -143,9 +143,9 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
                     Fieldset::make('View')->relationship('approvable')->schema([
                         TextEntry::make('employee.fullName'),
                         ImageEntry::make('pic')->state(function ($record) {
-                            return $record->employee->media->where('collection_name', 'images')->first()?->original_url;
+                            return $record->approvable?->employee?->media->where('collection_name', 'images')->first()?->original_url;
                         })->url(fn($state)=>$state,true)
-                            ->defaultImageUrl(fn($record) => $record->employee->gender === "male" ? asset('img/user.png') : asset('img/female.png'))
+                            ->defaultImageUrl(fn($record) => $record->approvable->employee->gender === "male" ? asset('img/user.png') : asset('img/female.png'))
                             ->label('Employee Photo')
                             ->width(80)
                             ->height(80),

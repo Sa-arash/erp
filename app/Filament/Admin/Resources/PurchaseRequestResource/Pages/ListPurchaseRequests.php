@@ -10,11 +10,14 @@ class ListPurchaseRequests extends ListRecords
 {
     protected static string $resource = PurchaseRequestResource::class;
 
+    protected $listeners = ['pr-requested' => '$refresh'];
+
     protected function getHeaderActions(): array
     {
         return [
             Actions\CreateAction::make()->label('New PR'),
         ];
     }
+    
     protected static ?string $title="Purchase Request (PR)";
 }

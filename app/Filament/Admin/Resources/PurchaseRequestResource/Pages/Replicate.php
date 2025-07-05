@@ -2,6 +2,7 @@
 
 namespace App\Filament\Admin\Resources\PurchaseRequestResource\Pages;
 
+use App\Events\PrRequested;
 use App\Filament\Admin\Resources\PurchaseRequestResource;
 use App\Models\Product;
 use App\Models\PurchaseRequest;
@@ -40,6 +41,7 @@ class Replicate extends CreateRecord
         $this->previousUrl = url()->previous();
 
     }
+
     public static function canAccess(array $parameters = []): bool
     {
         $url=request('tk');
@@ -54,6 +56,7 @@ class Replicate extends CreateRecord
         }
         return false;
     }
+
     public function mountCanAuthorizeResourceAccess(): void
     {
     }
@@ -61,6 +64,8 @@ class Replicate extends CreateRecord
     public static function authorizeResourceAccess(): void
     {
     }
+
+
 
     public function create(bool $another = false): void
     {
@@ -116,6 +121,7 @@ class Replicate extends CreateRecord
         $this->redirect($redirectUrl, navigate: FilamentView::hasSpaMode() && is_app_url($redirectUrl));
     }
 
+
     protected function authorizeAccess(): void
     {
         abort_unless(static::getResource()::canCreate(), 403);
@@ -164,57 +170,57 @@ class Replicate extends CreateRecord
                 Repeater::make('items')->addActionLabel('Add')->relationship('items')->schema([
                     Select::make('type')->required()->options(['Service', 'Product'])->default(1)->searchable(),
                     Select::make('department_id')->columnSpan(['default'=>8,'md'=>2,'xl'=>2,'2xl'=>1])->label('Section')->options(getCompany()->departments->pluck('title', 'id'))->searchable()->preload()->live(),
-                        Select::make('product_id')->columnSpan(['default'=>8,'md'=>2])->label('Product/Service')->options(function (Get $get) {
+                    Select::make('product_id')->columnSpan(['default'=>8,'md'=>2])->label('Product/Service')->options(function (Get $get) {
 
-                                if ($get('department_id')) {
-                                    $data = [];
-                                    $products=getCompany()->products()->where('product_type',$get('type')==="0"?'=':'!=' ,'service')->where('department_id',$get('department_id'))->pluck('title', 'id');
-                                    $i = 1;
-                                    foreach ($products as $key => $product) {
+                        if ($get('department_id')) {
+                            $data = [];
+                            $products=getCompany()->products()->where('product_type',$get('type')==="0"?'=':'!=' ,'service')->where('department_id',$get('department_id'))->pluck('title', 'id');
+                            $i = 1;
+                            foreach ($products as $key => $product) {
 
-                                        $data[$key] = $i . ". " . $product;
-                                        $i++;
-
-                                    }
-                                    return $data;
-                                }
-                            })->required()->searchable()->preload()->afterStateUpdated(function (Set $set, $state) {
-                                $product = Product::query()->firstWhere('id', $state);
-                                if ($product) {
-                                    $set('unit_id', $product->unit_id);
-                                }
-                            })->afterStateHydrated(function ($state, Set $set) {
-                                $product = Product::query()->firstWhere('id', $state);
-
-                                $set('department_id', $product?->department_id);
-                            })->live(true)->getSearchResultsUsing(fn (string $search,Get $get): array => Product::query()->where('company_id',getCompany()->id)->where('title','like',"%{$search}%")->orWhere('second_title','like',"%{$search}%")->where('department_id',$get('department_id'))->pluck('title', 'id')->toArray())->getOptionLabelsUsing(function(array $values){
-                            $data=[];
-                            $products=getCompany()->products->whereIn('id', $values)->pluck('title', 'id');
-                            $i=1;
-                            foreach ($products as $key=> $product){
-                                $data[$key]=$i.". ". $product;
+                                $data[$key] = $i . ". " . $product;
                                 $i++;
-                            }
-                            return $data ;
 
-                        }),
-                        Select::make('unit_id')->columnSpan(['default'=>8,'md'=>2,'xl'=>2,'2xl'=>1])->createOptionForm([
-                            TextInput::make('title')->label('Unit Name')->unique('units', 'title')->required()->maxLength(255),
-                            Toggle::make('is_package')->live()->required(),
-                            TextInput::make('items_per_package')->numeric()->visible(fn(Get $get) => $get('is_package'))->default(null),
-                        ])->createOptionUsing(function ($data) {
-                            $data['company_id'] = getCompany()->id;
-                            Notification::make('success')->success()->title('Create Unit')->send();
-                            return Unit::query()->create($data)->getKey();
-                        })->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id'))->required(),
-                        TextInput::make('quantity')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->required()->live()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-                        TextInput::make('estimated_unit_cost')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->label('EST Unit Cost')->live(true)->numeric()->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-                        Select::make('project_id')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->searchable()->preload()->label('Project')->options(getCompany()->projects->pluck('name', 'id')),
-                        Placeholder::make('total')->columnSpan(['default'=>8,'md'=>1,'xl'=>1])->content(fn($state, Get $get) => number_format((((int)str_replace(',', '', $get('quantity'))) * ((int)str_replace(',', '', $get('estimated_unit_cost')))))),
-                        Hidden::make('company_id')->default(Filament::getTenant()->id)->required(),
-                        Textarea::make('description')->columnSpan(['default'=>4,'sm'=>3,'md'=>3,'xl'=>5])->label(' Product Name and Description')->columnSpan(6)->required(),
-                        MediaManagerInput::make('document') ->columnSpan(['default'=>4,'sm'=>2,'md'=>2,'xl'=>3])->orderable(false)->folderTitleFieldName("purchase_request_id")->disk('public')->schema([])->defaultItems(0)->maxItems(1)->columnSpan(2),
-                    ])
+                            }
+                            return $data;
+                        }
+                    })->required()->searchable()->preload()->afterStateUpdated(function (Set $set, $state) {
+                        $product = Product::query()->firstWhere('id', $state);
+                        if ($product) {
+                            $set('unit_id', $product->unit_id);
+                        }
+                    })->afterStateHydrated(function ($state, Set $set) {
+                        $product = Product::query()->firstWhere('id', $state);
+
+                        $set('department_id', $product?->department_id);
+                    })->live(true)->getSearchResultsUsing(fn (string $search,Get $get): array => Product::query()->where('company_id',getCompany()->id)->where('title','like',"%{$search}%")->orWhere('second_title','like',"%{$search}%")->where('department_id',$get('department_id'))->pluck('title', 'id')->toArray())->getOptionLabelsUsing(function(array $values){
+                        $data=[];
+                        $products=getCompany()->products->whereIn('id', $values)->pluck('title', 'id');
+                        $i=1;
+                        foreach ($products as $key=> $product){
+                            $data[$key]=$i.". ". $product;
+                            $i++;
+                        }
+                        return $data ;
+
+                    }),
+                    Select::make('unit_id')->columnSpan(['default'=>8,'md'=>2,'xl'=>2,'2xl'=>1])->createOptionForm([
+                        TextInput::make('title')->label('Unit Name')->unique('units', 'title')->required()->maxLength(255),
+                        Toggle::make('is_package')->live()->required(),
+                        TextInput::make('items_per_package')->numeric()->visible(fn(Get $get) => $get('is_package'))->default(null),
+                    ])->createOptionUsing(function ($data) {
+                        $data['company_id'] = getCompany()->id;
+                        Notification::make('success')->success()->title('Create Unit')->send();
+                        return Unit::query()->create($data)->getKey();
+                    })->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id'))->required(),
+                    TextInput::make('quantity')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->required()->live()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                    TextInput::make('estimated_unit_cost')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->label('EST Unit Cost')->live(true)->numeric()->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                    Select::make('project_id')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->searchable()->preload()->label('Project')->options(getCompany()->projects->pluck('name', 'id')),
+                    Placeholder::make('total')->columnSpan(['default'=>8,'md'=>1,'xl'=>1])->content(fn($state, Get $get) => number_format((((int)str_replace(',', '', $get('quantity'))) * ((int)str_replace(',', '', $get('estimated_unit_cost')))))),
+                    Hidden::make('company_id')->default(Filament::getTenant()->id)->required(),
+                    Textarea::make('description')->columnSpan(['default'=>4,'sm'=>3,'md'=>3,'xl'=>5])->label(' Product Name and Description')->columnSpan(6)->required(),
+                    MediaManagerInput::make('document') ->columnSpan(['default'=>4,'sm'=>2,'md'=>2,'xl'=>3])->orderable(false)->folderTitleFieldName("purchase_request_id")->disk('public')->schema([])->defaultItems(0)->maxItems(1)->columnSpan(2),
+                ])
                     ->columns(['default'=>4,'sm'=>6,'md'=>6,'xl'=>8])
                     ->columnSpanFull(),
 
@@ -225,6 +231,8 @@ class Replicate extends CreateRecord
     public function afterCreate(){
         $request=$this->record;
         sendApprove($request,'PR Warehouse_approval');
+        broadcast(new PrRequested($this->record));
+
     }
 
     protected function getRedirectUrl(): string

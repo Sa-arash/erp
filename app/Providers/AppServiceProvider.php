@@ -4,6 +4,7 @@ namespace App\Providers;
 
 
 use Filament\Support\Assets\Css;
+use Filament\Support\Assets\Js;
 use Filament\Support\Facades\FilamentAsset;
 use Illuminate\Support\ServiceProvider;
 
@@ -24,6 +25,7 @@ class AppServiceProvider extends ServiceProvider
 
         FilamentAsset::register([
             Css::make('custom-stylesheet', __DIR__ . '/../../resources/css/custom.css'),
+            Js::make('echo-reverb', asset('/build/assets/echo-5G-wlm2q.js')),
         ]);
     }
 }

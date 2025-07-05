@@ -229,19 +229,19 @@ class ApprovePurchase extends ManageRelatedRecords
                             $PR->update(['need_change'=>1]);
                             $PR->approvals()->whereNot('id', $record->id)->where('position', $record->position)->delete();
 
-                            $item['status'] =  match ($item['decision']){
+                            $item['decision'] =  match ($item['decision']){
                                 "reject"=> "rejected",
                                 "approve"=>'approve',
                                 'Revise'=>'Revise'
                             } ;
 
-                            if ($PR->status->name === "Requested") {
+                            if ($PR->status->name === "Clarification") {
                                 $item['clarification_comment'] = $item['comment'];
                                 $item['clarification_decision'] = $item['decision'];
-                            } else if ($PR->status->name === "Clarification") {
+                            } else if ($PR->status->name === "Verification") {
                                 $item['verification_comment'] = $item['comment'];
                                 $item['verification_decision'] = $item['decision'];
-                            } elseif ($PR->status->name === "Verification") {
+                            } elseif ($PR->status->name === "Approval") {
                                 $item['approval_comment'] = $item['comment'];
                                 $item['approval_decision'] = $item['decision'];
                             }
@@ -271,7 +271,11 @@ class ApprovePurchase extends ManageRelatedRecords
                         }
                     }
                     foreach ($data['items'] as $item) {
-                        $item['status'] = $item['decision'] === "reject" ? "rejected" : "approve";
+                        $item['decision'] =  match ($item['decision']){
+                            "reject"=> "rejected",
+                            "approve"=>'approve',
+                            'Revise'=>'Revise'
+                        } ;
                         if ($PR->status->name === "Clarification") {
                             $item['clarification_comment'] = $item['comment'];
                             $item['clarification_decision'] = $item['decision'];

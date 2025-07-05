@@ -76,6 +76,25 @@ class Account extends Model
     {
         return $this->HasMany(Product::class,'sub_account_id','id');
     }
+    public function childrenRecursive(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Account::class, 'parent_id')->with('childrenRecursive');
+    }
+    public function sumTransactions($periodId)
+    {
+        $debitSum = $this->transactions()
+            ->where('financial_period_id', $periodId)
+            ->sum('debtor');
+
+        $creditSum = $this->transactions()
+            ->where('financial_period_id', $periodId)
+            ->sum('creditor');
+
+        $sum = $debitSum - $creditSum;
+
+        return $sum;
+    }
+
 //    public function accountType(): \Illuminate\Database\Eloquent\Relations\belongsTo
 //    {
 //        return $this->belongsTo(AccountType::class);

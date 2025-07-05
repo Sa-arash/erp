@@ -641,7 +641,7 @@ class FactorResource extends Resource
                     $record->delete();
                     Notification::make('success')->success()->title('Deleted')->send();
                 }),
-                Tables\Actions\Action::make('journal')->label('Journal Entry')->url(fn($record)=>InvoiceResource::getUrl('edit',['record'=>$record->invoice_id]))
+                Tables\Actions\Action::make('journal')->label('Journal Entry')->url(fn($record)=>$record?->invoice_id? InvoiceResource::getUrl('edit',['record'=>$record?->invoice_id]):false)
 
 //                    ->form([
 //                        Section::make([
