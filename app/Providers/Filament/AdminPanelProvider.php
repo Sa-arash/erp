@@ -229,7 +229,10 @@ class AdminPanelProvider extends PanelProvider
 
 
             ])
-            ->viteTheme('resources/css/filament/admin/theme.css')
+            ->viteTheme(['resources/css/filament/admin/theme.css',
+                'resources/js/echo.js'
+                ])
+
             ->renderHook(
                 PanelsRenderHook::HEAD_END,
                 fn():string=>Blade::render('@wirechatStyles')

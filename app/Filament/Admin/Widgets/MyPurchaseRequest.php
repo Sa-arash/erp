@@ -40,7 +40,7 @@ class MyPurchaseRequest extends BaseWidget
 
     public function table(Table $table): Table
     {
-        return $table
+        return $table->heading('My Purchase Requests (PR)')
             ->query(
                 PurchaseRequest::query()->where('company_id',getCompany()->id)
             )->defaultSort('id', 'desc')
@@ -331,7 +331,7 @@ class MyPurchaseRequest extends BaseWidget
 
 ])
             ->headerActions([
-                Action::make('Purchase Request ')->label('New PR ') ->modalWidth(MaxWidth::FitContent  )->form([
+                Action::make('Purchase Request ')->slideOver()->label('New PR ') ->modalWidth(MaxWidth::Full  )->form([
                     Section::make('')->schema([
                         TextInput::make('purchase_number')->default(function (){
                             $puncher= PurchaseRequest::query()->where('company_id',getCompany()->id)->latest()->first();
@@ -383,14 +383,16 @@ class MyPurchaseRequest extends BaseWidget
                                     return $data;
 
                                 }),
+                                Textarea::make('description')->columnSpan(3)->label('Product Description ')->required(),
                                 Select::make('unit_id')->columnSpan(['default' => 8, 'md' => 2, '2xl' => 1])->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id'))->required(),
                                 TextInput::make('quantity')->columnSpan(['default' => 8, 'md' => 2, '2xl' => 1])->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-                                TextInput::make('estimated_unit_cost')->columnSpan(['default' => 8, 'md' => 2, '2xl' => 1])->label('Estimated Unit Cost')->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required(),
+                                TextInput::make('estimated_unit_cost')->live()->columnSpan(['default' => 8, 'md' => 2, '2xl' => 1])->label('Estimated Unit Cost')->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required(),
                                 Select::make('project_id')->columnSpan(['default' => 8, 'md' => 2, '2xl' => 1])->searchable()->preload()->label('Project')->options(getCompany()->projects->pluck('name', 'id')),
-                                Textarea::make('description')->columnSpan(7)->label('Product Description ')->required(),
+                                Placeholder::make('total')->columnSpan(['default'=>8,'md'=>1,'xl'=>1])
+                                    ->content(fn($state, Get $get) => number_format(((int)str_replace(',', '', $get('quantity'))) * ((float)str_replace(',', '', $get('estimated_unit_cost'))),2)),
                                 FileUpload::make('images')->label('Document')->columnSpanFull()->nullable()
                             ])
-                            ->columns(7)
+                            ->columns(12)
                             ->columnSpanFull(),
                     ])->columns(3)
                 ])->action(function ($data){
@@ -410,7 +412,7 @@ class MyPurchaseRequest extends BaseWidget
                             $item->addMedia(public_path('images/'.$mediaItem))->toMediaCollection('document');
                         }
                     }
-                    broadcast(new PrRequested($request));
+//                    broadcast(new PrRequested($request));
 
                     sendApprove($request,'PR Warehouse_approval');
                     Notification::make('success')->success()->title('Successfully Submitted')->send();

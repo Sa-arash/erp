@@ -7,6 +7,15 @@ export default {
         './resources/views/filament/clusters/account-settings/**/*.blade.php',
         './vendor/filament/**/*.blade.php',
         './vendor/namu/wirechat/resources/views/**/*.blade.php',
-        './vendor/namu/wirechat/src/Livewire/**/*.php'
+        './vendor/namu/wirechat/src/Livewire/**/*.php',
+        './vendor/awcodes/filament-table-repeater/resources/**/*.blade.php',
+
     ],
+    theme: {
+        extend: {
+            fontFamily: {
+                sans: ['Roboto'],
+            },
+        },
+    },
 }

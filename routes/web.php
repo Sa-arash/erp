@@ -148,8 +148,10 @@ Route::get('/', function () {
 });
 Route::get('/test', function () {
 
-    dd(1);
-
+//    $auth = auth()->user();
+//
+//
+//    dd($count);
 //    $t=TakeOut::query()->where('id',8)->first();
 //    $data=[];
 //    foreach ($t->itemsOut as $item){

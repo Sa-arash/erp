@@ -13,6 +13,8 @@ use App\Models\PurchaseRequest;
 use App\Models\Quotation;
 use App\Models\Transaction;
 use App\Models\Unit;
+use Awcodes\TableRepeater\Components\TableRepeater;
+use Awcodes\TableRepeater\Header;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Facades\Filament;
@@ -26,6 +28,7 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\Alignment;
 use Filament\Support\Enums\IconSize;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Support\RawJs;
@@ -104,41 +107,53 @@ class PurchaseRequestResource extends Resource
                     Forms\Components\DateTimePicker::make('request_date')->readOnly()->default(now())->label('Request Date')->required(),
                     Forms\Components\Hidden::make('status')->label('Status')->default('Requested')->required(),
                     Select::make('currency_id')->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload()->live(true),
-                    Forms\Components\TextInput::make('description')->label('Description')->columnSpanFull(),
-                    Repeater::make('Requested Items')
-                        ->addActionLabel('Add')
-                        ->relationship('items')
+                    Forms\Components\Textarea::make('description')->label('Description')->columnSpanFull(),
+                    TableRepeater::make('items')->relationship('items') ->addActionLabel('Add')
+                        ->headers([
+                            Header::make('Type')->width('115px')->markAsRequired(),
+                            Header::make('Section')->width('180px')->markAsRequired(),
+                            Header::make('Product/Service')->width('200px')->markAsRequired(),
+                            Header::make('Description')->width('190px')->markAsRequired(),
+                            Header::make('Unit')->width('170px')->markAsRequired(),
+                            Header::make('Quantity')->width('75px')->markAsRequired(),
+                            Header::make('EST Unit Cost')->width('100px')->markAsRequired(),
+                            Header::make('Project')->width('150px'),
+                            Header::make('Total')->width('60px')->align(Alignment::Center),
+                            Header::make('Document')->width('150px'),
+                        ])
                         ->schema([
                             Forms\Components\Select::make('type')->required()->options(['Service','Product'])->default(1)->searchable(),
                             Select::make('department_id')->label('Section')->columnSpan(['default'=>8,'md'=>2,'xl'=>2,'2xl'=>1])->live()->options(getCompany()->departments->pluck('title','id'))->searchable()->preload(),
                             Forms\Components\Select::make('product_id')->columnSpan(['default'=>8,'md'=>2])->label('Product/Service')->options(function (Get $get) {
-                                    if ($get('department_id')){
-                                        $data=[];
-                                        $products=getCompany()->products()->where('product_type',$get('type')==="0"?'=':'!=' ,'service')->where('department_id',$get('department_id'))->pluck('title', 'id');
-                                        $i=1;
-                                        foreach ($products as $key=> $product){
-
-                                            $data[$key]=$i.". ". $product;
-                                            $i++;
-                                        }
-                                        return $data ;
-                                    }
-                                })->required()->searchable()->preload()->afterStateUpdated(function (Forms\Set $set,$state){
-                                    $product=Product::query()->firstWhere('id',$state);
-                                    if ($product){
-                                        $set('unit_id',$product->unit_id);
-                                    }
-                                })->live(true)->getSearchResultsUsing(fn (string $search,Get $get): array => Product::query()->where('department_id',$get('department_id'))->where('company_id',getCompany()->id)->where('title','like',"%{$search}%")->orWhere('second_title','like',"%{$search}%")->pluck('title', 'id')->toArray())->getOptionLabelsUsing(function(array $values){
+                                if ($get('department_id')){
                                     $data=[];
-                                    $products=getCompany()->products->whereIn('id', $values)->pluck('title', 'id');
+                                    $products=getCompany()->products()->where('product_type',$get('type')==="0"?'=':'!=' ,'service')->where('department_id',$get('department_id'))->pluck('title', 'id');
                                     $i=1;
                                     foreach ($products as $key=> $product){
+
                                         $data[$key]=$i.". ". $product;
                                         $i++;
                                     }
                                     return $data ;
-                                }),
-                            Forms\Components\Select::make('unit_id')->columnSpan(['default'=>8,'md'=>2,'xl'=>2])->createOptionForm([
+                                }
+                            })->required()->searchable()->preload()->afterStateUpdated(function (Forms\Set $set,$state){
+                                $product=Product::query()->firstWhere('id',$state);
+                                if ($product){
+                                    $set('unit_id',$product->unit_id);
+                                }
+                            })->live(true)->getSearchResultsUsing(fn (string $search,Get $get): array => Product::query()->where('department_id',$get('department_id'))->where('company_id',getCompany()->id)->where('title','like',"%{$search}%")->orWhere('second_title','like',"%{$search}%")->pluck('title', 'id')->toArray())->getOptionLabelsUsing(function(array $values){
+                                $data=[];
+                                $products=getCompany()->products->whereIn('id', $values)->pluck('title', 'id');
+                                $i=1;
+                                foreach ($products as $key=> $product){
+                                    $data[$key]=$i.". ". $product;
+                                    $i++;
+                                }
+                                return $data ;
+                            }),
+                            Forms\Components\Textarea::make('description')->label(' Product Name and Description')->columnSpan(['default'=>4,'sm'=>3,'md'=>3,'xl'=>4])->required(),
+
+                            Forms\Components\Select::make('unit_id')->placeholder('Select')->columnSpan(['default'=>8,'md'=>2,'xl'=>2])->createOptionForm([
                                 Forms\Components\TextInput::make('title')->label('Unit Name')->unique('units', 'title')->required()->maxLength(255),
                                 Forms\Components\Toggle::make('is_package')->live()->required(),
                                 Forms\Components\TextInput::make('items_per_package')->numeric()->visible(fn(Get $get) => $get('is_package'))->default(null),
@@ -150,27 +165,14 @@ class PurchaseRequestResource extends Resource
                             Forms\Components\TextInput::make('quantity')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->required()->live()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                             Forms\Components\TextInput::make('estimated_unit_cost')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->label('EST Unit Cost')->live(true)->numeric()->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                             Forms\Components\Select::make('project_id')->columnSpan(['default'=>8,'md'=>2,'2xl'=>1])->searchable()->preload()->label('Project')->options(getCompany()->projects->pluck('name', 'id')),
-                            Placeholder::make('total')->columnSpan(['default'=>8,'md'=>1,'xl'=>1])
+                            Placeholder::make('total')->label('')->columnSpan(['default'=>8,'md'=>1,'xl'=>1])
                                 ->content(fn($state, Get $get) => number_format(((int)str_replace(',', '', $get('quantity'))) * ((float)str_replace(',', '', $get('estimated_unit_cost'))),2)
 //                                    .Currency::query()->firstWhere('id',dd($get('currency_id'))
-                                    ),
+                                ),
                             Forms\Components\Hidden::make('company_id')->default(Filament::getTenant()->id)->required(),
-                            Forms\Components\Textarea::make('description')->label(' Product Name and Description')->columnSpan(['default'=>4,'sm'=>3,'md'=>3,'xl'=>4])->required(),
-                            MediaManagerInput::make('document')->orderable(false)->folderTitleFieldName("purchase_request_id")->disk('public')->schema([])->defaultItems(0)->maxItems(1) ->columnSpan(['default'=>4,'sm'=>2,'md'=>2,'xl'=>3]),
+                            MediaManagerInput::make('document')->orderable(false)->folderTitleFieldName("purchase_request_id")->disk('public')->schema([])->defaultItems(0)->maxItems(1),
                         ])
-                        ->columns(['default'=>4,'sm'=>6,'md'=>6,'xl'=>8])
-                        ->columnSpanFull(),
-                    // Section::make('estimated_unit_cost')->schema([
-                    //     Placeholder::make('Total')->live()
-                    //     ->content(function (Get $get) {
-                    //         $sum = 0;
-                    //         foreach($get('Requested Items') as $item)
-                    //         {
-                    //             $sum += (int)$item['quantity']*(int)$item['estimated_unit_cost'];
-                    //         }
-                    //         return $sum;
-                    //     } )
-                    // ])
+                        ->columnSpan('full')
                 ])->columns(4)
 
 
@@ -247,7 +249,7 @@ class PurchaseRequestResource extends Resource
 
             ], getModelFilter())
             ->actions([
-                Tables\Actions\Action::make('prPDF')->label('Print  Preview')->iconSize(IconSize::Large)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.purchase', ['id' => $record->id]))->openUrlInNewTab(),
+                Tables\Actions\Action::make('prPDF')->tooltip('Print Preview')->label('')->iconSize(IconSize::Medium)->icon('heroicon-s-printer')->url(fn($record) => route('pdf.purchase', ['id' => $record->id]))->openUrlInNewTab(),
 
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('Order')
@@ -493,7 +495,7 @@ class PurchaseRequestResource extends Resource
                     $record->approvals()->delete();
                     $record->delete();
                 }),
-                Tables\Actions\Action::make('Duplicate')->visible(fn()=>auth()->user()->can('duplicate_purchase::request'))->iconSize(IconSize::Large)->icon('heroicon-o-clipboard-document-check')->label('Duplicate')->url(fn($record)=>PurchaseRequestResource::getUrl('replicate',['tk'=>'resource','id'=>$record->id]))
+                Tables\Actions\Action::make('Duplicate')->tooltip('Duplicate')->visible(fn()=>auth()->user()->can('duplicate_purchase::request'))->iconSize(IconSize::Large)->icon('heroicon-o-clipboard-document-check')->label('')->url(fn($record)=>PurchaseRequestResource::getUrl('replicate',['tk'=>'resource','id'=>$record->id]))
 
             ])
             ->bulkActions([

@@ -78,7 +78,7 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('created_at')->label('Request Date')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('approve_date')->label('Approval Date')->date(),
                 Tables\Columns\TextColumn::make('comment')->sortable(),
-                Tables\Columns\TextColumn::make('status')->state(fn($record) => match ($record->status->value) {
+                Tables\Columns\TextColumn::make('status')->sortable()->state(fn($record) => match ($record->status->value) {
                     'Approve' => 'Approved',
                     'NotApprove' => 'Rejected',
                     'Pending' => 'Pending',

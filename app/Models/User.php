@@ -30,6 +30,11 @@ class User extends Authenticatable implements HasTenants, FilamentUser, HasName,
     {
         return  true;
     }
+    public function getCoverUrlAttribute(): ?string
+    {
+        return $this->employee?->media->where('collection_name','images')->first()?->original_url ?? null;
+    }
+
 
     public function canCreateChats(): bool
     {

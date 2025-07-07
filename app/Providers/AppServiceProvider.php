@@ -25,7 +25,8 @@ class AppServiceProvider extends ServiceProvider
 
         FilamentAsset::register([
             Css::make('custom-stylesheet', __DIR__ . '/../../resources/css/custom.css'),
-            Js::make('echo-reverb', asset('/build/assets/echo-5G-wlm2q.js')),
+//            Js::make('echo-reverb', asset('/build/assets/app-DuJ78BcV.js')),
+            Js::make('echo-reverb', asset('/js/app/app.js')),
         ]);
     }
 }

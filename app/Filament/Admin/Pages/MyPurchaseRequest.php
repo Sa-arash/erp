@@ -14,7 +14,7 @@ class MyPurchaseRequest extends Page
     protected static string $view = 'filament.admin.pages.my-purchase-request';
     protected static ?string $navigationLabel = "My Purchase Requests";
     protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
-    protected static ?string $title="My Purchase Requests (PR)";
+    protected static ?string $title="My Purchase Requests";
 
 
     protected function getHeaderWidgets(): array
