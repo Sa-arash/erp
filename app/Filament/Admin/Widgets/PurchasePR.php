@@ -28,7 +28,21 @@ class PurchasePR extends BaseWidget
                 Tables\Columns\TextColumn::make('department')->state(fn($record) => $record->employee->department->title),
                 Tables\Columns\TextColumn::make('request_date')->label('Request Date')->dateTime()->sortable(),
                 // Tables\Columns\TextColumn::make('location')->state(fn($record) => $record->employee?->structure?->title)->numeric()->sortable(),
-                Tables\Columns\TextColumn::make('status')->badge(),
+                Tables\Columns\TextColumn::make('status')
+                    ->state(fn($record)=> match ($record->status->name){
+                        'Approval'=>"Approved",
+                        "Clarification"=>"Clarified",
+                        "Verification"=>"Verified",
+                        default=>$record->status->name
+                    })->color(fn($state)=>match ($state){
+                        "Approved"=>'success',
+                        "Clarified"=>'success',
+                        "Verified"=>'success',
+                        "Finished"=>'success',
+                        'Rejected'=>'danger',
+                        'Requested'=>"primary"
+                    })
+                    ->sortable()->badge(),
                 Tables\Columns\TextColumn::make('bid.quotation.party.name')->label('Vendor'),
                 Tables\Columns\TextColumn::make('total')->alignCenter()->label('Total EST Price ' )
 

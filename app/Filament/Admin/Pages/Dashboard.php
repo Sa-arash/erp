@@ -23,11 +23,7 @@ class Dashboard extends BaseDashboard
 
     protected static string $view = 'filament.admin.pages.dashboard';
 
-    public function mount(){
-        if (auth()->user()->need_new_password){
-            return  redirect(route('filament.admin.auth.profile'));
-        }
-    }
+
     protected function getHeaderWidgets(): array
     {
         return [

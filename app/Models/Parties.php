@@ -37,6 +37,7 @@ class Parties extends Model implements HasMedia
 
     public function getInfoAttribute()
     {
+
         if ($this->type==="vendor"){
             return $this->name . "(" . $this->accountVendor?->code  . ")";
         }

@@ -6,13 +6,14 @@ use App\Filament\Admin\Resources\PurchaseOrderResource\Pages;
 use App\Filament\Admin\Resources\PurchaseOrderResource\RelationManagers;
 use App\Models\Currency;
 use App\Models\Inventory;
-use App\Models\Package;
 use App\Models\Parties;
 use App\Models\Product;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseRequest;
 use App\Models\PurchaseRequestItem;
 use App\Models\Stock;
+use Awcodes\TableRepeater\Components\TableRepeater;
+use Awcodes\TableRepeater\Header;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use Closure;
 use Filament\Forms;
@@ -26,12 +27,14 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\Alignment;
 use Filament\Support\Enums\IconSize;
 use Filament\Support\Enums\MaxWidth;
 use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\HtmlString;
 use Illuminate\Validation\Rules\Unique;
@@ -61,6 +64,7 @@ implements HasShieldPermissions
     {
         return getPeriod() != null;
     }
+
     protected static ?string $model = PurchaseOrder::class;
     protected static ?string $navigationGroup = 'Logistic Management';
 
@@ -68,16 +72,21 @@ implements HasShieldPermissions
 
     protected static ?string $navigationIcon = 'heroicon-o-document-check';
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(['employee', 'employee.position', 'items', 'approvals', 'approvals.employee']);
+    }
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
                 // Wizard::make([
                 //     Wizard\Step::make('Order')
-                        // ->schema([
-                            Section::make('Order Info')->schema([
+                // ->schema([
+                Section::make('Order Info')->schema([
 
-                                Forms\Components\Select::make('purchase_request_id')->prefix('ATGT/UNC/')
+                    Forms\Components\Select::make('purchase_request_id')->prefix('ATGT/UNC/')
                                     ->default(function (Request $request) {
                                         return $request?->prno;
                                     })
@@ -218,121 +227,264 @@ implements HasShieldPermissions
                                     ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
                                         return $rule->where('company_id', getCompany()->id);
                                     })->maxLength(50),
-                                Forms\Components\TextInput::make('location_of_delivery')->maxLength(255),
-                                Forms\Components\DatePicker::make('date_of_delivery')
-                                    ->default(now()),
-                                Forms\Components\Hidden::make('company_id')
-                                    ->default(getCompany()->id)
-                                    ->required(),
-                                Forms\Components\Hidden::make('currency'),
-                                Repeater::make('RequestedItems')->reorderableWithDragAndDrop(false)->defaultItems(1)->required()
-                                    ->default(function (Request $request, Set $set) {
-                                        $record = (PurchaseRequest::query()->with('bid')->firstWhere('id', $request->prno));
-                                        if ($record?->bid) {
-                                            $data = [];
-                                            foreach ($record->bid->quotation?->quotationItems->toArray() as $item) {
-                                                $prItem = PurchaseRequestItem::query()->firstWhere('id', $item['purchase_request_item_id']);
-                                                $item['quantity'] = $prItem->quantity;
-                                                $item['unit_id'] = $prItem->unit_id;
-                                                $item['description'] = $prItem->description;
-                                                $item['product_id'] = $prItem->product_id;
-                                                $item['project_id'] = $prItem->project_id;
-                                                $item['vendor_id'] = $record->bid->quotation->party_id;
-                                                $item['currency_id'] = $record->bid->quotation->currecny_id;
-                                                $item['exchange_rate'] = $record->bid->quotation->currency->exchange_rate;
-                                                $q = $prItem->quantity;
-                                                $item['unit_price'] = number_format($item['unit_rate']);
-                                                $price = $item['unit_rate'];
-                                                $tax = $item['taxes'];
-                                                $freights = $item['freights'];
+                    Forms\Components\TextInput::make('location_of_delivery')->maxLength(255),
+                    Forms\Components\DatePicker::make('date_of_delivery')
+                        ->default(now()),
+                    Forms\Components\Hidden::make('company_id')
+                        ->default(getCompany()->id)
+                        ->required(),
+                    Forms\Components\Hidden::make('currency'),
+//                                Repeater::make('RequestedItems')->reorderableWithDragAndDrop(false)->defaultItems(1)->required()
+//                                    ->default(function (Request $request, Set $set) {
+//                                        $record = (PurchaseRequest::query()->with('bid')->firstWhere('id', $request->prno));
+//                                        if ($record?->bid) {
+//                                            $data = [];
+//                                            foreach ($record->bid->quotation?->quotationItems->toArray() as $item) {
+//                                                $prItem = PurchaseRequestItem::query()->firstWhere('id', $item['purchase_request_item_id']);
+//                                                $item['quantity'] = $prItem->quantity;
+//                                                $item['unit_id'] = $prItem->unit_id;
+//                                                $item['description'] = $prItem->description;
+//                                                $item['product_id'] = $prItem->product_id;
+//                                                $item['project_id'] = $prItem->project_id;
+//                                                $item['vendor_id'] = $record->bid->quotation->party_id;
+//                                                $item['currency_id'] = $record->bid->quotation->currecny_id;
+//                                                $item['exchange_rate'] = $record->bid->quotation->currency->exchange_rate;
+//                                                $q = $prItem->quantity;
+//                                                $item['unit_price'] = number_format($item['unit_rate']);
+//                                                $price = $item['unit_rate'];
+//                                                $tax = $item['taxes'];
+//                                                $freights = $item['freights'];
+//
+//                                                $item['total'] = number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100));
+//                                                $data[] = $item;
+//                                            }
+//
+//                                            return  $data;
+//                                        } else {
+//
+//                                            $data=$record?->items->where('status', 'approve')->toArray();
+//                                            if ($data===null){
+//                                                $data=[];
+//                                            }
+//                                            $i=1;
+//                                            foreach ($data as  &$item){
+//                                                $item['row_number']=$i++;
+//                                                $item['unit_price']=number_format($item['estimated_unit_cost']);
+//                                                $item['total'] = number_format($item['estimated_unit_cost']*$item['quantity']);
+//
+//                                            }
+//                                            return $data;
+//                                        }
+//                                    })
+//                                    ->relationship('items')
+//                                    // ->formatStateUsing(fn(Get $get) => dd($get('purchase_request_id')):'')
+//                                    ->schema([
+//                                            Forms\Components\Hidden::make('row_number')->dehydrated(false)
+//                                            ->default(fn (Get $get) => count($get->getData()['RequestedItems'] ?? []) )
+//                                        ->formatStateUsing(fn ($state, Get $get) => $state ?? count($get->getData()['RequestedItems'] ?? []) ),
+//                                        Forms\Components\Select::make('product_id')->columnSpan(3)->label('Product') ->prefix(fn (Get $get) => $get('row_number'))->options(function ($state) {
+//                                                if ($state){
+//                                                    $products = getCompany()->products->where('id',$state);
+//                                                }else{
+//                                                    $products= getCompany()->products;
+//                                                }
+//                                                $data = [];
+//                                                foreach ($products as $product) {
+//                                                    $data[$product->id] = $product->info;
+//                                                }
+//                                                return $data;
+//                                            })->required()->searchable()->preload(),
+//                                        Forms\Components\TextInput::make('description')->label('Description')->columnSpan(10)->required(),
+//                                        Forms\Components\Select::make('unit_id')->columnSpan(2)->required()->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id')),
+//                                        Forms\Components\TextInput::make('quantity')->numeric()->required(),
+//                                        Forms\Components\TextInput::make('unit_price')->numeric()->required()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->label('Unit Price'),
+//                                        Forms\Components\TextInput::make('taxes')->default(0)->prefix('%')->numeric()->required()->rules([
+//                                                fn(): Closure => function (string $attribute, $value, Closure $fail) {
+//                                                    if ($value < 0) {
+//                                                        $fail('The :attribute must be greater than 0.');
+//                                                    }
+//                                                    if ($value > 100) {
+//                                                        $fail('The :attribute must be less than 100.');
+//                                                    }
+//                                                },
+//                                            ])->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+//                                        Forms\Components\TextInput::make('freights')->default(0)->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+//                                        Forms\Components\Hidden::make('project_id')->label('Project'),
+//                                        Forms\Components\Select::make('vendor_id')->live(true)->label('Vendor')->options((getCompany()->parties->where('type', 'vendor')->pluck('name', 'id')))->searchable()->preload()->required()->columnSpan(2)->afterStateUpdated(function (Set $set,$state,Get $get){
+//                                            $vendor=Parties::query()->with('currency')->firstWhere('id',$state);
+//                                            if ($vendor){
+//                                                $set('currency_id',$vendor->currency_id);
+//                                                $set('exchange_rate',$vendor->currency?->exchange_rate);
+//                                            }
+//                                        }),
+//                                        Select::make('currency_id')->label('Currency')->afterStateUpdated(function (Set $set, $state,Get $get) {
+//                                                $currency = Currency::find($state);
+//                                                if ($currency !== null) {
+//                                                    $set('exchange_rate', $currency->exchange_rate);
+//                                                }
+//                                            })->required()->live(true)->options(getCompany()->currencies->pluck('name','id'))->searchable()->preload()->columnSpan(2),
+//                                        TextInput::make('exchange_rate')->readOnly()->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+//                                        TextInput::make('total')->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->hintAction(Forms\Components\Actions\Action::make('Calculate')->action(function (Set $set,Get $get){
+//                                            $freights = $get('taxes') === null ? 0 : (float)$get('taxes');
+//                                            $q = $get('quantity');
+//                                            $tax = $get('taxes') === null ? 0 : (float)$get('taxes');
+//                                            $price = $get('unit_price') !== null ? str_replace(',', '', $get('unit_price')) : 0;
+//                                            $total = (($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100)) * (float)$get('exchange_rate');
+//                                            $set('total', number_format($total, 2));
+//                                        })->icon('heroicon-o-calculator')->color('danger')->iconSize(IconSize::Large))->columnSpan(2)->readOnly(),
+//                                    ])->live()
+//                                    ->columns(13)->addActionLabel('Add Item')
+//                                    ->columnSpanFull(),
+                    TableRepeater::make('items')->default(function (Request $request, Set $set) {
+                        $record = (PurchaseRequest::query()->with('bid')->firstWhere('id', $request->prno));
+                        if ($record?->bid) {
+                            $data = [];
+                            foreach ($record->bid->quotation?->quotationItems->toArray() as $item) {
+                                $prItem = PurchaseRequestItem::query()->firstWhere('id', $item['purchase_request_item_id']);
+                                $item['quantity'] = $prItem->quantity;
+                                $item['unit_id'] = $prItem->unit_id;
+                                $item['description'] = $prItem->description;
+                                $item['product_id'] = $prItem->product_id;
+                                $item['project_id'] = $prItem->project_id;
+                                $item['vendor_id'] = $record->bid->quotation->party_id;
+                                $item['currency_id'] = $record->bid->quotation->currecny_id;
+                                $item['exchange_rate'] = $record->bid->quotation->currency->exchange_rate;
+                                $q = $prItem->quantity;
+                                $item['unit_price'] = number_format($item['unit_rate']);
+                                $price = $item['unit_rate'];
+                                $tax = $item['taxes'];
+                                $freights = $item['freights'];
 
-                                                $item['total'] = number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100));
-                                                $data[] = $item;
-                                            }
+                                $item['total'] = number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100));
+                                $data[] = $item;
+                            }
 
-                                            return  $data;
-                                        } else {
+                            return $data;
+                        } else {
 
-                                            $data=$record?->items->where('status', 'approve')->toArray();
-                                            if ($data===null){
-                                                $data=[];
-                                            }
-                                            $i=1;
-                                            foreach ($data as  &$item){
-                                                $item['row_number']=$i++;
-                                                $item['unit_price']=number_format($item['estimated_unit_cost']);
-                                                $item['total'] = number_format($item['estimated_unit_cost']*$item['quantity']);
+                            $data = $record?->items->where('status', 'approve')->toArray();
+                            if ($data === null) {
+                                $data = [];
+                            }
+                            $i = 1;
+                            foreach ($data as &$item) {
+                                $item['row_number'] = $i++;
+                                $item['unit_price'] = number_format($item['estimated_unit_cost']);
+                                $item['total'] = number_format($item['estimated_unit_cost'] * $item['quantity']);
 
-                                            }
-                                            return $data;
-                                        }
-                                    })
-                                    ->relationship('items')
-                                    // ->formatStateUsing(fn(Get $get) => dd($get('purchase_request_id')):'')
-                                    ->schema([
-                                            Forms\Components\Hidden::make('row_number')->dehydrated(false)
-                                            ->default(fn (Get $get) => count($get->getData()['RequestedItems'] ?? []) )
-                                        ->formatStateUsing(fn ($state, Get $get) => $state ?? count($get->getData()['RequestedItems'] ?? []) ),
-                                        Forms\Components\Select::make('product_id')->columnSpan(3)->label('Product') ->prefix(fn (Get $get) => $get('row_number'))->options(function ($state) {
-                                                if ($state){
-                                                    $products = getCompany()->products->where('id',$state);
-                                                }else{
-                                                    $products= getCompany()->products;
-                                                }
-                                                $data = [];
-                                                foreach ($products as $product) {
-                                                    $data[$product->id] = $product->info;
-                                                }
-                                                return $data;
-                                            })->required()->searchable()->preload(),
-                                        Forms\Components\TextInput::make('description')->label('Description')->columnSpan(10)->required(),
-                                        Forms\Components\Select::make('unit_id')->columnSpan(2)->required()->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id')),
-                                        Forms\Components\TextInput::make('quantity')->numeric()->required(),
-                                        Forms\Components\TextInput::make('unit_price')->numeric()->required()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->label('Unit Price'),
-                                        Forms\Components\TextInput::make('taxes')->default(0)->prefix('%')->numeric()->required()->rules([
-                                                fn(): Closure => function (string $attribute, $value, Closure $fail) {
-                                                    if ($value < 0) {
-                                                        $fail('The :attribute must be greater than 0.');
-                                                    }
-                                                    if ($value > 100) {
-                                                        $fail('The :attribute must be less than 100.');
-                                                    }
-                                                },
-                                            ])->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-                                        Forms\Components\TextInput::make('freights')->default(0)->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-                                        Forms\Components\Hidden::make('project_id')->label('Project'),
-                                        Forms\Components\Select::make('vendor_id')->live(true)->label('Vendor')->options((getCompany()->parties->where('type', 'vendor')->pluck('info', 'id')))->searchable()->preload()->required()->columnSpan(2)->afterStateUpdated(function (Set $set,$state,Get $get){
-                                            $vendor=Parties::query()->with('currency')->firstWhere('id',$state);
-                                            if ($vendor){
-                                                $set('currency_id',$vendor->currency_id);
-                                                $set('exchange_rate',$vendor->currency?->exchange_rate);
-                                            }
-                                        }),
-                                        Select::make('currency_id')->label('Currency')->afterStateUpdated(function (Set $set, $state,Get $get) {
-                                                $currency = Currency::find($state);
-                                                if ($currency !== null) {
-                                                    $set('exchange_rate', $currency->exchange_rate);
-                                                }
-                                            })->required()->live(true)->options(getCompany()->currencies->pluck('name','id'))->searchable()->preload()->columnSpan(2),
-                                        TextInput::make('exchange_rate')->readOnly()->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-                                        TextInput::make('total')->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->hintAction(Forms\Components\Actions\Action::make('Calculate')->action(function (Set $set,Get $get){
-                                            $freights = $get('taxes') === null ? 0 : (float)$get('taxes');
-                                            $q = $get('quantity');
-                                            $tax = $get('taxes') === null ? 0 : (float)$get('taxes');
-                                            $price = $get('unit_price') !== null ? str_replace(',', '', $get('unit_price')) : 0;
-                                            $total = (($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100)) * (float)$get('exchange_rate');
-                                            $set('total', number_format($total, 2));
-                                        })->icon('heroicon-o-calculator')->color('danger')->iconSize(IconSize::Large))->columnSpan(2)->readOnly(),
-                                    ])->live()
-                                    ->columns(13)->addActionLabel('Add Item')
-                                    ->columnSpanFull(),
-                                Section::make()->schema([
-                                    TextInput::make('totals')->prefix(defaultCurrency()?->name)->inlineLabel()->label('Sub Total')->hintAction(Forms\Components\Actions\Action::make('Calculate')->action(function (Set $set,Get $get){
-                                        $total= collect($get('RequestedItems'))->map(fn($item) => $item['total']? str_replace(',','',$item['total']):0)->sum();
-                                        $set('totals',number_format($total));
-                                    })->icon('heroicon-o-calculator')->color('danger')->iconSize(IconSize::Large))->dehydrated(false)->readOnly()
-                                ])->columns(2)
-                            ])->columns(3),
+                            }
+
+                            return $data;
+                        }
+                    })->relationship('items')->addActionLabel('Add')
+                        ->headers([
+                            Header::make('No')->width('40px'),
+                            Header::make('Product/Service')->width('200px')->markAsRequired(),
+                            Header::make('Description')->width('190px')->markAsRequired(),
+                            Header::make('Unit')->width('130px')->markAsRequired(),
+                            Header::make('Quantity')->width('75px')->markAsRequired(),
+                            Header::make('Unit Price')->width('100px')->markAsRequired(),
+                            Header::make('Taxes')->width('60px')->align(Alignment::Center)->markAsRequired(),
+                            Header::make('freights')->width('60px')->align(Alignment::Center)->markAsRequired(),
+                            Header::make('vendor')->width('130px')->markAsRequired(),
+                            Header::make('currency')->width('100px')->markAsRequired(),
+                            Header::make('EX')->label('EX')->width('50px')->align(Alignment::Center)->markAsRequired(),
+                            Header::make('total')->width('120px')->align(Alignment::Center)->markAsRequired(),
+                        ])->columnSpan('full')->schema([
+                            Forms\Components\TextInput::make('row_number')->dehydrated(false)->readOnly()
+                                ->default(fn(Get $get) => count($get->getData()['items'] ?? []))
+                                ->formatStateUsing(fn($state, Get $get) => $state ?? count($get->getData()['items'] ?? []))->extraAttributes([
+                                    'style' => '
+                                    border: none !important;
+                                    background: transparent !important;
+                                    box-shadow: none !important;
+                                    pointer-events: none;
+                                    padding-left: 0;
+                                    font-weight: bold;
+                                    color: #555;
+                                ',
+                                ]),
+
+                            Forms\Components\Select::make('product_id')->columnSpan(3)->label('Product')->options(function ($state) {
+                                if ($state) {
+                                    $products = getCompany()->products->where('id', $state);
+                                } else {
+                                    $products = getCompany()->products;
+                                }
+                                $data = [];
+                                foreach ($products as $product) {
+                                    $data[$product->id] = $product->info;
+                                }
+                                return $data;
+                            })->required()->searchable()->preload(),
+                            Forms\Components\Textarea::make('description')->rows(1)->label('Description')->columnSpan(10)->required(),
+                            Forms\Components\Select::make('unit_id')->columnSpan(2)->required()->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id')),
+                            Forms\Components\TextInput::make('quantity')->numeric()->required(),
+                            Forms\Components\TextInput::make('unit_price')->numeric()->required()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->label('Unit Price'),
+                            Forms\Components\TextInput::make('taxes')->default(0)->numeric()->required()->rules([
+                                fn(): Closure => function (string $attribute, $value, Closure $fail) {
+                                    if ($value < 0) {
+                                        $fail('The :attribute must be greater than 0.');
+                                    }
+                                    if ($value > 100) {
+                                        $fail('The :attribute must be less than 100.');
+                                    }
+                                },
+                            ])->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                            Forms\Components\TextInput::make('freights')->default(0)->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                            Forms\Components\Hidden::make('project_id')->label('Project'),
+                            Forms\Components\Select::make('vendor_id')->live(true)->label('Vendor')->options((getCompany()->parties->where('type', 'vendor')->pluck('name', 'id')))->searchable()->preload()->required()->columnSpan(2)->afterStateUpdated(function (Set $set, $state, Get $get) {
+                                $vendor = Parties::query()->with('currency')->firstWhere('id', $state);
+                                if ($vendor) {
+                                    $set('currency_id', $vendor->currency_id);
+                                    $set('exchange_rate', $vendor->currency?->exchange_rate);
+                                }
+                            }),
+                            Select::make('currency_id')->label('Currency')->placeholder('Select')->afterStateUpdated(function (Set $set, $state, Get $get) {
+                                $currency = Currency::find($state);
+                                if ($currency !== null) {
+                                    $set('exchange_rate', $currency->exchange_rate);
+                                }
+                            })->required()->live(true)->options(getCompany()->currencies->pluck('name', 'id'))->searchable()->preload()->columnSpan(2),
+                            TextInput::make('exchange_rate')->readOnly()->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
+                            TextInput::make('total')->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->suffixAction(Forms\Components\Actions\Action::make('Calculate')->action(function (Set $set, Get $get) {
+                                $freights = $get('freights') === null ? 0 : (float)$get('freights');
+                                $q = $get('quantity');
+                                $tax = $get('taxes') === null ? 0 : (float)$get('taxes');
+                                $price = $get('unit_price') !== null ? str_replace(',', '', $get('unit_price')) : 0;
+                                $total = (($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100)) * (float)$get('exchange_rate');
+                                $set('total', number_format($total, 2));
+                            })->icon('heroicon-o-calculator')->color('danger')->iconSize(IconSize::Large))->columnSpan(2)->readOnly(),
+                        ]) ->extraActions([
+                            Forms\Components\Actions\Action::make('Calculate')
+                              ->icon('heroicon-o-calculator')->color('danger')->iconSize(IconSize::Large)
+                                ->action(function ($state,Set $set): void {
+                                    $totals=0;
+                                    foreach ($state as &$item){
+                                        $freights = $item['freights'] === null ? 0 : (float)$item['freights'];
+                                        $q = $item['quantity'];
+                                        $tax = $item['taxes'] === null ? 0 : (float)$item['taxes'];
+                                        $price = $item['unit_price'] !== null ? str_replace(',', '', $item['unit_price']) : 0;
+                                        $total = (($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100)) * (float)$item['exchange_rate'];
+                                        $item['total']=number_format($total);
+                                        $totals+=$total;
+                                    }
+                                    $set('items',$state);
+                                    $set('totals', number_format($totals));
+                                    Notification::make('total')
+                                        ->success()
+                                        ->title('Calculated')
+                                        ->send();
+                                }),
+                        ])
+                    ,
+                    Section::make()->schema([
+                        TextInput::make('totals')->prefix(defaultCurrency()?->name)->inlineLabel()->label('Sub Total')->hintAction(Forms\Components\Actions\Action::make('Calculate')->action(function (Set $set, Get $get) {
+                            $total = collect($get('items'))->map(fn($item) => $item['total'] ? str_replace(',', '', $item['total']) : 0)->sum();
+                            $set('totals', number_format($total));
+                        })->icon('heroicon-o-calculator')->color('danger')->iconSize(IconSize::Large))->dehydrated(false)->readOnly()
+                    ])->columns(2)
+                ])->columns(3),
 
 
             ]);
@@ -610,6 +762,14 @@ implements HasShieldPermissions
     public static function getNavigationBadgeColor(): string|array|null
     {
         return 'danger'; // TODO: Change the autogenerated stub
+    }
+
+    /**
+     * @return string|null
+     */
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return "Count of PR ready for PO";
     }
 
     public static function getPages(): array

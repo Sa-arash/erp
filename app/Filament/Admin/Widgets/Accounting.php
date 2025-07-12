@@ -9,6 +9,8 @@ use Illuminate\Support\Carbon;
 class Accounting extends ApexChartWidget
 {
     use HasWidgetShield;
+    protected int | string | array $columnSpan=['md'=>1,'default'=>4];
+
     /**
      * Chart Id
      *

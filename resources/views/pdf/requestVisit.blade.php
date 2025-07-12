@@ -215,6 +215,7 @@
             @php
                 use Illuminate\Support\Carbon;
 $grouped=[];
+
 if (isset($requestVisit->visiting_dates[0])){
      $dates = collect($requestVisit->visiting_dates)
                     ->map(fn($date) => Carbon::createFromFormat('d/m/Y', $date) );

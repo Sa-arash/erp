@@ -167,6 +167,12 @@ return [
             'port' => env('REDIS_PORT', '6379'),
             'database' => env('REDIS_CACHE_DB', '1'),
         ],
+        'session' => [ // <-- این connection جدید اضافه کنید
+            'host'     => env('REDIS_HOST', '127.0.0.1'),
+            'password' => env('REDIS_PASSWORD', null),
+            'port'     => env('REDIS_PORT', 6379),
+            'database' => 2, // دیتابیس جداگانه برای sessionها
+        ],
 
     ],
 

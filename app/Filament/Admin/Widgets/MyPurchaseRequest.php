@@ -54,9 +54,23 @@ class MyPurchaseRequest extends BaseWidget
                 Tables\Columns\TextColumn::make('description')->wrap()->label('Description')->searchable(),
                 Tables\Columns\TextColumn::make('request_date')->dateTime()->sortable(),
 
-                Tables\Columns\TextColumn::make('status')->badge()->tooltip(function ($record) {
-                    return $record->approvals->last()?->approve_date;
-                })->alignCenter(),
+                Tables\Columns\TextColumn::make('status')
+                    ->state(fn($record)=> match ($record->status->name){
+                        'Approval'=>"Approved",
+                        "Clarification"=>"Clarified",
+                        "Verification"=>"Verified",
+                        default=>$record->status->name
+                    })->color(fn($state)=>match ($state){
+                        "Approved"=>'success',
+                        "Clarified"=>'success',
+                        "Verified"=>'success',
+                        "Finished"=>'success',
+                        'Rejected'=>'danger',
+                        'Requested'=>"primary"
+                    })->tooltip(function ($record) {
+                        return $record->approvals->last()?->approve_date;
+                    })
+                    ->sortable()->badge(),
                 Tables\Columns\TextColumn::make('need_change')->state(fn($record) => $record->need_change ? "Yes" : "No")->color(fn($record) => $record->need_change ? "warning" : "success")->label('Need Revise')->badge()->alignCenter(),
                 Tables\Columns\TextColumn::make('total')->state(function ($record) {
                     $total = 0;
@@ -65,6 +79,19 @@ class MyPurchaseRequest extends BaseWidget
                     }
                     return number_format($total,2).' '.$record->currency?->symbol;
                 })->numeric(),
+                Tables\Columns\ImageColumn::make('approvals')->state(function ($record) {
+                    $data = [];
+                    foreach ($record->approvals as $approval) {
+                        if ($approval->status->value == "Approve") {
+                            if ($approval->employee->media->where('collection_name', 'images')->first()?->original_url) {
+                                $data[] = $approval->employee->media->where('collection_name', 'images')->first()?->original_url;
+                            } else {
+                                $data[] = $approval->employee->gender === "male" ? asset('img/user.png') : asset('img/female.png');
+                            }
+                        }
+                    }
+                    return $data;
+                })->circular()->stacked(),
                 Tables\Columns\TextColumn::make('bid.total_cost')->alignCenter()->label('Total Final Price' )->numeric(),
 
 
@@ -86,7 +113,7 @@ class MyPurchaseRequest extends BaseWidget
         $data = [];
         foreach ($record->items as $item) {
             $department = $item->department;
-            $type = $item->product->product_type === "Service" ? "0" : "1";
+            $type = $item->product->product_type === "service" ? "0" : "1";
 
             $image= $item->getFirstMedia('document');
 
@@ -118,7 +145,7 @@ class MyPurchaseRequest extends BaseWidget
             TextInput::make('purchase_number')->readOnly()->label('PR Number')->prefix('ATGT/UNC/')->required()->numeric(),
             DateTimePicker::make('request_date')->readOnly()->default(now())->label('Request Date')->required(),
             Select::make('currency_id')->live()->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload(),
-            Textarea::make('description')->columnSpanFull()->label('Description'),
+            Textarea::make('description')->required()->columnSpanFull()->label('Description'),
             Repeater::make('Requested Items')
                 ->addActionLabel('Add Item')
                 ->schema([
@@ -350,7 +377,7 @@ class MyPurchaseRequest extends BaseWidget
                         })),
                         DateTimePicker::make('request_date')->readOnly()->default(now())->label('Request Date')->required(),
                         Select::make('currency_id')->live()->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload(),
-                        Textarea::make('description')->columnSpanFull()->label('Description'),
+                        Textarea::make('description')->required()->columnSpanFull()->label('Description'),
                         Repeater::make('Requested Items')
                         ->addActionLabel('Add Item')
                             ->schema([

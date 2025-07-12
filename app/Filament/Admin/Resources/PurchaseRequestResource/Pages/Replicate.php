@@ -166,7 +166,7 @@ class Replicate extends CreateRecord
                 DateTimePicker::make('request_date')->readOnly()->default(now())->label('Request Date')->required(),
                 Hidden::make('status')->label('Status')->default('Requested')->required(),
                 Select::make('currency_id')->live()->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload(),
-                TextInput::make('description')->label('Description')->columnSpanFull(),
+                TextInput::make('description')->required()->label('Description')->columnSpanFull(),
                 Repeater::make('items')->addActionLabel('Add')->relationship('items')->schema([
                     Select::make('type')->required()->options(['Service', 'Product'])->default(1)->searchable(),
                     Select::make('department_id')->columnSpan(['default'=>8,'md'=>2,'xl'=>2,'2xl'=>1])->label('Section')->options(getCompany()->departments->pluck('title', 'id'))->searchable()->preload()->live(),
@@ -231,7 +231,7 @@ class Replicate extends CreateRecord
     public function afterCreate(){
         $request=$this->record;
         sendApprove($request,'PR Warehouse_approval');
-        broadcast(new PrRequested($this->record));
+//        broadcast(new PrRequested($this->record));
 
     }
 

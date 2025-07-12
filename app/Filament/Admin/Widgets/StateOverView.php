@@ -14,6 +14,7 @@ class StateOverView extends BaseWidget
     use HasWidgetShield;
     protected ?string $heading = 'State Overview';
     protected static ?string $chartId = 'StateOverView';
+    protected int | string | array $columnSpan=2;
 
 
     protected function getStats(): array

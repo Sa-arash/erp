@@ -10,7 +10,9 @@ use Illuminate\Support\Carbon;
 class ProfitAndLost extends ApexChartWidget
 {
     use HasWidgetShield;
-    
+    protected int | string | array $columnSpan=['md'=>1,'default'=>4];
+
+
     /**
      * Chart Id
      *
@@ -23,7 +25,7 @@ class ProfitAndLost extends ApexChartWidget
      *
      * @var string|null
      */
-    protected static ?string $heading = 'Profit or Loss Chart';
+    protected static ?string $heading = 'P&L';
 
     /**
      * Chart options (series, labels, types, size, animations...)

@@ -148,6 +148,17 @@ Route::get('/', function () {
 });
 Route::get('/test', function () {
 
+
+//    $sessions = \Illuminate\Support\Facades\Redis::connection('cache');
+//
+//    foreach ($sessions as $key) {
+//        $sessionData = \Illuminate\Support\Facades\Redis::get($key);
+//        dump([
+//            'key' => $key,
+//            'data' => unserialize(json_decode($sessionData))
+//        ]);
+//    }
+//    dd($sessions);
 //    $auth = auth()->user();
 //
 //

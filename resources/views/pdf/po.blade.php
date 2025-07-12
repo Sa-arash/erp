@@ -44,10 +44,10 @@
 
     <tr>
         <td style="text-align: left">PO Date: {{\Illuminate\Support\Carbon::create($po->date_of_po)->format('M j, Y ')}}</td>
-        <td style="text-align: left">PR No: ATGT/UNC {{$po->purchase_orders_number}}</td>
+        <td style="text-align: left">PO No: ATGT/UNC {{$po->purchase_orders_number}}</td>
     </tr>
     <tr>
-        <td style="text-align: left">Processed By Name: {{$po->employee?->fullName}}</td>
+        <td style="text-align: left">Processed By : {{$po->employee?->fullName}}</td>
         <td style="text-align: left">
             Position: {{$po->employee?->position?->title}}</td>
     </tr>
@@ -57,17 +57,13 @@
     </tr>
 
 </table>
-<table>
-    <tr>
-        <td colspan="2" style="text-align: left">Description : {{$po->description}}</td>
-    </tr>
-</table>
+
 
 <table>
     <thead>
     <tr>
         <th>NO</th>
-        <th style="width: 20%">SKU</th>
+        <th style="width: 15%">SKU</th>
         <th>Description</th>
         <th>Unit</th>
         <th>Qty</th>
@@ -76,8 +72,8 @@
         <th>Freights</th>
         <th>Vendor</th>
         <th>Currency</th>
-        <th>Exchange Rate</th>
-        <th>TEC</th>
+        <th>ER</th>
+        <th>Total Cost</th>
 
     </tr>
     </thead>
@@ -89,7 +85,6 @@
     @endphp
     @foreach($po->items as $item)
         @php
-            $totalEstimated+=$item->unit_price;
             $totalBudget+=$item->total;
         @endphp
 
@@ -97,19 +92,19 @@
         <tr>
             <td rowspan="1">{{$i++}}</td>
 
-            <td>   {{  $item->product?->title."-".$item->product?->sku}}</td>
-            <td>
+            <td style="padding: 1px">   {{  $item->product?->title."-".$item->product?->sku}}</td>
+            <td  style="padding: 1px">
 
                 {{ $item->description }}
             </td>
-            <td>{{$item->unit->title}}</td>
-            <td>{{$item->quantity}}</td>
-            <td>{{number_format($item->unit_price)}}</td>
-            <td>{{$item->taxes}}%</td>
-            <td>{{$item->freights}}%</td>
-            <td>{{$item->vendor?->name}}</td>
-            <td style=""> {{$item->currency?->name}}   </td>
-            <td style="">{{number_format($item->exchange_rate,4)}}</td>
+            <td style="padding: 1px">{{$item->unit->title}}</td>
+            <td style="padding: 1px">{{$item->quantity}}</td>
+            <td style="padding: 1px">{{number_format($item->unit_price)}}</td>
+            <td style="padding: 1px">{{$item->taxes}}%</td>
+            <td style="padding: 1px">{{$item->freights}}%</td>
+            <td style="padding: 1px">{{$item->vendor?->name}}</td>
+            <td style="padding: 1px"> {{$item->currency?->name}}   </td>
+            <td style="padding: 1px">{{number_format($item->exchange_rate,2)}}</td>
 
             <td>{{number_format($item->total)}}</td>
 
@@ -119,13 +114,9 @@
     </tbody>
     <tfoot>
     <tr>
-        <td colspan="5">Total Cost</td>
-        <td>{{number_format($totalEstimated)}}</td>
-        <td >---</td>
-        <td >---</td>
-        <td >---</td>
-        <td >---</td>
-        <td >---</td>
+        <td colspan="11">Grand Total Cost</td>
+
+
         <td>{{number_format($totalBudget)   }}</td>
 
     </tr>
@@ -147,13 +138,13 @@
                         {{$approve->employee->fullName}}
                         <br>{{$approve->employee?->position->title}}
                     @elseif($approve->position==="PO Verification")
-                        Verification By
+                    Verified By
                         <br>
                     <hr>
                         {{$approve->employee->fullName}}
                         <br>{{$approve->employee?->position->title}}
                     @else
-                        {{str_replace('PO','',$approve->position)}} By
+                    Approved By
                         <br>
                     <hr>
                         {{$approve->employee->fullName}}

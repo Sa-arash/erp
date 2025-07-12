@@ -53,6 +53,7 @@ class AdminPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         $reportNavigationItems = [];
+
         $financialPeriod =
             FinancialPeriod::query()->where('company_id', getCompanyUrl())->where('status', 'During')->first();
         if ($financialPeriod) {
@@ -116,7 +117,7 @@ class AdminPanelProvider extends PanelProvider
                     ->icon('heroicon-o-document-text')
                     ->label('Profit & Loss Report')
                     ->url(function () use ($financialPeriod) {
-                        $accountsID = getCompany()->accounts->whereIn('stamp', ['Income', 'Expenses'])->pluck('id')->toArray();
+                            $accountsID = Account::query()->where('company_id',getCompany()->id)->whereIn('stamp', ['Income', 'Expenses'])->pluck('id')->toArray();
                         $accounts = Account::query()->whereIn('id', $accountsID)->orWhereIn('parent_id', $accountsID)
                             ->orWhereHas('account', function ($query) use ($accountsID) {
                                 return $query->whereIn('parent_id', $accountsID)->orWhereHas('account', function ($query) use ($accountsID) {
@@ -260,5 +261,6 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->databaseNotifications()->tenant(Company::class, 'id', 'company');
     }
+
 
 }

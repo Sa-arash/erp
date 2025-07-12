@@ -63,10 +63,14 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
 
     public static function table(Table $table): Table
     {
-        return $table->query(Approval::query()->where('employee_id', getEmployee()->id))->defaultSort('id','desc')
+        return $table->query(Approval::query()->where('employee_id', getEmployee()->id))->defaultSort(fn()=> auth()->id()!==49 ?  'status' : 'id','desc')
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex()->label('No'),
-                Tables\Columns\TextColumn::make('approvable.employee.fullName')->label('Employee')->description(function ($record) {
+                Tables\Columns\TextColumn::make('approvable.employee.fullName')->searchable(query: fn($query,$search)=> $search != null ?  $query->whereHas('approvable',function ($query)use($search){
+                    $query->whereHas('employee',function ($query)use ($search){
+                        $query->where('fullName','LIKE',"%{$search}%");
+                    });
+                }) :$query)->label('Employee')->description(function ($record) {
                     if (substr($record->approvable_type, 11) === "PurchaseRequest") {
                         return  new HtmlString('PR-ATGT/UNC/'.$record->approvable->purchase_number.' <br>'. Str::limit($record->approvable->description, 70));
                     }
@@ -78,7 +82,7 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
                 Tables\Columns\TextColumn::make('created_at')->label('Request Date')->dateTime()->sortable(),
                 Tables\Columns\TextColumn::make('approve_date')->label('Approval Date')->date(),
                 Tables\Columns\TextColumn::make('comment')->sortable(),
-                Tables\Columns\TextColumn::make('status')->sortable()->state(fn($record) => match ($record->status->value) {
+                Tables\Columns\TextColumn::make('status')->sortable(query: fn($query, $direction)=> $query->orderBy('status',$direction))->state(fn($record) => match ($record->status->value) {
                     'Approve' => 'Approved',
                     'NotApprove' => 'Rejected',
                     'Pending' => 'Pending',

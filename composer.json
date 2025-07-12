@@ -29,6 +29,7 @@
         "z3d0x/filament-logger": "^0.8.0"
     },
     "require-dev": {
+        "beyondcode/laravel-query-detector": "^2.1",
         "fakerphp/faker": "^1.23",
         "filament/upgrade": "^3.2",
         "laravel/pail": "^1.1",

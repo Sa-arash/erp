@@ -9,7 +9,8 @@ use Illuminate\Support\Carbon;
 class InvoicePrice extends ApexChartWidget
 {
     use HasWidgetShield;
-    
+    protected int | string | array $columnSpan=1;
+
     /**
      * Chart Id
      *

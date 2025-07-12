@@ -197,6 +197,10 @@ class GrnResource extends Resource implements HasShieldPermissions
     {
         return 'danger';
     }
+    public static function getNavigationBadgeTooltip(): ?string
+    {
+        return "Count of PO ready for GRM";
+    }
 
     public static function getPages(): array
     {

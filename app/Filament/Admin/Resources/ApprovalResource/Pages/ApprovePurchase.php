@@ -5,6 +5,7 @@ namespace App\Filament\Admin\Resources\ApprovalResource\Pages;
 use App\Filament\Admin\Resources\ApprovalResource;
 use App\Filament\Admin\Resources\AssetResource;
 use App\Filament\Admin\Widgets\PurchaseItemHistory;
+use App\Models\Approval;
 use App\Models\Employee;
 use App\Models\Product;
 use App\Models\PurchaseRequestItem;
@@ -147,6 +148,37 @@ class ApprovePurchase extends ManageRelatedRecords
                 //
             ])
             ->headerActions([
+                Tables\Actions\Action::make('Previous')->label('Previous PR')
+                    ->url(function () {
+                        $approval = Approval::query()
+                            ->where('employee_id', getEmployee()->id)
+                            ->where('approvable_type', \App\Models\PurchaseRequest::class)
+                            ->whereNull('approve_date')->where('id','<',$this->record->id)
+                            ->orderBy('id')
+                            ->first();
+
+                        if ($approval ) {
+                            return ApprovalResource::getUrl('purchase',['record'=>$approval->id]);
+                        }
+
+                        return null; // یا route به صفحه‌ای که بگه چیزی نیست
+                    })->color('warning'),
+                Tables\Actions\Action::make('nextPR')->label('Next PR')
+                    ->url(function () {
+                        $approval = Approval::query()
+                            ->where('employee_id', getEmployee()->id)
+                            ->where('approvable_type', \App\Models\PurchaseRequest::class)
+                            ->whereNull('approve_date')->where('id','>',$this->record->id)
+                            ->orderBy('id')
+                            ->first();
+                        if ($approval ) {
+                            return ApprovalResource::getUrl('purchase',['record'=>$approval->id]);
+                        }
+
+                        return null; // یا route به صفحه‌ای که بگه چیزی نیست
+                    })->color('danger'),
+
+
                 Tables\Actions\Action::make('Revise')->visible(function () {
                     if ($this->record->status->name === "Approve" and $this->record->approvable !== "Finished") {
                         if (substr($this->record->approvable_type, 11) === "PurchaseRequest") {
@@ -157,12 +189,13 @@ class ApprovePurchase extends ManageRelatedRecords
                 })->label('Change Decision')->color('warning')->requiresConfirmation()->action(function () {
                     $this->record->update(['status' => 'Pending']);
                     $PR = $this->record->approvable;
+
                     if ($PR->status->name === "Clarification") {
-                        $PR->update(['Requested']);
+                        $PR->update(['status'=>'Requested']);
                     } else if ($PR->status->name === "Verification") {
-                        $PR->update(['Clarification']);
+                        $PR->update(['status'=>'Clarification']);
                     } else if ($PR->status->name === "Approval") {
-                        $PR->update(['Verification']);
+                        $PR->update(['status'=>'Verification']);
                     }
                     sendSuccessNotification();
                 }),
@@ -230,10 +263,16 @@ class ApprovePurchase extends ManageRelatedRecords
                             $PR->approvals()->whereNot('id', $record->id)->where('position', $record->position)->delete();
 
                             $item['decision'] =  match ($item['decision']){
+                                "reject"=> "reject",
+                                "approve"=>'approve',
+                                'Revise'=>'Revise'
+                            } ;
+                            $item['status'] = match ($item['decision']){
                                 "reject"=> "rejected",
                                 "approve"=>'approve',
                                 'Revise'=>'Revise'
                             } ;
+
 
                             if ($PR->status->name === "Clarification") {
                                 $item['clarification_comment'] = $item['comment'];
@@ -271,7 +310,13 @@ class ApprovePurchase extends ManageRelatedRecords
                         }
                     }
                     foreach ($data['items'] as $item) {
+
                         $item['decision'] =  match ($item['decision']){
+                            "reject"=> "reject",
+                            "approve"=>'approve',
+                            'Revise'=>'Revise'
+                        } ;
+                        $item['status'] = match ($item['decision']){
                             "reject"=> "rejected",
                             "approve"=>'approve',
                             'Revise'=>'Revise'

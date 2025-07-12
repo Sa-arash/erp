@@ -101,15 +101,19 @@ class VisitRequest extends BaseWidget
                                 DatePicker::make('visit_date')->label('Visit Date')->default(now()->addDay())->hintActions([
                                     \Filament\Forms\Components\Actions\Action::make('te')->label('Select Daily')->action(function (Get $get,Set $set){
                                         $dates=$get('visiting_dates');
+                                        $data=[];
+                                            foreach ($dates as $date){
+                                                $data[]=$date;
+                                            }
                                         if ($get('visit_date')){
                                             try {
-                                                $dates[]= Carbon::createFromFormat('Y-m-d', $get('visit_date'))->format('d/m/Y') ;
-                                                $set('visiting_dates',$dates);
+                                                $data[]= Carbon::createFromFormat('Y-m-d', $get('visit_date'))->format('d/m/Y') ;
+                                                $set('visiting_dates',$data);
                                             } catch (\Exception $e ){
-
                                             }
                                         }
                                         $set('visit_date',null);
+
                                     }),\Filament\Forms\Components\Actions\Action::make('Add')->label('Select Monthly')->form([
                                         DateRangePicker::make('date')
                                     ])->action(function (Set $set,$data){
@@ -264,15 +268,19 @@ class VisitRequest extends BaseWidget
                                 DatePicker::make('visit_date')->label('Visit Date')->default(now()->addDay())->hintActions([
                                     \Filament\Forms\Components\Actions\Action::make('te')->label('Select Daily')->action(function (Get $get,Set $set){
                                         $dates=$get('visiting_dates');
+                                        $data=[];
+                                        foreach ($dates as $date){
+                                            $data[]=$date;
+                                        }
                                         if ($get('visit_date')){
                                             try {
-                                                $dates[]= Carbon::createFromFormat('Y-m-d', $get('visit_date'))->format('d/m/Y') ;
-                                                $set('visiting_dates',$dates);
+                                                $data[]= Carbon::createFromFormat('Y-m-d', $get('visit_date'))->format('d/m/Y') ;
+                                                $set('visiting_dates',$data);
                                             } catch (\Exception $e ){
-
                                             }
                                         }
                                         $set('visit_date',null);
+
                                     }),\Filament\Forms\Components\Actions\Action::make('Add')->label('Select Monthly')->form([
                                         DateRangePicker::make('date')
                                     ])->action(function (Set $set,$data){
