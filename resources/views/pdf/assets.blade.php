@@ -91,7 +91,10 @@ switch ($type){
         width: 140px;
         display: inline-block;
     }
-
+    @page  {
+        margin-left: 30px;
+        margin-right: 30px;
+    }
 
 </style>
 @foreach( $assets  as $grupe)
@@ -127,7 +130,7 @@ switch ($type){
 
         @foreach($grupe as $asset)
             <tr>
-                <td style="background-color: #b3bbea" colspan="2"><strong>Description:</strong> {{$asset->description}}
+                <td style="background-color: #10184d;color: white" colspan="2"><strong>Description:</strong> {{$asset->description}}
                 </td>
             </tr>
 

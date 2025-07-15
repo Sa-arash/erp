@@ -66,11 +66,39 @@ class StructuresRelationManager extends RelationManager
                 Tables\Actions\CreateAction::make()->form(function () {
                     return [
                         Forms\Components\TextInput::make('title')->required()->maxLength(255),
-                        Forms\Components\ToggleButtons::make('location')->live()->grouped()->required()->default(0)->boolean('Company','Warehouse'),
+                        Forms\Components\ToggleButtons::make('location')->live()->grouped()->required()->default(0)->boolean('Building','Warehouse'),
                         SelectTree::make('parent_id')->label('Parent')->enableBranchNode()->defaultOpenLevel(2)->model(Structure::class)->relationship('parent', 'title', 'parent_id',modifyQueryUsing: function($query,Get $get){
                             return $query->where('warehouse_id', $this->ownerRecord->id)->where('location',$get('location'));
                         }),
-                        Select::make('type')->label('Type')->live()->options(['aisle' => "Aisle", 'room' => 'Room', 'shelf' => "Shelf", 'row' => "Row"])->searchable()->preload()->required()
+                        Select::make('type')->label('Type')->live()->options(getCompany()->warehouse_type)->searchable()->preload()->required()->createOptionForm([
+                            TextInput::make('title')->required()->maxLength(50)
+                        ])->createOptionUsing(function ($data) {
+                            $array = getCompany()->warehouse_type;
+                            if (isset($array)) {
+                                $array[$data['title']] = $data['title'];
+                            } else {
+                                $array = [$data['title'] => $data['title']];
+                            }
+                            getCompany()->update(['warehouse_type' => $array]);
+                            return $data['title'];
+                        })->fillEditOptionActionFormUsing(function ($state) {
+                            return [
+                                'title' => $state
+                            ];
+                        })->editOptionForm([
+                            TextInput::make('title')->required()->maxLength(50)
+                        ])->updateOptionUsing(function ($data, $state,Forms\Set $set) {
+                            $oldValue = $state;
+                            $company = getCompany();
+                            $types = $company->warehouse_type ?? [];
+                            Structure::query()->where('type', $oldValue)->update(['type' => $data['title']]);
+                            unset($types[$oldValue]);
+                            $types[$data['title']] = $data['title'];
+                            $company->update(['warehouse_type' => $types]);
+                            sendSuccessNotification();
+                            $set('type',$data['title']);
+                            return $data['title'];
+                        })
                     ];
                 })->action(function ($data) {
                     Structure::query()->create([

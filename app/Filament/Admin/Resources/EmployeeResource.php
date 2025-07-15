@@ -500,7 +500,7 @@ class EmployeeResource extends Resource
         return $table->headerActions([
             Tables\Actions\Action::make('Manager')->label('Organization Chart')->url(EmployeeResource::getUrl('chart')),
             Tables\Actions\ExportAction::make()->label('Export Employees')->color('purple')->exporter(EmployeeExporter::class)
-        ])
+        ])->modifyQueryUsing(fn($query)=> $query->with(['currency','position','media','manager','department']))
             ->searchable()
             ->columns([
                 Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
@@ -533,7 +533,7 @@ class EmployeeResource extends Resource
                 SelectFilter::make('department_id')->searchable()->preload()->options(Department::where('company_id', getCompany()->id)->get()->pluck('title', 'id'))->label('Department'),
                 SelectFilter::make('position_id')->searchable()->preload()->options(Position::where('company_id', getCompany()->id)->get()->pluck('title', 'id'))->label('Designation'),
                 SelectFilter::make('manager_id')->searchable()->preload()->options(getCompany()->employees()->pluck('fullName', 'id'))->label('Manager'),
-                SelectFilter::make('duty_id')->searchable()->preload()->options(Duty::where('company_id', getCompany()->id)->get()->pluck('title', 'id'))->label('Duty'),
+                SelectFilter::make('duty_id')->searchable()->preload()->options(Duty::where('company_id', getCompany()->id)->pluck('title', 'id'))->label('Duty'),
                 SelectFilter::make('gender')->options(['male'=>'Male','female'=>'Female','other'=>'Other'])->searchable()->preload(),
                 DateRangeFilter::make('birthday'),
                 DateRangeFilter::make('joining_date'),

@@ -478,7 +478,6 @@ class   ApprovalResource extends Resource implements HasShieldPermissions
     public static function getNavigationIcon(): string|Htmlable|null
     {
         return Approval::query()->where('employee_id', getEmployee()?->id)->where('read_at', null)->count() ? "dangerCheck":parent::getNavigationIcon() ;
-
     }
 
     public static function getRelations(): array

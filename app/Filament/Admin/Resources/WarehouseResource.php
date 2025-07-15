@@ -4,27 +4,20 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\WarehouseResource\Pages;
 use App\Filament\Admin\Resources\WarehouseResource\RelationManagers;
-use App\Filament\Clusters\StackManagementSettings;
-use App\Models\Employee;
 use App\Models\Structure;
 use App\Models\Warehouse;
 use BezhanSalleh\FilamentShield\Contracts\HasShieldPermissions;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
-use Filament\Forms\Components\Actions\Action;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
-use Filament\Resources\RelationManagers\RelationGroup;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Facades\Auth;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
@@ -126,7 +119,7 @@ class WarehouseResource extends Resource
                         }),
                         Select::make('type')->label('Type')->live()->options(getCompany()->warehouse_type)->searchable()->preload()->required()->createOptionForm([
                             TextInput::make('title')->required()->maxLength(50)
-                        ])->createOptionUsing(function ($data){
+                        ])->createOptionUsing(function ($data) {
                             $array = getCompany()->warehouse_type;
                             if (isset($array)) {
                                 $array[$data['title']] = $data['title'];
@@ -134,6 +127,23 @@ class WarehouseResource extends Resource
                                 $array = [$data['title'] => $data['title']];
                             }
                             getCompany()->update(['warehouse_type' => $array]);
+                            return $data['title'];
+                        })->fillEditOptionActionFormUsing(function ($state) {
+                            return [
+                                'title' => $state
+                            ];
+                        })->editOptionForm([
+                            TextInput::make('title')->required()->maxLength(50)
+                        ])->updateOptionUsing(function ($data, $state,Forms\Set $set) {
+                            $oldValue = $state;
+                            $company = getCompany();
+                            $types = $company->warehouse_type ?? [];
+                            Structure::query()->where('type', $oldValue)->update(['type' => $data['title']]);
+                            unset($types[$oldValue]);
+                            $types[$data['title']] = $data['title'];
+                            $company->update(['warehouse_type' => $types]);
+                            sendSuccessNotification();
+                            $set('type',$data['title']);
                             return $data['title'];
                         })
                     ];

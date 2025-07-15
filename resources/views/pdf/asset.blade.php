@@ -47,14 +47,16 @@
              border-collapse: collapse;
              margin-bottom: 15px; /* Reduced margin */
          }
-         table, th, td {
+         table {
              border: 0; /* Lighter border for details tables */
+
          }
          th, td {
              padding: 5px 10px; /* Reduced padding */
              vertical-align: top;
              font-size: 10px; /* Reduced font size */
              text-align: left; /* Align text to left in cells */
+             border: 1px solid #a9a4a4;
          }
          th {
              background-color: #f9f9f9; /* Light background for labels */
@@ -92,22 +94,26 @@
          .footer p {
              margin: 3px 0;
          }
+         @page  {
+             margin-left: 30px;
+             margin-right: 30px;
+         }
 
 
      </style>
 
  <body>
 
-<table>
+<table style="border: none!important;" >
     <tr>
-        <td style="background-color: #b3bbea" colspan="2"><strong>Description:</strong> {{$asset->description}}
+        <td style="background-color: #10184d;font-size: 12px;color: white;text-transform: uppercase!important;" colspan="2"><strong>Description:</strong> {{$asset->description}}
         </td>
     </tr>
 
     <tr>
 
-        <td style="width: 80%;">
-            <table style="width: 100%;">
+        <td style="width: 80%;border: none">
+            <table style="width: 100%;border: none!important;">
 
                 <tr>
                     <td><strong>Asset Number:</strong></td>
@@ -199,7 +205,7 @@
                 </tr>
             </table>
         </td>
-        <td style="width: 10%;">
+        <td style="width: 10%;border:none!important">
             <table>
                 <tr>
                     <td class="barcode" style="text-align: center">

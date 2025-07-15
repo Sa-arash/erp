@@ -79,6 +79,10 @@
             font-size: 11px;
             margin-top: 2px;
         }
+        @page  {
+            margin-left: 30px;
+            margin-right: 30px;
+        }
     </style>
 </head>
 <body>
@@ -120,7 +124,7 @@
 @endforeach
 <h3 class="section">All Locations</h3>
 @foreach($assets as $warehouse => $items)
-    <h3 style="background: #d9e1f2; padding: 5px;">{{ $warehouse->name ?? 'Unknown Location' }}</h3>
+    <h3 style="background-color: #10184d;color: white; padding: 5px;">{{ $warehouse->name ?? 'Unknown Location' }}</h3>
 
     <table>
         <thead>

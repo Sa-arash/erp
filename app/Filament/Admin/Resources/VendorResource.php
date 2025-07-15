@@ -25,6 +25,7 @@ class VendorResource extends Resource
     protected static ?string $label = 'Vendor';
     protected static ?int $navigationSort = 9;
 
+
     public static function getPermissionPrefixes(): array
     {
         return [
@@ -45,10 +46,10 @@ class VendorResource extends Resource
                     Forms\Components\Textarea::make('address')->columnSpanFull(),
                 ])->columns(4),
 
-                MediaManagerInput::make('image')->orderable(false)->folderTitleFieldName("name")->image(true)
+                MediaManagerInput::make('image')->label('Upload Logo')->orderable(false)->folderTitleFieldName("name")->image(true)
                     ->disk('public')
                     ->schema([
-                    ])->maxItems(1)->addActionLabel('Add Image'),
+                    ])->maxItems(1)->addActionLabel('Add Logo'),
             ]);
     }
 

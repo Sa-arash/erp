@@ -57,9 +57,9 @@ class SuperAdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->plugins([
-                // FilamentShieldPlugin::make(),
-                FilamentApexChartsPlugin::make(),
-                \TomatoPHP\FilamentMediaManager\FilamentMediaManagerPlugin::make()->allowUserAccess()->allowSubFolders(),
+//                // FilamentShieldPlugin::make(),
+//                FilamentApexChartsPlugin::make(),
+//                \TomatoPHP\FilamentMediaManager\FilamentMediaManagerPlugin::make()->allowUserAccess()->allowSubFolders(),
 
 
             ])

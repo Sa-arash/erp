@@ -24,7 +24,7 @@ class StockConsumable extends BaseWidget
             Product::select('products.*')
                 ->selectRaw('(SELECT SUM(quantity) FROM inventories WHERE inventories.product_id = products.id) as inventories_quantity')
                 ->where('product_type', 'consumable')
-                ->groupBy('products.id', 'unit_id', 'created_at', 'updated_at', 'products.stock_alert_threshold', 'products.product_type', 'products.title', 'products.second_title', 'products.image', 'products.department_id', 'products.account_id', 'products.sku', 'products.sub_account_id', 'products.description', 'products.company_id')
+                ->groupBy('products.id','deleted_at', 'unit_id', 'created_at', 'updated_at', 'products.stock_alert_threshold', 'products.product_type', 'products.title', 'products.second_title', 'products.image', 'products.department_id', 'products.account_id', 'products.sku', 'products.sub_account_id', 'products.description', 'products.company_id')
                 ->havingRaw('(inventories_quantity IS NULL OR inventories_quantity < stock_alert_threshold)')
                 )
             ->columns([

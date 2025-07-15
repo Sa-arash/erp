@@ -37,10 +37,10 @@ return [
             'view_any',
             'create',
             'update',
-            'restore',
+//            'restore',
             'delete',
-            'delete_any',
-            'force_delete',
+//            'delete_any',
+//            'force_delete',
         ],
 
         'page' => 'page',

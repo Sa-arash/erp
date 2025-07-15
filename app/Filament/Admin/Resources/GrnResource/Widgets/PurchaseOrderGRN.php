@@ -27,21 +27,11 @@ class PurchaseOrderGRN extends BaseWidget
                     ->label('Date Of PO')
                     ->date()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('total')
-                    ->label('Total'),
+                Tables\Columns\TextColumn::make('items_sum_total')->numeric(2)->sum('items','total')->label('Total'),
+
 
                 Tables\Columns\TextColumn::make('purchaseRequest.purchase_number')->badge()->url(fn($record) => PurchaseRequestResource::getUrl('index') . "?tableFilters[purchase_number][value]=" . $record->purchaseRequest?->id)->sortable()->label("PR No"),
                 Tables\Columns\TextColumn::make('purchaseRequest.employee.fullName')->badge()->sortable()->label("PR Requester"),
-
-                Tables\Columns\TextColumn::make('date_of_delivery')
-                    ->date()
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('location_of_delivery')
-                    ->toggleable(isToggledHiddenByDefault: true)
-                    ->searchable(),
-
                 Tables\Columns\Textcolumn::make('status')->state(fn($record)=>match ($record->status){
                     'pending'=>"Pending",
                     'Approved'=>"Approved",

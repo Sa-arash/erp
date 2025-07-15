@@ -42,7 +42,7 @@ class AccountResource extends Resource
 
     public static function getCluster(): ?string
     {
-        $period = FinancialPeriod::query()->where('company_id', getCompanyUrl())->where('status', 'During')->first();
+        $period = getPeriod();
         if ($period) {
             return parent::getCluster();
         }

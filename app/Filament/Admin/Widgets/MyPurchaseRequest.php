@@ -107,6 +107,7 @@ class MyPurchaseRequest extends BaseWidget
         return $record->approvals()->where('status', 'Approve')->count();
     })->action(function ($record) {
         $record->approvals()->delete();
+
         $record->delete();
     }),
     Tables\Actions\EditAction::make()->fillForm(function ($record) {

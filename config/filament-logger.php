@@ -14,7 +14,7 @@ return [
         'color' => 'success',
 
         'exclude' => [
-            //App\Filament\Resources\UserResource::class,
+            \App\Filament\Admin\Resources\PurchaseRequestResource::class,
         ],
         'cluster' => null,
         'navigation_group' =>'IT Management',

@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\ItemStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -16,6 +17,7 @@ class PurchaseRequestItem extends Model implements HasMedia
     use HasFactory;
     use InteractsWithMedia;
     use LogsActivity;
+    use SoftDeletes;
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
@@ -24,6 +26,7 @@ class PurchaseRequestItem extends Model implements HasMedia
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs();
     }
+
 
     protected $fillable = [
         'product_id',

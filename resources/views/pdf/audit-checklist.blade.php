@@ -34,7 +34,8 @@
     }
 
     th {
-        background-color: #fff2e0;
+        background-color: #efefef;
+        text-transform: uppercase!important;
     }
     table tr {
         background-color: #ffffff !important;
@@ -57,14 +58,17 @@
     }
 
 
-
+    @page  {
+        margin-left: 30px;
+        margin-right: 30px;
+    }
 </style>
 
 
 <p><small>(This report contains assets which have not been audited or were last audited over 365 days ago.)</small></p>
 
 @foreach($groups as $group)
-    <div class="location-title">
+    <div class="location-title" style="background-color: #10184d;font-size: 12px;color: white;text-transform: uppercase">
 
         @switch($type)
             @case('warehouse_id')
@@ -149,6 +153,6 @@
 
 <htmlpagefooter name="MyFooter">
     <div style="text-align: center; font-size: 10px;margin-top: 5px">
-        Page {PAGENO} of {nbpg}  | &nbsp; {{$company->title}} &nbsp; | &nbsp; {{   now()->format('d/F/Y')}}
+        Page {PAGENO} of {nbpg}  | &nbsp; Report Generated &nbsp; | &nbsp; {{   now()->format('d/F/Y')}}
     </div>
 </htmlpagefooter>

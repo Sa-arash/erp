@@ -45,7 +45,7 @@
 
     <tr>
 
-        <td style="text-align: right;border: none;width: 80%">
+        <td style="text-align: left;border: none;width: 80%">
             <p>GRN No : ATGT/UNC/{{$GRN->number}}</p>
             <p>Date Received : {{\Illuminate\Support\Carbon::make($GRN->received_date)->format('d/M/Y')}}</p>
             <p>PR No : ATGT/UNC/{{$GRN->purchaseOrder?->purchase_orders_number}}</p>
@@ -69,8 +69,8 @@
         <th>Vendor</th>
         <th>Currency</th>
         <th>Exchange Rate</th>
-        <th>Employee Ordered</th>
-        <th>TEC</th>
+        <th>Purchased By</th>
+        <th>Total Cost</th>
 
     </tr>
     </thead>
@@ -83,9 +83,7 @@
     @endphp
     @foreach($GRN->items as $item)
         @php
-            $totalEstimated+=$item->unit_price;
             $totalBudget+=$item->total;
-            $totalQTY+=$item->quantity;
         @endphp
 
 
@@ -113,13 +111,8 @@
     </tbody>
     <tfoot>
     <tr>
-        <td colspan="4">GRN Total</td>
-        <td>{{number_format($totalQTY)}}</td>
-        <td>{{number_format($totalEstimated)}}</td>
-        <td >---</td>
-        <td >---</td>
-        <td >---</td>
-        <td >---</td>
+        <td colspan="10">GRN Total</td>
+
         <td>{{number_format($totalBudget)   }}</td>
 
     </tr>
@@ -141,6 +134,8 @@
                     <hr>
                     {{$ordere->fullName}}
                     <br>
+                {{$ordere?->position?->title}}
+
 
             </th>
         @endforeach
@@ -148,22 +143,24 @@
             Received By
             <br>
             <hr>
-            {{$GRN->purchaseOrder?->purchaseRequest?->employee->fullName}}
-                <br>
+            {{$GRN->purchaseOrder?->purchaseRequest?->employee->fullName}}<br>
+            {{$GRN->purchaseOrder?->purchaseRequest?->employee?->position?->title}}
         </th>
         <th style="border: none ;background: white !important;color: #1a202c">
-           Stock Department
+           Processed By
             <br>
             <hr>
-            {{$GRN->manager->fullName}}
-            <br>
+            {{$GRN->manager->fullName}}<br>
+            {{$GRN->manager->position?->title}}<br>
+
         </th>
         <th style="border: none ;background: white !important;color: #1a202c">
-            Finance Department
+            Paid By
             <br>
             <hr>
 
-            {{$GRN->purchaseOrder?->finance?->fullName ??'-'}}
+            {{$GRN->purchaseOrder?->finance?->fullName ??'-'}}  <br>
+            {{$GRN->purchaseOrder?->finance?->position->title ??'-'}}
             <br>
         </th>
     </tr>

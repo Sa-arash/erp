@@ -21,6 +21,7 @@ class CompanyOverView extends Page
     protected static ?string $navigationLabel = "Comprehensive Report";
     protected static string $view = 'filament.pages.company-over-view';
 
+
     protected function getHeaderActions(): array
     {
         $months = collect([
@@ -59,14 +60,12 @@ class CompanyOverView extends Page
                 Select::make('year')
                     ->options($years)
                     ->live()
-                    ->columnSpanFull()
                     ->default($currentYear)->searchable()
                     ,
                     Select::make('company_id')
-                    ->options(Company::all()->pluck('title','id'))
+                    ->options(Company::query()->pluck('title','id'))
                     ->live()
-                    ->columnSpanFull()
-                    ->default($currentYear)->searchable()->label('Company')
+                    ->default(Company::query()->first()->id)->searchable()->label('Company')
             ])->columns()
         ]);
     }

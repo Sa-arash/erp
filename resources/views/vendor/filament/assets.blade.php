@@ -16,7 +16,7 @@
             @foreach ($cssVariables ?? [] as $cssVariableName => $cssVariableValue) --{{ $cssVariableName }}:{{ $cssVariableValue }}; @endforeach
 
     }
-        .animate-spin {
+        .animate-spin1 {
             width: 40px;
             height: 40px;
             border: 4px solid #f3f3f3;
@@ -38,7 +38,7 @@
 
 
             <!-- اسپینر -->
-            <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
+            <div class="inline-block animate-spin1 rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
 
 
         </div>

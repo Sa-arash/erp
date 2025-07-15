@@ -30,7 +30,8 @@
         }
 
         th {
-            background-color: #2c3e50;
+
+            background-color: #10184d;
             color: #fff;
         }
 
@@ -38,6 +39,7 @@
             font-style: italic;
             text-align: right;
             border: none;
+            background: #fbd1a2;
         }
         @page  {
             margin-left: 20px;
@@ -82,11 +84,11 @@
 
         @endforeach
         </tbody>
-        <tfoot>
-        <tr>
+        <tfoot >
+        <tr >
             <td style="text-align: start" colspan="2"><b>Totals:</b></td>
-            <td>{{number_format($totalPO,2).' '.PDFdefaultCurrency($company)}}</td>
-            <td>{{number_format($totalAmount,2).' '.PDFdefaultCurrency($company)}}</td>
+            <td >{{number_format($totalPO,2).' '.PDFdefaultCurrency($company)}}</td>
+            <td >{{number_format($totalAmount,2).' '.PDFdefaultCurrency($company)}}</td>
             <td>{{number_format($totalCount)}}</td>
 
         </tr>

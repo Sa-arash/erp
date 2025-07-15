@@ -29,10 +29,11 @@
     margin: 0;
 }
 
-div section.auto-cols-fr {
-    row-gap: 0!important;
-    grid: none!important;
-}
+/*div section.auto-cols-fr {*/
+/*    row-gap: 0!important;*/
+/*    grid: none!important;*/
+/*    font-size: 1px !important;*/
+/*}*/
 /*.fi-sidebar-group-collapse-button{*/
 /*    background-color: #1cc6b9; !* Ø±Ù†Ú¯ Ø¢Ø¨ÛŒ Ø¨Ø±Ø§ÛŒ Ø¨Ø®Ø´ HR *!*/
 /*    color: white;*/

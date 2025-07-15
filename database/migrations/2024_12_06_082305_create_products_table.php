@@ -25,6 +25,7 @@ return new class extends Migration
             $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete()->cascadeOnUpdate();
             $table->foreignId('department_id')->nullable()->constrained('departments')->cascadeOnDelete()->cascadeOnUpdate();
             $table->unique(['sku', 'company_id'],'unique_sku_company');
+            $table->softDeletes();
             $table->timestamps();
         });
     }

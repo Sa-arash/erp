@@ -23,11 +23,13 @@ use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportAction;
 use pxlrbt\FilamentExcel\Actions\Tables\ExportBulkAction;
 use pxlrbt\FilamentExcel\Columns\Column;
 use pxlrbt\FilamentExcel\Exports\ExcelExport;
+use TomatoPHP\FilamentMediaManager\Form\MediaManagerInput;
 
 class PartiesResource extends Resource
 {
@@ -38,6 +40,10 @@ class PartiesResource extends Resource
     protected static ?int $navigationSort = 1;
     protected static ?string $navigationGroup = 'Finance Management';
     protected static ?string $navigationLabel =  'Customers/Vendors';
+    public static function canCreate(): bool
+    {
+        return \auth()->user()->can('create_parties');
+    }
 
     public static function form(Form $form): Form
     {
@@ -152,6 +158,10 @@ class PartiesResource extends Resource
                     ToggleButtons::make('group')->disabled()->grouped()->options(['Asset' => 'Asset', 'Liabilitie' => 'Liabilitie', 'Equity' => 'Equity', 'Income' => 'Income', 'Expense' => 'Expense'])->inline(),
                     Forms\Components\Textarea::make('description')->maxLength(255)->columnSpanFull(),
                 ]),
+                MediaManagerInput::make('image')->label('Upload Logo')->orderable(false)->folderTitleFieldName("name")->image(true)
+                    ->disk('public')
+                    ->schema([
+                    ])->maxItems(1)->addActionLabel('Add Logo'),
             ]);
     }
 

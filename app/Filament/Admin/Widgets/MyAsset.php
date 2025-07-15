@@ -239,13 +239,13 @@ class MyAsset extends BaseWidget
                              TextEntry::make('note')
                                  ->state(fn($record) => $record->asset?->note),
 
-                             RepeatableEntry::make('attributes')
-                                 ->columns(3)
+                             RepeatableEntry::make('asset.attributes')
+                                 ->columns(2)
                                  ->schema([
                                      TextEntry::make('title'),
                                      TextEntry::make('value'),
                                  ])
-                                 ->state(fn($record) => $record->asset?->attributes ?? []),
+                                 ,
                          ]),
                      ])->columns(2)
                  ]),

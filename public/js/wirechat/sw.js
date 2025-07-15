@@ -17,7 +17,6 @@ self.addEventListener('message', event => {
             })
         );
     }
-
     if (event.data.type === 'CLOSE_NOTIFICATION') {
         event.waitUntil(
             self.registration.getNotifications({ tag: event.data.tag })

@@ -2,8 +2,11 @@
     {{ $this->filtersForm }}
 
     @php
-    
-   $company = App\Models\Company::findOrFail($this->filters['company_id']);
+if (isset($this->filters['company_id'])==false){
+       $company = \App\Models\Company::query()->first();
+}else{
+       $company = App\Models\Company::findOrFail($this->filters['company_id']);
+}
 
 
         $fillerArray = [
@@ -106,9 +109,10 @@
                                     class="px-6 py-3 text-xs font-medium text-gray-500 uppercase text-center">
                                     Total Accounts Receivable
                                 </th>
-                               
+
                             </tr>
                         </thead>
+
                         <tbody class="divide-y divide-gray-200">
                             @foreach ($fillerArray as $key => $mount)
                                 {{-- @dd($fillerArray, $monthArray, $monthArray[$key][0]); --}}
@@ -342,7 +346,7 @@
                                     <td
                                         class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
                                         <a">{{ number_format($sumPO) }}</a>
-                                    </td> 
+                                    </td>
                                      <td
                                         class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
                                         <a>{{ number_format($RecivableData[$key]) }}</a>
@@ -426,8 +430,8 @@
                                 class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
                                 {{ number_format(collect($PayableData)->sum()) }}
                             </td>
-                             
-                        
+
+
                             </tr>
                         </tfoot>
                         </tbody>

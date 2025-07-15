@@ -44,8 +44,10 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Leandrocfe\FilamentApexCharts\FilamentApexChartsPlugin;
+use LikeABas\FilamentChatgptAgent\ChatgptAgentPlugin;
 
 class AdminPanelProvider extends PanelProvider
 {
@@ -117,15 +119,32 @@ class AdminPanelProvider extends PanelProvider
                     ->icon('heroicon-o-document-text')
                     ->label('Profit & Loss Report')
                     ->url(function () use ($financialPeriod) {
-                            $accountsID = Account::query()->where('company_id',getCompany()->id)->whereIn('stamp', ['Income', 'Expenses'])->pluck('id')->toArray();
-                        $accounts = Account::query()->whereIn('id', $accountsID)->orWhereIn('parent_id', $accountsID)
-                            ->orWhereHas('account', function ($query) use ($accountsID) {
-                                return $query->whereIn('parent_id', $accountsID)->orWhereHas('account', function ($query) use ($accountsID) {
-                                    return $query->whereIn('parent_id', $accountsID);
-                                });
-                            })
-                            ->get()->pluck('id')->toArray();
-                        // dd($accounts);
+                        $companyId = getCompany()->id;
+                        $cacheKey = "profit_loss_accounts_{$companyId}";
+
+                        $accounts = Cache::remember($cacheKey, now()->addMinutes(60), function () use ($companyId) {
+                            $baseAccounts = Account::query()
+                                ->where('company_id', $companyId)
+                                ->whereIn('stamp', ['Income', 'Expenses'])
+                                ->pluck('id');
+
+                            return Account::query()
+                                ->where(function ($query) use ($baseAccounts) {
+                                    $query->whereIn('id', $baseAccounts)
+                                        ->orWhereIn('parent_id', $baseAccounts)
+                                        ->orWhereHas('childerns', function ($q) use ($baseAccounts) {
+                                            $q->whereIn('parent_id', $baseAccounts)
+                                                ->orWhereHas('childerns', function ($q) use ($baseAccounts) {
+                                                    $q->whereIn('parent_id', $baseAccounts);
+                                                });
+                                        });
+                                })
+                                ->get()
+                                ->pluck('id')
+                                ->toArray();
+                        });
+
+
                         return route('pdf.account',
                             [
                                 'period' => $financialPeriod->id,
@@ -188,7 +207,8 @@ class AdminPanelProvider extends PanelProvider
             ])->profile(Profile::class)
             ->userMenuItems([
                 MenuItem::make()->label('View Profile')->icon('heroicon-c-user-circle')->url(fn() => route('filament.admin.pages.employee-profile',['tenant'=>auth()->user()->companies[0]->id])),
-                MenuItem::make()->label('Reset Password')->url(fn() => route('filament.admin.auth.profile',['tenant'=>auth()->user()->companies[0]->id]))->icon('heroicon-o-cog-6-tooth'),
+                MenuItem::make()->label('Reset Password')->url(fn() => route('filament.admin.auth.profile',['tenant'=>auth()->user()->companies[0]->id]))->icon('heroicon-s-cog-6-tooth'),
+                MenuItem::make()->label('Super Admin')->visible(fn()=>auth()->user()->is_super)->url(fn() => route('filament.super-admin.pages.dashboard'))->icon('heroicon-s-star'),
 
             ])
             ->middleware([
@@ -227,6 +247,19 @@ class AdminPanelProvider extends PanelProvider
                     ]),
                 FilamentApexChartsPlugin::make(),
                 \TomatoPHP\FilamentMediaManager\FilamentMediaManagerPlugin::make()->allowUserAccess()->allowSubFolders(),
+//                ChatgptAgentPlugin::make()
+//                    ->defaultPanelWidth('400px') // default 350px
+//                    ->botName('GPT Assistant')
+//                    ->model('gpt-4o')
+//                    ->buttonText('IT Help Desk')
+//                    ->buttonIcon('heroicon-m-sparkles')
+//                    // System instructions for the GPT
+//                    ->systemMessage('Act nice and help')
+//                    // Array of GPTFunctions the GPT can use
+//
+//                    // Default start message, set to false to not show a message
+//                    ->startMessage('Hello sir! How can I help you today?')
+
 
 
             ])

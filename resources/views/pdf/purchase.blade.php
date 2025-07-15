@@ -140,12 +140,15 @@
         <th style="border: none!important;background: white !important;color: #1a202c">
             @if($approve->position==="PR Verification")
                 Verified By
+                <br>  {{$approve->employee?->fullName}}
                 <br>  {{$approve->employee?->position->title}}
             @elseif($approve->position==="PR Warehouse")
-                Warehouse/Storage
+                Checked By
                 <br>  {{$approve->employee?->fullName}}
+                <br>  {{$approve->employee?->position->title}}
             @else
-                {{str_replace('PR','',$approve->position)}}
+                Approved By
+                <br>  {{$approve->employee?->fullName}}
                 <br>  {{$approve->employee?->position->title}}
             @endif
                </th>

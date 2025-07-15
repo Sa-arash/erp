@@ -63,7 +63,7 @@ class GrnResource extends Resource implements HasShieldPermissions
                 })->searchable()->preload()->label('PO No')->required()->prefix('ATGT/UNC/')->options(fn($record)=> $record ==null ?PurchaseOrder::query()->where('status', 'Approved')->where('company_id', getCompany()->id)->pluck('purchase_orders_number', 'id'):PurchaseOrder::query()->where('id',$record->purchase_order_id)->pluck('purchase_orders_number', 'id')),
                 Forms\Components\Select::make('manager_id')->default(getEmployee()?->id)->label('Process By')->required()->options(getCompany()->employees()->where('id', getEmployee()?->id)->pluck('fullName', 'id'))->preload()->searchable(),
                 Forms\Components\TextInput::make('number')->prefix('ATGT/UNC/')->readOnly()->required()->maxLength(255),
-                Forms\Components\DateTimePicker::make('received_date')->required()->seconds(false)->default(now()),
+                Forms\Components\DateTimePicker::make('received_date')->label('GRN Date')->required()->seconds(false)->default(now()),
                 Repeater::make('RequestedItems')->reorderableWithDragAndDrop(false)->defaultItems(1)->required()
                     ->default(function (Request $request, Set $set) {
 
@@ -154,13 +154,15 @@ class GrnResource extends Resource implements HasShieldPermissions
 
     public static function table(Table $table): Table
     {
-        return $table
+        return $table->defaultSort('id','desc')
             ->columns([
                 Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
-                Tables\Columns\TextColumn::make('purchaseOrder.purchase_orders_number')->label('PO No')->prefix('ATGT/UNC/')->sortable(),
+                Tables\Columns\TextColumn::make('purchaseOrder.purchaseRequest.description')->label("PR Description"),
+                Tables\Columns\TextColumn::make('purchaseOrder.purchaseRequest.employee.department.title')->label("PR Description"),
                 Tables\Columns\TextColumn::make('number')->prefix('ATGT/UNC/')->sortable()->label('GRN No'),
-                Tables\Columns\TextColumn::make('manager.fullName')->label('Process By')->sortable(),
-                Tables\Columns\TextColumn::make('received_date') ->dateTime()->searchable(),
+                Tables\Columns\TextColumn::make('manager.fullName')->label('Processed By')->sortable(),
+                Tables\Columns\TextColumn::make('received_date')->label('GRN Date') ->dateTime()->searchable(),
+                Tables\Columns\TextColumn::make('purchaseOrder.date_of_delivery')->label('Receive Date') ->dateTime()->searchable(),
                 Tables\Columns\TextColumn::make('items_sum_total')->numeric(2)->sum('items','total')->label('Total')->sortable(),
 //                Tables\Columns\TextColumn::make('s')->state(fn($record)=>dd($record))->label('Total')->searchable(),
 

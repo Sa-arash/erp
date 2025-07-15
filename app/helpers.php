@@ -12,9 +12,24 @@ use Filament\Support\RawJs;
 use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Role;
 
+use Illuminate\Support\Facades\Cache;
+
 function getCompany(): ?\Illuminate\Database\Eloquent\Model
 {
-    return \Filament\Facades\Filament::getTenant();
+    $userId = auth()->id();
+    $cacheKey = "tenant_company_1";
+
+    if (!$userId) {
+        return Cache::remember($cacheKey, now()->addHours(1), function () {
+            return \Filament\Facades\Filament::getTenant();
+        });
+    }
+
+    $cacheKey = "tenant_company_{$userId}";
+
+    return Cache::remember($cacheKey, now()->addHours(1), function () {
+        return \Filament\Facades\Filament::getTenant();
+    });
 }
 function getEmployeeCEO()
 {
@@ -603,10 +618,26 @@ function generateNextCodeDote($code): string
     return implode('.', $parts);
 }
 
+
 function getPeriod()
 {
-    return FinancialPeriod::query()->where('status', 'During')->where('company_id', getCompany()->id)->first();
+    $company = getCompany();
+
+    if (!$company) {
+        return null;
+    }
+
+    $cacheKey = "current_financial_period_{$company->id}";
+
+    return Cache::remember($cacheKey, now()->addHours(12), function () use ($company) {
+        return FinancialPeriod::query()
+            ->where('status', 'During')
+            ->where('company_id', $company->id)
+            ->first();
+    });
 }
+
+
 
 function getDocumentCode(): int
 {
