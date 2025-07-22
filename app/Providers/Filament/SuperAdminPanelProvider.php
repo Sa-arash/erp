@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\Login;
+use Filament\FontProviders\LocalFontProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -29,12 +30,17 @@ class SuperAdminPanelProvider extends PanelProvider
             ->default()
             ->id('super-admin')
             ->path('super-admin')
+            ->font(
+                'Roboto',
+                url: asset('css/app/custom-stylesheet.css'),
+                provider: LocalFontProvider::class,
+            )
             ->login(Login::class)->maxContentWidth(MaxWidth::Full)
             ->colors([
                 'primary' => Color::Green,
                 'aColor'=> Color::Cyan,
             ])
-            ->favicon(fn()=>asset('img/my.png'))
+            ->favicon(fn()=>asset('img/login.jpg'))
 
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -57,9 +63,9 @@ class SuperAdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->plugins([
-//                // FilamentShieldPlugin::make(),
-//                FilamentApexChartsPlugin::make(),
-//                \TomatoPHP\FilamentMediaManager\FilamentMediaManagerPlugin::make()->allowUserAccess()->allowSubFolders(),
+                // FilamentShieldPlugin::make(),
+                FilamentApexChartsPlugin::make(),
+                \TomatoPHP\FilamentMediaManager\FilamentMediaManagerPlugin::make()->allowUserAccess()->allowSubFolders(),
 
 
             ])

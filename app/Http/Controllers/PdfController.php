@@ -106,7 +106,7 @@ class PdfController extends Controller
             $startDate = Carbon::createFromFormat('d-m-Y', $startDate);
             $endDate = Carbon::createFromFormat('d-m-Y', $endDate);
 
-            $transactions = Transaction::query()->where('financial_period_id', $period)->whereIn('account_id', $Allaccounts)->whereHas('invoice', function ($query) use ($startDate, $endDate) {
+            $transactions = Transaction::query()->with(['invoice','account'])->where('financial_period_id', $period)->whereIn('account_id', $Allaccounts)->whereHas('invoice', function ($query) use ($startDate, $endDate) {
                 $query->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()]);
             })->get();
         } else {

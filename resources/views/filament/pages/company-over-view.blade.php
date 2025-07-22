@@ -212,7 +212,7 @@ if (isset($this->filters['company_id'])==false){
                                                     $monthArray[$index][1],
                                                 ])
                                                 ->sum(
-                                                    fn($transaction) => $transaction->creditor - $transaction->debtor,
+                                                    fn($transaction) => $transaction->debtor -  $transaction->creditor,
                                                 );
                                         })
                                         ->toArray();
@@ -345,15 +345,15 @@ if (isset($this->filters['company_id'])==false){
                                     </td>
                                     <td
                                         class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
-                                        <a">{{ number_format($sumPO) }}</a>
+                                        <a>{{ number_format($sumPO) }}</a>
                                     </td>
                                      <td
                                         class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
-                                        <a>{{ number_format($RecivableData[$key]) }}</a>
+                                        <a>{{ number_format(  $PayableData[$key]) }}</a>
                                     </td>
                                     <td
                                         class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
-                                        <a>{{ number_format($PayableData[$key]) }}</a>
+                                        <a>{{ number_format($RecivableData[$key]) }}</a>
                                     </td>
                                     {{-- <td class="px-6 py-4 whitespace-nowrap text-sm items-center font-medium text-gray-800 text-center">
                                     <a href="{{\App\Filament\Resources\CourseResource::getUrl('index', $arrayCourse)}}">{{$courseMinFive}}</a>

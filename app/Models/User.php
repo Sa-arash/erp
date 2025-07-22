@@ -50,7 +50,8 @@ class User extends Authenticatable implements HasTenants, FilamentUser, HasName,
 
     public function getFilamentAvatarUrl(): ?string
     {
-        return  getEmployee()->media->where('collection_name','images')->first()?->original_url;
+
+        return  getEmployee()?->media->where('collection_name','images')->first()?->original_url;
     }
 
     public function canAccessPanel(Panel $panel): bool

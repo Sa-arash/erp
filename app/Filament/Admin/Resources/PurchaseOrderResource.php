@@ -35,6 +35,7 @@ use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\HtmlString;
 use Illuminate\Validation\Rules\Unique;
@@ -64,6 +65,7 @@ implements HasShieldPermissions
     {
         return getPeriod() != null;
     }
+
 
     protected static ?string $model = PurchaseOrder::class;
     protected static ?string $navigationGroup = 'Logistic Management';
@@ -495,7 +497,7 @@ implements HasShieldPermissions
         return $table->defaultSort('created_at', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
-                Tables\Columns\TextColumn::make('purchase_orders_number')->label('PO No')->searchable(),
+                Tables\Columns\TextColumn::make('purchase_orders_number')->label('PO No')->searchable(query: fn($query ,$search)=> isset($search) ? $query->where('purchase_orders_number',$search) :$query),
                 Tables\Columns\TextColumn::make('date_of_po')->label('Date Of PO')->date()->sortable(),
                 Tables\Columns\TextColumn::make('items_sum_total')->numeric(2)->sum('items','total')->label('Total'),
                 Tables\Columns\TextColumn::make('purchaseRequest.description')->label("PR Description"),

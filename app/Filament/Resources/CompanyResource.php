@@ -6,6 +6,7 @@ use App\Filament\Resources\CompanyResource\Pages;
 use App\Filament\Resources\CompanyResource\RelationManagers;
 use App\Models\Account;
 use App\Models\Company;
+use App\Models\Currency;
 use App\Models\FinancialPeriod;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
@@ -19,6 +20,7 @@ use Filament\Tables\Actions\ActionGroup;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class CompanyResource extends Resource
@@ -98,19 +100,16 @@ class CompanyResource extends Resource
                 Tables\Columns\TextColumn::make('user.name')->label('CEO')->sortable()->alignCenter(),
                 Tables\Columns\TextColumn::make('incomes')->label('Total Income')->badge()->color('success')
                     ->state(function ($record) {
-
-
-
                         $incaccounts = Account::with('transactions')
                             ->where('company_id', $record->id)
                             ->where('group', 'Income')
                             ->get()
                             ->flatMap(fn($account) => $account->transactions)
                             ->sum(fn($transaction) => $transaction->creditor - $transaction->debtor);
-                        return $incaccounts;
-                    })
+                        return number_format($incaccounts);
+                    })->prefix(fn($record)=>Currency::query()->where('company_id',$record->id)->where('is_company_currency',1)->first()?->name)
                     ->alignCenter(),
-                Tables\Columns\TextColumn::make('expences')->label('Total Expence')->badge()->color('danger')
+                Tables\Columns\TextColumn::make('expenses')->label('Total Expense')->badge()->color('danger')
                     ->state(function ($record) {
 
                         $exaccounts = Account::with('transactions')
@@ -119,8 +118,8 @@ class CompanyResource extends Resource
                         ->get()
                         ->flatMap(fn($account) => $account->transactions)
                         ->sum(fn($transaction) =>  $transaction->debtor - $transaction->creditor);
-                    return $exaccounts;
-                    })
+                    return number_format($exaccounts);
+                    })->prefix(fn($record)=>Currency::query()->where('company_id',$record->id)->where('is_company_currency',1)->first()?->name)
                     ->alignCenter(),
                 Tables\Columns\TextColumn::make('employee')->state(fn($record) => $record->employees->count())->label('Employees')->sortable()->alignCenter(),
             ])
@@ -134,6 +133,8 @@ class CompanyResource extends Resource
                     //                    \session()->push('super', \auth()->id());
                     //                    \session()->push('company', $record->user_id);
                     //                    return redirect('superAdmin/');
+                    $userId = auth()->id();
+                    Cache::forget("tenant_company_{$userId}");
 
                     return  redirect(route('filament.admin.pages.dashboard', ['tenant' => $record->id]));
                 })->icon('heroicon-s-user-circle')->iconSize(IconSize::Large)->requiresConfirmation()->modalHeading('Do want to login ?')->modalIcon('heroicon-s-user-circle')->modalSubmitActionLabel('Login'),
@@ -153,9 +154,9 @@ class CompanyResource extends Resource
 
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+//                Tables\Actions\BulkActionGroup::make([
+//                    Tables\Actions\DeleteBulkAction::make(),
+//                ]),
             ]);
     }
 

@@ -26,6 +26,7 @@ class StockAlert extends BaseWidget
                 Product::select('products.*')
                     ->selectRaw('(SELECT COUNT(*) FROM assets WHERE assets.product_id = products.id) as assets_count')
                     ->where('product_type', 'unConsumable')
+                    ->where('company_id', getCompany()->id)
                     ->groupBy('products.id', 'unit_id','deleted_at', 'created_at', 'updated_at', 'products.stock_alert_threshold', 'products.product_type', 'products.title', 'products.second_title', 'products.image', 'products.department_id', 'products.account_id', 'products.sku', 'products.sub_account_id', 'products.description', 'products.company_id')
                     ->havingRaw('assets_count < stock_alert_threshold')
             )

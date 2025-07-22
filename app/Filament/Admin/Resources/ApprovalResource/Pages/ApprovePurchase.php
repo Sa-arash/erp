@@ -187,6 +187,7 @@ class ApprovePurchase extends ManageRelatedRecords
                     }
                     return false;
                 })->label('Change Decision')->color('warning')->requiresConfirmation()->action(function () {
+                    $this->record->approvable->approvals()->where('status','Pending')->delete();
                     $this->record->update(['status' => 'Pending']);
                     $PR = $this->record->approvable;
 

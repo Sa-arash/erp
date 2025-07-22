@@ -10,6 +10,9 @@
             <th>Liabilities + Equity`s ({{ PDFdefaultCurrency($company)}})</th>
         </tr>
     </thead>
+    @php
+        $totalAsset=0;
+    @endphp
     <tbody>
         <tr>
 
@@ -29,6 +32,9 @@
                                 {{ $key }}:
                                 {{ number_format($Children['sum']) }}
                             </li>
+                        @php
+                            $totalAsset+=$Children['sum'];
+                        @endphp
 
                             @if (isset($asset['item']) && count($asset['item']))
                                 @include('components.pdf.account-item', ['items' => $Children['item']])
@@ -74,6 +80,8 @@
                     @php
 
                        $sumAsset = $accounts['Assets']['Assets']['sum'];
+
+
                    $sumLib = $accounts['Liabilities']['Liabilities']['sum'];
                    $sumEq = $accounts['Equity']['Equity']['sum'];
                     @endphp
@@ -104,7 +112,7 @@
                 <strong>Total :</strong>
 
 
-                {{ number_format($sumAsset) }}
+                {{ number_format($totalAsset) }}
             </td>
             <td>
                 <strong>Total :</strong> {{ number_format($sumLib + $sumEq +($incomes + $Expenses) ) }}

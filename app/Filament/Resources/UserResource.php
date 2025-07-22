@@ -9,6 +9,7 @@ use App\Models\Company;
 use App\Models\Contract;
 use App\Models\Department;
 use App\Models\Duty;
+use App\Models\Employee;
 use App\Models\Position;
 use App\Models\User;
 use Filament\Forms;
@@ -238,8 +239,12 @@ class UserResource extends Resource
                 //
             ])
             ->actions([
-                Tables\Actions\DeleteAction::make()->hidden(fn($record) => $record->id === auth()->id()),
-                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make()->hidden(fn($record) => $record->id === auth()->id() )->action(function ($record){
+                    Employee::query()->firstWhere('user_id',$record->id)->update(['user_id'=>null]);
+                    $record->delete();
+                    sendSuccessNotification();
+                }),
+                Tables\Actions\EditAction::make()->color('warning'),
                 Tables\Actions\Action::make('super')->icon('heroicon-s-shield-check')->iconSize(IconSize::Large)->label('Grant Supper Admin')->action(function ($record, $data) {
                     $companies = Company::query()->whereIn('id', $data['companies'])->get();
                     foreach ($companies as $company) {

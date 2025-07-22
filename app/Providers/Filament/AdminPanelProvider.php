@@ -178,12 +178,12 @@ class AdminPanelProvider extends PanelProvider
 
         return $panel->brandName(fn()=>getCompany()?->title? getCompany()?->title." -ERP":"ERP System")
             ->id('admin')->maxContentWidth(MaxWidth::Full)
-            ->path('admin')->sidebarCollapsibleOnDesktop()
-            ->login(Login::class)
+            ->path('admin')->sidebarCollapsibleOnDesktop()      ->login(Login::class)
+
              ->favicon(fn()=>( getCompany()?->logo ? asset('images/' .getCompany()?->logo ):asset('img/my.png')))
 //            ->brandLogo(fn()=>getCompany()?->logo ? asset('images/' .getCompany()?->logo ):asset('img/my.png'))
             ->font(
-                'Inter',
+                'Roboto',
                 url: asset('css/app/custom-stylesheet.css'),
                 provider: LocalFontProvider::class,
             )
@@ -247,23 +247,24 @@ class AdminPanelProvider extends PanelProvider
                     ]),
                 FilamentApexChartsPlugin::make(),
                 \TomatoPHP\FilamentMediaManager\FilamentMediaManagerPlugin::make()->allowUserAccess()->allowSubFolders(),
-//                ChatgptAgentPlugin::make()
-//                    ->defaultPanelWidth('400px') // default 350px
-//                    ->botName('GPT Assistant')
-//                    ->model('gpt-4o')
-//                    ->buttonText('IT Help Desk')
-//                    ->buttonIcon('heroicon-m-sparkles')
-//                    // System instructions for the GPT
-//                    ->systemMessage('Act nice and help')
-//                    // Array of GPTFunctions the GPT can use
-//
-//                    // Default start message, set to false to not show a message
-//                    ->startMessage('Hello sir! How can I help you today?')
+                ChatgptAgentPlugin::make()
+                    ->defaultPanelWidth('400px') // default 350px
+                    ->botName('GPT Assistant')
+                    ->model('gpt-4o')
+                    ->buttonText('IT Help Desk')
+                    ->buttonIcon('heroicon-m-sparkles')
+                    // System instructions for the GPT
+                    ->systemMessage('Act nice and help')
+                    // Array of GPTFunctions the GPT can use
+
+                    // Default start message, set to false to not show a message
+                    ->startMessage('Hello sir! How can I help you today?')
 
 
 
             ])
-            ->viteTheme(['resources/css/filament/admin/theme.css',
+            ->viteTheme([
+                'resources/css/filament/admin/theme.css',
                 'resources/js/echo.js'
                 ])
 

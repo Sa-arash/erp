@@ -75,10 +75,10 @@
         $totalEstimated=0;
         $totalBudget=0;
         $i=1;
+        $currency=$pr?->currency?->name;
     @endphp
     @foreach($pr->items as $item)
         @php
-            $totalEstimated+=$item->estimated_unit_cost;
             $totalBudget+=$item->quantity *$item->estimated_unit_cost;
         @endphp
 
@@ -92,8 +92,8 @@
             </td>
             <td>{{$item->unit->title}}</td>
             <td>{{$item->quantity}}</td>
-            <td>{{number_format($item->estimated_unit_cost)}}</td>
-            <td>{{number_format($item->quantity *$item->estimated_unit_cost)}}</td>
+            <td>{{number_format($item->estimated_unit_cost).' '.$currency}} </td>
+            <td>{{number_format($item->quantity *$item->estimated_unit_cost)." ".$currency}}</td>
             <td>{{$item->product?->assets->where('status','inStorageUsable')->count()}}</td>
         </tr>
 
@@ -101,9 +101,8 @@
     </tbody>
     <tfoot>
     <tr>
-        <td colspan="5">Total Estimated Cost </td>
-        <td>{{number_format($totalEstimated)}}</td>
-        <td>{{number_format($totalBudget)   }}</td>
+        <td colspan="6">Total Estimated Cost </td>
+        <td>{{number_format($totalBudget)." ".$currency   }}</td>
         <td></td>
     </tr>
     </tfoot>

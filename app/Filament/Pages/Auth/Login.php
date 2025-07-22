@@ -64,20 +64,20 @@ class Login extends \Filament\Pages\Auth\Login
         }
         $user = Filament::auth()->user();
 
-        $userId = Auth::id();
-
-        $alreadyLoggedIn = DB::table('sessions')
-            ->where('user_id', $userId)
-            ->exists();
-        if ($alreadyLoggedIn) {
-            Auth::logout();
-          Notification::make()->danger()
-                ->title('Another Device Logging')->send();
-            throw ValidationException::withMessages([
-                'data.emails' => '',
-            ]);
-
-        }
+//        $userId = Auth::id();
+//
+//        $alreadyLoggedIn = DB::table('sessions')
+//            ->where('user_id', $userId)
+//            ->exists();
+//        if ($alreadyLoggedIn) {
+//            Auth::logout();
+//          Notification::make()->danger()
+//                ->title('Another Device Logging')->send();
+//            throw ValidationException::withMessages([
+//                'data.emails' => '',
+//            ]);
+//
+//        }
         if (
             ($user instanceof FilamentUser) &&
             (! $user->canAccessPanel(Filament::getCurrentPanel()))

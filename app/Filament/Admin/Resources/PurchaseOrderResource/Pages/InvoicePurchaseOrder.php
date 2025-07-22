@@ -11,7 +11,6 @@ use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\FileUpload;
-use Filament\Forms\Components\Group;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
@@ -32,13 +31,15 @@ class   InvoicePurchaseOrder extends EditRecord
 {
     protected static string $resource = PurchaseOrderResource::class;
 
-    public function mount(int | string $record): void
-    {
-        $this->record = $this->resolveRecord($record);
-        // dd($this->record);
-        $this->authorizeAccess();
 
-        $this->fillForm();
+    protected function authorizeAccess(): void
+    {
+//        abort_unless(static::getResource()::canEdit($this->getRecord()), 403);
+    }
+
+
+    public function afterFill()
+    {
         $transactions = [];
 
         $financial = getPeriod()->id;
@@ -59,6 +60,7 @@ class   InvoicePurchaseOrder extends EditRecord
                     'creditor_foreign' => number_format($item->total / $item->exchange_rate, 2),
                     'debtor_foreign' => 0,
                     'financial_period_id' => $financial,
+                    'company_id' => $company,
                     'cheque' => [
                         'issue_date' => now(),
                         'amount' => $ex ? number_format($item->total, 2) : null,
@@ -82,21 +84,32 @@ class   InvoicePurchaseOrder extends EditRecord
                 'creditor_foreign' => 0,
                 'debtor_foreign' => number_format($item->total / $item->exchange_rate, 2),
                 'financial_period_id' => $financial,
-
+                'company_id' => $company
 
             ];
         }
         $this->data['invoice']['name'] = "Paid PO " . $this->record->purchase_orders_number;
         $this->data['invoice']['reference'] = " PO No " . $this->record->purchase_orders_number;
-
         $this->data['invoice']['transactions'] = $transactions;
+
+
+    }
+
+    public function mount(int|string $record): void
+    {
+        $this->record = $this->resolveRecord($record);
+        // dd($this->record);
+        $this->authorizeAccess();
+
+        $this->fillForm();
+
         $this->previousUrl = url()->previous();
     }
 
     public function form(Form $form): Form
     {
         return $form->schema([
-            Group::make()->relationship('invoice')->schema([
+            Fieldset::make('invoice')->relationship('invoice')->schema([
 
                 Hidden::make('company_id')->default(getCompany()->id)->required(),
                 Section::make([
@@ -115,6 +128,8 @@ class   InvoicePurchaseOrder extends EditRecord
 
                 Section::make([
                     Repeater::make('transactions')->label('')->relationship('transactions')->schema([
+                        Hidden::make('company_id')->default(getCompany()->id)->required(),
+
                         SelectTree::make('account_id')->formatStateUsing(function ($state, Set $set) {
                             $account = Account::query()->where('id', $state)->whereNot('currency_id', defaultCurrency()?->id)->first();
                             if ($account) {
@@ -307,23 +322,28 @@ class   InvoicePurchaseOrder extends EditRecord
             $this->beginDatabaseTransaction();
 
             $this->callHook('beforeValidate');
-
-            $data = $this->form->getState(afterValidate: function () {
-                $this->callHook('afterValidate');
-
-                $this->callHook('beforeSave');
-            });
             $debtor = 0;
             $creditor = 0;
 
-            foreach ($this->data['invoice']['transactions'] as $transaction) {
+            foreach ($this->data['invoice']['transactions'] as &$transaction) {
 
                 if ($transaction['creditor'] > 0) {
                     $creditor += str_replace(',', '', $transaction['creditor']);
                 } else {
                     $debtor += str_replace(',', '', $transaction['debtor']);
                 }
+                $transaction['user_id'] = auth()->id();
+                $transaction['creditor'] = str_replace(',', '', $transaction['creditor']);
+                $transaction['debtor'] = str_replace(',', '', $transaction['debtor']);
+                $transaction['exchange_rate'] = str_replace(',', '', $transaction['exchange_rate']);
+                $transaction['creditor_foreign'] = str_replace(',', '', $transaction['creditor_foreign']);
+                $transaction['debtor_foreign'] = str_replace(',', '', $transaction['debtor_foreign']);
+                if (isset($transaction['cheque']['amount'])) {
+                    $transaction['cheque']['amount'] = str_replace(',', '', $transaction['cheque']['amount']);
+                }
             }
+//            dd($this->data['invoice']['transactions']);
+            $transactions = $this->data['invoice']['transactions'];
 
 
             if ($debtor !== $creditor) {
@@ -331,9 +351,22 @@ class   InvoicePurchaseOrder extends EditRecord
                 return;
             }
 
-            $data['finance_id']=getEmployee()->id;
-            $data = $this->mutateFormDataBeforeSave($data);
+            $data = $this->form->getState(afterValidate: function () {
+                $this->callHook('afterValidate');
 
+                $this->callHook('beforeSave');
+            });
+
+            foreach ($transactions as $transactionData) {
+                unset($transaction);
+                $transaction = $this->record->invoice->transactions()->create($transactionData);
+                if (isset($transactionData['cheque'])) {
+                    $transaction->cheque()->create($transactionData['cheque']);
+                }
+            }
+
+            $data['finance_id'] = getEmployee()->id;
+            $data = $this->mutateFormDataBeforeSave($data);
             $this->handleRecordUpdate($this->getRecord(), $data);
 
             $this->callHook('afterSave');
