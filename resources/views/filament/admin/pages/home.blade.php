@@ -35,18 +35,11 @@
                     <h3 class="text-xl font-semibold ">Quick Actions</h3>
                 </div>
                 <div class="space-y-3">
-                    <button
+                    <a href="https://erp.ariatarget.com/admin/1"
                         class="w-full bg-white/10 hover:bg-white/20  py-3 px-4 rounded-lg transition-all duration-200 text-left">
                         📊 View Dashboard
-                    </button>
-                    <button
-                        class="w-full bg-white/10 hover:bg-white/20  py-3 px-4 rounded-lg transition-all duration-200 text-left">
-                        📅 Check Schedule
-                    </button>
-                    <button
-                        class="w-full bg-white/10 hover:bg-white/20  py-3 px-4 rounded-lg transition-all duration-200 text-left">
-                        💬 Team Messages
-                    </button>
+                    </a>
+
                 </div>
             </div>
 
@@ -115,6 +108,7 @@
             </div>
         </div>
     </main>
+    
 
     <script>
         // Array of motivational quotes

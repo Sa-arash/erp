@@ -83,7 +83,7 @@ class ITemployeeResource extends Resource
         return $table
             ->searchable()
             ->columns([
-                Tables\Columns\TextColumn::make('')->rowIndex(),
+                Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
                 Tables\Columns\ImageColumn::make('media.original_url')->state(function ($record) {
                     return $record->media->where('collection_name','images')->first()?->original_url;
              })->disk('public')->defaultImageUrl(fn($record) => $record->gender === "male" ? asset('img/user.png') : asset('img/female.png'))->alignLeft()->label('Profile Picture')->width(50)->height(50)->extraAttributes(['style' => 'border-radius:50px!important']),

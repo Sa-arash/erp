@@ -234,9 +234,9 @@ class InvoiceResource extends Resource
                         ])->columns(4)->visible(function (Get $get) {
                             return $get('isCurrency');
                         }),
-                        Forms\Components\Hidden::make('Cheque')->label('Cheque/Instalment')->live(),
+                        Forms\Components\Hidden::make('Cheque')->label('Cheque / Installment')->live(),
                         Forms\Components\Section::make([
-                            Forms\Components\Fieldset::make('cheque')->label('Cheque/Instalment')->relationship('cheque')->schema([
+                            Forms\Components\Fieldset::make('cheque')->label('Cheque / Installment')->relationship('cheque')->schema([
                                 Forms\Components\TextInput::make('cheque_number')->maxLength(255),
                                 Forms\Components\TextInput::make('amount')->readOnly()->default(function (Get $get) {
                                     if ($get('debtor') > 0) {
@@ -247,8 +247,8 @@ class InvoiceResource extends Resource
                                         return 0;
                                     }
                                 })->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->numeric(),
-                                Forms\Components\DatePicker::make('issue_date')->default(now())->required(),
-                                Forms\Components\DatePicker::make('due_date')->required(),
+                                Forms\Components\DatePicker::make('issue_date'),
+                                Forms\Components\DatePicker::make('due_date'),
                                 Forms\Components\TextInput::make('payer_name')->label('Payor Name')->maxLength(255),
                                 Forms\Components\TextInput::make('payee_name')->maxLength(255),
                                 Forms\Components\TextInput::make('bank_name')->maxLength(255),

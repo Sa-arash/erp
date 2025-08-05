@@ -2,11 +2,12 @@
 
 namespace App\Filament\Admin\Widgets;
 
-use App\Events\PrRequested;
 use App\Filament\Admin\Resources\PurchaseRequestResource;
 use App\Filament\Admin\Resources\PurchaseRequestResource\Pages\ViewPurcheseRequest;
 use App\Models\Product;
 use App\Models\PurchaseRequest;
+use Carbon\Carbon;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
@@ -42,24 +43,24 @@ class MyPurchaseRequest extends BaseWidget
     {
         return $table->heading('My Purchase Requests (PR)')
             ->query(
-                PurchaseRequest::query()->where('company_id',getCompany()->id)
+                PurchaseRequest::query()->with(['employee', 'employee.position', 'items', 'currency', 'approvals', 'approvals.employee'])->withSum('purchaseOrderItem', 'total')->where('company_id',getCompany()->id)
             )->defaultSort('id', 'desc')
             ->filters([
                 getFilterSubordinate()
             ])
             ->columns([
                 Tables\Columns\TextColumn::make('No')->rowIndex(),
-                Tables\Columns\TextColumn::make('employee.fullName')->label('fullName'),
+                Tables\Columns\TextColumn::make('employee.fullName')->label('Full Name'),
                 Tables\Columns\TextColumn::make('purchase_number')->label('PR No')->searchable(),
                 Tables\Columns\TextColumn::make('description')->wrap()->label('Description')->searchable(),
                 Tables\Columns\TextColumn::make('request_date')->dateTime()->sortable(),
 
                 Tables\Columns\TextColumn::make('status')
-                    ->state(fn($record)=> match ($record->status->name){
-                        'Approval'=>"Approved",
-                        "Clarification"=>"Clarified",
-                        "Verification"=>"Verified",
-                        default=>$record->status->name
+                    ->state(fn($record) => match ($record->status->name) {
+                        'Approval' => "Approved",
+                        "Clarification" => "Clarified",
+                        "Verification" => "Verified",
+                        default => $record->status->name
                     })->color(fn($state)=>match ($state){
                         "Approved"=>'success',
                         "Clarified"=>'success',
@@ -92,7 +93,24 @@ class MyPurchaseRequest extends BaseWidget
                     }
                     return $data;
                 })->circular()->stacked(),
-                Tables\Columns\TextColumn::make('bid.total_cost')->alignCenter()->label('Total Final Price' )->numeric(),
+                Tables\Columns\TextColumn::make('purchase_order_item_sum_total')->sum('purchaseOrderItem','total')->sortable()->alignCenter()->label('Total Final Price')->numeric(),
+                Tables\Columns\TextColumn::make('end_date')->alignCenter()->label('End Date')->date(),
+
+
+                Tables\Columns\TextColumn::make('life')->state(function ($record) {if ($record->end_date) {
+                            return str_replace('And','and',\str(Carbon::parse($record->request_date)
+                                ->diffForHumans(Carbon::parse($record->end_date), [
+                                    'parts' => 2,
+                                    'join' => true,
+                                    'syntax' => Carbon::DIFF_ABSOLUTE
+                                ]))->title());
+                        }return '-';})->alignCenter()->label('Time Tracker'),
+
+                Tables\Columns\TextColumn::make('priority_level')->label('Priority Level')->color(fn($state) => match ($state) {
+                    "High" => "danger",
+                    "Medium" => "warning",
+                    "Low" => "success",
+                })->badge(),
 
 
             ])
@@ -100,7 +118,7 @@ class MyPurchaseRequest extends BaseWidget
 
 ->actions([
     Tables\Actions\DeleteAction::make()->hidden(function ($record) {
-        if ($record->employee_id != getEmployee()->id){
+        if ($record->employee_id != getEmployee()->id) {
             return true;
         }
 //        dd($record->approvals);
@@ -138,6 +156,8 @@ class MyPurchaseRequest extends BaseWidget
             'request_date' => $record->request_date,
             'currency_id' => $record->currency_id,
             'description' => $record->description,
+            'priority_level' => $record->priority_level,
+            'end_date' => $record->end_date,
             'Requested Items' => $data
         ];
     })
@@ -145,6 +165,8 @@ class MyPurchaseRequest extends BaseWidget
         Section::make('')->schema([
             TextInput::make('purchase_number')->readOnly()->label('PR Number')->prefix('ATGT/UNC/')->required()->numeric(),
             DateTimePicker::make('request_date')->readOnly()->default(now())->label('Request Date')->required(),
+            DatePicker::make('end_date')->afterOrEqual(now())->label('End Date'),
+            Select::make('priority_level')->searchable()->preload()->options(['Low' => 'Low', 'Medium' => 'Medium', 'High' => 'High']),
             Select::make('currency_id')->live()->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload(),
             Textarea::make('description')->required()->columnSpanFull()->label('Description'),
             Repeater::make('Requested Items')
@@ -185,13 +207,13 @@ class MyPurchaseRequest extends BaseWidget
                     Select::make('project_id')->columnSpan(['default' => 8, 'md' => 2, '2xl' => 1])->searchable()->preload()->label('Project')->options(getCompany()->projects->pluck('name', 'id')),
                     Textarea::make('description')->columnSpan(7)->label('Product Description ')->required(),
                     Placeholder::make('status')->columnSpan(1)->label('Item Status')->content(function ($state){
-                        $status= match ($state){
+                        $status = match ($state) {
                             'approve' => 'Approved',
                             'reject' => 'Rejected',
                             'Revise' => 'Revise',
                             default => 'Pending',
                         };
-                         $color=match ($status) {
+                        $color = match ($status) {
                             'Approved' => 'green',
                             'Rejected' => 'red',
                             'Revise' => 'orange',
@@ -203,7 +225,7 @@ class MyPurchaseRequest extends BaseWidget
                 ])
                 ->columns(8)
                 ->columnSpanFull(),
-        ])->columns(3)
+        ])->columns(5)
     ])->action(function ($data, $record) {
             $data['need_change'] = 0;
             $record->update($data);
@@ -361,26 +383,30 @@ class MyPurchaseRequest extends BaseWidget
             ->headerActions([
                 Action::make('Purchase Request ')->slideOver()->label('New PR ') ->modalWidth(MaxWidth::Full  )->form([
                     Section::make('')->schema([
-                        TextInput::make('purchase_number')->default(function (){
-                            $puncher= PurchaseRequest::query()->where('company_id',getCompany()->id)->latest()->first();
-                            if ($puncher){
-                                return  generateNextCodePO($puncher->purchase_number);
-                            }else{
+                        TextInput::make('purchase_number')->default(function () {
+                            $puncher = PurchaseRequest::query()->where('company_id', getCompany()->id)->latest()->first();
+                            if ($puncher) {
+                                return generateNextCodePO($puncher->purchase_number);
+                            } else {
                                 return "00001";
                             }
-                        })->readOnly()->label('PR Number')->prefix('ATGT/UNC/')->unique(modifyRuleUsing: function (Unique $rule) {return $rule->where('company_id', getCompany()->id);})->unique('purchase_requests', 'purchase_number')->required()->numeric()->hintAction(\Filament\Forms\Components\Actions\Action::make('update')->label('Update NO')->action(function (Set $set){
-                            $puncher= PurchaseRequest::query()->where('company_id',getCompany()->id)->latest()->first();
-                            if ($puncher){
-                                  $set('purchase_number',generateNextCodePO($puncher->purchase_number));
-                            }else{
-                                $set('purchase_number','00001');
+                        })->readOnly()->label('PR Number')->prefix('ATGT/UNC/')->unique(modifyRuleUsing: function (Unique $rule) {
+                            return $rule->where('company_id', getCompany()->id);
+                        })->unique('purchase_requests', 'purchase_number')->required()->numeric()->hintAction(\Filament\Forms\Components\Actions\Action::make('update')->label('Update NO')->action(function (Set $set) {
+                            $puncher = PurchaseRequest::query()->where('company_id', getCompany()->id)->latest()->first();
+                            if ($puncher) {
+                                $set('purchase_number', generateNextCodePO($puncher->purchase_number));
+                            } else {
+                                $set('purchase_number', '00001');
                             }
                         })),
                         DateTimePicker::make('request_date')->readOnly()->default(now())->label('Request Date')->required(),
+                        DatePicker::make('end_date')->afterOrEqual(now())->label('End Date'),
+                        Select::make('priority_level')->searchable()->preload()->options(['Low' => 'Low', 'Medium' => 'Medium', 'High' => 'High']),
                         Select::make('currency_id')->live()->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload(),
                         Textarea::make('description')->required()->columnSpanFull()->label('Description'),
                         Repeater::make('Requested Items')
-                        ->addActionLabel('Add Item')
+                            ->addActionLabel('Add Item')
                             ->schema([
                                 Select::make('type')->required()->options(['Service', 'Product'])->default(1)->searchable(),
                                 Select::make('department_id')->columnSpan(['default' => 8, 'md' => 2, 'xl' => 2, '2xl' => 1])->label('Section')->live()->options(getCompany()->departments->pluck('title', 'id'))->searchable()->preload()->default(getEmployee()->department_id),
@@ -416,13 +442,13 @@ class MyPurchaseRequest extends BaseWidget
                                 TextInput::make('quantity')->columnSpan(['default' => 8, 'md' => 2, '2xl' => 1])->required()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                                 TextInput::make('estimated_unit_cost')->live()->columnSpan(['default' => 8, 'md' => 2, '2xl' => 1])->label('Estimated Unit Cost')->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required(),
                                 Select::make('project_id')->columnSpan(['default' => 8, 'md' => 2, '2xl' => 1])->searchable()->preload()->label('Project')->options(getCompany()->projects->pluck('name', 'id')),
-                                Placeholder::make('total')->columnSpan(['default'=>8,'md'=>1,'xl'=>1])
-                                    ->content(fn($state, Get $get) => number_format(((int)str_replace(',', '', $get('quantity'))) * ((float)str_replace(',', '', $get('estimated_unit_cost'))),2)),
+                                Placeholder::make('total')->columnSpan(['default' => 8, 'md' => 1, 'xl' => 1])
+                                    ->content(fn($state, Get $get) => number_format(((int)str_replace(',', '', $get('quantity'))) * ((float)str_replace(',', '', $get('estimated_unit_cost'))), 2)),
                                 FileUpload::make('images')->label('Document')->columnSpanFull()->nullable()
                             ])
                             ->columns(12)
                             ->columnSpanFull(),
-                    ])->columns(3)
+                    ])->columns(5)
                 ])->action(function ($data){
 
                     $employee=getEmployee();

@@ -65,36 +65,7 @@ class InventoryStock extends ManageRelatedRecords
     public function table(Table $table): Table
     {
         return $table
-        ->defaultSort('id', 'desc')->headerActions([
-            ExportAction::make()
-            ->after(function (){
-                if (Auth::check()) {
-                    activity()
-                        ->causedBy(Auth::user())
-                        ->withProperties([
-                            'action' => 'export',
-                        ])
-                        ->log('Export' . "Stock");
-                }
-            })->exports([
-                ExcelExport::make()->askForFilename("Stock")->withColumns([
-                   Column::make('employee.fullName'),
-                   Column::make('inventory.product.info'),
-                   Column::make('description'),
-                   Column::make('quantity'),
-                   Column::make('package.title')->formatStateUsing(fn($record)=> isset($record->package?->quantity)? '('.$record->quantity /$record->package?->quantity.' * '. $record->package?->quantity .')'.$record->package->title:'---'),
-                   Column::make('purchaseOrder.purchase_orders_number')->heading('PO NO'),
-                   Column::make('type')->formatStateUsing(fn($record) => $record->type === 1 ? "Stock In" : "Stock Out"),
-                   Column::make('transaction')->formatStateUsing(function($record){
-                        if ($record->transaction){
-                          return  $record->type ?"Stock In" : "Stock Out";
-                        }
-
-                    } ),
-                   Column::make('created_at')->heading('Stock Date'),
-                ]),
-            ])->label('Export Stock')->color('purple')
-        ])
+        ->defaultSort('id', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
                 Tables\Columns\TextColumn::make('employee.fullName'),
@@ -118,21 +89,50 @@ class InventoryStock extends ManageRelatedRecords
                 Tables\Filters\TernaryFilter::make('transaction')->label('Transaction')->placeholder('All Stocks')->trueLabel('Yes')->falseLabel('No')->searchable()
             ])
             ->headerActions([
-                Tables\Actions\CreateAction::make()->modalWidth(MaxWidth::SixExtraLarge)->label('New Stock OUT')->color('danger')->action(function ($data) {
+                ExportAction::make()
+                    ->after(function (){
+                        if (Auth::check()) {
+                            activity()
+                                ->causedBy(Auth::user())
+                                ->withProperties([
+                                    'action' => 'export',
+                                ])
+                                ->log('Export' . "Stock");
+                        }
+                    })->exports([
+                        ExcelExport::make()->askForFilename("Stock")->withColumns([
+                            Column::make('employee.fullName'),
+                            Column::make('inventory.product.info'),
+                            Column::make('description'),
+                            Column::make('quantity'),
+                            Column::make('package.title')->formatStateUsing(fn($record)=> isset($record->package?->quantity)? '('.$record->quantity /$record->package?->quantity.' * '. $record->package?->quantity .')'.$record->package->title:'---'),
+                            Column::make('purchaseOrder.purchase_orders_number')->heading('PO NO'),
+                            Column::make('type')->formatStateUsing(fn($record) => $record->type === 1 ? "Stock In" : "Stock Out"),
+                            Column::make('transaction')->formatStateUsing(function($record){
+                                if ($record->transaction){
+                                    return  $record->type ?"Stock In" : "Stock Out";
+                                }
+
+                            } ),
+                            Column::make('created_at')->heading('Stock Date'),
+                        ]),
+                    ])->label('Export Stock')->color('purple'),
+                Tables\Actions\CreateAction::make()->modalWidth(MaxWidth::SixExtraLarge)->label(' Stock OUT')->color('danger')->action(function ($data) {
                     $quantity = (int)$data['quantity'];
                     $inventory = \App\Models\Inventory::query()->firstWhere('id', $data['inventory_id']);
-
-                        if ($inventory->quantity - $quantity < 0) {
-                            return Notification::make('error')->danger()->title('Quantity Not Valid')->send();
-                        }
-                        $inventory->update(['quantity' => $inventory->quantity - $quantity]);
                     if (isset($data['package_id'])){
                         $package=Package::query()->firstWhere('id',$data['package_id']);
                         if ($package){
                             $quantity=$quantity*$package->quantity;
                         }
                     }
-                        Stock::query()->create([
+                        if ($inventory->quantity - $quantity < 0) {
+                            return Notification::make('error')->danger()->title('Quantity Not Valid')->send();
+                        }
+
+                    $inventory->update(['quantity' => $inventory->quantity - $quantity]);
+
+                    Stock::query()->create([
                             'quantity' => $quantity,
                             'type' => 0,
                             'package_id' => $data['package_id'],
@@ -140,6 +140,29 @@ class InventoryStock extends ManageRelatedRecords
                             'employee_id' => getEmployee()->id,
                             'inventory_id' => $data['inventory_id']
                         ]);
+                    Notification::make('success')->success()->title('Submitted Successfully')->send();
+                }),
+                Tables\Actions\CreateAction::make("Stock IN")->modalWidth(MaxWidth::SixExtraLarge)->label(' Stock IN')->color('success')->action(function ($data) {
+                    $quantity = (int)$data['quantity'];
+                    $inventory = \App\Models\Inventory::query()->firstWhere('id', $data['inventory_id']);
+
+
+                    if (isset($data['package_id'])){
+                        $package=Package::query()->firstWhere('id',$data['package_id']);
+                        if ($package){
+                            $quantity=$quantity*$package->quantity;
+                        }
+                    }
+                    $inventory->update(['quantity' => $inventory->quantity + $quantity]);
+
+                    Stock::query()->create([
+                        'quantity' => $quantity,
+                        'type' => 1,
+                        'package_id' => $data['package_id'],
+                        'description' => $data['description'],
+                        'employee_id' => getEmployee()->id,
+                        'inventory_id' => $data['inventory_id']
+                    ]);
                     Notification::make('success')->success()->title('Submitted Successfully')->send();
                 }),
             ])

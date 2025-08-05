@@ -455,6 +455,7 @@ td{
 .item-list-prompt {
     margin-bottom: 10px;
     font-size: 10pt;
+    font-weight: bold;
 }
 
 .item-list-table {
@@ -559,8 +560,8 @@ td{
 }
 
 @page {
-    margin-left: 20px;
-    margin-right: 20px;
+    margin-left: 40px;
+    margin-right: 40px;
 }
 .item-list-table td,th{
     padding: 2px !important;
@@ -576,7 +577,8 @@ table{
 
 <body>
 
-<p style="text-align: right;margin-bottom: 0;margin-top: 2px">  DATE: {{ \Illuminate\Support\Carbon::create($takeOut->date)->format('d F Y') }}</p>
+<p style="text-align: left;margin-bottom: 4px;margin-top: 4px;font-weight: bold">  Date: {{ \Illuminate\Support\Carbon::create($takeOut->date)->format('d F Y') }}</p>
+<p style="text-align: left;margin-bottom: 4px;font-weight: bold">  Gate Pass No: {{$takeOut->number}} </p>
 <table class="main-info-table">
     <tr>
         <td><b>From:</b> {{$takeOut->from}}</td>
@@ -592,7 +594,7 @@ table{
     </tr>
 </table>
 
-<p class="item-list-prompt">Please allow the following items/materials out.</p>
+<p class="item-list-prompt" >Please allow the following items/materials out.</p>
 
 <table class="item-list-table">
     <thead>
@@ -634,7 +636,7 @@ table{
     </tbody>
 </table>
 
-<div style="margin-bottom: 0;margin-top: 0"><b>Reason for Taking out:</b> {{$takeOut->reason}}</div>
+<div style="margin-bottom: 9px;margin-top: 9px"><b>Reason for Taking out:</b> {{$takeOut->reason}}</div>
 
 <table class="status-check-table">
     <tr>
@@ -671,7 +673,7 @@ table{
                         style="margin-left: 50px;border-radius: 50px ; width: 80px;" alt="">
                     <br>
                     <p style="border: 0">
-                        DATE: {{ \Illuminate\Support\Carbon::create($takeOut->created_at)->format('d F Y') }}
+                        Date : {{ \Illuminate\Support\Carbon::create($takeOut->created_at)->format('d/F/Y h:i A') }}
                     </p>
 
                 @endif
@@ -712,7 +714,7 @@ table{
                     <br>
                     Digitally Signed By: {{$takeOut->approvals[0]->employee->fullName}}
                     <br>
-                    Date: {{isset($takeOut->approvals[0]->approve_date)? \Illuminate\Support\Carbon::make($takeOut->approvals[0]->approve_date)->format('d/F/Y H:i:s'):''}} +04:30
+                    Date: {{isset($takeOut->approvals[0]->approve_date)? \Illuminate\Support\Carbon::make($takeOut->approvals[0]->approve_date)->format('d/F/Y h:i A'):''}} +04:30
                 @endif
 
                 <div class="security-signature-text">Head of Security - <u>UNC</u></div>

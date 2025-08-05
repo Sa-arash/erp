@@ -40,14 +40,15 @@ class AccountResource extends Resource
 
 
 
-    public static function getCluster(): ?string
-    {
-        $period = getPeriod();
-        if ($period) {
-            return parent::getCluster();
-        }
-        return '';
-    }
+//    public static function getCluster(): ?string
+//    {
+//
+//        $period = getPeriod();
+//        if ($period) {
+//            return parent::getCluster();
+//        }
+//        return '';
+//    }
 
 
     public static function form(Form $form): Form
@@ -147,7 +148,7 @@ class AccountResource extends Resource
     public static function table(Table $table): Table
     {
 
-        return $table->defaultSort('code')
+        return $table->defaultSort('code')->paginated([5,10,50,100])
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
                 Tables\Columns\TextColumn::make('name')->state(function ($record) {

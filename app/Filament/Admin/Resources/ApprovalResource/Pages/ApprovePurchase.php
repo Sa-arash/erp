@@ -90,8 +90,24 @@ class ApprovePurchase extends ManageRelatedRecords
 
     public function table(Table $table): Table
     {
-        return $table->query(PurchaseRequestItem::query()->where('purchase_request_id',$this->record->approvable->id))
-            ->recordTitleAttribute('id')
+        return $table->query(PurchaseRequestItem::query()->with(['product','unit','project'])->where('purchase_request_id',$this->record->approvable_id))
+            ->recordTitleAttribute('id')->heading(function () {
+
+                $purchaseRequest = $this->record->approvable;
+                $total = PurchaseRequestItem::query()
+                    ->where('purchase_request_id', $purchaseRequest->id)
+                    ->selectRaw('SUM(quantity * estimated_unit_cost) as total')
+                    ->value('total');
+
+                $html = "
+        <strong>Employee:</strong> {$purchaseRequest->employee->fullName} <br>
+        <strong>PR No:</strong> {$purchaseRequest->purchase_number} <br>
+        <strong>Total Estimated Cost:</strong> " . number_format($total ?? 0, 2) . " {$purchaseRequest->currency->name}
+    ";
+
+                return new HtmlString($html);
+            })
+
             ->columns([
                 Tables\Columns\TextColumn::make('#')->rowIndex(),
                 Tables\Columns\TextColumn::make('product.info'),
@@ -200,7 +216,7 @@ class ApprovePurchase extends ManageRelatedRecords
                     }
                     sendSuccessNotification();
                 }),
-                Tables\Actions\Action::make('Approve')->label('Approve Or Reject')->color('success')->form([
+                Tables\Actions\Action::make('Approve')->slideOver()->label('Approve Or Reject')->color('success')->form([
                     Forms\Components\Section::make([
                         Forms\Components\Section::make([
                             Select::make('employee')->disabled()->default(fn($record) => $this->record?->approvable?->employee_id)->options(fn($record) => Employee::query()->where('id', $this->record?->approvable?->employee_id)->get()->pluck('info', 'id'))->searchable(),
@@ -247,7 +263,7 @@ class ApprovePurchase extends ManageRelatedRecords
                                 $price = (float)$item['estimated_unit_cost'];
                                 $total += $q * $price;
                             }
-                            $set('totals', number_format($total));
+                            $set('totals', number_format($total,2));
                         })->icon('heroicon-o-calculator')->color('danger')->iconSize(IconSize::Large))
                     ])->columns(),
                 ])->modalWidth(MaxWidth::Full)->action(function ($data) {

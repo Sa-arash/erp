@@ -91,11 +91,13 @@ class TakeOutResource extends Resource implements HasShieldPermissions
             ])
             ->columns([
                 Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
+
                 Tables\Columns\ImageColumn::make('employee.media.original_url')->state(function ($record) {
                     return $record->employee?->media->where('collection_name','images')->first()?->original_url;
                 })->disk('public')->defaultImageUrl(fn( $record) => $record->employee->gender === "male" ? asset('img/user.png') : asset('img/female.png'))->alignLeft()->label('Requested By')->width(50)->height(50)->extraAttributes(['style' => 'border-radius:50px!important']),
                 Tables\Columns\TextColumn::make('employee.ID_number')->label('ID Number'),
                 Tables\Columns\TextColumn::make('employee.fullName')->label('Employee Name'),
+                Tables\Columns\TextColumn::make('number')->label("Gate Pass No"),
                 Tables\Columns\TextColumn::make('assets.product.title')->state(fn($record) => $record->assets->pluck('title')->toArray())->badge()->label('Registered Asset'),
                 Tables\Columns\TextColumn::make('itemsOut')->label('Unregistered Asset')->state(function ($record) {
                     $data = [];

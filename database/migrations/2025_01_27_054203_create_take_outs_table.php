@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('take_outs', function (Blueprint $table) {
             $table->id();
+            $table->string('number')->nullable();
             $table->date('date');
             $table->date('return_date')->nullable();
             $table->text('itemsOut')->nullable();
@@ -28,7 +29,7 @@ return new class extends Migration
             $table->text('inSide_comment')->nullable();
             $table->text('OutSide_comment')->nullable();
             $table->foreignId('employee_id')->constrained('employees')->cascadeOnUpdate()->cascadeOnDelete();
-            $table->foreignId('company_id')->constrained('employees')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('company_id')->constrained('companies')->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamps();
         });
     }

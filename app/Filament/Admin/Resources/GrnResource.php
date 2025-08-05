@@ -157,12 +157,12 @@ class GrnResource extends Resource implements HasShieldPermissions
         return $table->defaultSort('id','desc')
             ->columns([
                 Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
-                Tables\Columns\TextColumn::make('purchaseOrder.purchaseRequest.description')->label("PR Description"),
-                Tables\Columns\TextColumn::make('purchaseOrder.purchaseRequest.employee.department.title')->label("PR Description"),
                 Tables\Columns\TextColumn::make('number')->prefix('ATGT/UNC/')->sortable()->label('GRN No'),
+                Tables\Columns\TextColumn::make('purchaseOrder.purchaseRequest.description')->label("PR Description"),
+                Tables\Columns\TextColumn::make('purchaseOrder.purchaseRequest.employee.department.title')->label("Department"),
                 Tables\Columns\TextColumn::make('manager.fullName')->label('Processed By')->sortable(),
-                Tables\Columns\TextColumn::make('received_date')->label('GRN Date') ->dateTime()->searchable(),
-                Tables\Columns\TextColumn::make('purchaseOrder.date_of_delivery')->label('Receive Date') ->dateTime()->searchable(),
+                Tables\Columns\TextColumn::make('received_date')->sortable()->label('GRN Date') ->dateTime()->searchable(),
+                Tables\Columns\TextColumn::make('purchaseOrder.date_of_delivery')->label('Receive Date') ->dateTime()->searchable()->sortable(),
                 Tables\Columns\TextColumn::make('items_sum_total')->numeric(2)->sum('items','total')->label('Total')->sortable(),
 //                Tables\Columns\TextColumn::make('s')->state(fn($record)=>dd($record))->label('Total')->searchable(),
 

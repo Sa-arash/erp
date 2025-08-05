@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\PurchaseRequest;
 use App\Models\Unit;
 use Filament\Facades\Filament;
+use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
@@ -138,6 +139,14 @@ class Replicate extends CreateRecord
         if ($puncher) {
             $PR['purchase_number'] = generateNextCodePO($puncher->purchase_number);
         }
+        $url=request('tk');
+        if ($url){
+            if ($url==="my"){
+                $PR['tk']="my";
+            }elseif ($url==="resource"){
+                $PR['tk']="resource";
+            }
+        }
         $PR['request_date'] = now()->format('Y-m-d H:i:s');
         foreach ($PR['items'] as $key => $item) {
             $product = Product::query()->firstWhere('id', $item['product_id']);
@@ -153,7 +162,15 @@ class Replicate extends CreateRecord
     {
         return $form->schema([
             Section::make('')->schema([
-                Select::make('employee_id')->live()->searchable()->preload()->label('Requested By')->required()->options(getCompany()->employees->pluck('fullName', 'id'))->default(fn() => auth()->user()->employee->id),
+                Select::make('employee_id')->live()->searchable()->preload()->label('Requested By')->required()->options(function (Get $get){
+                    if ($get('tk')){
+                        if ($get('tk')==="my"){
+                          return  getCompany()->employees()->where('id',getEmployee()->id)->pluck('fullName', 'id');
+                        }elseif ($get('tk')==="resource"){
+                            return  getCompany()->employees->pluck('fullName', 'id');
+                        }
+                    }
+                })->default(fn() => auth()->user()?->employee->id),
 
                 TextInput::make('purchase_number')->readOnly()->label('PR Number')->prefix('ATGT/UNC/')->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {return $rule->where('company_id', getCompany()->id);})->required()->numeric()->hintAction(\Filament\Forms\Components\Actions\Action::make('update')->label('Update NO')->action(function (Set $set){
                     $puncher= PurchaseRequest::query()->where('company_id',getCompany()->id)->latest()->first();
@@ -164,7 +181,10 @@ class Replicate extends CreateRecord
                     }
                 })),
                 DateTimePicker::make('request_date')->readOnly()->default(now())->label('Request Date')->required(),
+                DatePicker::make('end_date')->afterOrEqual(now())->label('End Date'),
+                Select::make('priority_level')->searchable()->preload()->options(['Low' => 'Low', 'Medium' => 'Medium', 'High' => 'High']),
                 Hidden::make('status')->label('Status')->default('Requested')->required(),
+                Hidden::make('tk')->dehydrated(false)->label('Status')->default('Requested')->required(),
                 Select::make('currency_id')->live()->label('Currency')->default(defaultCurrency()?->id)->required()->relationship('currency', 'name', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->searchable()->preload(),
                 TextInput::make('description')->required()->label('Description')->columnSpanFull(),
                 Repeater::make('items')->addActionLabel('Add')->relationship('items')->schema([
@@ -224,7 +244,7 @@ class Replicate extends CreateRecord
                     ->columns(['default'=>4,'sm'=>6,'md'=>6,'xl'=>8])
                     ->columnSpanFull(),
 
-            ])->columns(4)
+            ])->columns(6)
         ]);
     }
 

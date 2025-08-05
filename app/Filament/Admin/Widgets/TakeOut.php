@@ -104,11 +104,13 @@ protected static ?string $heading='Gate Pass';
                 $data['employee_id'] = $employee->id;
                 $items = $data['items'];
                 unset($data['items']);
+                $data['number']=generateNextCodeGatePass(\App\Models\TakeOut::query()->where('company_id',getCompany()->id)->orderBy('id','desc')->first()?->number??"000000");
                 foreach ($data['itemsOut'] as $key=> $datum){
                     $value=$datum;
                     $value['status']='Pending';
                     $data['itemsOut'][$key]=$value;
                 }
+
                 $takeOut = \App\Models\TakeOut::query()->create($data);
                 foreach ($items as $item) {
                     $item['company_id'] = $id;
@@ -142,7 +144,8 @@ protected static ?string $heading='Gate Pass';
                 \App\Models\TakeOut::query()->where('company_id',getCompany()->id)
             )->defaultSort('id','desc')
             ->columns([
-                Tables\Columns\TextColumn::make('')->rowIndex(),
+                Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
+                Tables\Columns\TextColumn::make('number')->label('Gate Pass No'),
                 Tables\Columns\TextColumn::make('employee.fullName'),
                 Tables\Columns\TextColumn::make('assets.product.title')->state(fn($record)=> $record->assets->pluck('title')->toArray())->badge()->label('Assets'),
                 Tables\Columns\TextColumn::make('itemsOut')->state(function($record){
@@ -275,6 +278,107 @@ protected static ?string $heading='Gate Pass';
                     $record->approvals()->delete();
                     $record->delete();
                 }),
+                Tables\Actions\ReplicateAction::make()->slideOver()->modalWidth(MaxWidth::Full)->label('')->tooltip('Duplicate')->form([
+                    \Filament\Forms\Components\Section::make([
+                        TextInput::make('from')->label('From (Location)')->default(getEmployee()->structure?->title)->required()->maxLength(255),
+                        TextInput::make('to')->label('To (Location)')->required()->maxLength(255),
+                        DatePicker::make('date')->default(now())->required()->label('Check OUT Date'),
+                        DatePicker::make('return_date')->label('Check IN Date'),
+                        Textarea::make('reason')->columnSpanFull()->required(),
+                        ToggleButtons::make('status')->default('Returnable')->colors(['Returnable' => 'success', 'Non-Returnable' => 'danger'])->live()->required()->grouped()->options(['Returnable' => 'Returnable', 'Non-Returnable' => 'Non-Returnable']),
+                        ToggleButtons::make('type')->default('Modification')->required()->grouped()->options(function (Get $get) {
+                            if ($get('status') === "Returnable") {
+                                return ['Modification' => 'Modification'];
+                            } else {
+                                return ['Personal Belonging' => 'Personal Belonging', 'Domestic Waste' => 'Domestic Waste', 'Construction Waste' => 'Construction Waste'];
+                            }
+                        }),
+                        FileUpload::make('image')->label('Attached for all sections')->image()->imageEditor()->columnSpan(1),
+                        FileUpload::make('supporting')->label('Attached Supporting Document')->image()->imageEditor()->columnSpan(1),                        Repeater::make('items')->required(function (Get $get){
+                            if (!$get('itemsOut')){
+                                return true;
+                            }
+                        })->label('Registered Asset')->addActionLabel('Add to Register Asset')->orderable(false)->schema([
+                            Select::make('asset_id')
+                                ->disableOptionsWhenSelectedInSiblingRepeaterItems()
+                                ->live()->label('Asset')->options(function () {
+                                    $data = [];
+                                    $sub = AssetEmployeeItem::selectRaw('MAX(id) as id')
+                                        ->whereHas('assetEmployee', function ($q) {
+                                            $q->where('employee_id', getEmployee()->id);
+                                        })
+                                        ->groupBy('asset_id');
+
+                                    $assetA=AssetEmployeeItem::query()
+                                        ->whereIn('id', $sub)
+                                        ->where('type', 'Assigned')->pluck('asset_id')->toArray();
+
+                                    $assets = Asset::query()->with('product')->whereIn('id',$assetA)->whereHas('employees', function ($query) {
+                                        return $query->whereHas('assetEmployee', function ($query) {
+                                            return $query->where('employee_id', getEmployee()->id);
+                                        });
+                                    })->where('company_id', getCompany()->id)->get();
+                                    foreach ($assets as $asset) {
+                                        $data[$asset->id] = $asset->product?->title. " ( SKU #" . $asset->product?->sku . " )";
+                                    }
+                                    return $data;
+                                })->required()->searchable()->preload(),
+                            TextInput::make('remarks')->nullable()
+                        ])->columnSpanFull()->columns(),
+                        Repeater::make('itemsOut')->required(function (Get $get){
+                            if (!$get('items')){
+                                return true;
+                            }
+                        })->label('Unregistered Asset')->addActionLabel('Add to Unregister Asset')->orderable(false)->schema([
+                            TextInput::make('name')->required(),
+                            TextInput::make('quantity')->required(),
+                            Select::make('unit')->searchable()->options(Unit::query()->where('company_id', getCompany()->id)->pluck('title','title'))->required(),
+                            TextInput::make('remarks')->nullable(),
+                            FileUpload::make('image')->columnSpanFull()->label('Image Upload')->image()->imageEditor(),
+                        ])->columnSpanFull()->columns(4)
+                    ])->columns(4)
+                ])->action(function ($data){
+                    $id = getCompany()->id;
+                    $data['company_id'] = $id;
+                    $employee = getEmployee();
+                    $data['employee_id'] = $employee->id;
+                    $items = $data['items'];
+                    unset($data['items']);
+                    $data['number']=generateNextCodeGatePass(\App\Models\TakeOut::query()->where('company_id',getCompany()->id)->orderBy('id','desc')->first()?->number??"000000");
+                    foreach ($data['itemsOut'] as $key=> $datum){
+                        $value=$datum;
+                        $value['status']='Pending';
+                        $data['itemsOut'][$key]=$value;
+                    }
+
+                    $takeOut = \App\Models\TakeOut::query()->create($data);
+                    foreach ($items as $item) {
+                        $item['company_id'] = $id;
+                        $takeOut->items()->create($item);
+                    }
+                    $media = $data['image'] ?? null;
+                    if (isset($media)) {
+                        $takeOut->addMedia(public_path('images/'.$media))->toMediaCollection('image');
+                    }
+                    $media = $data['supporting'] ?? null;
+                    if (isset($media)) {
+                        $takeOut->addMedia(public_path('images/'.$media))->toMediaCollection('supporting');
+                    }
+                    $employee = User::whereHas('roles.permissions', function ($query) {
+                        $query->where('name', 'security_take::out');
+                    })->get() ->pluck('employee.id')->toArray();
+                    $securityIDs =$employee;
+                    if($securityIDs){
+                        foreach ($securityIDs as $security){
+                            $takeOut->approvals()->create([
+                                'employee_id' => $security,
+                                'company_id' => getCompany()->id,
+                                'position' => 'Security',
+                            ]);
+                        }
+                    }
+                    Notification::make('success')->color('success')->success()->title('Request Sent')->send();
+                })
 
 
 

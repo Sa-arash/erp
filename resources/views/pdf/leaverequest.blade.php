@@ -142,6 +142,7 @@
             <td>
                 <table style="border-collapse: collapse; width: 100%;">
                     @php
+
                         $fullNameParts = explode(' ', trim($leave->employee->fullName));
                         $nameCount = count($fullNameParts);
                     @endphp
@@ -606,7 +607,7 @@
             <td style="border: none">
                 <hr><b>Supervisor's Signature</b><br>
                 <div class="signature-space">
-                    @if ($leave->approvals->first()?->employee?->media->where('collection_name', 'signature')?->first())
+                    @if ($leave->approvals->first()?->employee?->media->where('collection_name', 'signature')?->first() and $leave->approvals->first()?->status->value==="Approve")
                         <img width="60" height="60"
                             src="{{ $leave->approvals->first()->employee->media->where('collection_name', 'signature')->first()?->getPath() }}">
                     @endif

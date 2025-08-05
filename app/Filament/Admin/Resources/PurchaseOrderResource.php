@@ -497,9 +497,9 @@ implements HasShieldPermissions
         return $table->defaultSort('created_at', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
-                Tables\Columns\TextColumn::make('purchase_orders_number')->label('PO No')->searchable(query: fn($query ,$search)=> isset($search) ? $query->where('purchase_orders_number',$search) :$query),
+                Tables\Columns\TextColumn::make('purchase_orders_number')->sortable()->label('PO No')->searchable(query: fn($query ,$search)=> isset($search) ? $query->where('purchase_orders_number',$search) :$query),
                 Tables\Columns\TextColumn::make('date_of_po')->label('Date Of PO')->date()->sortable(),
-                Tables\Columns\TextColumn::make('items_sum_total')->numeric(2)->sum('items','total')->label('Total'),
+                Tables\Columns\TextColumn::make('items_sum_total')->sortable()->numeric(2)->sum('items','total')->label('Total'),
                 Tables\Columns\TextColumn::make('purchaseRequest.description')->label("PR Description"),
                 Tables\Columns\TextColumn::make('purchaseRequest.employee.department.title')->label("PR Department"),
                 Tables\Columns\TextColumn::make('purchaseRequest.employee.fullName')->badge()->sortable()->label("PR Requester"),
@@ -518,7 +518,7 @@ implements HasShieldPermissions
                     }
                     return $data;
                 })->circular()->stacked(),
-                Tables\Columns\Textcolumn::make('status')->state(fn($record)=>match ($record->status){
+                Tables\Columns\Textcolumn::make('status')->sortable()->state(fn($record)=>match ($record->status){
                     'pending'=>"Pending",
                     'Approved'=>"Approved",
                     'rejected'=>"Rending",

@@ -16,6 +16,8 @@ class PurchaseRequest extends Model
 
     protected $fillable = [
         'request_date',
+        'end_date',
+        'priority_level',
         'purchase_number',
         'description',
         'status',
@@ -88,6 +90,10 @@ class PurchaseRequest extends Model
     public function purchaseOrder(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(PurchaseOrder::class);
+    }
+    public function purchaseOrderItem(): \Illuminate\Database\Eloquent\Relations\hasManyThrough
+    {
+        return $this->hasManyThrough(PurchaseOrderItem::class,PurchaseOrder::class);
     }
 
 

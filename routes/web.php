@@ -147,7 +147,13 @@ Route::get('/', function () {
     return view('welcome');
 });
 Route::get('/test', function () {
-
+//$takes=TakeOut::query()->get();
+//$i=0;
+//foreach ($takes as $take){
+//    $take->update(['number'=>generateNextCodeGatePass($i)]);
+//    $i++;
+//}
+//dd($takes);
 
 //    $sessions = \Illuminate\Support\Facades\Redis::connection('cache');
 //
@@ -207,9 +213,30 @@ Route::get('/test', function () {
 //    dd(1);
 });
 
+Route::get('artisan-up',function (){
 
-Route::get('artisan',function (){
-    \Illuminate\Support\Facades\Artisan::call('queue:work');
+    \Illuminate\Support\Facades\Artisan::call('filament-icons:install');
+    \Illuminate\Support\Facades\Artisan::call('filament:cache-components');
+    \Illuminate\Support\Facades\Artisan::call('config:cache');
+    \Illuminate\Support\Facades\Artisan::call('route:cache');
+dd(3);
+    \Illuminate\Support\Facades\Artisan::call('view:cache');
+    \Illuminate\Support\Facades\Artisan::call('filament:optimize');
+    \Illuminate\Support\Facades\Artisan::call('icons:cache');
+
+})->name('s');
+Route::get('artisan-down',function (){
+    \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+
+    \Illuminate\Support\Facades\Artisan::call('view:clear');
+    \Illuminate\Support\Facades\Artisan::call('config:clear');
+    \Illuminate\Support\Facades\Artisan::call('route:clear');
+    dd(2);
+    \Illuminate\Support\Facades\Artisan::call('filament:clear-cached-components');
+    \Illuminate\Support\Facades\Artisan::call('reverb:start');
+    \Illuminate\Support\Facades\Artisan::call('queue:work --queue=messages,default');
+
+    dd("start");
 })->name('artisan');
 
 Route::get('superAdmin', function () {
@@ -246,11 +273,6 @@ Route::get('login',function (){
 })->name('login');
 
 Route::get('/',function (){
-
-    if (auth()->user() and auth()->user()->is_super){
-        return redirect('/super-admin');
-
-    }
     return redirect('/admin');
 });
 Route::middleware('auth')->group(function(){

@@ -89,7 +89,7 @@ class Inventory extends ManageRelatedRecords
             ])
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
-                Tables\Columns\TextColumn::make('product.info'),
+                Tables\Columns\TextColumn::make('product.title')->searchable(),
                 Tables\Columns\TextColumn::make('product.unit.title'),
                 Tables\Columns\TextColumn::make('structure')->state(function ($record) {
                     $str = getParents($record->structure);

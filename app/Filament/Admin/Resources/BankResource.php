@@ -33,14 +33,14 @@ class BankResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-building-library';
     protected static ?int $navigationSort=1;
     protected static ?string $navigationGroup = 'Finance Management';
-    public static function getCluster(): ?string
-    {
-        $period = getPeriod();
-        if ($period) {
-            return parent::getCluster();
-        }
-        return '';
-    }
+//    public static function getCluster(): ?string
+//    {
+//        $period = getPeriod();
+//        if ($period) {
+//            return parent::getCluster();
+//        }
+//        return '';
+//    }
 
     public static function form(Form $form): Form
     {
@@ -87,6 +87,7 @@ class BankResource extends Resource
         return $table->query(Bank::query()->where('company_id',getCompany()->id)->where('type',0))->headerActions([
         ])
             ->columns([
+                Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
                 Tables\Columns\TextColumn::make('bank_name')->label('Bank')
                 ->state(fn($record)=>$record->bank_name."\n".$record->account->code)
                 ->searchable(),
@@ -96,8 +97,8 @@ class BankResource extends Resource
                 Tables\Columns\TextColumn::make('account_type')->searchable(),
                 Tables\Columns\TextColumn::make('currency.symbol')->searchable(),
                 Tables\Columns\TextColumn::make('Balance')
-                ->state(fn($record)=> number_format($record->account->transactions->sum('debtor')-$record->account->transactions->sum('creditor')))
-                ->Color(fn($state)=>$state>=0?'success':'danger')
+                    ->state(fn($record)=> number_format($record->account->transactions->where('financial_period_id', getPeriod()?->id)->sum('creditor')-$record->account->transactions->where('financial_period_id', getPeriod()?->id)->sum('debtor'),2))
+                    ->Color(fn($state)=>$state>=0?'success':'danger')
 
             ])
             ->filters([

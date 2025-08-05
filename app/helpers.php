@@ -16,12 +16,14 @@ use Illuminate\Support\Facades\Cache;
 
 function getCompany(): ?\Illuminate\Database\Eloquent\Model
 {
+
     $userId = auth()->id();
     $cacheKey = "tenant_company_1";
 
     if (!$userId) {
+
         return Cache::remember($cacheKey, now()->addHours(1), function () {
-            return \Filament\Facades\Filament::getTenant();
+            return \App\Models\Company::query()->firstWhere('id',1);
         });
     }
 
@@ -557,6 +559,15 @@ function generateNextCodeLoan($code): string
 
     return str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
 }
+function generateNextCodeGatePass($code): string
+{
+
+    $lastNumber = $code;
+    $lastNumber = (int)$lastNumber;
+    $nextNumber = $lastNumber + 1;
+
+    return str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+}
 
 function defaultCurrency()
 {
@@ -622,7 +633,6 @@ function generateNextCodeDote($code): string
 function getPeriod()
 {
     $company = getCompany();
-
     if (!$company) {
         return null;
     }

@@ -94,7 +94,7 @@
 <table>
     <tr>
         <th colspan="3"><div>
-                @if($employee->media->where('collection_name','images')->first())
+                @if(file_exists($employee->media->where('collection_name','images')->first()?->getPath()))
                     <img width="100" src="{{$employee->media->where('collection_name','images')->first()?->getPath()}}" alt="">
 
                 @endif

@@ -36,7 +36,7 @@ return [
             'secret' => env('REVERB_APP_SECRET','secret'),
             'app_id' => env('REVERB_APP_ID',1),
             'options' => [
-                'host' => env('REVERB_HOST','127.0.0.1'),
+                'host' => env('REVERB_HOST','20.42.81.219'),
                 'port' => env('REVERB_PORT', 443),
                 'scheme' => env('REVERB_SCHEME', 'https'),
                 'useTLS' => env('REVERB_SCHEME', 'https') === 'https',

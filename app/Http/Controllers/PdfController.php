@@ -395,7 +395,7 @@ class PdfController extends Controller
 
     public function employee($id)
     {
-        $employee =  Employee::query()->findOrFail($id);
+        $employee =  Employee::query()->with(['department','position','duty','contract','media','company'])->findOrFail($id);
         $pdf = Pdf::loadView(
             'pdf.employee',
             compact('employee')

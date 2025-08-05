@@ -93,7 +93,7 @@ class CreateFactor extends CreateRecord
             try {
                 if ($currency->id!= defaultCurrency()->id){
                     $this->record->invoice->update([
-                        'name' => $this->record->invoice->name . "(Total:" . number_format($totalPure) .' '.$currency?->name. '  Equal: '.number_format($total,2).' '.$currency?->name.' '. ")",
+                        'name' => $this->record->invoice->name . "(Total:" . number_format($totalPure) .' '.$currency?->name. '  Equal: '.number_format($total,2).' '.defaultCurrency()?->name.' '. ")",
                     ]);
                 }else{
                     $this->record->invoice->update([
@@ -138,7 +138,7 @@ class CreateFactor extends CreateRecord
                             'payer_name' => $transaction['cheque']['payer_name'] ?? null,
                             'payee_name' => $transaction['cheque']['payee_name'] ?? null,
                             'description' => $transaction['cheque']['description'] ?? null,
-                            'company_id' =>$transaction['cheque']['due_date']? getCompany()->id:null,
+                            'company_id' =>$transaction['cheque']['amount']? getCompany()->id:null,
                             'status' => 'pending',
                             'cheque_number' => $transaction['cheque']['cheque_number'] ?? null,
                             'transaction_id' => $savedTransaction->id, // اتصال چک به تراکنش

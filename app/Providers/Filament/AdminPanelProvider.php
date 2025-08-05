@@ -247,19 +247,19 @@ class AdminPanelProvider extends PanelProvider
                     ]),
                 FilamentApexChartsPlugin::make(),
                 \TomatoPHP\FilamentMediaManager\FilamentMediaManagerPlugin::make()->allowUserAccess()->allowSubFolders(),
-                ChatgptAgentPlugin::make()
-                    ->defaultPanelWidth('400px') // default 350px
-                    ->botName('GPT Assistant')
-                    ->model('gpt-4o')
-                    ->buttonText('IT Help Desk')
-                    ->buttonIcon('heroicon-m-sparkles')
-                    // System instructions for the GPT
-                    ->systemMessage('Act nice and help')
-                    // Array of GPTFunctions the GPT can use
-
-                    // Default start message, set to false to not show a message
-                    ->startMessage('Hello sir! How can I help you today?')
-
+//                ChatgptAgentPlugin::make()
+//                    ->defaultPanelWidth('400px') // default 350px
+//                    ->botName('GPT Assistant')
+//                    ->model('gpt-4o')
+//                    ->buttonText('IT Help Desk')
+//                    ->buttonIcon('heroicon-m-sparkles')
+//                    // System instructions for the GPT
+//                    ->systemMessage('Act nice and help')
+//                    // Array of GPTFunctions the GPT can use
+//
+//                    // Default start message, set to false to not show a message
+//                    ->startMessage('Hello sir! How can I help you today?')
+//
 
 
             ])

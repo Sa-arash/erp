@@ -565,14 +565,7 @@ class EmployeeResource extends Resource
 
             ], getModelFilter())
             ->actions([
-                Tables\Actions\Action::make('te')->action(function (){
 
-                    $recipient = User::query()->firstWhere('id',2);
-
-                    Notification::make()
-                        ->title('Saved successfully')->sendToDatabase($recipient)
-                        ->broadcast($recipient);
-                }),
                 Tables\Actions\EditAction::make(),
                 Tables\Actions\ViewAction::make(),
                 Tables\Actions\Action::make('pdf')->tooltip('Print')->icon('heroicon-s-printer')->iconSize(IconSize::Medium)->label('')

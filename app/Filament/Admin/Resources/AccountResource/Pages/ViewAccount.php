@@ -34,7 +34,7 @@ class ViewAccount extends ViewRecord
                 TextEntry::make('type')->state(fn($record)=>$record->type=="debtor"? "Debtor":"Creditor")->color('info')->badge(),
             ])->columns(2),
             Section::make([
-                TextEntry::make('debtor')->label('Total Debtor')->state(function ($record) {
+                TextEntry::make('debtor')->suffix(" ".defaultCurrency()->name)->label('Total Debtor')->state(function ($record) {
                     $id = $record->id;
                     $accounts = Account::query()
                         ->where('id', $id)
@@ -54,7 +54,7 @@ class ViewAccount extends ViewRecord
 
                     return $totalDebtor;
                 })->numeric(),
-                TextEntry::make('creditor')->label('Total Creditor')->state(function ($record) {
+                TextEntry::make('creditor')->suffix(" ".defaultCurrency()->name)->label('Total Creditor')->state(function ($record) {
                     $id = $record->id;
                     $accounts = Account::query()
                         ->where('id', $id)
@@ -74,7 +74,7 @@ class ViewAccount extends ViewRecord
 
                     return $totalDebtor;
                 })->numeric(),
-                TextEntry::make('balance')->state(function ($record) {
+                TextEntry::make('balance')->suffix(" ".defaultCurrency()->name)->state(function ($record) {
                     $id = $record->id;
                     $accounts = Account::query()
                         ->where('id', $id)
@@ -96,7 +96,73 @@ class ViewAccount extends ViewRecord
                             $item->transactions->where('financial_period_id', getPeriod()?->id)->sum('debtor'))->sum();
                     }
                 })->numeric(),
+            ])->columns(3),
+            Section::make()->visible(fn($record)=> $record->currency_id != defaultCurrency()->id)->schema([
+                TextEntry::make('debtor_foreign')->suffix(" ".$this->record->currency->name)->label('Total Debtor')->state(function ($record) {
+                    $id = $record->id;
+                    $accounts = Account::query()
+                        ->where('id', $id)
+                        ->orWhere('parent_id', $id)
+                        ->orWhereHas('account', function ($query) use ($id) {
+                            $query->where('parent_id', $id)
+                                ->orWhereHas('account', function ($query) use ($id) {
+                                    $query->where('parent_id', $id);
+                                });
+                        })
+                        ->pluck('id');
+
+                    $totalDebtor = Transaction::query()
+                        ->whereIn('account_id', $accounts)
+                        ->where('financial_period_id', getPeriod()?->id)
+                        ->sum('debtor_foreign');
+
+                    return $totalDebtor;
+                })->numeric(),
+                TextEntry::make('creditor_foreign')->suffix(" ".$this->record->currency->name)->label('Total Creditor')->state(function ($record) {
+                    $id = $record->id;
+                    $accounts = Account::query()
+                        ->where('id', $id)
+                        ->orWhere('parent_id', $id)
+                        ->orWhereHas('account', function ($query) use ($id) {
+                            $query->where('parent_id', $id)
+                                ->orWhereHas('account', function ($query) use ($id) {
+                                    $query->where('parent_id', $id);
+                                });
+                        })
+                        ->pluck('id');
+
+                    $totalDebtor = Transaction::query()
+                        ->whereIn('account_id', $accounts)
+                        ->where('financial_period_id', getPeriod()?->id)
+                        ->sum('creditor_foreign');
+
+                    return $totalDebtor;
+                })->numeric(),
+                TextEntry::make('balance')->suffix(" ".$this->record->currency->name)->state(function ($record) {
+                    $id = $record->id;
+                    $accounts = Account::query()
+                        ->where('id', $id)
+                        ->orWhere('parent_id', $id)
+                        ->orWhereHas('account', function ($query) use ($id) {
+                            $query->where('parent_id', $id)
+                                ->orWhereHas('account', function ($query) use ($id) {
+                                    $query->where('parent_id', $id);
+                                });
+                        })->get();
+
+                    if ($record->type == 'debtor') {
+                        return $accounts->map(fn($item) => $item->transactions->where('financial_period_id', getPeriod()?->id)
+                                ->sum('debtor_foreign')-
+                            $item->transactions->where('financial_period_id', getPeriod()?->id)->sum('creditor_foreign'))->sum();
+                    } elseif ($record->type == 'creditor') {
+                        return $accounts->map(fn($item) => $item->transactions->where('financial_period_id', getPeriod()?->id)
+                                ->sum('creditor_foreign')-
+                            $item->transactions->where('financial_period_id', getPeriod()?->id)->sum('debtor_foreign'))->sum();
+                    }
+                })->numeric(),
             ])->columns(3)
+
+
         ]);
     }
 }

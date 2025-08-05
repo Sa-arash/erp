@@ -55,7 +55,7 @@
     }
 
     td {
-        padding: 8px;
+        padding: 4px;
         border: 1px solid #000000;
         text-align: left;
     }
@@ -92,6 +92,8 @@
     }
     @page  {
         margin: 10px;
+        margin-left: 30px;
+        margin-right: 30px;
         margin-top: 50mm!important;
         margin-bottom: 12mm;
     }
@@ -115,7 +117,7 @@
         </tr>
         <tr>
             <td colspan="6" style="background: white!important;">
-                <pre>________________________________________________________________________________________________</pre>
+                <pre>___________________________________________________________________________________________</pre>
             </td>
         </tr>
         <tr>
@@ -169,11 +171,11 @@
         </tbody>
         <tfooter>
             <tr>
-                <td colspan="3" style="text-align: right;border: none;border-bottom: 2px solid black;">Grand Total
+                <td colspan="3" style="text-align: center;border: none;border-bottom: 2px solid black;font-weight: bold">Grand Total
                     Amount
                 </td>
                 <td colspan="3"
-                    style="text-align: right;border: none;border-bottom: 2px solid black;"> {{strtoupper(numberToWords($total,' '.$currency?->name))}}</td>
+                    style="text-align: right;border: none;border-bottom: 2px solid black;font-size: 10px;font-weight: bold"> {{strtoupper(numberToWords($total,' '.$currency?->name))}}</td>
                 <td style="border: none;border-bottom: 2px solid black;">{{number_format($total,2)}}</td>
             </tr>
         </tfooter>
@@ -183,7 +185,7 @@
     <table style="border: none;background: none !important;">
         <tr style="border-top: none !important">
             <th style="border-bottom: 1px !important;background: #cee6f3;padding: 3px"><b>Payments to:</b></th>
-            <th style="border: none;padding: 1px"><b>Note:</b></th>
+            <th style="border: none;padding: 4px"><b>Note:</b></th>
         </tr>
         <tbody>
         <tr>

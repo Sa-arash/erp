@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('branch_name')->nullable();
             $table->string('account_number')->nullable();
             $table->bigInteger('amount');
-            $table->timestamp('issue_date');
+            $table->timestamp('issue_date')->nullable();
             $table->boolean('type')->default(0);
             $table->timestamp('due_date')->nullable();
             $table->enum('status',['issued','paid','returned','blocked','pending','cancelled','post_dated']);

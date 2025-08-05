@@ -14,6 +14,7 @@ return new class extends Migration
     Schema::create('purchase_requests', function (Blueprint $table) {
         $table->id();
         $table->dateTime('request_date');
+        $table->date('end_date')->nullable();
         $table->string('purchase_number')->unique();
         $table->text('description')->nullable();
         $table->boolean('is_quotation')->default(0);
@@ -27,6 +28,7 @@ return new class extends Migration
             'Finished',
             'Rejected',
         ])->default('Requested');
+        $table->enum('priority_level',['Low' , 'Medium','High'])->nullable();
         $table->boolean('need_change')->default(0);
 
         $table->text('comment')->nullable();

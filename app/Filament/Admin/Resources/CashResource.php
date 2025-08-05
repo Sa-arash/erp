@@ -42,12 +42,13 @@ class CashResource extends Resource
     {
         return $table->query(Bank::query()->where('company_id',getCompany()->id)->where('type',1))
             ->columns([
+                Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
                 Tables\Columns\TextColumn::make('bank_name')->label('Cash Name')
                     ->state(fn($record)=>$record->name."\n".$record->account->code)
                     ->searchable(),
-                Tables\Columns\TextColumn::make('currency.symbol')->searchable(),
+                Tables\Columns\TextColumn::make('currency.name')->searchable(),
                 Tables\Columns\TextColumn::make('Balance')
-                    ->state(fn($record)=> number_format($record->account->transactions->sum('debtor')-$record->account->transactions->sum('creditor')))
+                    ->state(fn($record)=> number_format($record->account->transactions->where('financial_period_id', getPeriod()?->id)->sum('creditor')-$record->account->transactions->where('financial_period_id', getPeriod()?->id)->sum('debtor'),2))
                     ->Color(fn($state)=>$state>=0?'success':'danger')
             ])
             ->filters([
