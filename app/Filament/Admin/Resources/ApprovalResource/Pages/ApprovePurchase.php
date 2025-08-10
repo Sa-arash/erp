@@ -204,15 +204,25 @@ class ApprovePurchase extends ManageRelatedRecords
                     return false;
                 })->label('Change Decision')->color('warning')->requiresConfirmation()->action(function () {
                     $this->record->approvable->approvals()->where('status','Pending')->delete();
-                    $this->record->update(['status' => 'Pending']);
+                    $this->record->update(['status' => 'Pending','approve_date'=>null]);
                     $PR = $this->record->approvable;
-
+                    $lastStatus=$PR->status->name;
                     if ($PR->status->name === "Clarification") {
                         $PR->update(['status'=>'Requested']);
                     } else if ($PR->status->name === "Verification") {
                         $PR->update(['status'=>'Clarification']);
                     } else if ($PR->status->name === "Approval") {
                         $PR->update(['status'=>'Verification']);
+                    }
+                    foreach ($PR->items as $item){
+                        if ($lastStatus === "Clarification") {
+                            $item->update(['clarification_decision'=>null,"clarification_comment"=>null]);
+                        } else if ($lastStatus === "Verification") {
+                            $item->update(['verification_decision'=>null,"verification_comment"=>null]);
+                        } else if ($lastStatus === "Approval") {
+                            $item->update(['approval_decision'=>null,"approval_comment"=>null]);
+                        }
+
                     }
                     sendSuccessNotification();
                 }),
