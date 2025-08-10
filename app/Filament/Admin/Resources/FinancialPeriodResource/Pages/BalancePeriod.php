@@ -81,7 +81,7 @@ class BalancePeriod extends ManageRelatedRecords
                         return $set('isCurrency', 0);
                     })->live(true)->defaultOpenLevel(3)->label('Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->whereIn('group', ['Asset', 'Liabilitie', "Equity"])->where('company_id', getCompany()->id))->searchable(),
                     Forms\Components\TextInput::make('description')->default('Opening Journal Entry ')->required(),
-                    Forms\Components\TextInput::make('debtor')
+                    Forms\Components\TextInput::make('debtor')->label('Debit')
                         ->mask(RawJs::make('$money($input)'))->stripCharacters(',')
                         ->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)
                         ->rules([
@@ -93,7 +93,7 @@ class BalancePeriod extends ManageRelatedRecords
                                 }
                             },
                         ]),
-                    Forms\Components\TextInput::make('creditor')
+                    Forms\Components\TextInput::make('creditor')->label('Credit')
                         ->mask(RawJs::make('$money($input)'))->stripCharacters(',')
                         ->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)
                         ->rules([
@@ -208,16 +208,16 @@ class BalancePeriod extends ManageRelatedRecords
             ->recordTitleAttribute('description')
             ->columns([
                 Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
-                Tables\Columns\TextColumn::make('account.name')
+                Tables\Columns\TextColumn::make('account.name')->searchable()
                     ->alignCenter(),
-                Tables\Columns\TextColumn::make('account.code')
+                Tables\Columns\TextColumn::make('account.code')->searchable()
                     ->alignCenter(),
-                Tables\Columns\TextColumn::make('description')->alignCenter(),
-                Tables\Columns\TextColumn::make('debtor')->alignCenter()->numeric()->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total')),
-                Tables\Columns\TextColumn::make('creditor')->alignCenter()->numeric()->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total')),
+                Tables\Columns\TextColumn::make('description')->alignCenter()->searchable(),
+                Tables\Columns\TextColumn::make('debtor')->label('Debit')->alignCenter()->numeric()->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total')),
+                Tables\Columns\TextColumn::make('creditor')->label('Credit')->alignCenter()->numeric()->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total')),
                 Tables\Columns\TextColumn::make('currency.name')->alignCenter()->numeric(),
-                Tables\Columns\TextColumn::make('debtor_foreign')->alignCenter()->numeric()->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total')),
-                Tables\Columns\TextColumn::make('creditor_foreign')->alignCenter()->numeric()->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total')),
+                Tables\Columns\TextColumn::make('debtor_foreign')->label('Debit Foreign')->alignCenter()->numeric()->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total')),
+                Tables\Columns\TextColumn::make('creditor_foreign')->label('Credit Foreign')->alignCenter()->numeric()->summarize(Tables\Columns\Summarizers\Sum::make()->label('Total')),
                 Tables\Columns\TextColumn::make('exchange_rate')->alignCenter()->numeric(),
             ])
             ->filters([

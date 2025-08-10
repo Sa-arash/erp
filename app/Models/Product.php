@@ -25,6 +25,7 @@ class Product extends Model implements HasMedia
         'stock_alert_scope',
         'description',
         'company_id',
+        'product_category_id'
     ];
 
     public function getLogAttribute(){
@@ -71,4 +72,9 @@ class Product extends Model implements HasMedia
     {
         return $this->hasMany(Asset::class);
     }
+    public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(ProductCategory::class,'product_category_id');
+    }
+
 }

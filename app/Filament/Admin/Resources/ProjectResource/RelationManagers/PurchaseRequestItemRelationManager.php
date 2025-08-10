@@ -19,7 +19,8 @@ class PurchaseRequestItemRelationManager extends RelationManager
         return $table
             ->defaultSort('id','desc')
             ->columns([
-                Tables\Columns\TextColumn::make('#')->rowIndex(),
+                Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
+                Tables\Columns\TextColumn::make('purchaseRequest.purchase_number')->label('PR No')->badge()->alignCenter(),
                 Tables\Columns\TextColumn::make('product.sku'),
                 Tables\Columns\TextColumn::make('description'),
                 Tables\Columns\TextColumn::make('quantity'),

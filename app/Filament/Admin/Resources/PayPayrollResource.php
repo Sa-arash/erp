@@ -302,7 +302,7 @@ class PayPayrollResource extends Resource
                                     })->live()->defaultOpenLevel(3)->live()->label('Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('company_id', getCompany()->id))->searchable(),
                                     Forms\Components\TextInput::make('description')->required(),
 
-                                    Forms\Components\TextInput::make('debtor')->prefix(defaultCurrency()->symbol)->live(true)->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {})->mask(RawJs::make('$money($input)'))->readOnly(function (Get $get) {
+                                    Forms\Components\TextInput::make('debtor')->label('Debit')->prefix(defaultCurrency()->symbol)->live(true)->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {})->mask(RawJs::make('$money($input)'))->readOnly(function (Get $get) {
                                         return $get('isCurrency');
                                     })->stripCharacters(',')->suffixIcon('cash')->suffixIconColor('success')->required()->default(0)->minValue(0)->rules([
                                         fn(Get $get): \Closure => function (string $attribute, $value, \Closure $fail) use ($get) {
@@ -313,7 +313,7 @@ class PayPayrollResource extends Resource
                                             }
                                         },
                                     ]),
-                                    Forms\Components\TextInput::make('creditor')->prefix(defaultCurrency()->symbol)->readOnly(function (Get $get) {
+                                    Forms\Components\TextInput::make('creditor')->label('Credit')->prefix(defaultCurrency()->symbol)->readOnly(function (Get $get) {
                                         return $get('isCurrency');
                                     })->live(true)
 

@@ -23,7 +23,7 @@
                     <ul class="item-list">
                         <li style="font-weight: bold">
                             {{ $key }}:
-                            {{ number_format($asset['sum']) }}
+                            {{ number_format($asset['sum'],2) }}
                         </li>
                             @foreach ($asset['item'] as $key => $Children)
                             {{--  @if ($difference != 0)  --}}
@@ -57,9 +57,9 @@
                         @foreach ($items as $key => $item)
                             <li style="font-weight: bold">
                                 @if($key === "Equity")
-                                    Equity`s: {{ number_format($item['sum'] + $incomes + $Expenses) }}
+                                    Equity`s: {{ number_format($item['sum'] + $incomes + $Expenses,2) }}
                                 @else
-                                    {{ $key }}: {{ number_format($item['sum']) }}
+                                    {{ $key }}: {{ number_format($item['sum'],2) }}
                                 @endif
                             </li>
 
@@ -71,7 +71,7 @@
                             @include('components.pdf.account-item', ['items' => $innerItems])
                         @endforeach
                         @if ($key === "Equity")
-                        <li style="font-weight: bold"> Total Earnings:{{number_format($incomes + $Expenses)}}</li>
+                        <li style="font-weight: bold"> Total Earnings:{{number_format($incomes + $Expenses,2)}}</li>
                     @endif
                         <br>
 
@@ -112,10 +112,10 @@
                 <strong>Total :</strong>
 
 
-                {{ number_format($totalAsset) }}
+                {{ number_format($totalAsset,2) }}
             </td>
             <td>
-                <strong>Total :</strong> {{ number_format($sumLib + $sumEq +($incomes + $Expenses) ) }}
+                <strong>Total :</strong> {{ number_format($sumLib + $sumEq +($incomes + $Expenses),2 ) }}
             </td>
         </tr>
     </tbody>

@@ -147,13 +147,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 Route::get('/test', function () {
-//$takes=TakeOut::query()->get();
-//$i=0;
-//foreach ($takes as $take){
-//    $take->update(['number'=>generateNextCodeGatePass($i)]);
-//    $i++;
-//}
-//dd($takes);
 
 //    $sessions = \Illuminate\Support\Facades\Redis::connection('cache');
 //

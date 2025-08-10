@@ -132,7 +132,7 @@ class AccountResource extends Resource
                         return  $state;
                     }
                 })
-                ->options(['Asset'=>'Asset','Liabilitie'=>'Liabilitie','Equity'=>'Equity','Income'=>'Income','Expense'=>'Expense'])->inline(),
+                ->options(['Asset'=>'Asset','Liabilitie'=>'Liabilities','Equity'=>'Equity','Income'=>'Income','Expense'=>'Expense'])->inline(),
                 Toggle::make('has_cheque')->required()->disabled()->inline()->formatStateUsing(function ($state) {
                     if ((int)Request::query('parent')){
                         return Account::query()->where('id', (int)Request::query('parent'))->first()?->has_cheque;

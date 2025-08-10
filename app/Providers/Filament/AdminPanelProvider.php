@@ -293,7 +293,8 @@ class AdminPanelProvider extends PanelProvider
                 config('filament-logger.activity_resource')
 
             ])
-            ->databaseNotifications()->tenant(Company::class, 'id', 'company');
+            ->databaseNotifications()
+            ->tenant(Company::class, 'id', 'company');
     }
 
 

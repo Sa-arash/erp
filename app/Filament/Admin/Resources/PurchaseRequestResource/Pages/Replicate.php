@@ -135,6 +135,7 @@ class Replicate extends CreateRecord
             abort(404);
         }
         $PR = $PR->toArray();
+
         $puncher = PurchaseRequest::query()->where('company_id', getCompany()->id)->latest()->first();
         if ($puncher) {
             $PR['purchase_number'] = generateNextCodePO($puncher->purchase_number);
@@ -154,6 +155,7 @@ class Replicate extends CreateRecord
             $PR['items'][$key]['type'] = $product->product_type=='Service' ?0 :1;
             $PR['items'][$key]['document'] = $item['media'];
         }
+
         $PR['status']="Requested";
         $this->data = $PR;
     }

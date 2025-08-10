@@ -1269,7 +1269,7 @@ class FactorResource extends Resource
                             })->defaultOpenLevel(3)->live()->label('Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('company_id', getCompany()->id))->searchable(),
                             Forms\Components\TextInput::make('description')->required(),
 
-                            Forms\Components\TextInput::make('debtor')->prefix(defaultCurrency()->name)->live(true)->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
+                            Forms\Components\TextInput::make('debtor')->label('Debit')->prefix(defaultCurrency()->name)->live(true)->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
                                 if ($get('Cheque')) {
                                     if($state >= $get('creditor'))
                                     {

@@ -76,7 +76,7 @@ class BankResource extends Resource
                         }),
                     TextInput::make('code')->unique('accounts','code',ignoreRecord: true)->required()->maxLength(255),
                     ToggleButtons::make('type')->disabled()->grouped()->inline()->options(['creditor' => 'Creditor', 'debtor' => 'Debtor'])->required(),
-                    ToggleButtons::make('group')->disabled()->grouped()->options(['Asset'=>'Asset','Liabilitie'=>'Liabilitie','Equity'=>'Equity','Income'=>'Income','Expense'=>'Expense'])->inline(),
+                    ToggleButtons::make('group')->disabled()->grouped()->options(['Asset'=>'Asset','Liabilitie'=>'Liabilities','Equity'=>'Equity','Income'=>'Income','Expense'=>'Expense'])->inline(),
                     Textarea::make('description')->maxLength(255)->columnSpanFull(),
                 ]),
             ]);
@@ -97,7 +97,7 @@ class BankResource extends Resource
                 Tables\Columns\TextColumn::make('account_type')->searchable(),
                 Tables\Columns\TextColumn::make('currency.symbol')->searchable(),
                 Tables\Columns\TextColumn::make('Balance')
-                    ->state(fn($record)=> number_format($record->account->transactions->where('financial_period_id', getPeriod()?->id)->sum('creditor')-$record->account->transactions->where('financial_period_id', getPeriod()?->id)->sum('debtor'),2))
+                    ->state(fn($record)=> number_format($record->account->transactions->where('financial_period_id', getPeriod()?->id)->sum('debtor')-$record->account->transactions->where('financial_period_id', getPeriod()?->id)->sum('creditor'),2))
                     ->Color(fn($state)=>$state>=0?'success':'danger')
 
             ])

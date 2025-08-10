@@ -87,7 +87,7 @@ class InventoryResource extends Resource implements HasShieldPermissions
                     $str = getParents($record->structure);
                     return substr($str, 1, strlen($str) - 1);
                 })->label('Location'),
-                Tables\Columns\TextColumn::make('quantity')->badge(),
+                Tables\Columns\TextColumn::make('quantity')->badge()->sortable(),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('product_id')->label('Product')->options(getCompany()->products()->where('product_type', 'consumable')->pluck('title', 'id'))->searchable()->preload()->getSearchResultsUsing(fn (string $search,Get $get): array => Product::query()->where('company_id',getCompany()->id)->where('title','like',"%{$search}%")->orWhere('second_title','like',"%{$search}%")->pluck('title', 'id')->toArray())->getOptionLabelsUsing(function(array $values){

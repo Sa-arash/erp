@@ -825,9 +825,16 @@ implements HasShieldPermissions
                         ]),
                     ])->label('Export Payroll')->color('purple'),
 
-                Tables\Actions\BulkActionGroup::make([
-                    //                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                Tables\Actions\BulkAction::make("approve")->action(function ($records){
+                    foreach ($records as $record){
+                        $record->update([
+                            'status' => 'accepted',
+                            'user_id' => auth()->id()
+                        ]);
+                        Notification::make('approvePayroll')->title('Approve Payroll ' . $record->employee->fullName)->success()->send();
+                    }
+
+                })->color("success")->requiresConfirmation()->icon('heroicon-o-check-badge')
             ]);
     }
 

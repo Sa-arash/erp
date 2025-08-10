@@ -245,9 +245,16 @@ class MyPurchaseRequest extends BaseWidget
                        if ($item->getFirstMedia('document')?->name){
                            if (!strstr($mediaItem,$item->getFirstMedia('document')?->name)){
                                $item->clearMediaCollection('document');
-                               $item->addMedia(public_path('images/'.$mediaItem))->toMediaCollection('document');
+                               if (file_exists('images/'.$mediaItem)){
+                                   $item->addMedia(public_path('images/'.$mediaItem))->toMediaCollection('document');
+                               }
                            }
+                       }else{
+                           $item->addMedia(public_path('images/'.$mediaItem))->toMediaCollection('document');
                        }
+                    }else{
+                        $item->clearMediaCollection('document');
+
                     }
                     unset($datum['images']);
                     $item->update($datum);

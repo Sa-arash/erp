@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Cache;
 function getCompany(): ?\Illuminate\Database\Eloquent\Model
 {
 
+//Cache::clear();
     $userId = auth()->id();
     $cacheKey = "tenant_company_1";
 
@@ -987,3 +988,5 @@ function getRowIndexName(): string
 {
     return "No";
 }
+
+

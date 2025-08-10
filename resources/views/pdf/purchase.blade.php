@@ -60,8 +60,8 @@
         <th colspan="8"  style="font-size: 15px"> Details</th>
     </tr>
     <tr>
-        <th>NO</th>
-        <th style="width: 20%">SKU</th>
+        <th style="width: 4%">{{getRowIndexName()}}</th>
+        <th style="width: 23%">SKU</th>
         <th>Description</th>
         <th>Unit</th>
         <th>Qty</th>

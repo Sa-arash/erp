@@ -291,13 +291,13 @@ class ApprovePurchase extends ManageRelatedRecords
                             } ;
 
 
-                            if ($PR->status->name === "Clarification") {
+                            if ($PR->status->name === "Requested") {
                                 $item['clarification_comment'] = $item['comment'];
                                 $item['clarification_decision'] = $item['decision'];
-                            } else if ($PR->status->name === "Verification") {
+                            } else if ($PR->status->name === "Clarification") {
                                 $item['verification_comment'] = $item['comment'];
                                 $item['verification_decision'] = $item['decision'];
-                            } elseif ($PR->status->name === "Approval") {
+                            } elseif ($PR->status->name === "Verification") {
                                 $item['approval_comment'] = $item['comment'];
                                 $item['approval_decision'] = $item['decision'];
                             }

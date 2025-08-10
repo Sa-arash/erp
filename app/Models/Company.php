@@ -104,10 +104,6 @@ class Company extends Model implements HasAvatar, HasName, HasMedia
         return $this->hasMany(ProductCategory::class);
     }
 
-    public function subProductCategories(): \Illuminate\Database\Eloquent\Relations\HasMany
-    {
-        return $this->hasMany(ProductSubCategory::class);
-    }
 
     public function products(): \Illuminate\Database\Eloquent\Relations\HasMany
     {

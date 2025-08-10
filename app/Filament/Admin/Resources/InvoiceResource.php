@@ -4,14 +4,12 @@ namespace App\Filament\Admin\Resources;
 
 use App\Filament\Admin\Resources\InvoiceResource\Pages;
 use App\Filament\Admin\Resources\InvoiceResource\RelationManagers;
-use App\Filament\Exports\InvoiceExporter;
 use App\Models\Account;
 use App\Models\Currency;
 use App\Models\FinancialPeriod;
 use App\Models\Invoice;
 use Closure;
 use CodeWithDennis\FilamentSelectTree\SelectTree;
-use Filament\Actions\ExportAction;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -24,6 +22,7 @@ use Filament\Support\Enums\IconSize;
 use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -51,10 +50,12 @@ class InvoiceResource extends Resource
 
     public static function canEdit(Model $record): bool
     {
-
-        if (isset($record->transactions[0])) {
-            return ($record->transactions[0]->financialPeriod->end_date > now());
+        if (\auth()->user()->can("update_invoice")) {
+            if (isset($record->transactions[0])) {
+                return ($record->transactions[0]->financialPeriod->end_date > now());
+            }
         }
+
         return false;
     }
 
@@ -132,12 +133,11 @@ class InvoiceResource extends Resource
                         })->defaultOpenLevel(3)->live()->label('Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('level', '!=', 'control')->where('company_id', getCompany()->id))->searchable(),
                         Forms\Components\TextInput::make('description')->required(),
 
-                        Forms\Components\TextInput::make('debtor')->prefix(defaultCurrency()->name)->live(true)->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
+                        Forms\Components\TextInput::make('debtor')->label('Debit')->prefix(defaultCurrency()->name)->live(true)->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
                             if ($get('Cheque')) {
-                                if($state >= $get('creditor'))
-                                {
+                                if ($state >= $get('creditor')) {
                                     $set('cheque.amount', $state);
-                                }else{
+                                } else {
                                     $set('cheque.amount', $get('creditor'));
                                 }
                             }
@@ -152,7 +152,7 @@ class InvoiceResource extends Resource
                                 }
                             },
                         ]),
-                        Forms\Components\TextInput::make('creditor')->prefix(defaultCurrency()->name)->readOnly(function (Get $get) {
+                        Forms\Components\TextInput::make('creditor')->label('Credit')->prefix(defaultCurrency()->name)->readOnly(function (Get $get) {
                             return $get('isCurrency');
                         })->live(true)
                             ->afterStateUpdated(function ($state, Forms\Set $set, Get $get) {
@@ -270,7 +270,10 @@ class InvoiceResource extends Resource
 
             ]);
     }
-
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()->with(["transactions"])->withSum("transactions",'debtor')->withSum("transactions",'creditor');
+    }
     public static function table(Table $table): Table
     {
         return $table
@@ -303,10 +306,12 @@ class InvoiceResource extends Resource
             //         ->exporter(InvoiceExporter::class)->color('purple')
             // ])
             ->columns([
-                Tables\Columns\TextColumn::make('')->rowIndex(),
+                Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
                 Tables\Columns\TextColumn::make('number')->searchable()->label('Voucher NO'),
                 Tables\Columns\TextColumn::make('date')->state(fn($record) => Carbon::parse($record->date)->format("Y-m-d")),
                 Tables\Columns\TextColumn::make('name')->searchable()->label('Voucher Title'),
+                Tables\Columns\TextColumn::make('transactions_sum_debtor')->numeric(2)->sortable()->label('Total Debit'),
+                Tables\Columns\TextColumn::make('transactions_sum_creditor')->numeric(2)->sortable()->label('Total Credit'),
                 Tables\Columns\TextColumn::make('reference')->searchable(),
             ])
             ->filters([

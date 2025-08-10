@@ -48,7 +48,7 @@ class CashResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('currency.name')->searchable(),
                 Tables\Columns\TextColumn::make('Balance')
-                    ->state(fn($record)=> number_format($record->account->transactions->where('financial_period_id', getPeriod()?->id)->sum('creditor')-$record->account->transactions->where('financial_period_id', getPeriod()?->id)->sum('debtor'),2))
+                    ->state(fn($record)=> number_format($record->account->transactions->where('financial_period_id', getPeriod()?->id)->sum('debtor')-$record->account->transactions->where('financial_period_id', getPeriod()?->id)->sum('creditor'),2))
                     ->Color(fn($state)=>$state>=0?'success':'danger')
             ])
             ->filters([

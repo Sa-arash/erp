@@ -8,8 +8,10 @@ use App\Filament\Clusters\StackManagementSettings;
 use App\Models\Account;
 use App\Models\Department;
 use App\Models\Product;
+use App\Models\ProductCategory;
 use App\Models\Transaction;
 use App\Models\Unit;
+use CodeWithDennis\FilamentSelectTree\SelectTree;
 use Filament\Forms;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
@@ -19,6 +21,7 @@ use Filament\Forms\Set;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\MaxWidth;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
@@ -61,7 +64,7 @@ class ProductResource extends Resource
                             }
                         }
                     }),
-                    Select::make('product_type')->searchable()->options(['consumable' => 'Consumable', 'unConsumable' => 'non-Consumable'])->default('consumable')->live()->afterStateUpdated(function(Set $set,$state){
+                    Select::make('product_type')->required()->searchable()->options(['consumable' => 'Consumable', 'unConsumable' => 'non-Consumable'])->default('consumable')->live()->afterStateUpdated(function(Set $set,$state){
                         if ($state=="consumable"){
                             $set('account_id',getCompany()->product_expence_accounts[0]);
                         }else{
@@ -82,6 +85,26 @@ class ProductResource extends Resource
                         Notification::make('success')->success()->title('Create Unit')->send();
                         return  Unit::query()->create($data)->getKey();
                     }),
+                    SelectTree::make('product_category_id')->defaultOpenLevel(2)->enableBranchNode()->searchable()->live()->required()->label('Product Group')->columnSpanFull()->relationship('category', 'title', 'parent_id', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id), modifyChildQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->createOptionForm([
+                        Section::make([
+                            Forms\Components\Hidden::make('company_id')->default(getCompany()?->id),
+                            Forms\Components\TextInput::make('title')
+                                ->required()
+                                ->maxLength(255),
+                            Forms\Components\TextInput::make('code')->default(function (){
+                                return ProductCategory::query()->where('parent_id',null)->orderBy("id",'desc')->first()?->generateCodeFromParent() ??"01";
+                            })->readOnly()
+                                ->required()
+                                ->maxLength(255),
+                            SelectTree::make('parent_id')->enableBranchNode()->searchable()->live()->label('Parent')->columnSpanFull()->relationship('parent', 'title', 'parent_id', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id), modifyChildQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->afterStateUpdated(function (Forms\Set $set,$state){
+                                if ($state){
+                                    $set('code',ProductCategory::query()->firstWhere('id',$state)?->generateNextChildCode());
+                                }else{
+                                    $set( 'code',ProductCategory::query()->where('parent_id',null)->orderBy("id",'desc')->first()?->generateCodeFromParent() ??"01");
+                                }
+                            }),
+                        ])->columns()
+                    ]),
                 ])->columns(3),
 
                 Select::make('account_id')->options(function (Get $get) {
@@ -117,7 +140,7 @@ class ProductResource extends Resource
                     }
                     return $data;
                 }
-                })->required()->model(Transaction::class)->searchable()->label('Category')->live()->default(getCompany()->product_expence_accounts[0]),
+                })->required()->model(Transaction::class)->searchable()->label('Category')->live()->default(isset(getCompany()->product_expence_accounts[0])?getCompany()->product_expence_accounts[0]:null),
 
                 Select::make('sub_account_id')->label('SubCategory')->required()->options(function (Get $get){
                     $parent=$get('account_id');
@@ -172,6 +195,7 @@ class ProductResource extends Resource
                 ExcelExport::make()->askForFilename("Product")->withColumns([
                     Column::make('sku')->heading('SKU'),
                     Column::make('title')->heading('Product Name'),
+                    Column::make('category.title')->heading('Product Group'),
                     Column::make('account.title')->heading('Category '),
                     Column::make('subAccount.title')->heading('Sub Category '),
                     Column::make('product_type')->formatStateUsing(function($record){
@@ -196,18 +220,17 @@ class ProductResource extends Resource
                 Tables\Columns\TextColumn::make('sku')->label('SKU')->searchable(),
                 Tables\Columns\ImageColumn::make('image')->defaultImageUrl(asset('img/images.jpeg'))->state(function ($record){
                     return $record->media->first()?->original_url;
-                })
-    //                    ->action(Tables\Actions\Action::make('image')->modalSubmitAction(false)->infolist(function ($record){
-    //                    if ($record->media->first()?->original_url){
-    //                        return  [
-    //                            \Filament\Infolists\Components\Section::make([
-    //                                ImageEntry::make('image') ->extraAttributes(['loading' => 'lazy'])->label('')->width(650)->height(650)->columnSpanFull()->state($record->media->first()?->original_url)
-    //                            ])
-    //                        ];
-    //                    }
-    //                }))
-                    ->extraAttributes(['loading' => 'lazy']),
+                })->action(Tables\Actions\Action::make('image')->modalSubmitAction(false)->infolist(function ($record){
+                        if ($record->media->first()?->original_url){
+                            return  [
+                                \Filament\Infolists\Components\Section::make([
+                                    ImageEntry::make('image') ->extraAttributes(['loading' => 'lazy'])->label('')->width(650)->height(650)->columnSpanFull()->state($record->media->first()?->original_url)
+                                ])
+                            ];
+                        }
+                    }))->extraAttributes(['loading' => 'lazy']),
                 Tables\Columns\TextColumn::make('title')->label('Product Name')->searchable(),
+                Tables\Columns\TextColumn::make('category.title')->label('Product Group')->searchable(),
                 Tables\Columns\TextColumn::make('account.title')->label('Category ')->sortable(),
                 Tables\Columns\TextColumn::make('subAccount.title')->label('Sub Category ')->sortable(),
                 Tables\Columns\TextColumn::make('product_type')->state(function ($record) {
@@ -252,6 +275,7 @@ class ProductResource extends Resource
                     ExcelExport::make()->askForFilename("Product")->withColumns([
                         Column::make('sku')->heading('SKU'),
                         Column::make('title')->heading('Product Name'),
+                        Column::make('category.title')->heading('Product Group'),
                         Column::make('account.title')->heading('Category '),
                         Column::make('subAccount.title')->heading('Sub Category '),
                         Column::make('product_type')->formatStateUsing(function($record){
@@ -266,7 +290,34 @@ class ProductResource extends Resource
 
                         Column::make('updated_at')->formatStateUsing(fn($record) => $record->assets->sum('price'))->heading('Total Value')
                     ]),
-                ])->label('Export Product')->color('purple')
+                ])->label('Export Product')->color('purple'),
+                Tables\Actions\BulkAction::make("SetGroup")->form([
+                    SelectTree::make('product_category_id')->defaultOpenLevel(2)->enableBranchNode()->searchable()->live()->required()->label('Product Group')->columnSpanFull()->relationship('category', 'title', 'parent_id', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id), modifyChildQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->createOptionForm([
+                        Section::make([
+                            Forms\Components\Hidden::make('company_id')->default(getCompany()?->id),
+                            Forms\Components\TextInput::make('title')
+                                ->required()
+                                ->maxLength(255),
+                            Forms\Components\TextInput::make('code')->default(function (){
+                                return ProductCategory::query()->where('parent_id',null)->orderBy("id",'desc')->first()?->generateCodeFromParent() ??"01";
+                            })->readOnly()
+                                ->required()
+                                ->maxLength(255),
+                            SelectTree::make('parent_id')->enableBranchNode()->searchable()->live()->label('Parent')->columnSpanFull()->relationship('parent', 'title', 'parent_id', modifyQueryUsing: fn($query) => $query->where('company_id', getCompany()->id), modifyChildQueryUsing: fn($query) => $query->where('company_id', getCompany()->id))->afterStateUpdated(function (Forms\Set $set,$state){
+                                if ($state){
+                                    $set('code',ProductCategory::query()->firstWhere('id',$state)?->generateNextChildCode());
+                                }else{
+                                    $set( 'code',ProductCategory::query()->where('parent_id',null)->orderBy("id",'desc')->first()?->generateCodeFromParent() ??"01");
+                                }
+                            }),
+                        ])->columns()
+                    ]),
+                ])->requiresConfirmation()->action(function ($records,$data){
+                    foreach ($records as $record){
+                        $record->update(["product_category_id"=>$data['product_category_id']]);
+                    }
+                    sendSuccessNotification();
+                })->color('success')
             ]);
     }
 
