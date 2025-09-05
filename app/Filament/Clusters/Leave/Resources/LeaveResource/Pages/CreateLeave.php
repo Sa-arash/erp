@@ -12,12 +12,7 @@ class CreateLeave extends CreateRecord
     protected static string $resource = LeaveResource::class;
     public function afterCreate(){
         $employee=Employee::query()->firstWhere('id',$this->record->employee_id);
-        if ($employee->department->employee_id){
-            $this->record->approvals()->create([
-                'position'=>'Head Department',
-                'employee_id'=>$employee->department->employee_id,
-                'company_id'=>getCompany()->id
-            ]);
-        }
+        sendAR($employee,$this->record,getCompany());
+
     }
 }

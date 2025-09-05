@@ -3,20 +3,29 @@
 namespace App\Filament\Admin\Widgets;
 
 use App\Models\Employee;
+use App\Models\Holiday;
+use App\Models\Leave;
+use App\Models\Loan;
 use App\Models\Overtime;
+use App\Models\Typeleave;
 use App\Models\UrgentLeave;
 use App\Models\User;
+use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\TimePicker;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\IconSize;
+use Filament\Support\RawJs;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget as BaseWidget;
@@ -120,7 +129,94 @@ class myEmployees extends BaseWidget
                         'approve_date'=>now()
                     ]);
                     sendSuccessNotification();
-                })
+                }),
+
+                Tables\Actions\Action::make('New Leave')->action(function ($data,$record){
+                    $data['company_id']=getCompany()->id;
+                    $data['employee_id']=$record->id;
+                    $data['status']="approveHead";
+
+                    $leave= Leave::query()->create($data);
+                    $employee=Employee::query()->firstWhere("id",$record->id);
+                    if ($employee->manager_id){
+                        $leave->approvals()->create([
+                            'position'=>'Manager',
+                            'employee_id'=>$employee->manager_id,
+                            'company_id'=>getCompany()->id,
+                            "status"=>"Approve",
+                            'approve_date'=>now()
+                        ]);
+                    }
+                    Notification::make('success')->title('Created')->send();
+                })->label('New Leave')->form([
+                    Section::make([
+                        ToggleButtons::make('type')->required()->grouped()->boolean('R&R','Home'),
+                        Select::make('typeleave_id')->label('Leave Type')->required()->options(Typeleave::query()->where('company_id', getCompany()->id)->pluck('title', 'id'))->searchable()->preload(),
+                        DatePicker::make('start_leave')->default(now())->live()->afterStateUpdated(function ( Get $get ,Set $set){
+                            $start = Carbon::parse($get('start_leave'));
+                            $end = Carbon::parse($get('end_leave'));
+                            $period = CarbonPeriod::create($start, $end);
+                            $daysBetween = $period->count(); // تعداد کل روزها
+                            $CompanyHoliday = count(getDaysBetweenDates($start, $end, getCompany()->weekend_days));
+
+                            $holidays = Holiday::query()->where('company_id', getCompany()->id)->whereBetween('date', [$start, $end])->count();
+                            $validDays = $daysBetween - $holidays-$CompanyHoliday;
+                            $set('days', $validDays);
+                        })->required()->default(now())->live(),
+                        DatePicker::make('end_leave')->default(now())->afterStateUpdated(function ( Get $get ,Set $set){
+                            $start = Carbon::parse($get('start_leave'));
+                            $end = Carbon::parse($get('end_leave'));
+                            $period = CarbonPeriod::create($start, $end);
+                            $daysBetween = $period->count(); // تعداد کل روزها
+                            $CompanyHoliday = count(getDaysBetweenDates($start, $end, getCompany()->weekend_days));
+
+                            $holidays = Holiday::query()->where('company_id', getCompany()->id)->whereBetween('date', [$start, $end])->count();
+                            $validDays = $daysBetween - $holidays-$CompanyHoliday;
+                            $set('days', $validDays);
+                        })->live()->required()->afterOrEqual(fn(Get $get)=>$get('start_leave')),
+                        TextInput::make('days')->columnSpanFull()->required()->numeric(),
+                        ToggleButtons::make('is_circumstances')->live()->default(0)->required()->boolean('Yes','No')->grouped()->label('Aware of any Circumstances'),
+                        Textarea::make('explain_leave')->required(fn(Get $get)=>$get('is_circumstances'))->label('Explain'),
+                        Section::make([
+                            FileUpload::make('document')->downloadable(),
+                            Textarea::make('description'),
+                        ])->columns()
+                    ])->columns(),
+
+                ]),
+                Tables\Actions\Action::make('new Loan')->label('Loan Request ')->form(function ($record){
+                    return [
+                        Section::make([
+                            TextInput::make('request_amount')->label('Required Amount')->columnSpan(2)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->numeric()->default(fn()=>$record->loan_limit),
+                            TextInput::make('loan_code')->required()->default(function (){
+                                $lastLoan=Loan::query()->where('company_id',getCompany()->id)->orderBy('id','desc')->first();
+                                return generateNextCodeAsset($lastLoan?->loan_code ? $lastLoan->loan_code :"0001");
+                            })->readOnly(),
+                            Textarea::make('description')->nullable()->columnSpanFull()
+                        ])->columns(3)
+                    ];
+                })->action(function ($data,$record){
+                    $company=getCompany();
+                    $employee=$record;
+                    $loan=Loan::query()->create([
+                        'employee_id'=>$employee->id,
+                        'loan_code'=>$data['loan_code'],
+                        'request_amount'=>$data['request_amount'],
+                        'request_date'=>now(),
+                        'company_id'=>$company->id,
+                        'description'=>$data['description'],
+                        "status"=>"ApproveManager"
+
+                    ]);
+                    $loan->approvals()->create([
+                        'employee_id' => $employee->manager_id,
+                        'company_id' => $company->id,
+                        'position' => 'Head',
+                        "status"=>"Approve",
+                        "approve_date"=>now()
+                    ]);
+                    Notification::make('success')->success()->title('Successfully Submitted')->send();
+                })->color("success")
             ]);
     }
 }

@@ -226,7 +226,8 @@ class PurchaseRequestResource extends Resource
                 Tables\Columns\TextColumn::make('purchase_order_item_sum_total')->sortable()->alignCenter()->label('Total Final Price')->numeric(),
                 Tables\Columns\TextColumn::make('end_date')->sortable()->alignCenter()->label('End Date' )->date(),
                 Tables\Columns\TextColumn::make('priority_level')->label('Priority Level')->color(fn($state)=>match ($state){"High"=>"danger","Medium"=>"warning","Low"=>"success",})->badge(),
-                Tables\Columns\TextColumn::make('life')->state(function ($record) {if ($record->end_date) {
+                Tables\Columns\TextColumn::make('life')->state(function ($record) {
+                    if ($record->end_date) {
                     return str_replace('And','and',\str(Carbon::parse($record->request_date)
                         ->diffForHumans(Carbon::parse($record->end_date), [
                             'parts' => 2,

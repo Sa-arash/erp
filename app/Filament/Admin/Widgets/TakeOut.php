@@ -89,7 +89,7 @@ protected static ?string $heading='Gate Pass';
                             return true;
                         }
                     })->label('Unregistered Asset')->addActionLabel('Add to Unregister Asset')->orderable(false)->schema([
-                        TextInput::make('name')->required(),
+                        TextInput::make('name')->label("Item Description")->required(),
                         TextInput::make('quantity')->required(),
                         Select::make('unit')->searchable()->options(Unit::query()->where('company_id', getCompany()->id)->pluck('title','title'))->required(),
                         TextInput::make('remarks')->nullable(),
@@ -145,7 +145,7 @@ protected static ?string $heading='Gate Pass';
             )->defaultSort('id','desc')
             ->columns([
                 Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
-                Tables\Columns\TextColumn::make('number')->label('Gate Pass No'),
+                Tables\Columns\TextColumn::make('number')->label('GP No'),
                 Tables\Columns\TextColumn::make('employee.fullName'),
                 Tables\Columns\TextColumn::make('assets.product.title')->state(fn($record)=> $record->assets->pluck('title')->toArray())->badge()->label('Assets'),
                 Tables\Columns\TextColumn::make('itemsOut')->state(function($record){
@@ -194,7 +194,7 @@ protected static ?string $heading='Gate Pass';
                             TextEntry::make('returned_date'),
                         ])->columnSpanFull()->columns(4),
                         RepeatableEntry::make('itemsOut')->label('itemsOut')->schema([
-                            TextEntry::make('name'),
+                            TextEntry::make('name')->label("Item Description"),
                             TextEntry::make('quantity'),
                             TextEntry::make('status')->color(fn ($state)=>match ($state){
                                 'Approved'=>'success','Not Approved'=>'danger','Pending'=>'primary'
@@ -265,7 +265,7 @@ protected static ?string $heading='Gate Pass';
                                 return true;
                             }
                         })->label('Unregistered Asset')->addActionLabel('Add to Unregister Asset')->orderable(false)->schema([
-                            TextInput::make('name')->required(),
+                            TextInput::make('name')->label("Item Description")->required(),
                             TextInput::make('quantity')->required(),
                             Select::make('unit')->searchable()->options(Unit::query()->where('company_id', getCompany()->id)->pluck('title','title'))->required(),
                             TextInput::make('remarks')->nullable(),
@@ -330,7 +330,7 @@ protected static ?string $heading='Gate Pass';
                                 return true;
                             }
                         })->label('Unregistered Asset')->addActionLabel('Add to Unregister Asset')->orderable(false)->schema([
-                            TextInput::make('name')->required(),
+                            TextInput::make('name')->label("Item Description")->required(),
                             TextInput::make('quantity')->required(),
                             Select::make('unit')->searchable()->options(Unit::query()->where('company_id', getCompany()->id)->pluck('title','title'))->required(),
                             TextInput::make('remarks')->nullable(),

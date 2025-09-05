@@ -35,7 +35,6 @@ use Filament\Tables;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\HtmlString;
 use Illuminate\Validation\Rules\Unique;
@@ -99,61 +98,10 @@ implements HasShieldPermissions
                                             if ($record->bid) {
                                                 $data = [];
                                                 $i=1;
-
                                                 foreach ($record->bid->quotation?->quotationItems->toArray() as $item) {
                                                     $prItem = PurchaseRequestItem::query()->firstWhere('id', $item['purchase_request_item_id']);
-                                                    $item['quantity'] = $prItem->quantity;
-                                                    $item['unit_id'] = $prItem->unit_id;
-                                                    $item['description'] = $prItem->description;
-                                                    $item['product_id'] = $prItem->product_id;
-                                                    $item['project_id'] = $prItem->project_id;
-                                                    $q = $prItem->quantity;
-                                                    $item['unit_price'] = number_format($item['unit_rate']);
-                                                    $price = $item['unit_rate'];
-                                                    $tax = $item['taxes'];
                                                     $item['row_number'] = $i++;
-
-                                                    $freights = $item['freights'];
-
-                                                    $item['total'] = number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100));
-                                                    $data[] = $item;
-                                                }
-                                                $set('RequestedItems', $data);
-                                                $set('vendor_id', $record->bid->quotation->party_id);
-                                                $set('currency_id', $record->bid->quotation->currency_id);
-                                            } else {
-
-                                                $data = $record->items->where('status', 'approve')->toArray();
-                                                if ($data===null){
-                                                    $data=[];
-                                                }
-                                                $i=1;
-                                                foreach($data as &$item) {
-                                                    $item['taxes'] = 0;
-                                                    $item['row_number'] = $i++;
-                                                    $item['freights'] = 0;
-                                                    $item['unit_price'] = number_format($item['estimated_unit_cost']);
-
-                                                }
-
-                                                // dd($data);
-                                                $set('RequestedItems', $data);
-                                                // dd($get('RequestedItems'),$record->items->where('status', 'approve')->toArray());
-                                            }
-                                        }
-                                    })
-                                    ->live()
-                                    ->label('PR No')
-                                    ->searchable()
-                                    ->preload()
-                                    ->afterStateUpdated(function (Set $set, $state) {
-                                        if ($state) {
-                                            $record = PurchaseRequest::query()->with(['bid','bid.quotation','bid.quotation.quotationItems','items'])->firstWhere('id', $state);
-                                            $set('purchase_orders_number', $record->purchase_number);
-                                            if ($record->bid) {
-                                                $data = [];
-                                                foreach ($record->bid->quotation?->quotationItems->toArray() as $item) {
-                                                    $prItem = PurchaseRequestItem::query()->firstWhere('id', $item['purchase_request_item_id']);
+                                                    $EX=$record->bid->quotation->currency->exchange_rate;
                                                     $item['quantity'] = $prItem->quantity;
                                                     $item['unit_id'] = $prItem->unit_id;
                                                     $item['description'] = $prItem->description;
@@ -165,17 +113,67 @@ implements HasShieldPermissions
                                                     $tax = $item['taxes'];
                                                     $freights = $item['freights'];
                                                     $item['vendor_id']=$record->bid->quotation->party_id;
+                                                    $item['exchange_rate']=$EX;
                                                     $item['currency_id']=$record->bid->quotation->party->currency_id;
-
-                                                    $item['total'] = number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100));
+                                                    $item['total'] = number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100)*$EX);
                                                     $data[] = $item;
                                                 }
                                                 $set('RequestedItems', $data);
-                                                $set('currency_id', $record->bid->quotation->currency_id);
-                                                $set('exchange_rate', $record->bid->quotation->currency->exchange_rate);
+                                                $set('vendor_id', $record->bid->quotation->party_id);
+                                            } else {
+
+                                                $data = $record->items->where('status', 'approve')->toArray();
+                                                if ($data===null){
+                                                    $data=[];
+                                                }
+                                                $i=1;
+                                                foreach($data as &$item) {
+                                                    $item['purchase_request_item_id'] = $item['id'];
+                                                    $item['taxes'] = 0;
+                                                    $item['row_number'] = $i++;
+                                                    $item['freights'] = 0;
+                                                    $item['unit_price'] = number_format($item['estimated_unit_cost']);
+
+                                                }
+
+                                                $set('items', $data);
+                                            }
+                                        }
+                                    })
+                                    ->live()
+                                    ->label('PR No')
+                                    ->searchable()
+                                    ->preload()
+                                    ->afterStateUpdated(function (Set $set, $state) {
+                                        if ($state) {
+                                            $record = PurchaseRequest::query()->with(['bid','bid.quotation','bid.quotation.quotationItems','items'])->firstWhere('id', $state);
+                                            $set('purchase_orders_number', $record->purchase_number);
+                                            $i=1;
+                                            if ($record->bid) {
+                                                $data = [];
+                                                foreach ($record->bid->quotation?->quotationItems->toArray() as $item) {
+                                                    $prItem = PurchaseRequestItem::query()->firstWhere('id', $item['purchase_request_item_id']);
+                                                    $item['row_number'] = $i++;
+                                                    $EX=$record->bid->quotation->currency->exchange_rate;
+                                                    $item['quantity'] = $prItem->quantity;
+                                                    $item['unit_id'] = $prItem->unit_id;
+                                                    $item['description'] = $prItem->description;
+                                                    $item['product_id'] = $prItem->product_id;
+                                                    $item['project_id'] = $prItem->project_id;
+                                                    $q = $prItem->quantity;
+                                                    $item['unit_price'] = number_format($item['unit_rate']);
+                                                    $price = $item['unit_rate'];
+                                                    $tax = $item['taxes'];
+                                                    $freights = $item['freights'];
+                                                    $item['vendor_id']=$record->bid->quotation->party_id;
+                                                    $item['exchange_rate']=$EX;
+                                                    $item['currency_id']=$record->bid->quotation->party->currency_id;
+                                                    $item['total'] = number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100)*$EX);
+                                                    $data[] = $item;
+                                                }
+                                                $set('items', $data);
                                             } else {
                                                 $data = [];
-                                                $i=1;
                                                 foreach ($record->items->where('status', 'approve')->toArray() as $item) {
                                                     $item['row_number'] = $i++;
                                                     $item['taxes'] = 0;
@@ -183,11 +181,13 @@ implements HasShieldPermissions
                                                     $item['vendor_id'] = null;
                                                     $item['exchange_rate'] = null;
                                                     $item['currency_id'] = null;
+                                                    $item['purchase_request_item_id'] = $item['id'];
                                                     $item['unit_price'] = number_format($item['estimated_unit_cost']);
                                                     $item['total'] = number_format($item['estimated_unit_cost']*$item['quantity']);
                                                     $data[] = $item;
                                                 }
-                                                $set('RequestedItems', $data);
+
+                                                $set('items', $data);
                                             }
                                         }
                                     })
@@ -198,145 +198,22 @@ implements HasShieldPermissions
                                                 $data[$item->id]=  $item->purchase_number.'('.$item->employee?->fullName.')';
                                             }
                                             return $data;
-                                        }else{
-                                            $data=[];
-                                            foreach (getCompany()->purchaseRequests()->where('status','Approval')->whereHas('purchaseOrder',function (){},'!=')->orderBy('id', 'desc')->get() as $item){
-                                                $data[$item->id]=  $item->purchase_number.'('.$item->employee?->fullName.')';
+                                        } else {
+                                            $data = [];
+                                            foreach (getCompany()->purchaseRequests()->where('status', 'Approval')->whereHas('purchaseOrder', function () {
+                                            }, '!=')->orderBy('id', 'desc')->get() as $item) {
+                                                $data[$item->id] = $item->purchase_number . '(' . $item->employee?->fullName . ')';
                                             }
                                             return $data;
                                         }
-
                                     }),
-
-                                Forms\Components\DateTimePicker::make('date_of_po')->default(now())
-                                    ->label('Date of PO')->afterOrEqual(now()->startOfHour())
-                                    ->required(),
-
-                                Forms\Components\Select::make('prepared_by')->live()
-                                    ->searchable()
-                                    ->preload()
-                                    ->label('Processed By')
-                                    ->options(fn($operation,$record)=> $operation==="edit"? getCompany()->employees->where('id',$record->prepared_by)->pluck('fullName', 'id'):getCompany()->employees->where('id',getEmployee()->id)->pluck('fullName', 'id'))
-                                    ->default(fn() => getEmployee()->id)->required(),
-
-                                Forms\Components\TextInput::make('purchase_orders_number')->label('PO No')->prefix('ATGT/UNC/')->readOnly()
-                                    ->required()->default(function (Request $request){
-                                        $PR=PurchaseRequest::query()->firstWhere('id',$request?->prno);
-                                        if ($PR){
-                                            return $PR->purchase_number;
-                                        }
-                                    })
-                                    ->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {
-                                        return $rule->where('company_id', getCompany()->id);
-                                    })->maxLength(50),
+                    Forms\Components\DateTimePicker::make('date_of_po')->default(now())->label('Date of PO')->afterOrEqual(now()->startOfHour())->required(),
+                    Forms\Components\Select::make('prepared_by')->live()->searchable()->preload()->label('Processed By')->options(fn($operation, $record) => $operation === "edit" ? getCompany()->employees->where('id', $record->prepared_by)->pluck('fullName', 'id') : getCompany()->employees->where('id', getEmployee()->id)->pluck('fullName', 'id'))->default(fn() => getEmployee()->id)->required(),
+                    Forms\Components\TextInput::make('purchase_orders_number')->label('PO No')->prefix('ATGT/UNC/')->readOnly()->required()->default(function (Request $request) {$PR = PurchaseRequest::query()->firstWhere('id', $request?->prno);if ($PR) {return $PR->purchase_number;}})->unique(ignoreRecord: true, modifyRuleUsing: function (Unique $rule) {return $rule->where('company_id', getCompany()->id);})->maxLength(50),
                     Forms\Components\TextInput::make('location_of_delivery')->maxLength(255),
-                    Forms\Components\DatePicker::make('date_of_delivery')
-                        ->default(now()),
-                    Forms\Components\Hidden::make('company_id')
-                        ->default(getCompany()->id)
-                        ->required(),
+                    Forms\Components\DatePicker::make('date_of_delivery')->default(now()),
+                    Forms\Components\Hidden::make('company_id')->default(getCompany()->id)->required(),
                     Forms\Components\Hidden::make('currency'),
-//                                Repeater::make('RequestedItems')->reorderableWithDragAndDrop(false)->defaultItems(1)->required()
-//                                    ->default(function (Request $request, Set $set) {
-//                                        $record = (PurchaseRequest::query()->with('bid')->firstWhere('id', $request->prno));
-//                                        if ($record?->bid) {
-//                                            $data = [];
-//                                            foreach ($record->bid->quotation?->quotationItems->toArray() as $item) {
-//                                                $prItem = PurchaseRequestItem::query()->firstWhere('id', $item['purchase_request_item_id']);
-//                                                $item['quantity'] = $prItem->quantity;
-//                                                $item['unit_id'] = $prItem->unit_id;
-//                                                $item['description'] = $prItem->description;
-//                                                $item['product_id'] = $prItem->product_id;
-//                                                $item['project_id'] = $prItem->project_id;
-//                                                $item['vendor_id'] = $record->bid->quotation->party_id;
-//                                                $item['currency_id'] = $record->bid->quotation->currecny_id;
-//                                                $item['exchange_rate'] = $record->bid->quotation->currency->exchange_rate;
-//                                                $q = $prItem->quantity;
-//                                                $item['unit_price'] = number_format($item['unit_rate']);
-//                                                $price = $item['unit_rate'];
-//                                                $tax = $item['taxes'];
-//                                                $freights = $item['freights'];
-//
-//                                                $item['total'] = number_format(($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100));
-//                                                $data[] = $item;
-//                                            }
-//
-//                                            return  $data;
-//                                        } else {
-//
-//                                            $data=$record?->items->where('status', 'approve')->toArray();
-//                                            if ($data===null){
-//                                                $data=[];
-//                                            }
-//                                            $i=1;
-//                                            foreach ($data as  &$item){
-//                                                $item['row_number']=$i++;
-//                                                $item['unit_price']=number_format($item['estimated_unit_cost']);
-//                                                $item['total'] = number_format($item['estimated_unit_cost']*$item['quantity']);
-//
-//                                            }
-//                                            return $data;
-//                                        }
-//                                    })
-//                                    ->relationship('items')
-//                                    // ->formatStateUsing(fn(Get $get) => dd($get('purchase_request_id')):'')
-//                                    ->schema([
-//                                            Forms\Components\Hidden::make('row_number')->dehydrated(false)
-//                                            ->default(fn (Get $get) => count($get->getData()['RequestedItems'] ?? []) )
-//                                        ->formatStateUsing(fn ($state, Get $get) => $state ?? count($get->getData()['RequestedItems'] ?? []) ),
-//                                        Forms\Components\Select::make('product_id')->columnSpan(3)->label('Product') ->prefix(fn (Get $get) => $get('row_number'))->options(function ($state) {
-//                                                if ($state){
-//                                                    $products = getCompany()->products->where('id',$state);
-//                                                }else{
-//                                                    $products= getCompany()->products;
-//                                                }
-//                                                $data = [];
-//                                                foreach ($products as $product) {
-//                                                    $data[$product->id] = $product->info;
-//                                                }
-//                                                return $data;
-//                                            })->required()->searchable()->preload(),
-//                                        Forms\Components\TextInput::make('description')->label('Description')->columnSpan(10)->required(),
-//                                        Forms\Components\Select::make('unit_id')->columnSpan(2)->required()->searchable()->preload()->label('Unit')->options(getCompany()->units->pluck('title', 'id')),
-//                                        Forms\Components\TextInput::make('quantity')->numeric()->required(),
-//                                        Forms\Components\TextInput::make('unit_price')->numeric()->required()->mask(RawJs::make('$money($input)'))->stripCharacters(',')->label('Unit Price'),
-//                                        Forms\Components\TextInput::make('taxes')->default(0)->prefix('%')->numeric()->required()->rules([
-//                                                fn(): Closure => function (string $attribute, $value, Closure $fail) {
-//                                                    if ($value < 0) {
-//                                                        $fail('The :attribute must be greater than 0.');
-//                                                    }
-//                                                    if ($value > 100) {
-//                                                        $fail('The :attribute must be less than 100.');
-//                                                    }
-//                                                },
-//                                            ])->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-//                                        Forms\Components\TextInput::make('freights')->default(0)->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-//                                        Forms\Components\Hidden::make('project_id')->label('Project'),
-//                                        Forms\Components\Select::make('vendor_id')->live(true)->label('Vendor')->options((getCompany()->parties->where('type', 'vendor')->pluck('name', 'id')))->searchable()->preload()->required()->columnSpan(2)->afterStateUpdated(function (Set $set,$state,Get $get){
-//                                            $vendor=Parties::query()->with('currency')->firstWhere('id',$state);
-//                                            if ($vendor){
-//                                                $set('currency_id',$vendor->currency_id);
-//                                                $set('exchange_rate',$vendor->currency?->exchange_rate);
-//                                            }
-//                                        }),
-//                                        Select::make('currency_id')->label('Currency')->afterStateUpdated(function (Set $set, $state,Get $get) {
-//                                                $currency = Currency::find($state);
-//                                                if ($currency !== null) {
-//                                                    $set('exchange_rate', $currency->exchange_rate);
-//                                                }
-//                                            })->required()->live(true)->options(getCompany()->currencies->pluck('name','id'))->searchable()->preload()->columnSpan(2),
-//                                        TextInput::make('exchange_rate')->readOnly()->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
-//                                        TextInput::make('total')->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->hintAction(Forms\Components\Actions\Action::make('Calculate')->action(function (Set $set,Get $get){
-//                                            $freights = $get('taxes') === null ? 0 : (float)$get('taxes');
-//                                            $q = $get('quantity');
-//                                            $tax = $get('taxes') === null ? 0 : (float)$get('taxes');
-//                                            $price = $get('unit_price') !== null ? str_replace(',', '', $get('unit_price')) : 0;
-//                                            $total = (($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100)) * (float)$get('exchange_rate');
-//                                            $set('total', number_format($total, 2));
-//                                        })->icon('heroicon-o-calculator')->color('danger')->iconSize(IconSize::Large))->columnSpan(2)->readOnly(),
-//                                    ])->live()
-//                                    ->columns(13)->addActionLabel('Add Item')
-//                                    ->columnSpanFull(),
                     TableRepeater::make('items')->default(function (Request $request, Set $set) {
                         $record = (PurchaseRequest::query()->with('bid')->firstWhere('id', $request->prno));
                         if ($record?->bid) {
@@ -371,6 +248,7 @@ implements HasShieldPermissions
                             $i = 1;
                             foreach ($data as &$item) {
                                 $item['row_number'] = $i++;
+                                $item['purchase_request_item_id'] = $item['id'];
                                 $item['unit_price'] = number_format($item['estimated_unit_cost']);
                                 $item['total'] = number_format($item['estimated_unit_cost'] * $item['quantity']);
 
@@ -435,12 +313,20 @@ implements HasShieldPermissions
                             ])->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                             Forms\Components\TextInput::make('freights')->default(0)->required()->numeric()->mask(RawJs::make('$money($input)'))->stripCharacters(','),
                             Forms\Components\Hidden::make('project_id')->label('Project'),
+                            Forms\Components\Hidden::make('purchase_request_item_id')->nullable(),
                             Forms\Components\Select::make('vendor_id')->live(true)->label('Vendor')->options((getCompany()->parties->where('type', 'vendor')->pluck('name', 'id')))->searchable()->preload()->required()->columnSpan(2)->afterStateUpdated(function (Set $set, $state, Get $get) {
                                 $vendor = Parties::query()->with('currency')->firstWhere('id', $state);
                                 if ($vendor) {
                                     $set('currency_id', $vendor->currency_id);
                                     $set('exchange_rate', $vendor->currency?->exchange_rate);
                                 }
+                                $freights = $get('freights') === null ? 0 : (float)$get('freights');
+                                $q = $get('quantity');
+                                $tax = $get('taxes') === null ? 0 : (float)$get('taxes');
+                                $price = $get('unit_price') !== null ? str_replace(',', '', $get('unit_price')) : 0;
+                                $total = (($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100)) * (float)$get('exchange_rate');
+                                $set('total', number_format($total, 2));
+
                             }),
                             Select::make('currency_id')->label('Currency')->placeholder('Select')->afterStateUpdated(function (Set $set, $state, Get $get) {
                                 $currency = Currency::find($state);

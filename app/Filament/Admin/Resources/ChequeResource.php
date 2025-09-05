@@ -85,8 +85,11 @@ class ChequeResource extends Resource
                             Column::make('payer_name')->heading('Payor Name'),
                             Column::make('payee_name'),
                             Column::make('id')->heading('Due Days')->formatStateUsing(function ($record) {
-                                $daysUntilDue = Carbon::make($record->due_date)->diffInDays(now(), false);
-                                return abs($daysUntilDue) . ($daysUntilDue < 0 ? ' Days Due' : ' Days Passed');
+                                if ($record->due_date){
+                                    $daysUntilDue = Carbon::make($record->due_date)->diffInDays(now(), false);
+                                    return abs($daysUntilDue) . ($daysUntilDue < 0 ? ' Days Due' : ' Days Passed');
+                                }
+
                             }),
                             Column::make('type')->formatStateUsing(fn($record) => $record->type ? "Payable" : "Receivable"),
                             Column::make('status'),
@@ -105,8 +108,10 @@ class ChequeResource extends Resource
                 Tables\Columns\TextColumn::make('payer_name')->label('Payor Name')->searchable(),
                 Tables\Columns\TextColumn::make('payee_name')->searchable(),
                 Tables\Columns\TextColumn::make('Due Days')->label('Due Days')->state(function ($record) {
-                    $daysUntilDue = Carbon::make($record->due_date)->diffInDays(now(), false);
-                    return abs(floor($daysUntilDue)) . ($daysUntilDue < 0 ? ' Days Due' : ' Days Passed');
+                   if ($record->due_date){
+                       $daysUntilDue = Carbon::make($record->due_date)->diffInDays(now(), false);
+                       return abs(floor($daysUntilDue)) . ($daysUntilDue < 0 ? ' Days Due' : ' Days Passed');
+                   }
                 })
                     ->color(function ($record) {
                         $daysUntilDue = Carbon::make($record->due_date)->diffInDays(now(), false);

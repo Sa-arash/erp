@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('parties', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->enum('type',['vendor','customer','both']);
+            $table->enum('type',['vendor','customer','both',"employee"]);
             $table->text('address')->nullable();
             $table->string('phone')->nullable();
             $table->string('email')->nullable();

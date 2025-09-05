@@ -27,6 +27,7 @@ class PurchaseRequestItemRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('unit.title'),
                 Tables\Columns\TextColumn::make('estimated_unit_cost')->numeric()->label('EST'),
                 Tables\Columns\TextColumn::make('total')->state(fn($record)=>$record->quantity*$record->estimated_unit_cost)->numeric()->label('Total EST'),
+                Tables\Columns\TextColumn::make('purchaseOrderItem.total')->numeric()->label('Final Price '),
             ]);
     }
 }

@@ -110,23 +110,28 @@
     .label {
         padding: 40px;
     }
+
+    @page {
+        margin-right: 20px;
+        margin-left: 20px;
+    }
 </style>
 
 <body style="border: 2px solid black !important;">
 
-    <table>
-        <tr>
-            <td style="border: none" colspan="2">Check the type of Leave the being requested:</td>
-            <td style="border: none">
-                <div class="checkbox"></div>
-                @if (!$leave->type)
+<table>
+    <tr>
+        <td style="border: none" colspan="2">Check the type of Leave the being requested:</td>
+        <td style="border: none">
+            <div class="checkbox"></div>
+            @if ($leave->type)
                     ☒
                 @endif
                 R&amp;R
             </td>
             <td style="border: none">
                 <div class="checkbox filled"></div>
-                @if ($leave->type)
+                @if (!$leave->type)
                     ☒
                 @endif
                 Home Leave
@@ -466,25 +471,25 @@
                             }
                         @endphp
 
-                        <td class="{{ $isInLeavePeriod ? 'hilite' : '' }}">
-                            {{ $i }}
-                            <br>
-                            @if ($isInLeavePeriod)
-                                {{ $leave->typeLeave?->abbreviation }}
-                            @endif
-                            @if ($isWeekend)
-                                B
-                            @endif
-                            @if ($holidayName)
-                                {{-- {{ $holidayName }}  --}}
-                                H
-                            @endif <!-- نمایش نام تعطیلی رسمی -->
-                        </td>
+                                <td class="{{ $isInLeavePeriod ? 'hilite' : '' }}">
+                                    {{ $i }}
 
-                        @if ($i % 7 == 0 || $i == $daysInMonth)
-        </tr> <!-- پایان ردیف -->
-        @endif
-        @endfor
+                                    @if ($isInLeavePeriod)
+                                        {{ $leave->typeLeave?->abbreviation }}
+                                    @endif
+                                    {{--                            @if ($isWeekend)--}}
+                                    {{--                                B--}}
+                                    {{--                            @endif--}}
+                                    @if ($holidayName)
+                                        {{-- {{ $holidayName }}  --}}
+                                        H
+                                @endif <!-- نمایش نام تعطیلی رسمی -->
+                                </td>
+
+                                @if ($i % 7 == 0 || $i == $daysInMonth)
+                            </tr> <!-- پایان ردیف -->
+                        @endif
+                    @endfor
 
     </table>
     </td>
@@ -519,20 +524,20 @@
                     }
                 @endphp
 
-                <td class="{{ $isInLeavePeriod ? 'hilite' : '' }}">
-                    {{ $i }}
-                    @if ($isInLeavePeriod)
-                        {{ $leave->typeLeave?->abbreviation }}
-                    @endif
-                    @if ($isWeekend)
-                        B
-                    @endif
-                    @if ($holidayName)
-                        H
-                    @endif <!-- نمایش نام تعطیلی رسمی -->
-                </td>
+                        <td class="{{ $isInLeavePeriod ? 'hilite' : '' }}">
+                            {{ $i }}
+                            @if ($isInLeavePeriod)
+                                {{ $leave->typeLeave?->abbreviation }}
+                            @endif
+                            {{--                    @if ($isWeekend)--}}
+                            {{--                        B--}}
+                            {{--                    @endif--}}
+                            @if ($holidayName)
+                                H
+                        @endif <!-- نمایش نام تعطیلی رسمی -->
+                        </td>
 
-                @if ($i % 7 == 0 || $i == $nextMonthDaysInMonth)
+                        @if ($i % 7 == 0 || $i == $nextMonthDaysInMonth)
                     </tr> <!-- پایان ردیف -->
                 @endif
             @endfor
@@ -601,7 +606,7 @@
             <td style="border: none">
                 <hr>
                 <b>Date</b><br>
-                {{ \Carbon\Carbon::parse($leave->created_at)->format('d / M / Y') }}
+                {{ \Carbon\Carbon::parse($leave->created_at)->format('d/M/Y h:i A') }}
 
             </td>
             <td style="border: none">
@@ -615,7 +620,7 @@
             </td>
             <td style="border: none">
                 <hr><b>Date</b><br>
-                {{ $leave->approvals?->first()?->approve_date ? \Carbon\Carbon::parse($leave->approvals->first()->approve_date)->format('d / M / Y') : ' ' }}
+                {{ $leave->approvals?->first()?->approve_date ? \Carbon\Carbon::parse($leave->approvals->first()->approve_date)->format('d/M/Y h:i A') : ' ' }}
             </td>
         </tr>
 
@@ -623,16 +628,20 @@
 
 
             <td style="border: none" colspan="2">
-                <hr><b>Admin/HR Dept Signature</b><br>
+                <hr>
+                <b>Admin/HR Dept Signature</b><br>
                 <div class="signature-space"></div>
                 @if ($leave->admin?->media->where('collection_name', 'signature')?->first())
                     <img width="60" height="60"
-                        src="{{ $leave->admin?->media->where('collection_name', 'signature')?->first()?->getPath() }}">
+                         src="{{ $leave->admin?->media->where('collection_name', 'signature')?->first()?->getPath() }}">
                 @endif
             </td>
             <td style="border: none">
-                <hr><b>Date</b>
-
+                <hr>
+                <b>Date</b>
+                @if($leave->admin !=null)
+                    {{ \Carbon\Carbon::parse($leave->approval_date)->format('d/M/Y h:i A') }}
+                @endif
             </td>
 
             <td style="border: 20px">
@@ -647,7 +656,8 @@
                         <td style="border: 1px solid black; padding: 5px;">
                             <span
                                 style="display: inline-block; width: 14px; height: 14px; text-align: center; line-height: 14px; vertical-align: middle; font-size: 12px; margin-right: 5px;">
-                                @if ($leave->approvals->first()?->status->value !== 'NotApprove')
+
+                                @if ($leave->status->value ===  'accepted')
                                     ☒
                                 @endif
                             </span>
@@ -656,7 +666,7 @@
                         <td style="border: 1px solid black; padding: 5px;">
                             <span
                                 style="display: inline-block; width: 14px; height: 14px; text-align: center; line-height: 14px; vertical-align: middle; font-size: 12px; margin-right: 5px;">
-                                @if ($leave->approvals->first()?->status->value !== 'NotApprove')
+                                @if ($leave->status->value === 'rejected')
                                     ☐
                                 @endif
                             </span>
@@ -666,7 +676,7 @@
                     <tr>
                         <td colspan="2" style="border: 1px solid black; padding: 0px 20px 20px;">
                             If denied, rationale:
-                            @if ($leave->approvals->first()?->status->value === 'NotApprove')
+                            @if ($leave->status->value === 'rejected')
                                 {{ $leave->approvals->first()?->comment }}
                             @else
                                 __________

@@ -310,8 +310,8 @@ class FactorResource extends Resource
                             ]),
 
                         ])->columns(3),
-                        Forms\Components\TextInput::make('from')->required()->maxLength(255),
-                        Forms\Components\TextInput::make('to')->required()->maxLength(255),
+                        Forms\Components\Textarea::make('from')->required()->maxLength(255),
+                        Forms\Components\Textarea::make('to')->required()->maxLength(255),
                         Forms\Components\Repeater::make('items')->required()->relationship('items')->schema([
                             Forms\Components\TextInput::make('title')->required()->label('Invoice Item')->columnSpan(2),
                             Forms\Components\TextInput::make('quantity')->default(1)->numeric()->live(true)->required()->label('Quantity')->afterStateUpdated(function (Forms\Get $get, Forms\Set $set) {
@@ -972,8 +972,8 @@ class FactorResource extends Resource
                     ]),
 
                 ])->columns(3),
-                Forms\Components\TextInput::make('from')->required()->maxLength(255),
-                Forms\Components\TextInput::make('to')->required()->maxLength(255),
+                Forms\Components\Textarea::make('from')->required()->maxLength(255),
+                Forms\Components\Textarea::make('to')->required()->maxLength(255),
                 Forms\Components\Repeater::make('items')->hintAction(Forms\Components\Actions\Action::make('Calculate')->action(function (Get $get, Forms\Set $set) {
                     $state = $get->getData();
                     unset($state['invoice']['transactions']);

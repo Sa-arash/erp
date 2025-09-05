@@ -42,12 +42,8 @@ class PurchasePrice extends ApexChartWidget
             ->sum(function($request) {
                 $total=0;
                 foreach ( $request->items as $item){
-                    $freights = intval((float)$item->freights );
-                    $q = intval($item->quantity);
-                    $tax = intval($item->taxes);
-                    $price = $item->unit_price;
 
-                    $total+= ($q * $price) + (($q * $price * $tax) / 100) + (($q * $price * $freights) / 100);
+                    $total+= $item->total;
                 }
                 return $total   ;
             } ))->toArray();

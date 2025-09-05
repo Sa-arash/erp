@@ -173,6 +173,10 @@ class PurchaseRequestItem extends Model implements HasMedia
     {
         return $this->belongsTo(Currency::class);
     }
+    public function purchaseOrderItem(): \Illuminate\Database\Eloquent\Relations\hasOne
+    {
+        return $this->hasOne(PurchaseOrderItem::class);
+    }
     public function quotationItems(): \Illuminate\Database\Eloquent\Relations\hasMany
     {
         return $this->hasMany(QuotationItem::class);

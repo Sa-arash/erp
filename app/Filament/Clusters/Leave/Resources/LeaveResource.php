@@ -121,7 +121,7 @@ class LeaveResource extends Resource implements HasShieldPermissions
     {
         return $table->searchable()->defaultSort('id','desc')
             ->columns([
-                Tables\Columns\TextColumn::make('#')->rowIndex(),
+                Tables\Columns\TextColumn::make(getRowIndexName())->rowIndex(),
                 Tables\Columns\TextColumn::make('employee.fullName')->alignLeft()->sortable(),
                 Tables\Columns\TextColumn::make('typeLeave.title')->alignLeft()->sortable(),
                 Tables\Columns\TextColumn::make('created_at')->label('Request Date')->date()->alignLeft()->sortable(),
@@ -189,7 +189,7 @@ class LeaveResource extends Resource implements HasShieldPermissions
                                 $leaves= ModelLeave::query()->where('employee_id',$record->employee_id)->whereBetween('start_leave', [now()->startOfYear(), now()->endOfYear()])->whereBetween('end_leave', [now()->startOfYear(), now()->endOfYear()])->where('status','accepted')->sum('days');
                                 return new HtmlString("<div style='font-size: 25px !important;'>  <span style='color: red;font-size: 25px !important;'>$leaves</span> Days </div>");
                             }),
-                            Forms\Components\ToggleButtons::make('status')->default($record->status)->options(LeaveStatus::class)->inline()->required(),
+                            Forms\Components\ToggleButtons::make('status')->grouped()->default($record->status)->options(LeaveStatus::class)->inline()->required(),
                             Forms\Components\Textarea::make('comment')->columnSpanFull(),
                         ])
                     ];

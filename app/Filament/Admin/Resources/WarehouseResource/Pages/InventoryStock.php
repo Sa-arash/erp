@@ -74,17 +74,20 @@ class InventoryStock extends ManageRelatedRecords
                 Tables\Columns\TextColumn::make('quantity')->badge(),
                 Tables\Columns\TextColumn::make('package.title')->state(fn($record)=> isset($record->package?->quantity)? '('.$record->quantity /$record->package?->quantity.' * '. $record->package?->quantity .')'.$record->package->title:'---')->badge(),
                 Tables\Columns\TextColumn::make('purchaseOrder.purchase_orders_number')->label('PO NO')->badge(),
-                Tables\Columns\TextColumn::make('type')->state(fn($record) => $record->type === 1 ? "Stock In" : "Stock Out")->badge()->color(fn($state) => $state === "Stock In" ? 'success' : 'danger'),
+                Tables\Columns\TextColumn::make('type')->state(fn($record) => $record->type === 1 ? "Stock IN" : "Stock OUT")->badge()->color(fn($state) => $state === "Stock IN" ? 'success' : 'danger'),
                 Tables\Columns\TextColumn::make('transaction')->state(function($record){
                     if ($record->transaction){
-                      return  $record->type ?"Stock In" : "Stock Out";
+                      return  $record->type ?"Stock IN" : "Stock OUT";
                     }
 
-                } )->badge()->color(fn($state) => $state === "Stock In" ? 'success' : 'danger'),
+                } )->badge()->color(fn($state) => $state === "Stock IN" ? 'success' : 'danger'),
                 Tables\Columns\TextColumn::make('created_at')->label('Stock Date')->dateTime(),
             ])
             ->filters([
                 DateRangeFilter::make('created_at')->label('Stock Date'),
+                Tables\Filters\SelectFilter::make("inventory_id")->options(function (){
+                    $invetories=\App\Models\Inventory::query()->where("warehouse_id",$this->record->id)->get();
+                })->searchable()->preload(),
                 Tables\Filters\TernaryFilter::make('type')->label('Type')->placeholder('All Type')->trueLabel('Stock In')->falseLabel('Stock Out')->searchable(),
                 Tables\Filters\TernaryFilter::make('transaction')->label('Transaction')->placeholder('All Stocks')->trueLabel('Yes')->falseLabel('No')->searchable()
             ])
@@ -117,31 +120,7 @@ class InventoryStock extends ManageRelatedRecords
                             Column::make('created_at')->heading('Stock Date'),
                         ]),
                     ])->label('Export Stock')->color('purple'),
-                Tables\Actions\CreateAction::make()->modalWidth(MaxWidth::SixExtraLarge)->label(' Stock OUT')->color('danger')->action(function ($data) {
-                    $quantity = (int)$data['quantity'];
-                    $inventory = \App\Models\Inventory::query()->firstWhere('id', $data['inventory_id']);
-                    if (isset($data['package_id'])){
-                        $package=Package::query()->firstWhere('id',$data['package_id']);
-                        if ($package){
-                            $quantity=$quantity*$package->quantity;
-                        }
-                    }
-                        if ($inventory->quantity - $quantity < 0) {
-                            return Notification::make('error')->danger()->title('Quantity Not Valid')->send();
-                        }
 
-                    $inventory->update(['quantity' => $inventory->quantity - $quantity]);
-
-                    Stock::query()->create([
-                            'quantity' => $quantity,
-                            'type' => 0,
-                            'package_id' => $data['package_id'],
-                            'description' => $data['description'],
-                            'employee_id' => getEmployee()->id,
-                            'inventory_id' => $data['inventory_id']
-                        ]);
-                    Notification::make('success')->success()->title('Submitted Successfully')->send();
-                }),
                 Tables\Actions\CreateAction::make("Stock IN")->modalWidth(MaxWidth::SixExtraLarge)->label(' Stock IN')->color('success')->action(function ($data) {
                     $quantity = (int)$data['quantity'];
                     $inventory = \App\Models\Inventory::query()->firstWhere('id', $data['inventory_id']);
@@ -165,8 +144,44 @@ class InventoryStock extends ManageRelatedRecords
                     ]);
                     Notification::make('success')->success()->title('Submitted Successfully')->send();
                 }),
+                Tables\Actions\CreateAction::make()->modalWidth(MaxWidth::SixExtraLarge)->label(' Stock OUT')->color('danger')->action(function ($data) {
+                    $quantity = (int)$data['quantity'];
+                    $inventory = \App\Models\Inventory::query()->firstWhere('id', $data['inventory_id']);
+                    if (isset($data['package_id'])){
+                        $package=Package::query()->firstWhere('id',$data['package_id']);
+                        if ($package){
+                            $quantity=$quantity*$package->quantity;
+                        }
+                    }
+                    if ($inventory->quantity - $quantity < 0) {
+                        return Notification::make('error')->danger()->title('Quantity Not Valid')->send();
+                    }
+
+                    $inventory->update(['quantity' => $inventory->quantity - $quantity]);
+
+                    Stock::query()->create([
+                        'quantity' => $quantity,
+                        'type' => 0,
+                        'package_id' => $data['package_id'],
+                        'description' => $data['description'],
+                        'employee_id' => getEmployee()->id,
+                        'inventory_id' => $data['inventory_id']
+                    ]);
+                    Notification::make('success')->success()->title('Submitted Successfully')->send();
+                }),
             ])
             ->actions([
+                Tables\Actions\DeleteAction::make()->action(function ($record){
+                    $inventory = \App\Models\Inventory::query()->firstWhere('id', $record->inventory_id);
+                    if ($record->type){
+                        $inventory->update(["quantity"=>$inventory->quantity-$record->quantity]);
+                    }else{
+                        $inventory->update(["quantity"=>$inventory->quantity+$record->quantity]);
+
+                    }
+                    $record->delete();
+                    sendSuccessNotification();
+                }),
                 Tables\Actions\EditAction::make()->form([
                     Forms\Components\TextInput::make('quantity')->minValue(1)->required()->numeric(),
                     Forms\Components\Textarea::make('description')->required()->maxLength(255)->columnSpanFull(),

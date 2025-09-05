@@ -27,9 +27,7 @@ class MyLoan extends BaseWidget
                     Loan::query()->where('company_id',getCompany()->id)->orderBy('id','desc')
             )
             ->headerActions([
-                Tables\Actions\Action::make('new')->disabled(function(){
-//                   return getEmployee()->loans->whereIn('status',['progressed','accepted','Waiting'])->count();
-                })->label('Loan Request ')->form([
+                Tables\Actions\Action::make('new')->label('Loan Request ')->form([
                     Section::make([
                         TextInput::make('request_amount')->label('Required Amount')->columnSpan(2)->mask(RawJs::make('$money($input)'))->stripCharacters(',')->required()->numeric()->default(fn()=>getEmployee()->loan_limit),
                         TextInput::make('loan_code')->required()->default(function (){

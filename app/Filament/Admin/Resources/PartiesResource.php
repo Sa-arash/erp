@@ -68,11 +68,11 @@ class PartiesResource extends Resource
                     Forms\Components\TextInput::make('email')->email()->maxLength(255),
                     Forms\Components\Textarea::make('address')->columnSpanFull(),
                 ])->columns(3),
-                Forms\Components\ToggleButtons::make('type')->visible(fn($operation) => $operation === "create")->live()->grouped()->options(['vendor' => 'Vendor', 'customer' => 'Customer', 'both' => 'Both'])->inline()->required(),
+                Forms\Components\ToggleButtons::make('type')->visible(fn($operation) => $operation === "create")->live()->grouped()->options(['vendor' => 'Vendor', 'customer' => 'Customer', 'both' => 'Both',"employee"=>"Employee"])->inline()->required(),
                 getSelectCurrency(),
                 SelectTree::make('parent_vendor')->visible(function (Forms\Get $get) {
 
-                    if ($get('type') == "both") {
+                    if ($get('type') == "both" or $get('type')=="employee") {
                         if ($get("account_vendor") === null) {
                             return true;
                         }
@@ -88,7 +88,7 @@ class PartiesResource extends Resource
                 })->hidden(fn($operation) => (bool)$operation === "edit")->default(getCompany()?->vendor_account)->enableBranchNode()->model(Transaction::class)->defaultOpenLevel(3)->live()->label('Parent Vendor Account')->required()->relationship('Account', 'name', 'parent_id', modifyQueryUsing: fn($query) => $query->where('stamp', "Liabilities")->where('company_id', getCompany()->id)),
 
                 SelectTree::make('parent_customer')->visible(function (Forms\Get $get) {
-                    if ($get('type') == "both") {
+                    if ($get('type') == "both" or $get('type')=="employee") {
                         if ($get("account_customer") === null) {
                             return true;
                         }
@@ -112,7 +112,7 @@ class PartiesResource extends Resource
                         }
                     })->unique('accounts', 'code', ignoreRecord: true)->visible(function (Forms\Get $get) {
 
-                        if ($get('type') == "both") {
+                        if ($get('type') == "both" or $get('type')=="employee") {
                             if ($get("account_vendor") === null) {
                                 return true;
                             }
@@ -133,7 +133,7 @@ class PartiesResource extends Resource
                             return "001";
                         }
                     })->visible(function (Forms\Get $get) {
-                        if ($get('type') === "both") {
+                        if ($get('type') === "both" or $get('type')=="employee") {
                             if ($get("account_customer") === null) {
                                 return true;
                             }
@@ -251,23 +251,9 @@ class PartiesResource extends Resource
                 Tables\Columns\TextColumn::make('balance_customer')
                     ->badge()
                     ->state(function ($record) {
-                        $customerBalance = 0;
-                        $vendorBalance = 0;
-
                         if ($record->accountCustomer) {
                             return $record->accountCustomer->transactions->sum('debtor')-  $record->accountCustomer->transactions->sum('creditor');
                         }
-//
-//                        if ($record->accountVendor) {
-//                            $vendorBalance = $record->accountVendor->transactions->sum('creditor') - $record->accountVendor->transactions->sum('debtor');
-//                        }
-
-//                        return match ($record->type) {
-//                            'customer' => $customerBalance,
-//                            'vendor' => $vendorBalance,
-//                            'both' => $vendorBalance - $customerBalance,
-//                            default => 0,
-//                        };
                     })
                     ->formatStateUsing(fn($state) => number_format($state, 2))
                     ->color(fn($state) => $state >= 0 ? 'success' : 'danger')
@@ -275,23 +261,9 @@ class PartiesResource extends Resource
                 Tables\Columns\TextColumn::make('balance_vendor')
                     ->badge()
                     ->state(function ($record) {
-                        $customerBalance = 0;
-                        $vendorBalance = 0;
-
-//                        if ($record->accountCustomer) {
-//                            $customerBalance =   $record->accountCustomer->transactions->sum('creditor')-$record->accountCustomer->transactions->sum('debtor');
-//                        }
-
                         if ($record->accountVendor) {
                             return $record->accountVendor->transactions->sum('creditor') - $record->accountVendor->transactions->sum('debtor');
                         }
-//
-//                        return match ($record->type) {
-//                            'customer' => $customerBalance,
-//                            'vendor' => $vendorBalance,
-//                            'both' => $vendorBalance - $customerBalance,
-//                            default => 0,
-//                        };
                     })
                     ->formatStateUsing(fn($state) => number_format($state, 2))
                     ->color(fn($state) => $state >= 0 ? 'success' : 'danger')

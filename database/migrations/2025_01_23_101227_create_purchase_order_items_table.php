@@ -26,6 +26,7 @@ return new class extends Migration
             $table->decimal('exchange_rate',20,2)->nullable();
             $table->foreignId('employee_id')->nullable()->constrained('employees')->nullOnDelete();
             $table->foreignId('purchase_order_id')->constrained('purchase_orders')->nullOnDelete();
+            $table->foreignId('purchase_request_item_id')->nullable()->constrained('purchase_request_item')->nullOnDelete();
             $table->enum('receive_status', [
                 'Pending',
                 'Rejected',

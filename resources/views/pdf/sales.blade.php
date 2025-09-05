@@ -109,7 +109,7 @@
         <tr>
             <td class="title" style="width: 10% !important;">From:</td>
             <td colspan="5">
-                {{$invoice->from}}
+                {!! nl2br(e($invoice->from)) !!}
                 <br>
                 Email: {{$company->email_finance}}
                 P: {{$company->phone_finance}}
@@ -125,7 +125,7 @@
             <td style="background: white!important;" class="title">To:</td>
             <td style="background: white!important;" colspan="4">
 
-                {{$invoice->to}}
+                {!! nl2br(e($invoice->to)) !!}
             </td>
             <td style="background: white!important;">
                 <pre style="background: #c4e7e7">Invoice Date:<span style="background: #ffffff;" > {{ \Carbon\Carbon::parse($invoice->created_at)->format('l, F d, Y') }}</span></pre>

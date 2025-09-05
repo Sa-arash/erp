@@ -8,13 +8,13 @@ use Filament\Support\Contracts\HasLabel;
 
 enum LeaveStatus:string implements HasColor,HasLabel
 {
-    case Pending = 'pending';
+//    case Pending = 'pending';
     case Rejected = 'rejected';
     case Accepted = 'accepted';
     public function getLabel(): ?string
     {
         return match ($this){
-            self::Pending => 'Pending',
+//            self::Pending => 'Pending',
             self::Rejected => 'Reject',
             self::Accepted => 'Approve',
         };
@@ -22,7 +22,7 @@ enum LeaveStatus:string implements HasColor,HasLabel
     public function getColor(): string|array|null
     {
         return match($this){
-            self::Pending => 'info',
+//            self::Pending => 'info',
             self::Rejected => 'danger',
             self::Accepted => 'success',
         };

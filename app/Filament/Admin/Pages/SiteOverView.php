@@ -42,13 +42,10 @@ class SiteOverView extends Page
             'Dec'
         ]);
 
-
-
-
-
         return [
             Action::make('print')->label('Print')->url(function () {
                 if (isset($this->filters['year'])) {
+
                     return route('filament.admin.pages.site-over-view', ['tenant' => getCompany()->id, 'year' => $this->filters['year']]);
                 }
                 return route('filament.admin.pages.site-over-view', ['tenant' => getCompany()->id, 'year' => Carbon::now()->year]);
@@ -56,8 +53,10 @@ class SiteOverView extends Page
         ];
     }
 
+
     public function filtersForm(Form $form): Form
     {
+
         $currentYear = Carbon::now()->year;
         $years = array_combine(range($currentYear - 10, $currentYear + 1), range($currentYear - 10, $currentYear + 1));
 

@@ -148,6 +148,26 @@ Route::get('/', function () {
 });
 Route::get('/test', function () {
 
+
+//    $employees=Parties::query()->whereBetween("id",[258,382]);
+//
+//    $employees->update(["type"=>"employee"]);
+//
+//        $PO=PurchaseOrder::query()->get();
+//        foreach ($PO as $record){
+//            $prItem=$record->purchaseRequest->items;
+//            foreach ($record->items as $item){
+//                if ($prItem->where("product_id",$item->product_id)->count() > 1){
+//                    if ($prItem->where("product_id",$item->product_id)->where("quantity",$item->quantity)->first()){
+//                        $item->update(['purchase_request_item_id'=>$prItem->where("product_id",$item->product_id)->where("quantity",$item->quantity)->first()->id]);
+//                    }
+//                }elseif ($prItem->where("product_id",$item->product_id)->count() ==1){
+//                    $item->update(['purchase_request_item_id'=>$prItem->where("product_id",$item->product_id)->first()->id]);
+//                }
+//            }
+//        }
+//        dd($PO);
+
 //    $sessions = \Illuminate\Support\Facades\Redis::connection('cache');
 //
 //    foreach ($sessions as $key) {

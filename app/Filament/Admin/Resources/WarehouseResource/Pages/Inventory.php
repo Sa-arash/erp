@@ -11,6 +11,7 @@ use Filament\Forms\Form;
 use Filament\Forms\Get;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ManageRelatedRecords;
+use Filament\Support\Enums\FontWeight;
 use Filament\Tables;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -83,19 +84,22 @@ class Inventory extends ManageRelatedRecords
                             $str = getParents($record->structure);
                             return substr($str, 1, strlen($str) - 1);
                         })->heading('Location'),
-                       Column::make('quantity'),
+                       Column::make('quantity')->heading("In Stock"),
                     ]),
                 ])->label('Export Inventory')->color('purple')
             ])
             ->columns([
                 Tables\Columns\TextColumn::make('')->rowIndex(),
-                Tables\Columns\TextColumn::make('product.title')->searchable(),
+                Tables\Columns\TextColumn::make('product.title')->sortable()->searchable(),
                 Tables\Columns\TextColumn::make('product.unit.title'),
                 Tables\Columns\TextColumn::make('structure')->state(function ($record) {
                     $str = getParents($record->structure);
                     return substr($str, 1, strlen($str) - 1);
                 })->label('Location'),
-                Tables\Columns\TextColumn::make('quantity')->badge(),
+                Tables\Columns\TextColumn::make('stocks.out')->label('Stock IN')->badge()->state(fn($record)=> $record->stocks->where("type",1)->sum("quantity")),
+                Tables\Columns\TextColumn::make('stocks')->color("danger")->state(fn($record)=>$record->stocks->where("type",0)->sum("quantity"))->label('Stock OUT')->badge(),
+                Tables\Columns\TextColumn::make('quantity')->color("danger")->label('Stock Remain')->color('success')->badge()->sortable(),
+                Tables\Columns\TextColumn::make('product.stock_alert_threshold')->color(fn($record)=>$record->product->stock_alert_threshold-$record->quantity >0 ? "success":"danger")->weight(FontWeight::Bold)->state(fn($record)=>$record->product->stock_alert_threshold-$record->quantity >0 ? $record->product->stock_alert_threshold-$record->quantity ." Need to Order":0  )->label('Stock Alert ')->alignCenter(),
             ])
             ->filters([
                 //
@@ -115,7 +119,7 @@ class Inventory extends ManageRelatedRecords
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-                Tables\Actions\Action::make('Stock')->url(function($record){
+                Tables\Actions\Action::make('Report')->url(function($record){
                     Session::push('inventoryID',$record->id);
                     return WarehouseResource::getUrl('stock',['record'=>$this->record->id,'inventory'=>$record->id]);
                 })

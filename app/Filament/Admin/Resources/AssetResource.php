@@ -425,7 +425,7 @@ class AssetResource extends Resource
                 Tables\Columns\TextColumn::make('price')->summarize(Tables\Columns\Summarizers\Sum::make())->label('Purchase Price')->sortable()->numeric(),
 
                 Tables\Columns\TextColumn::make('warehouse.title')->label('Warehouse/Building')->sortable(),
-                Tables\Columns\TextColumn::make('structure')->state(function ($record) {
+                Tables\Columns\TextColumn::make('structure.title')->state(function ($record) {
                     $str = getParents($record->structure);
                     return substr($str, 1, strlen($str) - 1);
                 })->label('Location')->sortable(),

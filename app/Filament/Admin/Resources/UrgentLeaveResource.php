@@ -43,6 +43,11 @@ class UrgentLeaveResource extends Resource  implements HasShieldPermissions
     protected static ?string $label = "Urgent Leave";
     protected static ?string $navigationIcon = 'heroicon-o-folder-minus';
 
+    public static function canAccess(): bool
+    {
+        return auth()->user()->can('view_any_urgent::leave');
+    }
+
     public static function getPermissionPrefixes(): array
     {
         return [
@@ -122,7 +127,7 @@ class UrgentLeaveResource extends Resource  implements HasShieldPermissions
                 Tables\Columns\ImageColumn::make('approvals')->state(function ($record) {
                     $data = [];
 
-                        $data[]=$record->employee->media->where('collection_name', 'images')->first()?->original_url;
+                        $data[]=$record->employee?->media->where('collection_name', 'images')->first()?->original_url;
 
                     foreach ($record->approvals as $approval) {
                         if ($approval->status->value == "Approve") {
